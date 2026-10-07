@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Truyện Cổ Tích – Nghe và Đọc</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Be Vietnam Pro', sans-serif; background: #f6f3eb; color: #2b2b2b; }
+  header { position: sticky; top: 0; z-index: 10; background: rgba(255,253,247,.94); backdrop-filter: blur(12px); border-bottom: 1px solid #e8e2d6; }
+  .bar { max-width: 700px; margin: 0 auto; padding: 14px 16px; display: flex; align-items: center; gap: 10px; }
+  .bar .logo { font-size: 26px; }
+  .bar h1 { font-size: 19px; font-weight: 800; color: #1e293b; }
+  .bar p { font-size: 12.5px; color: #6b7280; }
+  main { max-width: 700px; margin: 0 auto; padding: 16px 14px 40px; }
+  .card { display: flex; gap: 14px; align-items: center; background: #fffdf7; border: 1px solid #e8e2d6; border-radius: 18px; padding: 16px; margin-bottom: 12px; cursor: pointer; box-shadow: 0 1px 3px rgba(30,41,59,.05); }
+  .card:active { transform: scale(.99); }
+  .card .ic { font-size: 40px; width: 62px; height: 62px; flex: 0 0 62px; display: flex; align-items: center; justify-content: center; background: #fdf3e3; border: 1px solid #f0dcae; border-radius: 14px; }
+  .card h2 { font-size: 17px; font-weight: 800; color: #1e293b; margin-bottom: 4px; }
+  .card p { font-size: 13.5px; color: #5b6472; line-height: 1.45; }
+  .card .meta { margin-top: 6px; font-size: 12.5px; color: #b45309; font-weight: 600; }
+  .hidden { display: none; }
+  .back { display: inline-flex; align-items: center; gap: 6px; background: #fffdf7; border: 1px solid #e8e2d6; color: #92400e; font-family: inherit; font-weight: 600; font-size: 14.5px; border-radius: 999px; padding: 9px 16px; cursor: pointer; margin-bottom: 14px; }
+  .reader { background: #fffdf7; border: 1px solid #e8e2d6; border-radius: 18px; padding: 20px 18px 26px; }
+  .reader h2 { font-size: 22px; font-weight: 800; color: #1e293b; margin-bottom: 4px; }
+  .reader .sub { font-size: 13.5px; color: #6b7280; margin-bottom: 14px; }
+  .player { position: sticky; top: 74px; background: #fdf3e3; border: 1px solid #f0dcae; border-radius: 14px; padding: 10px 12px; margin-bottom: 18px; }
+  .player audio { width: 100%; display: block; }
+  .story p { font-size: 18px; line-height: 1.85; margin-bottom: 16px; color: #333; }
+  .foot { text-align: center; font-size: 12.5px; color: #9ca3af; margin-top: 22px; }
+</style>
+</head>
+<body>
+<header>
+  <div class="bar">
+    <div class="logo">📚</div>
+    <div>
+      <h1>Truyện Cổ Tích Việt Nam</h1>
+      <p>Bấm vào truyện để vừa đọc vừa nghe kể</p>
+    </div>
+  </div>
+</header>
+<main>
+  <section id="listView"></section>
+  <section id="readerView" class="hidden">
+    <button class="back" id="backBtn">← Danh sách truyện</button>
+    <div class="reader">
+      <h2 id="rTitle"></h2>
+      <div class="sub" id="rDesc"></div>
+      <div class="player"><audio id="rAudio" controls preload="metadata" playsinline></audio></div>
+      <div class="story" id="rBody"></div>
+    </div>
+  </section>
+  <div class="foot">Chúc bé nghe truyện vui vẻ 🌙</div>
+</main>
+<script>
+const STORIES = [{"id": "banh-chung", "icon": "🎋", "title": "Bánh Chưng Bánh Dày", "desc": "Sự tích món bánh ngày Tết và chàng Lang Liêu hiếu thảo", "audio": "audio/banh-chung-banh-day.mp3", "paras": ["Ngày xưa, sau khi đánh thắng giặc ngoại xâm, vua Hùng đã già và muốn chọn người nối ngôi. Vua gọi các hoàng tử đến, bảo rằng ai tìm được lễ vật ngon lành, ý nghĩa nhất để dâng cúng tổ tiên thì sẽ được truyền ngôi. Các hoàng tử tỏa đi khắp nơi tìm sơn hào hải vị và của quý.", "Người con trai thứ mười tám tên là Lang Liêu vốn hiền hậu, chăm chỉ. Mẹ mất sớm, chàng sống giản dị, quanh năm làm ruộng nên không có vàng bạc châu báu. Đang lo lắng, chàng được một vị thần mách rằng trong trời đất, quý nhất là hạt gạo nuôi sống con người. Hãy dùng gạo nếp làm hai thứ bánh để dâng vua cha.", "Lang Liêu chọn gạo nếp ngon, đậu xanh và thịt lợn. Chàng gói bánh hình vuông bằng lá xanh, gọi là bánh chưng, tượng trưng cho mặt đất. Chàng giã xôi thành chiếc bánh tròn, trắng mịn, gọi là bánh dày, tượng trưng cho bầu trời. Đến ngày hẹn, các hoàng tử đem lễ vật về cung. Vua Hùng nếm bánh, nghe Lang Liêu giải thích rồi rất hài lòng vì món bánh giản dị mà chứa đựng ý nghĩa sâu sắc.", "Lang Liêu được chọn nối ngôi. Vua truyền cho mọi người cách làm hai thứ bánh để dâng cúng tổ tiên vào dịp lễ Tết. Từ đó, bánh chưng xanh và bánh dày trắng trở thành món ăn thân thuộc trong ngày Tết của người Việt."], "dur": "1 phút 25"}, {"id": "thanh-giong", "icon": "🐴", "title": "Thánh Gióng", "desc": "Cậu bé lên ba không biết nói, bỗng thành tráng sĩ cứu nước", "audio": "audio/thanh-giong.mp3", "paras": ["Ngày xưa, ở làng Gióng, có hai vợ chồng già hiền lành mà mãi chưa có con. Một hôm, bà lão ra đồng, thấy một vết chân rất to in trên ruộng. Bà tò mò ướm thử chân mình vào vết chân ấy. Về nhà ít lâu sau, bà sinh được một cậu bé bụ bẫm, đặt tên là Gióng.", "Lạ thay, Gióng lên ba tuổi rồi mà vẫn không biết nói, không biết cười, chỉ nằm yên một chỗ. Hai vợ chồng vừa thương con vừa buồn.", "Bấy giờ, giặc Ân kéo sang xâm lấn nước ta. Chúng hung hăng, đi đến đâu cũng đốt phá đến đó. Nhà vua lo lắng, sai sứ giả đi khắp nơi tìm người tài ra giúp nước.", "Khi sứ giả đến làng Gióng, vừa nghe tiếng rao, Gióng bỗng cất tiếng nói đầu tiên. Cậu bảo mẹ mời sứ giả vào, rồi dõng dạc nói: ông về tâu với vua, hãy đúc cho ta một con ngựa sắt, một chiếc roi sắt và một bộ áo giáp sắt, ta sẽ đi đánh tan giặc Ân.", "Từ hôm ấy, Gióng ăn cơm bao nhiêu cũng không đủ no. Cơm gạo trong làng gánh đến từng thúng, từng thúng mà cậu vẫn ăn hết. Người cậu lớn nhanh như thổi, vai rộng, chân tay săn chắc như đồng.", "Khi ngựa sắt, roi sắt và áo giáp sắt được mang đến, Gióng vươn vai một cái, trở thành một tráng sĩ cao lớn oai phong. Cậu mặc áo giáp, cầm roi, nhảy lên mình ngựa. Ngựa sắt hí vang, phun lửa, lao thẳng ra trận.", "Gióng quất roi sắt, đánh tan từng đoàn quân giặc. Roi gãy, cậu nhổ cả những bụi tre ven đường làm vũ khí, giặc Ân thua chạy tán loạn. Đánh thắng giặc xong, Gióng cưỡi ngựa lên đỉnh núi Sóc, cởi áo giáp để lại rồi cả người lẫn ngựa bay về trời.", "Nhà vua nhớ ơn, phong cậu là Phù Đổng Thiên Vương và cho lập đền thờ ở quê nhà. Từ đó, người dân gọi cậu là Thánh Gióng, vị thánh trẻ tuổi đã cứu nước khi mới lên ba."], "dur": "1 phút 39"}, {"id": "son-tinh", "icon": "⛰️", "title": "Sơn Tinh – Thủy Tinh", "desc": "Hai vị thần cùng cầu hôn Mỵ Nương và trận chiến nước dâng", "audio": "audio/son-tinh-thuy-tinh.mp3", "paras": ["Ngày xưa, đời Hùng Vương thứ mười tám, nhà vua có một người con gái xinh đẹp tên là Mỵ Nương. Nàng hiền hậu, nết na, ai ai cũng yêu mến. Khi Mỵ Nương đến tuổi lấy chồng, vua Hùng muốn kén cho con một người chồng thật xứng đáng.", "Nghe tin, có hai chàng trai cùng đến cầu hôn. Một người là Sơn Tinh, chúa của vùng núi cao, có phép lạ: vẫy tay một cái là núi đồi mọc lên, rừng cây xanh tốt. Người còn lại là Thủy Tinh, chúa của vùng nước sâu, cũng tài giỏi không kém: hô một tiếng là gió nổi, mưa tuôn, nước dâng cuồn cuộn.", "Hai người tài năng ngang nhau, vua Hùng khó xử, bèn nói: ngày mai, ai mang lễ vật đến trước thì được cưới Mỵ Nương. Lễ vật phải có một trăm ván cơm nếp, hai trăm cái bánh chưng, voi chín ngà, gà chín cựa, ngựa chín hồng mao.", "Sáng sớm hôm sau, khi trời còn tối, Sơn Tinh đã mang đầy đủ lễ vật đến trước, nên được cưới Mỵ Nương về núi. Thủy Tinh đến sau, không lấy được vợ, tức giận đùng đùng. Hắn hô mưa gọi gió, dâng nước lên cao, quyết cuốn trôi cả ngọn núi để cướp lại Mỵ Nương.", "Sơn Tinh chẳng hề nao núng. Nước dâng lên bao nhiêu, ngài lại làm cho núi cao thêm bấy nhiêu. Hai bên đánh nhau ròng rã mấy tháng trời, cuối cùng Thủy Tinh đuối sức, đành rút nước lui về.", "Nhưng mối thù ấy Thủy Tinh không quên. Từ đó, năm nào cũng vậy, cứ đến mùa mưa là Thủy Tinh lại dâng nước lên đánh Sơn Tinh, gây ra bão lụt. Người dân phải đắp đê, trồng cây để giữ đất, giữ làng. Và năm nào Sơn Tinh cũng thắng, nước rút đi, trời lại sáng trong."], "dur": "1 phút 26"}, {"id": "cay-tre", "icon": "🎍", "title": "Cây Tre Trăm Đốt", "desc": "Anh Khoai hiền lành và hai câu thần chú Khắc nhập, Khắc xuất", "audio": "audio/cay-tre-tram-dot.mp3", "paras": ["Ngày xưa, có một anh nông dân hiền lành, chăm chỉ tên là Khoai. Anh mồ côi cha mẹ từ nhỏ, phải đi ở cho một phú ông giàu có trong làng.", "Phú ông thấy anh Khoai khỏe mạnh, làm việc giỏi, bèn hứa: con cứ ở với ta ba năm, làm lụng cho thật tốt, sau ba năm ta sẽ gả con gái cho.", "Nghe vậy, anh Khoai mừng lắm. Ba năm trời, anh làm việc quần quật không quản nắng mưa, việc đồng áng, việc nhà đều chu toàn, chỉ mong đến ngày được nên duyên với cô gái.", "Thế nhưng, đến hẹn, phú ông lại lật lọng. Ông ta đã nhắm gả con gái cho con trai một nhà giàu khác ở làng bên. Để thoái thác, phú ông bảo anh Khoai: con phải vào rừng tìm cho ta một cây tre có đủ một trăm đốt, mang về đây làm đũa cưới, thì ta mới gả con gái cho.", "Ai cũng biết tre làm gì có cây nào một trăm đốt. Anh Khoai buồn bã vác dao vào rừng. Anh tìm mãi, tìm mãi, đếm từng cây tre mà cây cao nhất cũng chỉ vài chục đốt. Tuyệt vọng, anh ngồi bệt xuống đất và khóc.", "Bỗng Bụt hiện ra, hiền từ hỏi: có chuyện gì mà con khóc? Anh Khoai kể hết đầu đuôi. Bụt mỉm cười, bảo: con hãy chặt một trăm đốt tre mang về đây, ta sẽ dạy con phép ghép lại. Rồi Bụt dạy anh hai câu thần chú: Khắc nhập, khắc xuất.", "Anh Khoai chặt đủ một trăm đốt tre mang về sân nhà phú ông. Trước mặt mọi người, anh đọc: khắc nhập, khắc nhập! Lạ thay, các đốt tre tự nối liền vào nhau thành một cây tre dài đúng một trăm đốt. Phú ông kinh ngạc, nhưng vẫn tìm cách chối. Anh Khoai đọc tiếp: khắc xuất, khắc xuất! Cây tre rã ra, các đốt dính chặt lấy phú ông khiến ông ta không sao gỡ ra được, phải van xin và hứa giữ đúng lời hứa năm xưa.", "Thế là đám cưới được tổ chức. Anh Khoai và con gái phú ông sống với nhau hạnh phúc. Từ đó, người ta kể lại câu chuyện này để nhắc nhau rằng: ở hiền thì gặp lành, còn người thất hứa, gian dối thì thế nào cũng chuốc lấy quả báo."], "dur": "1 phút 47"}];
+const listView = document.getElementById('listView');
+const readerView = document.getElementById('readerView');
+const rAudio = document.getElementById('rAudio');
+
+STORIES.forEach(function (s, i) {
+  const card = document.createElement('div');
+  card.className = 'card';
+  card.innerHTML = '<div class="ic">' + s.icon + '</div><div><h2>' + s.title + '</h2><p>' + s.desc + '</p><div class="meta">🎧 Nghe kể truyện' + (s.dur ? ' · ' + s.dur : '') + '</div></div>';
+  card.addEventListener('click', function () { openStory(i); });
+  listView.appendChild(card);
+});
+
+function openStory(i) {
+  const s = STORIES[i];
+  document.getElementById('rTitle').textContent = s.title;
+  document.getElementById('rDesc').textContent = s.desc;
+  document.getElementById('rBody').innerHTML = s.paras.map(function (p) { return '<p>' + p + '</p>'; }).join('');
+  rAudio.src = s.audio;
+  rAudio.load();
+  listView.classList.add('hidden');
+  readerView.classList.remove('hidden');
+  window.scrollTo(0, 0);
+}
+
+document.getElementById('backBtn').addEventListener('click', function () {
+  rAudio.pause();
+  rAudio.removeAttribute('src');
+  rAudio.load();
+  readerView.classList.add('hidden');
+  listView.classList.remove('hidden');
+  window.scrollTo(0, 0);
+});
+</script>
+</body>
+</html>
