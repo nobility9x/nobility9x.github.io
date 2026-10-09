@@ -1,0 +1,427 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Toán Lớp 4 · Đề 8</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f6f3eb; --card:#ffffff; --card2:#fffdf7;
+  --ink:#2b2b2b; --muted:#5b6472; --title:#1e293b;
+  --blue:#2563eb; --blue-dark:#1e40af; --sky:#e3edfd;
+  --green:#16a34a; --red:#dc2626;
+  --line:#e8e2d6; --line2:#efe9dc;
+  --shadow:0 3px 12px rgba(0,0,0,.045);
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);touch-action:manipulation;
+  font-family:"Be Vietnam Pro",system-ui,-apple-system,"Segoe UI",sans-serif;font-size:17px;line-height:1.6}
+.wrap{max-width:700px;margin:0 auto;padding:0 14px 48px;min-height:100vh;background:var(--card2);
+  box-shadow:0 0 0 1px var(--line2),0 10px 40px rgba(0,0,0,.04)}
+h1,h2{font-family:"Baloo 2","Be Vietnam Pro",sans-serif;color:var(--title);line-height:1.25;margin:0}
+button{font-family:inherit;cursor:pointer}
+.hero{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:22px 18px 18px;
+  box-shadow:var(--shadow);text-align:center;margin-top:16px}
+.hero .crown{font-size:32px}
+.hero h1{font-size:25px;color:var(--blue-dark);margin-top:4px}
+.hero p{margin:8px 0 0;color:var(--muted);font-weight:600}
+.hero .topic{display:inline-block;margin-top:12px;background:var(--sky);color:var(--blue-dark);
+  font-weight:800;padding:6px 14px;border-radius:999px;font-size:15px}
+.howto{margin-top:14px;background:var(--card);border:1px dashed var(--line);border-radius:18px;
+  padding:12px 16px;font-size:15.5px;color:var(--muted);font-weight:500;box-shadow:var(--shadow)}
+.howto b{color:var(--ink)}
+.decard{background:transparent;margin-top:20px}
+.decard>h2{font-size:23px;color:var(--blue-dark);text-align:center}
+.decard .desub{text-align:center;color:var(--muted);font-weight:600;margin:4px 0 2px;font-size:15px}
+.decard{display:none}
+.decard.active{display:block}
+.depick{display:flex;gap:10px;margin-top:20px}
+.depbtn{flex:1;font-family:'Baloo 2',cursive;font-weight:800;font-size:20px;color:#2563eb;background:#fff;border:2px solid #bfdbfe;border-radius:16px;padding:12px 8px 10px;cursor:pointer;line-height:1.15}
+.depbtn span{display:block;font-family:'Be Vietnam Pro',sans-serif;font-weight:600;font-size:12.5px;color:#64748b;margin-top:3px}
+.depbtn.on{background:#2563eb;color:#fff;border-color:#2563eb;box-shadow:0 8px 20px rgba(37,99,235,.30)}
+.depbtn.on span{color:#dbeafe}
+.qcard{background:var(--card);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);
+  margin-top:14px;padding:16px 16px 15px}
+.qhead{font-family:"Baloo 2",sans-serif;font-weight:800;color:var(--blue-dark);font-size:19px;margin-bottom:5px}
+.qtext{font-size:17px;line-height:1.65;font-weight:500}
+.qbank{margin-top:5px;color:var(--muted);font-weight:700;font-size:16px}
+.quote{white-space:pre-line;font-size:16.5px;line-height:1.7;background:#fbf9f3;border:1px dashed var(--line);
+  border-radius:12px;padding:10px 14px;margin-top:9px}
+.qpic{display:block;width:100%;max-width:440px;margin:11px auto 2px;border-radius:12px;border:1px solid var(--line2)}
+.opts{margin-top:11px;display:grid;gap:8px}
+.opt{display:flex;gap:11px;align-items:flex-start;background:#fff;border:1.8px solid var(--line);
+  border-radius:13px;padding:10px 12px;cursor:pointer;width:100%;text-align:left;
+  font-size:16.5px;line-height:1.55;color:var(--ink);font-family:inherit;transition:border-color .12s,background .12s}
+.opt:active{transform:scale(.99)}
+.oletter{flex:0 0 auto;width:27px;height:27px;border-radius:50%;border:2px solid #b6c6e2;color:var(--blue-dark);
+  font-weight:800;display:flex;align-items:center;justify-content:center;font-size:15px;margin-top:1px;background:#fff}
+.otext{flex:1;white-space:pre-line}
+.opt.on{border-color:var(--blue);background:rgba(37,99,235,.06)}
+.opt.on .oletter{background:var(--blue);color:#fff;border-color:var(--blue)}
+.opt.right{border-color:var(--green);background:rgba(22,163,74,.07)}
+.opt.right .oletter{background:var(--green);border-color:var(--green);color:#fff}
+.opt.wrongpick{border-color:var(--red);background:rgba(220,38,38,.06)}
+.opt.wrongpick .oletter{background:var(--red);border-color:var(--red);color:#fff}
+.poembox{font-size:16.5px;line-height:1.75;margin-top:6px}
+.poembox .pline{margin:2px 0}
+.fill{display:inline-block;border:none;border-bottom:2px solid #9db8e8;background:rgba(37,99,235,.05);
+  border-radius:6px 6px 0 0;text-align:center;font-family:inherit;font-size:16.5px;font-weight:700;
+  color:#1e40af;padding:0 4px;margin:0 2px;outline:none;height:29px;vertical-align:baseline}
+.fill:focus{background:rgba(37,99,235,.13);border-bottom-color:var(--blue)}
+.fill.ok{border-bottom-color:var(--green);background:rgba(22,163,74,.13);color:#14532d}
+.fill.bad{border-bottom-color:var(--red);background:rgba(220,38,38,.11);color:#7f1d1d}
+.orow{display:flex;gap:10px;align-items:flex-start;margin-top:9px;font-size:16.5px;line-height:1.55}
+.orow .fill{flex:0 0 auto;width:46px;height:32px}
+.orow span{flex:1;padding-top:2px}
+.matchwrap{position:relative;margin-top:11px}
+.match{display:grid;grid-template-columns:1fr 1fr;gap:8px 52px;position:relative;z-index:2}
+svg.mlines{position:absolute;inset:0;width:100%;height:100%;z-index:1;pointer-events:none}
+.mcell{background:#eef7f5;border:1.8px solid #cfe5df;border-radius:11px;padding:9px 11px;font-size:16px;
+  line-height:1.45;cursor:pointer;position:relative;text-align:left;width:100%;color:var(--ink);font-family:inherit}
+.mcell.sel{border-color:var(--blue);background:rgba(37,99,235,.10)}
+.mcell .bdg{position:absolute;top:-9px;right:-7px;min-width:21px;height:21px;border-radius:999px;color:#fff;
+  font-size:12.5px;font-weight:800;display:none;align-items:center;justify-content:center;padding:0 5px;
+  box-shadow:0 1px 4px rgba(0,0,0,.25);z-index:4}
+.mcell.hasbdg .bdg{display:flex}
+.submitbar{display:flex;align-items:center;gap:12px;margin-top:18px;flex-wrap:wrap}
+.progress{flex:1;font-weight:700;color:var(--muted);font-size:15.5px;min-width:130px}
+.btnsubmit{background:var(--blue);color:#fff;border:none;border-radius:14px;padding:13px 26px;
+  font-size:18px;font-weight:800;box-shadow:0 4px 14px rgba(37,99,235,.35)}
+.btnsubmit:active{transform:scale(.97)}
+.btnredo{background:#fff;color:var(--blue-dark);border:2px solid var(--blue);border-radius:14px;
+  padding:11px 20px;font-size:16px;font-weight:800;display:none}
+.result{display:none;margin-top:16px;border-radius:16px;padding:18px 16px;text-align:center;border:2px solid}
+.result.pass{background:linear-gradient(135deg,#ecfdf5,#d1fae5);border-color:var(--green)}
+.result.fail{background:linear-gradient(135deg,#fef2f2,#fee2e2);border-color:var(--red)}
+.result .score{font-size:48px;font-weight:800;line-height:1.1;color:var(--blue-dark)}
+.result.pass .score{color:#15803d}.result.fail .score{color:#b91c1c}
+.result .verdict{font-size:21px;font-weight:800;margin-top:2px}
+.result .need{margin-top:6px;font-weight:700;color:#991b1b}
+.review{display:none;margin-top:14px;text-align:left}
+.review h3{font-family:"Baloo 2",sans-serif;color:var(--title);margin:0 0 8px;font-size:18px}
+.review ul{list-style:none;margin:0;padding:0}
+.review li{padding:7px 10px;border-radius:10px;background:#fff;border:1px solid var(--line2);
+  margin-bottom:6px;font-size:15px;line-height:1.45}
+.review li .st{font-weight:800}
+.review li.okk .st{color:var(--green)} .review li.badd .st{color:var(--red)}
+.review li .ans{color:var(--muted);font-weight:600}
+.locked .opt,.locked .mcell{pointer-events:none}
+#fx{position:fixed;inset:0;pointer-events:none;z-index:999;display:none}
+.foot{margin-top:22px;text-align:center;color:var(--muted);font-size:13.5px;font-weight:600}
+
+.opt .opic{display:block;max-width:100%;max-height:200px;margin:2px auto;border-radius:10px}
+.mcell .mimg{display:block;max-width:100%;max-height:100px;margin:0 auto;border-radius:8px}
+.wgrid{margin:12px auto 6px;border-collapse:separate;border-spacing:0;background:#fff;border:4px solid #b91c1c;border-radius:12px}
+.wgrid td{width:54px;height:54px;text-align:center;font-weight:800;font-size:25px;color:#1f2937}
+
+body{background-color:#f7f1de;background-image:radial-gradient(rgba(37,99,235,.10) 1.6px,transparent 1.8px),radial-gradient(rgba(245,158,11,.13) 1.6px,transparent 1.8px);background-size:26px 26px,34px 34px;background-position:0 0,13px 17px}
+.wrap{background:transparent;box-shadow:none}
+.hero{position:relative;overflow:hidden;background:linear-gradient(135deg,#312e81 0%,#2563eb 52%,#0ea5e9 100%);border:none;border-radius:24px;padding:28px 18px 24px;box-shadow:0 16px 34px rgba(37,99,235,.35)}
+.hero::before{content:"";position:absolute;inset:0;background-image:radial-gradient(rgba(255,255,255,.35) 1.6px,transparent 1.9px);background-size:22px 22px;opacity:.45;pointer-events:none}
+.hero .crown{position:relative;display:inline-flex;align-items:center;justify-content:center;width:78px;height:78px;font-size:41px;background:rgba(255,255,255,.16);border:2px solid rgba(255,255,255,.45);border-radius:50%;box-shadow:0 0 0 8px rgba(255,255,255,.08),0 10px 24px rgba(0,0,0,.18);animation:floaty 3s ease-in-out infinite}
+@keyframes floaty{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+.hero h1{position:relative;color:#fff;font-size:29px;text-shadow:0 2px 10px rgba(0,0,0,.25)}
+.hero p{position:relative;color:#dbeafe}
+.hero .topic{position:relative;background:#facc15;color:#713f12;box-shadow:0 6px 14px rgba(0,0,0,.18)}
+.howto{background:#fffbeb;border:2px dashed #f59e0b;color:#78350f}
+.howto b{color:#b45309}
+.desub{width:fit-content;margin:12px auto 2px;background:#eef2ff;color:#3730a3;border-radius:999px;padding:6px 18px;font-weight:800}
+.qcard{border:2px solid #e0e7ff;border-radius:20px;box-shadow:0 12px 26px rgba(37,99,235,.10);padding:18px 16px 16px;position:relative}
+.qcard::before{content:"";position:absolute;top:0;left:18px;right:18px;height:5px;border-radius:0 0 6px 6px;background:linear-gradient(90deg,#2563eb,#0ea5e9,#f59e0b)}
+.qhead{display:inline-block;background:linear-gradient(90deg,#2563eb,#0ea5e9);color:#fff;padding:5px 16px;border-radius:999px;font-size:18px;box-shadow:0 6px 14px rgba(37,99,235,.30);margin-bottom:9px}
+.opt{border:2.2px solid #dbeafe;border-radius:16px;padding:12px 13px;box-shadow:0 3px 0 #dbeafe}
+.opt:active{transform:translateY(2px);box-shadow:0 1px 0 #dbeafe}
+.oletter{background:linear-gradient(135deg,#60a5fa,#2563eb);color:#fff;border:none;width:30px;height:30px;font-size:16px;box-shadow:0 3px 8px rgba(37,99,235,.35)}
+.opt.on{border-color:#2563eb;background:#eff6ff;box-shadow:0 3px 0 #2563eb}
+.opt.right{border-color:#16a34a;background:#f0fdf4;box-shadow:0 3px 0 #16a34a}
+.opt.wrongpick{border-color:#dc2626;background:#fef2f2;box-shadow:0 3px 0 #dc2626}
+.fill{border-bottom:3px solid #2563eb;background:rgba(37,99,235,.08);border-radius:8px 8px 0 0}
+.mcell{background:#fff;border:2.2px solid #99f6e4;border-radius:14px;box-shadow:0 3px 0 #ccfbf1}
+.mcell.sel{border-color:#0d9488;background:#f0fdfa;box-shadow:0 3px 0 #0d9488}
+.submitbar{position:sticky;bottom:10px;background:rgba(255,255,255,.95);border:2px solid #e0e7ff;border-radius:18px;padding:12px 14px;box-shadow:0 14px 30px rgba(31,41,55,.16);z-index:20}
+.progress{color:#3730a3}
+.btnsubmit{background:linear-gradient(135deg,#fbbf24,#f97316);border-radius:999px;padding:14px 30px;font-size:19px;box-shadow:0 10px 22px rgba(249,115,22,.40);text-shadow:0 1px 2px rgba(0,0,0,.15)}
+.btnredo{border-radius:999px}
+.result{border-radius:20px}
+.result .score{font-family:"Baloo 2",sans-serif;font-size:58px;background:linear-gradient(90deg,#2563eb,#0ea5e9);-webkit-background-clip:text;background-clip:text;color:transparent}
+.result.pass .score{background:linear-gradient(90deg,#16a34a,#65a30d);-webkit-background-clip:text;background-clip:text;color:transparent}
+.result.fail .score{background:linear-gradient(90deg,#dc2626,#f97316);-webkit-background-clip:text;background-clip:text;color:transparent}
+.qpic{border:2px solid #e0e7ff;border-radius:16px;box-shadow:0 8px 20px rgba(31,41,55,.10)}
+.quote{background:#fffbeb;border:2px dashed #fcd34d;border-radius:14px}
+.review li.part .st{color:#d97706}
+
+.hero{background:linear-gradient(120deg,#c2410c,#ea580c 45%,#f59e0b 80%,#facc15)!important}
+.secdiv{margin:20px 0 4px;padding:9px 16px;border-radius:12px;color:#fff;font-weight:800;font-size:17px;
+background:linear-gradient(90deg,#2563eb,#06b6d4);box-shadow:0 4px 10px rgba(31,41,55,.15)}
+.secdiv.tl{background:linear-gradient(90deg,#7c3aed,#c026d3)}
+.notecard{opacity:.97}
+.notebadge{font-size:12px;background:#fef3c7;color:#b45309;border:1.5px solid #f59e0b;border-radius:999px;padding:2px 9px;vertical-align:2px}
+details.model{margin-top:10px}
+details.model summary{cursor:pointer;font-weight:700;color:#2563eb}
+.modelbody{margin-top:7px;background:#fffbeb;border:1.5px dashed #f59e0b;border-radius:10px;padding:9px 12px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="hero">
+    <div class="crown">🧮</div>
+    <h1>Toán Lớp 4 · Đề 8</h1>
+    <p>Ôn thi học kì 1 · Môn Toán · Năm học 2026–2027</p>
+    <span class="topic">8 câu tính điểm</span>
+  </div>
+  <div class="howto">📖 <b>Cách làm:</b> Chạm vào <b>đáp án</b> để chọn · <b>Gõ đáp án</b> vào ô trống (viết số liền hoặc cách từng nhóm ba chữ số đều được) · Câu có 📝 là câu tự luyện, bé làm ra vở rồi mở đáp án mẫu để tự kiểm tra · Làm xong thì bấm <b>Nộp bài</b> để xem điểm. Đạt từ <b>90%</b> là xuất sắc!</div>
+  <section class="decard active" id="de-1">
+    <div class="desub">Đề ôn số 8 · 8 câu</div>
+    <div class="secdiv">I. Trắc nghiệm</div>
+<div class="qcard" id="qc-1"><div class="qhead">Câu 1</div><div class="qtext">Số bé nhất trong các số sau là:</div><div class="opts"><button type="button" class="opt" data-de="1" data-q="1" data-opt="0"><span class="oletter">A</span><span class="otext">2 345 678</span></button><button type="button" class="opt" data-de="1" data-q="1" data-opt="1"><span class="oletter">B</span><span class="otext">2 354 678</span></button><button type="button" class="opt" data-de="1" data-q="1" data-opt="2"><span class="oletter">C</span><span class="otext">2 345 687</span></button><button type="button" class="opt" data-de="1" data-q="1" data-opt="3"><span class="oletter">D</span><span class="otext">2 354 687</span></button></div></div>
+<div class="qcard" id="qc-2"><div class="qhead">Câu 2</div><div class="qtext">7 m² =:</div><div class="opts"><button type="button" class="opt" data-de="1" data-q="2" data-opt="0"><span class="oletter">A</span><span class="otext">70 dm²</span></button><button type="button" class="opt" data-de="1" data-q="2" data-opt="1"><span class="oletter">B</span><span class="otext">700 dm²</span></button><button type="button" class="opt" data-de="1" data-q="2" data-opt="2"><span class="oletter">C</span><span class="otext">7 000 dm²</span></button><button type="button" class="opt" data-de="1" data-q="2" data-opt="3"><span class="oletter">D</span><span class="otext">70 000 dm²</span></button></div></div>
+<div class="qcard" id="qc-3"><div class="qhead">Câu 3</div><div class="qtext">Một thế kỉ có:</div><div class="opts"><button type="button" class="opt" data-de="1" data-q="3" data-opt="0"><span class="oletter">A</span><span class="otext">10 năm</span></button><button type="button" class="opt" data-de="1" data-q="3" data-opt="1"><span class="oletter">B</span><span class="otext">50 năm</span></button><button type="button" class="opt" data-de="1" data-q="3" data-opt="2"><span class="oletter">C</span><span class="otext">100 năm</span></button><button type="button" class="opt" data-de="1" data-q="3" data-opt="3"><span class="oletter">D</span><span class="otext">1 000 năm</span></button></div></div>
+<div class="qcard" id="qc-4"><div class="qhead">Câu 4</div><div class="qtext">Hai đường thẳng tạo thành một góc vuông được gọi là:</div><div class="opts"><button type="button" class="opt" data-de="1" data-q="4" data-opt="0"><span class="oletter">A</span><span class="otext">Hai đường thẳng song song</span></button><button type="button" class="opt" data-de="1" data-q="4" data-opt="1"><span class="oletter">B</span><span class="otext">Hai đường thẳng vuông góc</span></button><button type="button" class="opt" data-de="1" data-q="4" data-opt="2"><span class="oletter">C</span><span class="otext">Hai đường thẳng trùng nhau</span></button><button type="button" class="opt" data-de="1" data-q="4" data-opt="3"><span class="oletter">D</span><span class="otext">Hai đường thẳng không cắt nhau</span></button></div></div>
+<div class="secdiv tl">II. Tự luận</div>
+<div class="qcard" id="qc-5"><div class="qhead">Câu 5</div><div class="qtext">Điền số thích hợp:</div><div class="qtext"><div class="pline">a) 3 tấn 25 kg = <input class="fill" style="width:118px" data-de="1" data-q="5" data-bi="0" maxlength="12" autocomplete="off" autocapitalize="off" spellcheck="false"> kg</div><div class="pline">b) 4 m² 25 dm² = <input class="fill" style="width:118px" data-de="1" data-q="5" data-bi="1" maxlength="12" autocomplete="off" autocapitalize="off" spellcheck="false"> dm²</div><div class="pline">c) 3 phút 20 giây = <input class="fill" style="width:118px" data-de="1" data-q="5" data-bi="2" maxlength="12" autocomplete="off" autocapitalize="off" spellcheck="false"> giây</div></div></div>
+<div class="qcard" id="qc-6"><div class="qhead">Câu 6</div><div class="qtext">Tính bằng cách thuận tiện:</div><div class="qtext"><div class="pline">a) 246 + 378 + 754 + 622 = <input class="fill" style="width:118px" data-de="1" data-q="6" data-bi="0" maxlength="12" autocomplete="off" autocapitalize="off" spellcheck="false"></div><div class="pline">b) 5 000 − 1 275 − 725 = <input class="fill" style="width:118px" data-de="1" data-q="6" data-bi="1" maxlength="12" autocomplete="off" autocapitalize="off" spellcheck="false"></div></div></div>
+<div class="qcard" id="qc-7"><div class="qhead">Câu 7</div><div class="qtext">Một kho hàng có 250 000 kg hàng. Lần thứ nhất xuất 65 750 kg, lần thứ hai xuất 82 500 kg. Hỏi kho còn lại bao nhiêu ki-lô-gam hàng?</div><div class="qtext"><div class="pline">Đáp số: <input class="fill" style="width:150px" data-de="1" data-q="7" data-bi="0" maxlength="12" autocomplete="off" autocapitalize="off" spellcheck="false"> kg</div></div></div>
+<div class="qcard" id="qc-8"><div class="qhead">Câu 8</div><div class="qtext">Cho hình thoi có cạnh dài 12 cm. Tính chu vi hình thoi.</div><div class="qtext"><div class="pline">Đáp số: <input class="fill" style="width:150px" data-de="1" data-q="8" data-bi="0" maxlength="12" autocomplete="off" autocapitalize="off" spellcheck="false"> cm</div></div></div>
+    <div class="submitbar"><span class="progress" id="prog-1"></span>
+    <button class="btnsubmit" onclick="submitDe(1)">Nộp bài Đề 8</button>
+    <button class="btnredo" id="redo-1" onclick="redoDe(1)">Làm lại</button></div>
+    <div class="result" id="res-1"><div class="score"></div><div class="verdict"></div><div class="need"></div></div>
+    <div class="review" id="rev-1"><h3>Xem lại đáp án</h3><ul></ul></div>
+  </section>
+  <div class="foot">Toán lớp 4 — Ôn thi học kì 1 · Đề 8 · Chúc bé thi thật tốt! 🌟</div>
+</div>
+<canvas id="fx"></canvas>
+<script>
+const MC_KEYS = {"1": 0, "2": 1, "3": 2, "4": 1};
+const FILL_KEYS = {"5": [["3025", "3 025", "3.025"], ["425"], ["200"]], "6": [["2000", "2 000", "2.000"], ["3000", "3 000", "3.000"]], "7": [["101750", "101 750", "101.750"]], "8": [["48"]]};
+const FILL_MODE = {"5": "word", "6": "word", "7": "word", "8": "word"};
+const MATCH = {};
+const REVIEW = {"1": "Đáp án A: 2 345 678", "2": "Đáp án B: 700 dm²", "3": "Đáp án C: 100 năm", "4": "Đáp án B: Hai đường thẳng vuông góc", "5": "Đáp án: a) 3 025 kg · b) 425 dm² · c) 200 giây", "6": "Đáp án: a) (246 + 754) + (378 + 622) = 2 000 · b) 5 000 − (1 275 + 725) = 3 000", "7": "Đáp án: 250 000 − 65 750 − 82 500 = 101 750 kg", "8": "Đáp án: 12 × 4 = 48 cm"};
+const DE_TOTAL = {"1": 8, "2": 0};
+const DE_QS = {1: [1, 2, 3, 4, 5, 6, 7, 8], 2: []};
+const PALETTE = ['#2563eb','#db2777','#059669','#d97706','#7c3aed','#0891b2'];
+const picks = {};
+const matchState = {};
+const pending = {};
+const submitted = {1:false, 2:false};
+Object.keys(MATCH).forEach(q => { matchState[q] = {}; pending[q] = null; });
+
+const $ = s => document.querySelector(s);
+const $$ = s => Array.from(document.querySelectorAll(s));
+const key2 = (de, q) => de + '-' + q;
+const norm = s => (s || '').trim().toLowerCase().replace(/\s+/g, ' ');
+const strip = s => norm(s).normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'd');
+
+function fillCorrect(inp) {
+  const q = inp.dataset.q, bi = inp.dataset.bi, mode = FILL_MODE[q];
+  const accepts = FILL_KEYS[q][bi], v = inp.value;
+  if (!norm(v)) return false;
+  if (mode === 'punct') return accepts.some(a => norm(v) === a);
+  if (mode === 'num') return norm(v) === accepts[0];
+  return accepts.some(a => norm(v) === norm(a) || strip(v) === strip(a));
+}
+function fillAnswered(inp) { return !!norm(inp.value); }
+
+$$('.opt').forEach(z => z.addEventListener('click', () => {
+  const de = z.dataset.de, q = z.dataset.q;
+  if (submitted[de]) return;
+  picks[key2(de, q)] = +z.dataset.opt;
+  $$(`.opt[data-de="${de}"][data-q="${q}"]`).forEach(o => o.classList.toggle('on', o === z));
+  updateProgress(de);
+}));
+$$('.fill').forEach(inp => inp.addEventListener('input', () => updateProgress(inp.dataset.de)));
+
+/* ---------- Matching with measured lines ---------- */
+function mcell(q, side, row) { return $(`#mw-${q} .mcell[data-side="${side}"][data-row="${row}"]`); }
+function redrawMatch(q) {
+  const wrap = document.getElementById('mw-' + q), svg = document.getElementById('msvg-' + q);
+  if (!wrap || !svg) return;
+  const cfg = MATCH[q];
+  for (let r = 0; r < cfg.rows; r++) ['L', 'R'].forEach(side => {
+    const el = mcell(q, side, r); if (!el) return;
+    el.style.borderColor = ''; el.style.background = ''; el.classList.remove('hasbdg');
+    el.querySelector('.bdg').style.background = '';
+    el.classList.toggle('sel', side === 'L' && pending[q] === r);
+  });
+  svg.setAttribute('viewBox', `0 0 ${wrap.clientWidth} ${wrap.clientHeight}`);
+  svg.innerHTML = '';
+  const wr = wrap.getBoundingClientRect();
+  const pairs = Object.entries(matchState[q]).map(([l, r]) => [+l, r]).sort((a, b) => a[0] - b[0]);
+  pairs.forEach(([l, r], i) => {
+    const color = PALETTE[i % PALETTE.length];
+    const le = mcell(q, 'L', l), re = mcell(q, 'R', r);
+    const lr = le.getBoundingClientRect(), rr = re.getBoundingClientRect();
+    const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    line.setAttribute('x1', lr.right - wr.left); line.setAttribute('y1', lr.top - wr.top + lr.height / 2);
+    line.setAttribute('x2', rr.left - wr.left); line.setAttribute('y2', rr.top - wr.top + rr.height / 2);
+    line.setAttribute('stroke', color); line.setAttribute('stroke-width', 3);
+    line.setAttribute('stroke-linecap', 'round'); line.setAttribute('opacity', '0.65');
+    svg.appendChild(line);
+    [le, re].forEach(el => {
+      el.style.borderColor = color; el.style.background = color + '14';
+      el.classList.add('hasbdg'); const b = el.querySelector('.bdg'); b.textContent = i + 1; b.style.background = color;
+    });
+  });
+}
+function redrawAllMatch() { Object.keys(MATCH).forEach(redrawMatch); }
+window.addEventListener('resize', redrawAllMatch);
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => setTimeout(redrawAllMatch, 30));
+window.addEventListener('load', () => setTimeout(redrawAllMatch, 60));
+
+$$('.mcell').forEach(c => c.addEventListener('click', () => {
+  const de = c.dataset.de, q = c.dataset.q, side = c.dataset.side, row = +c.dataset.row;
+  if (submitted[de]) return;
+  const pairs = matchState[q];
+  if (side === 'L') {
+    if (pairs[row] !== undefined) { delete pairs[row]; pending[q] = null; }
+    else pending[q] = (pending[q] === row) ? null : row;
+  } else {
+    if (pending[q] !== null && pending[q] !== undefined) {
+      const L = pending[q];
+      Object.keys(pairs).forEach(k => { if (pairs[k] === row) delete pairs[k]; });
+      pairs[L] = row; pending[q] = null;
+    } else {
+      Object.keys(pairs).forEach(k => { if (pairs[k] === row) delete pairs[k]; });
+    }
+  }
+  redrawMatch(q); updateProgress(de);
+}));
+
+function countDone(de) {
+  let n = 0;
+  DE_QS[de].forEach(q => {
+    if (MC_KEYS[q] !== undefined) { if (picks[key2(de, q)] !== undefined) n++; }
+    else if (FILL_KEYS[q]) { const inps = $$('.fill[data-de="' + de + '"][data-q="' + q + '"]'); if (inps.length && inps.every(fillAnswered)) n++; }
+    else if (MATCH[q]) { if (Object.keys(matchState[q]).length === MATCH[q].rows) n++; }
+  });
+  return n;
+}
+function updateProgress(de) {
+  const el = document.getElementById('prog-' + de);
+  if (el) el.textContent = `Đã làm ${countDone(de)}/${DE_TOTAL[de]} câu`;
+}
+
+let AC = null;
+function beep(f0, f1, dur, delay) {
+  try {
+    AC = AC || new (window.AudioContext || window.webkitAudioContext)();
+    const t = AC.currentTime + delay, o = AC.createOscillator(), gn = AC.createGain();
+    o.type = 'sine'; o.frequency.setValueAtTime(f0, t);
+    o.frequency.exponentialRampToValueAtTime(Math.max(f1, 1), t + dur);
+    gn.gain.setValueAtTime(0.0001, t); gn.gain.exponentialRampToValueAtTime(0.22, t + 0.02);
+    gn.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    o.connect(gn); gn.connect(AC.destination); o.start(t); o.stop(t + dur + 0.05);
+  } catch (e) {}
+}
+function winSound() { [523, 659, 784, 1046].forEach((f, i) => beep(f, f, 0.28, i * 0.15)); }
+function loseSound() { [280, 200, 150].forEach((f, i) => beep(f, f * 0.8, 0.3, i * 0.25)); }
+function fireworks() {
+  const cv = $('#fx'), ctx = cv.getContext('2d');
+  cv.width = innerWidth; cv.height = innerHeight; cv.style.display = 'block';
+  const cols = ['#f87171','#fb923c','#facc15','#4ade80','#60a5fa','#c084fc'];
+  let parts = [], bursts = 0;
+  const iv = setInterval(() => {
+    const cx = innerWidth * (0.12 + Math.random() * 0.76), cy = innerHeight * (0.08 + Math.random() * 0.35);
+    const col = cols[Math.floor(Math.random() * cols.length)];
+    for (let i = 0; i < 38; i++) {
+      const a = Math.random() * Math.PI * 2, sp = 2 + Math.random() * 4.4;
+      parts.push({ x: cx, y: cy, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, life: 1, decay: 0.011 + Math.random() * 0.012, col });
+    }
+    if (++bursts >= 10) clearInterval(iv);
+  }, 320);
+  (function tick() {
+    ctx.clearRect(0, 0, cv.width, cv.height);
+    parts = parts.filter(p => p.life > 0);
+    parts.forEach(p => {
+      p.x += p.vx; p.y += p.vy; p.vy += 0.1; p.life -= p.decay;
+      ctx.globalAlpha = Math.max(p.life, 0); ctx.fillStyle = p.col;
+      ctx.beginPath(); ctx.arc(p.x, p.y, 3, 0, 7); ctx.fill();
+    });
+    ctx.globalAlpha = 1;
+    if (parts.length || bursts < 10) requestAnimationFrame(tick); else cv.style.display = 'none';
+  })();
+}
+
+const fmtScore = n => { const v = Math.round(n * 10) / 10; return v % 1 === 0 ? String(v) : v.toFixed(1).replace('.', ','); };
+function submitDe(de) {
+  if (submitted[de]) return;
+  submitted[de] = true;
+  document.getElementById('de-' + de).classList.add('locked');
+  let total = 0, right = 0; const qok = {}; const qfrac = {};
+  DE_QS[de].forEach(q => {
+    let items = 0, ok = 0;
+    if (MC_KEYS[q] !== undefined) {
+      items = 1; const pick = picks[key2(de, q)];
+      const isok = pick === MC_KEYS[q]; if (isok) ok = 1;
+      $$(`.opt[data-de="${de}"][data-q="${q}"]`).forEach(z => {
+        if (+z.dataset.opt === MC_KEYS[q]) z.classList.add('right');
+        else if (+z.dataset.opt === pick) z.classList.add('wrongpick');
+        z.classList.remove('on');
+      });
+    } else if (FILL_KEYS[q]) {
+      const inps = $$(`.fill[data-de="${de}"][data-q="${q}"]`).sort((a, b) => a.dataset.bi - b.dataset.bi);
+      items = inps.length;
+      inps.forEach(inp => { const c = fillCorrect(inp); inp.classList.add(c ? 'ok' : 'bad'); inp.disabled = true; if (c) ok++; });
+    } else if (MATCH[q]) {
+      items = MATCH[q].rows;
+      const pairs = matchState[q];
+      for (let l = 0; l < MATCH[q].rows; l++) {
+        const c = pairs[l] === MATCH[q].key[l]; if (c) ok++;
+        if (pairs[l] !== undefined) {
+          const le = mcell(q, 'L', l), re = mcell(q, 'R', pairs[l]);
+          [le, re].forEach(el => { el.style.boxShadow = c ? 'inset 0 0 0 3px #16a34a' : 'inset 0 0 0 3px #dc2626'; });
+        }
+      }
+    }
+    total += 1; right += items ? ok / items : 0; qfrac[q] = [ok, items]; qok[q] = (ok === items);
+  });
+  const pct = Math.round(right / total * 100), pass = (right / total) >= 0.9;
+  const res = document.getElementById('res-' + de);
+  res.className = 'result ' + (pass ? 'pass' : 'fail'); res.style.display = 'block';
+  res.querySelector('.score').textContent = fmtScore(right) + '/' + total;
+  res.querySelector('.verdict').textContent = pass ? '🎉 XUẤT SẮC!' : 'Chưa đạt — làm lại sẽ tốt hơn!';
+  const need = Math.ceil((total * 0.9 - right) * 10) / 10;
+  res.querySelector('.need').textContent = pass ? `Đạt ${pct}% số điểm.` : `Đạt ${pct}%. Cần thêm ${fmtScore(need)} điểm nữa để đạt 90%.`;
+  const ul = document.getElementById('rev-' + de).querySelector('ul'); ul.innerHTML = '';
+  DE_QS[de].forEach(q => {
+    const li = document.createElement('li'); const qf = qfrac[q] || [0, 0]; const part = !qok[q] && qf[0] > 0;
+    li.className = qok[q] ? 'okk' : (part ? 'part' : 'badd');
+    li.innerHTML = `<span class="st">${qok[q] ? '✓ Đúng' : (part ? '◐ Đúng ' + qf[0] + '/' + qf[1] : '✗ Sai')}</span> · Câu ${q} — <span class="ans">${REVIEW[q]}</span>`;
+    ul.appendChild(li);
+  });
+  document.getElementById('rev-' + de).style.display = 'block';
+  document.getElementById('redo-' + de).style.display = 'inline-block';
+  if (pass) { fireworks(); winSound(); navigator.vibrate && navigator.vibrate([80, 40, 80, 40, 150]); }
+  else { loseSound(); navigator.vibrate && navigator.vibrate([200, 80, 200, 80, 300]); }
+  res.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+function redoDe(de) {
+  submitted[de] = false;
+  document.getElementById('de-' + de).classList.remove('locked');
+  $$(`.opt[data-de="${de}"]`).forEach(z => z.classList.remove('on', 'right', 'wrongpick'));
+  Object.keys(picks).forEach(k => { if (k.startsWith(de + '-')) delete picks[k]; });
+  $$('.fill').forEach(i => { if (i.dataset.de == de) { i.value = ''; i.classList.remove('ok', 'bad'); i.disabled = false; } });
+  DE_QS[de].forEach(q => { if (MATCH[q]) { matchState[q] = {}; pending[q] = null; redrawMatch(q); } });
+  $$('.mcell').forEach(c => { if (c.dataset.de == de) c.style.boxShadow = ''; });
+  document.getElementById('res-' + de).style.display = 'none';
+  document.getElementById('rev-' + de).style.display = 'none';
+  document.getElementById('redo-' + de).style.display = 'none';
+  updateProgress(de);
+}
+function showDe(n) {
+  [1, 2].forEach(d => {
+    document.getElementById('de-' + d).classList.toggle('active', d === n);
+    document.getElementById('dbtn-' + d).classList.toggle('on', d === n);
+  });
+  setTimeout(redrawAllMatch, 40);
+  const pk = document.getElementById('depick');
+  if (pk) pk.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+updateProgress(1); updateProgress(2);
+</script>
+</body>
+</html>
