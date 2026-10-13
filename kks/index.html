@@ -103,9 +103,12 @@ function sysGroupsHTML(){
   const groups={'lo':[],'may':[]};
   Object.entries(SYSN).forEach(([s,n])=>{const b=SYSBR[s]||{br:'',sub:0}; const side=b.br.startsWith('2L')?'lo':'may'; groups[side].push({s,n,br:b.br,sub:b.sub})});
   const mk=(arr,RANK)=>arr.sort((a,b)=>(((RANK[a.br]||99)-(RANK[b.br]||99))||(a.sub-b.sub)||(b.n-a.n)));
-  const render=(arr,title)=>{ if(!arr.length) return ''; const tot=arr.reduce((a,x)=>a+x.n,0);
-    return `<div class="grouphead"><b>${title}</b><span>${arr.length} hệ thống · ${tot.toLocaleString('vi-VN')} thiết bị — hệ thống chính xếp trước</span></div><div class="sysgrid">${arr.map(x=>`<button class="chip" onclick="browse(${JSON.stringify(x.s).replace(/"/g,'&quot;')})"><span>${esc(x.s)} · <b>${x.n}</b></span></button>`).join('')}</div>`};
-  return render(mk(groups.lo,RANK_LO),'🏭 PHÍA LÒ HƠI') + render(mk(groups.may,RANK_MAY),'⚙️ PHÍA TUABIN – MÁY PHÁT');
+  const render=(arr,title,cap)=>{ if(!arr.length) return ''; const tot=arr.reduce((a,x)=>a+x.n,0);
+    return `<div class="grouphead"><b>${title}</b><span>${cap||(arr.length+' hệ thống · '+tot.toLocaleString('vi-VN')+' thiết bị — hệ thống chính xếp trước')}</span></div><div class="sysgrid">${arr.map(x=>`<button class="chip" onclick="browse(${JSON.stringify(x.s).replace(/"/g,'&quot;')})"><span>${esc(x.s)} · <b>${x.n}</b></span></button>`).join('')}</div>`};
+  const FAVS=['Hệ thống nghiền than','Quạt gió cấp 1','Quạt gió chính','Quạt khói'];
+  const favArr=FAVS.map(nm=>groups.lo.find(x=>x.s===nm)).filter(Boolean);
+  groups.lo=groups.lo.filter(x=>!FAVS.includes(x.s));
+  return render(favArr,'⭐ HAY DÙNG','4 hệ thống tra cứu thường xuyên nhất — 559 thiết bị') + render(mk(groups.lo,RANK_LO),'🏭 PHÍA LÒ HƠI') + render(mk(groups.may,RANK_MAY),'⚙️ PHÍA TUABIN – MÁY PHÁT');
 }
 function goHome(){view.innerHTML=homeHTML();const q=document.getElementById('q');q.focus();q.addEventListener('keydown',e=>{if(e.key==='Enter')doSearch()});window.scrollTo(0,0)}
 function search(q){
