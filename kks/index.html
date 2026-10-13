@@ -10,7 +10,7 @@ a{color:var(--acc2)}
 .topbar .mark{width:30px;height:30px;flex:none}
 .topbar b{font-size:16px;letter-spacing:.4px}.topbar span{color:var(--mut);font-size:12px}
 .topbar button{margin-left:auto;background:var(--panel);color:var(--txt);border:1px solid var(--line);border-radius:20px;padding:7px 14px;cursor:pointer}
-.home{min-height:78vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:30px 16px;text-align:center}
+.home{display:flex;flex-direction:column;align-items:center;padding:34px 16px 10px;text-align:center}
 .logo{width:92px;height:92px}
 h1.title{font-size:clamp(30px,6vw,52px);margin:10px 0 2px;letter-spacing:1px}
 h1.title .a{color:var(--acc)}
@@ -18,9 +18,14 @@ h1.title .a{color:var(--acc)}
 .searchbox{display:flex;width:min(680px,94vw);background:#fff;border-radius:30px;overflow:hidden;box-shadow:0 8px 30px rgba(0,0,0,.45)}
 .searchbox input{flex:1;border:0;padding:16px 20px;font-size:17px;outline:none;color:#122}
 .searchbox button{background:var(--acc);border:0;color:#fff;font-size:16px;font-weight:700;padding:0 26px;cursor:pointer}
-.chips{margin-top:18px;display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
-.chip{background:var(--panel);border:1px solid var(--line);color:var(--txt);padding:8px 14px;border-radius:18px;cursor:pointer;font-size:13px}
+.syswrap{width:min(920px,94vw);margin:24px auto 0;text-align:left}
+.grouphead{display:flex;align-items:baseline;gap:10px;margin:20px 0 10px;padding:9px 14px;background:linear-gradient(90deg,rgba(255,140,26,.20),rgba(255,140,26,.03));border-left:4px solid var(--acc);border-radius:0 10px 10px 0}
+.grouphead b{font-size:17px;letter-spacing:.6px}
+.grouphead span{color:var(--mut);font-size:12.5px}
+.sysgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.chip{background:var(--panel);border:1px solid var(--line);color:var(--txt);padding:10px 9px;border-radius:12px;cursor:pointer;font-size:12.8px;line-height:1.35;min-height:52px;display:flex;align-items:center;justify-content:center;text-align:center}
 .chip:hover{border-color:var(--acc)}
+.chip b{color:var(--acc2)}
 .hint{margin-top:16px;color:var(--mut);font-size:13px}
 .wrap{max-width:980px;margin:0 auto;padding:18px 14px 60px}
 .reshead{color:var(--mut);margin:6px 0 12px}
@@ -88,8 +93,19 @@ function homeHTML(){
   <h1 class="title">TRA CỨU <span class="a">ĐIỂM ĐO</span></h1>
   <div class="sub">Toàn bộ thiết bị C&amp;I Tổ máy số 2 · Nhà máy Nhiệt điện Quảng Ninh · ${DATA.length.toLocaleString('vi-VN')} thiết bị — ${Object.keys(SYSN).length} hệ thống</div>
   <div class="searchbox"><input id="q" placeholder="Nhập mã KKS, tên điểm đo, model… (vd: 2HLB10DP201)" autocomplete="off"><button onclick="doSearch()">Tra cứu</button></div>
-  <div class="chips">${Object.entries(SYSN).sort((a,b)=>b[1]-a[1]).map(([s,n])=>`<button class="chip" onclick="browse(${JSON.stringify(s).replace(/"/g,'&quot;')})">${esc(s)} · ${n}</button>`).join('')}</div>
+  <div class="syswrap">${sysGroupsHTML()}</div>
   <div class="hint">Gợi ý: thử “Stall”, “rung gối tuabin”, “mức bao hơi”, “nhiệt độ stator”, “EJA110E”, “van giảm ôn”… — bấm Enter để tra cứu. Gõ không dấu cũng tìm được.</div></div>`;
+}
+const SYSBR={}; DATA.forEach(d=>{if(!(d.sys in SYSBR)){const p=String(d.code||'').split('.'); SYSBR[d.sys]={br:p.slice(0,3).join('.'), sub:parseInt(p[3]||'0')||0}}});
+const RANK_LO={'2L.I.2':1,'2L.I.3':2,'2L.I.4':3,'2L.I.15':4,'2L.I.7':5,'2L.I.8':6,'2L.I.1':7,'2L.I.5':8,'2L.I.6':9,'2L.I.9':10,'2L.I.13':11,'2L.I.10':12,'2L.I.11':13,'2L.I.12':14};
+const RANK_MAY={'2T.I.1':1,'2E.I.1':2,'2T.I.2':3,'2T.I.15':4,'2T.I.9':5,'2T.I.10':6,'2T.I.11':7,'2T.I.3':8,'2T.I.4':9,'2T.I.5':10,'2T.I.6':11,'2T.I.7':12,'2T.I.8':13,'2E.I.12':14,'2E.I.13':15,'2T.I.14':16,'2T.I.12':17,'2T.I.13':18,'2T.I.16':19};
+function sysGroupsHTML(){
+  const groups={'lo':[],'may':[]};
+  Object.entries(SYSN).forEach(([s,n])=>{const b=SYSBR[s]||{br:'',sub:0}; const side=b.br.startsWith('2L')?'lo':'may'; groups[side].push({s,n,br:b.br,sub:b.sub})});
+  const mk=(arr,RANK)=>arr.sort((a,b)=>(((RANK[a.br]||99)-(RANK[b.br]||99))||(a.sub-b.sub)||(b.n-a.n)));
+  const render=(arr,title)=>{ if(!arr.length) return ''; const tot=arr.reduce((a,x)=>a+x.n,0);
+    return `<div class="grouphead"><b>${title}</b><span>${arr.length} hệ thống · ${tot.toLocaleString('vi-VN')} thiết bị — hệ thống chính xếp trước</span></div><div class="sysgrid">${arr.map(x=>`<button class="chip" onclick="browse(${JSON.stringify(x.s).replace(/"/g,'&quot;')})"><span>${esc(x.s)} · <b>${x.n}</b></span></button>`).join('')}</div>`};
+  return render(mk(groups.lo,RANK_LO),'🏭 PHÍA LÒ HƠI') + render(mk(groups.may,RANK_MAY),'⚙️ PHÍA TUABIN – MÁY PHÁT');
 }
 function goHome(){view.innerHTML=homeHTML();const q=document.getElementById('q');q.focus();q.addEventListener('keydown',e=>{if(e.key==='Enter')doSearch()});window.scrollTo(0,0)}
 function search(q){
