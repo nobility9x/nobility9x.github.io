@@ -64,7 +64,7 @@ const view=document.getElementById('view');
 function norm(s){return (s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/đ/g,'d')}
 function esc(s){return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;')}
 const SYSN={};
-DATA.forEach(d=>SYSN[d.sys]++);
+DATA.forEach(d=>SYSN[d.sys]=(SYSN[d.sys]||0)+1);
 let lastQuery='', lastList=[];
 function diagram(fam, parts){
   const L={stroke:'#7fb2e5','stroke-width':2,fill:'none'};
