@@ -1,0 +1,562 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="color-scheme" content="light" />
+<link rel="icon" href="data:," />
+<title>IOE Lớp 4 – Practice Test 1 · Section 1 (Bản vẽ lại)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --ink:#22304a; --muted:#5b6472;
+    --blue:#2563eb; --indigo:#4338ca; --cyan:#06b6d4;
+    --green:#16a34a; --red:#dc2626;
+    --brd:#d9e1ee;
+    color-scheme: light;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family:"Be Vietnam Pro",system-ui,sans-serif; color:var(--ink);
+    background:#fdf6e3;
+    background-image: radial-gradient(rgba(37,99,235,.10) 2.2px, transparent 2.3px), radial-gradient(rgba(240,127,19,.10) 2.2px, transparent 2.3px);
+    background-size: 34px 34px, 34px 34px; background-position: 0 0, 17px 17px;
+  }
+  .wrap{max-width:880px;margin:0 auto;padding:0 12px 46px;}
+  /* ---------- HERO ---------- */
+  .hero{
+    margin:0 -12px; padding:20px 14px 18px; text-align:center; color:#fff; position:relative; overflow:hidden;
+    background: linear-gradient(135deg,#3730a3 0%, #2563eb 55%, #06b6d4 100%);
+    border-radius:0 0 26px 26px; box-shadow:0 6px 22px rgba(37,99,235,.35);
+  }
+  .hero-row{display:flex;align-items:center;justify-content:space-between;gap:4px;max-width:760px;margin:0 auto;}
+  .hero-art{flex:0 0 25%;max-width:170px;min-width:84px;}
+  .hero-art svg{width:100%;height:auto;display:block;}
+  .hero-mid{flex:1 1 auto;padding-bottom:2px;}
+  .hero h1{font-family:"Baloo 2",cursive;font-size:clamp(34px,9vw,58px);line-height:.98;margin:0;letter-spacing:.5px;text-shadow:0 3px 0 rgba(30,27,75,.35);}
+  .hero h1 .g4{color:#facc15;}
+  .ribbon{display:inline-block;margin-top:8px;background:#f97316;color:#fff;font-family:"Baloo 2",cursive;font-weight:800;
+    font-size:clamp(15px,4.2vw,21px);letter-spacing:1.5px;padding:3px 18px;border-radius:6px;transform:rotate(-1.2deg);
+    box-shadow:0 3px 0 rgba(124,45,18,.45);}
+  .hero-pill{display:inline-block;margin-top:10px;background:#facc15;color:#713f12;font-weight:800;font-size:clamp(12.5px,3.4vw,15px);
+    padding:5px 16px;border-radius:999px;box-shadow:0 3px 0 rgba(113,63,18,.35);}
+  .hero-sub{margin:9px 0 0;font-size:13.5px;font-weight:600;color:#dbeafe;}
+  @keyframes floaty{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+  .floaty{animation:floaty 3.2s ease-in-out infinite;}
+  .floaty2{animation:floaty 3.8s ease-in-out infinite reverse;}
+  /* ---------- INFO CARD ---------- */
+  .info{
+    margin-top:14px;background:#fff;border:2.2px dashed #7dd3fc;border-radius:18px;padding:12px 14px;
+    display:flex;gap:12px;align-items:stretch;box-shadow:0 4px 14px rgba(34,48,74,.08);
+  }
+  .info-fields{flex:1 1 auto;min-width:0;display:grid;grid-template-columns:1fr 1fr;gap:8px 16px;align-content:center;}
+  .info-fields label{font-weight:700;font-size:14px;display:flex;align-items:center;gap:7px;white-space:nowrap;min-width:0;}
+  .info-fields input{flex:1 1 0;width:0;min-width:0;border:0;border-bottom:2px dotted #94a3b8;background:transparent;
+    font:inherit;font-size:14px;padding:2px 2px;outline:none;color:var(--ink);}
+  .info-fields input:focus{border-bottom-color:var(--blue);}
+  .info-owl{flex:0 0 86px;display:flex;align-items:flex-end;}
+  .info-owl svg{width:100%;height:auto;display:block;}
+  @media (max-width:520px){ .info-fields{grid-template-columns:1fr;} .info-owl{flex-basis:64px;} }
+  /* ---------- INSTRUCTIONS ---------- */
+  .note{
+    margin-top:12px;background:#fef9c3;border:2px solid #fde047;border-radius:16px;padding:10px 14px;
+    display:flex;gap:10px;align-items:center;box-shadow:0 3px 10px rgba(161,98,7,.12);
+  }
+  .note svg{flex:0 0 46px;width:46px;height:auto;}
+  .note p{margin:0;font-size:14.5px;line-height:1.45;}
+  .note b{color:#b91c1c;}
+  /* ---------- PROGRESS BAR ---------- */
+  .bar{position:sticky;top:0;z-index:50;margin:14px -2px 0;padding:8px 2px;background:rgba(253,246,227,.92);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);}
+  .bar-row{display:flex;align-items:center;gap:10px;}
+  .bar .track{flex:1 1 auto;height:14px;background:#e7e5da;border-radius:999px;overflow:hidden;border:1.5px solid #d6d0ba;}
+  .bar .fill{height:100%;width:0%;background:linear-gradient(90deg,#22c55e,#06b6d4);border-radius:999px;transition:width .3s ease;}
+  .bar .cnt{font-weight:800;font-size:14.5px;color:#334155;white-space:nowrap;}
+  .bar .cnt b{color:var(--blue);}
+  /* ---------- GROUP RIBBON ---------- */
+  .group-head{display:flex;align-items:center;gap:10px;margin:26px 2px 12px;}
+  .group-tag{font-family:"Baloo 2",cursive;font-weight:800;color:#fff;font-size:17px;letter-spacing:.6px;
+    padding:5px 16px;border-radius:10px 10px 10px 2px;box-shadow:0 3px 0 rgba(0,0,0,.18);}
+  .group-head .g-sub{font-weight:700;color:var(--muted);font-size:13.5px;}
+  .group-head .g-line{flex:1 1 auto;border-top:3px dotted #cbd5e1;}
+  /* ---------- QUESTION CARD ---------- */
+  .qcard{
+    background:#fff;border:2.2px solid var(--brd);border-radius:20px;padding:14px 14px 12px;margin:0 0 14px;
+    box-shadow:0 4px 14px rgba(34,48,74,.07);
+  }
+  .qtop{display:flex;gap:12px;align-items:flex-start;}
+  .qnum{flex:0 0 auto;font-family:"Baloo 2",cursive;font-weight:800;color:#fff;font-size:15.5px;
+    padding:4px 13px;border-radius:999px;box-shadow:0 3px 0 rgba(0,0,0,.18);margin-top:2px;}
+  .qtext{flex:1 1 auto;font-size:18.5px;font-weight:600;line-height:1.5;margin:2px 0 0;}
+  .qtext .blank{display:inline-block;min-width:74px;border-bottom:3px solid #94a3b8;text-align:center;color:var(--blue);font-weight:800;}
+  .qart{flex:0 0 118px;width:118px;}
+  .qart svg{width:100%;height:auto;display:block;border-radius:14px;}
+  @media (max-width:480px){ .qart{flex-basis:96px;width:96px;} .qtext{font-size:17.5px;} }
+  .opts{display:grid;grid-template-columns:1fr;gap:9px;margin-top:12px;}
+  @media (min-width:600px){ .opts{grid-template-columns:1fr 1fr;} }
+  .opt{
+    display:flex;align-items:center;gap:11px;text-align:left;width:100%;cursor:pointer;
+    font:inherit;font-size:16.5px;font-weight:600;color:var(--ink);
+    background:#fbfcfe;border:2.2px solid #dfe5ee;border-radius:14px;padding:10px 12px;min-height:52px;
+    box-shadow:0 3px 0 #d5dce8;transition:transform .06s ease, box-shadow .06s ease, background .15s, border-color .15s;
+  }
+  .opt:active{transform:translateY(2px);box-shadow:0 1px 0 #d5dce8;}
+  .opt .let{flex:0 0 auto;width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+    font-family:"Baloo 2",cursive;font-weight:800;font-size:17px;color:#fff;background:linear-gradient(135deg,#6366f1,#06b6d4);box-shadow:inset 0 -3px 0 rgba(0,0,0,.18);}
+  .opt.sel{border-color:#6366f1;background:#eef2ff;}
+  .opt.ok{border-color:var(--green);background:#f0fdf4;box-shadow:0 3px 0 #86c79b, 0 0 10px 3px rgba(22,163,74,.30);}
+  .opt.ok .let{background:linear-gradient(135deg,#16a34a,#22c55e);}
+  .opt.bad{border-color:var(--red);background:#fef2f2;box-shadow:0 3px 0 #e5a3a3, 0 0 10px 3px rgba(220,38,38,.25);animation:softBlink .5s ease 3;}
+  @keyframes softBlink{0%,100%{opacity:1}50%{opacity:.65}}
+  .locked .opt{pointer-events:none;}
+  .fb{display:none;margin-top:11px;border-radius:12px;padding:9px 12px;font-weight:700;font-size:15px;line-height:1.45;}
+  .fb.show{display:block;}
+  .fb.ok{background:#ecfdf5;border:1.5px solid #a7f3d0;color:#065f46;}
+  .fb.bad{background:#fef2f2;border:1.5px solid #fecaca;color:#991b1b;}
+  /* ---------- SCORE / ACTIONS ---------- */
+  .score-banner{display:none;border-radius:18px;padding:18px 14px;margin:18px 0 6px;font-weight:800;text-align:center;}
+  .score-banner.show{display:block;}
+  .score-banner.pass{background:linear-gradient(135deg,#ecfdf5,#d1fae5);color:#146c39;border:2.2px solid var(--green);}
+  .score-banner.fail{background:linear-gradient(135deg,#fef2f2,#fee2e2);color:#991b1b;border:2.2px solid var(--red);}
+  .score-banner .big-score{display:block;font-family:"Baloo 2",cursive;font-weight:800;font-size:48px;line-height:1.05;margin:4px 0;}
+  .score-banner .result-title{display:block;font-size:22px;font-weight:800;}
+  .score-banner .subline{display:block;font-size:15px;font-weight:700;opacity:.96;margin-top:2px;}
+  .actions{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:20px;}
+  .btn{font:inherit;font-family:"Baloo 2",cursive;font-weight:800;border:0;border-radius:999px;padding:13px 28px;cursor:pointer;font-size:18px;letter-spacing:.3px;}
+  .btn:active{transform:translateY(2px);}
+  .btn-submit{background:linear-gradient(135deg,#f97316,#facc15);color:#431407;box-shadow:0 4px 0 #b45309;font-size:20px;padding:14px 36px;}
+  .btn-submit:active{box-shadow:0 1px 0 #b45309;}
+  .btn-retry{background:linear-gradient(135deg,#2563eb,#06b6d4);color:#fff;box-shadow:0 4px 0 #1e40af;}
+  .btn-retry:active{box-shadow:0 1px 0 #1e40af;}
+  .review{margin-top:14px;}
+  .review h3{font-family:"Baloo 2",cursive;font-size:19px;margin:0 0 8px;color:#334155;}
+  .rev-item{border-radius:12px;padding:9px 12px;margin:0 0 8px;font-size:14.5px;font-weight:600;line-height:1.5;background:#fff;}
+  .rev-item.ok{border:2px solid #86efac;}
+  .rev-item.bad{border:2px solid #fca5a5;}
+  .foot{text-align:center;margin-top:26px;font-family:"Baloo 2",cursive;font-weight:800;font-size:17px;color:#1d4ed8;}
+  .foot .star{color:#f59e0b;}
+  #fwCanvas{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:999;display:none;}
+  @media (prefers-reduced-motion: reduce){ .opt.bad{animation:none !important} .floaty,.floaty2{animation:none !important} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- HERO (vẽ lại toàn bộ bằng SVG, không dùng ảnh quét) -->
+  <header class="hero">
+    <div class="hero-row">
+      <div class="hero-art floaty" id="heroBoy"></div>
+      <div class="hero-mid">
+        <h1>IOE GRADE <span class="g4">4</span></h1>
+        <span class="ribbon">PRACTICE TEST 1</span><br />
+        <span class="hero-pill">⭐ SECTION 1 · FIND THE CORRECT WORD · 15 CÂU ⭐</span>
+      </div>
+      <div class="hero-art floaty2" id="heroGirl"></div>
+    </div>
+    <p class="hero-sub">Bản vẽ lại thử nghiệm — chữ thật dễ đọc, hình vẽ lại đầy màu sắc. Chọn đáp án đúng nhất cho mỗi câu nhé!</p>
+  </header>
+
+  <!-- INFO -->
+  <section class="info" aria-label="Thông tin học sinh">
+    <div class="info-fields">
+      <label>👤 Name: <input type="text" autocomplete="off" /></label>
+      <label>🕐 Time: <input type="text" autocomplete="off" placeholder="minutes" /></label>
+      <label>🏫 Class: <input type="text" autocomplete="off" /></label>
+      <label>⭐ Score: <input type="text" id="scoreField" readonly placeholder="… / 15" /></label>
+      <label>📅 Date: <input type="text" autocomplete="off" /></label>
+      <label>👩‍🏫 Teacher: <input type="text" autocomplete="off" /></label>
+    </div>
+    <div class="info-owl" id="owlArt"></div>
+  </section>
+
+  <!-- INSTRUCTIONS -->
+  <section class="note">
+    <span id="megaArt"></span>
+    <p><b>Instructions:</b> Read each item carefully. Choose only one clear answer for each question. Chạm vào một đáp án — đúng/sai sẽ hiện ngay bên dưới câu hỏi.</p>
+  </section>
+
+  <!-- PROGRESS -->
+  <div class="bar"><div class="bar-row">
+    <span class="cnt">Đã làm <b id="doneCnt">0</b>/15</span>
+    <div class="track"><div class="fill" id="progFill"></div></div>
+    <span class="cnt" id="liveScore"></span>
+  </div></div>
+
+  <div id="scoreBanner" class="score-banner"></div>
+
+  <!-- QUESTIONS (JS dựng từ dữ liệu) -->
+  <main id="quiz"></main>
+
+  <div class="actions">
+    <button class="btn btn-submit" id="btnSubmit">✔ NỘP BÀI</button>
+    <button class="btn btn-retry" id="btnRetry">↻ Làm lại</button>
+  </div>
+
+  <section class="review hidden" id="review" style="display:none;">
+    <h3>📋 Xem lại bài làm</h3>
+    <div id="reviewList"></div>
+  </section>
+
+  <p class="foot"><span class="star">★</span> Believe in yourself – You can do it! <span class="star">★</span></p>
+</div>
+<canvas id="fwCanvas"></canvas>
+<script>
+"use strict";
+/* ================= ART: toàn bộ hình vẽ lại bằng SVG ================= */
+function S(inner, vb){ return '<svg viewBox="' + (vb||'0 0 120 90') + '" xmlns="http://www.w3.org/2000/svg" role="img" aria-hidden="true">' + inner + '</svg>'; }
+function scene(bg){ return '<rect x="1" y="1" width="118" height="88" rx="12" fill="' + bg + '"/>'; }
+var ART = {
+heroBoy: S(
+  '<circle cx="88" cy="10" r="5" fill="#facc15"/><path d="M88 0v3M88 17v3M78 10h3M95 10h3M81 3l2 2M95 3l-2 2" stroke="#facc15" stroke-width="2" stroke-linecap="round"/>'
+  + '<path d="M14 26 q-6 -14 4 -18 l6 10 q-6 2 -6 8 z" fill="#f59e0b"/>' /* trophy cup left */
+  + '<path d="M6 8 h16 l-2 12 a6 6 0 0 1 -12 0 z" fill="#fbbf24" stroke="#d97706" stroke-width="1.6"/>'
+  + '<rect x="12" y="24" width="4" height="5" fill="#d97706"/><rect x="7" y="29" width="14" height="3.4" rx="1.6" fill="#b45309"/>'
+  + '<text x="14" y="18" text-anchor="middle" font-size="6.4" font-weight="800" fill="#92400e" font-family="Baloo 2">IOE</text>'
+  + '<circle cx="58" cy="26" r="15" fill="#ffcf9e"/>' /* face */
+  + '<path d="M43 24 a15 13 0 0 1 30 -2 q-8 -7 -15 -6 q-9 -1 -15 8z" fill="#7c4a21"/>' /* hair */
+  + '<circle cx="52" cy="27" r="1.9" fill="#22304a"/><circle cx="64" cy="27" r="1.9" fill="#22304a"/>'
+  + '<path d="M52 34 q6 5 12 0" stroke="#b45309" stroke-width="2" fill="none" stroke-linecap="round"/>'
+  + '<circle cx="46" cy="32" r="2.6" fill="#fda4af" opacity=".8"/><circle cx="70" cy="32" r="2.6" fill="#fda4af" opacity=".8"/>'
+  + '<path d="M40 84 v-24 a18 12 0 0 1 36 0 v24 z" fill="#22c55e"/>' /* shirt */
+  + '<path d="M40 60 q18 9 36 0 v6 q-18 8 -36 0z" fill="#16a34a"/>'
+  + '<path d="M74 58 q12 -6 13 -20" stroke="#ffcf9e" stroke-width="7" fill="none" stroke-linecap="round"/>' /* arm up */
+  + '<path d="M42 60 q-10 2 -14 -6" stroke="#ffcf9e" stroke-width="7" fill="none" stroke-linecap="round"/>'
+  , '0 0 100 86'),
+heroGirl: S(
+  '<circle cx="60" cy="23" r="15" fill="#ffd9b3"/>'
+  + '<path d="M45 22 a15 14 0 0 1 30 0 l0 -3 a15 11 0 0 0 -30 0z" fill="#c2410c"/>'
+  + '<circle cx="60" cy="7" r="5.4" fill="#c2410c"/>' /* bun */
+  + '<path d="M66 4 l9 -4 l-1 8 l8 3 l-9 3 l-3 -7z" fill="#facc15"/>' /* bow */
+  + '<circle cx="54" cy="24" r="1.9" fill="#22304a"/><circle cx="66" cy="24" r="1.9" fill="#22304a"/>'
+  + '<path d="M54 31 q6 5 12 0" stroke="#b45309" stroke-width="2" fill="none" stroke-linecap="round"/>'
+  + '<circle cx="48" cy="29" r="2.6" fill="#fda4af" opacity=".85"/><circle cx="72" cy="29" r="2.6" fill="#fda4af" opacity=".85"/>'
+  + '<path d="M42 86 v-22 a18 12 0 0 1 36 0 v22z" fill="#f472b6"/>'
+  + '<path d="M74 62 q10 6 8 14" stroke="#ffd9b3" stroke-width="7" fill="none" stroke-linecap="round"/>'
+  + '<rect x="76" y="70" width="4" height="14" rx="2" transform="rotate(24 78 77)" fill="#facc15"/>' /* pencil */
+  + '<path d="M84 82 l3 6 l-5 -2z" fill="#f59e0b"/>'
+  + '<g><rect x="18" y="76" width="42" height="8" rx="2" fill="#2563eb"/><rect x="22" y="68" width="38" height="8" rx="2" fill="#dc2626"/><rect x="26" y="60" width="34" height="8" rx="2" fill="#16a34a"/></g>' /* books */
+  , '0 0 100 88'),
+owl: S(
+  '<ellipse cx="43" cy="52" rx="24" ry="28" fill="#92400e"/>'
+  + '<ellipse cx="43" cy="58" rx="16" ry="19" fill="#fde68a"/>'
+  + '<circle cx="35" cy="42" r="8.4" fill="#fff"/><circle cx="51" cy="42" r="8.4" fill="#fff"/>'
+  + '<circle cx="35" cy="42" r="4" fill="#22304a"/><circle cx="51" cy="42" r="4" fill="#22304a"/>'
+  + '<circle cx="36.4" cy="40.4" r="1.4" fill="#fff"/><circle cx="52.4" cy="40.4" r="1.4" fill="#fff"/>'
+  + '<path d="M39 50 h8 l-4 5z" fill="#f59e0b"/>'
+  + '<path d="M22 30 l21 -8 l21 8 l-21 6z" fill="#1f2937"/>' /* grad cap */
+  + '<rect x="41" y="18" width="4" height="6" fill="#1f2937"/><path d="M64 30 v10" stroke="#facc15" stroke-width="2.6"/><circle cx="64" cy="42" r="2.6" fill="#facc15"/>'
+  + '<rect x="56" y="56" width="24" height="18" rx="2.6" transform="rotate(-8 68 65)" fill="#16a34a" stroke="#14532d" stroke-width="1.6"/>'
+  + '<path d="M61 60 l14 10 M75 60 l-14 10" stroke="#bbf7d0" stroke-width="1.6"/>'
+  + '<path d="M20 78 h14 M52 78 h14" stroke="#b45309" stroke-width="3.4" stroke-linecap="round"/>'
+  , '0 0 86 84'),
+mega: S(
+  '<path d="M8 34 l30 -14 v36 l-30 -14z" fill="#dc2626"/><path d="M38 20 q14 6 14 18 q0 12 -14 18z" fill="#991b1b"/>'
+  + '<rect x="10" y="42" width="7" height="14" rx="3" fill="#374151"/>'
+  + '<path d="M60 26 q8 12 0 24 M68 20 q11 18 0 36" stroke="#f59e0b" stroke-width="3.4" fill="none" stroke-linecap="round"/>'
+  , '0 0 76 76'),
+camera: S( scene('#e0f2fe')
+  + '<rect x="58" y="10" width="50" height="30" rx="8" fill="#bae6fd"/><circle cx="98" cy="16" r="6" fill="#fde047"/>'
+  + '<rect x="14" y="30" width="92" height="46" rx="10" fill="#374151"/>'
+  + '<rect x="14" y="30" width="92" height="12" rx="6" fill="#4b5563"/>'
+  + '<rect x="26" y="22" width="16" height="10" rx="3" fill="#1f2937"/><rect x="66" y="24" width="20" height="8" rx="3" fill="#1f2937"/>'
+  + '<circle cx="60" cy="54" r="19" fill="#111827"/><circle cx="60" cy="54" r="14.5" fill="#1e40af"/><circle cx="60" cy="54" r="9.5" fill="#38bdf8"/><circle cx="60" cy="54" r="5" fill="#172554"/>'
+  + '<circle cx="56" cy="49" r="3" fill="#fff" opacity=".9"/>'
+  + '<rect x="20" y="48" width="9" height="7" rx="2" fill="#facc15"/><circle cx="95" cy="37" r="3" fill="#ef4444"/>'
+  + '<path d="M22 82 h76" stroke="#86c06c" stroke-width="4" stroke-linecap="round"/><path d="M30 80 l3 -5 M48 80 l3 -5 M84 80 l3 -5" stroke="#4d7c0f" stroke-width="2.4" stroke-linecap="round"/>'),
+hanoi: S( scene('#fef9c3')
+  + '<rect x="10" y="66" width="100" height="10" rx="4" fill="#86c06c"/>'
+  + '<g><rect x="24" y="46" width="34" height="6" fill="#b45309"/><path d="M18 46 h46 l-6 -8 h-34z" fill="#dc2626"/><rect x="36" y="52" width="10" height="14" fill="#f59e0b"/><path d="M28 38 h26 l-4 -6 h-18z" fill="#991b1b"/><rect x="39" y="26" width="4" height="6" fill="#b45309"/></g>' /* pagoda */
+  + '<rect x="82" y="12" width="3.4" height="56" fill="#78716c"/>'
+  + '<path d="M85 13 h26 v15 h-26z" fill="#dc2626"/><path d="M98 17.2 l1.7 3.4 3.7.4 -2.8 2.5.8 3.6 -3.4 -2 -3.4 2 .8 -3.6 -2.8 -2.5 3.7 -.4z" fill="#facc15"/>'),
+britain: S( scene('#dbeafe')
+  + '<rect x="18" y="14" width="3.4" height="60" fill="#78716c"/><circle cx="19.7" cy="12" r="3.4" fill="#f59e0b"/>'
+  + '<path d="M21 16 q22 -7 44 0 v30 q-22 7 -44 0z" fill="#1e40af"/>'
+  + '<path d="M21 16 l44 30 M65 16 l-44 30" stroke="#fff" stroke-width="6"/>'
+  + '<path d="M21 16 l44 30 M65 16 l-44 30" stroke="#dc2626" stroke-width="2.2"/>'
+  + '<path d="M38 13 v36 M19 31 h48" stroke="#fff" stroke-width="10"/><path d="M38 13 v36 M19 31 h48" stroke="#dc2626" stroke-width="5.6"/>'
+  + '<path d="M92 22 l2 4 4 .5 -3 3 .7 4 -3.7 -2 -3.7 2 .7 -4 -3 -3 4 -.5z" fill="#facc15"/><path d="M100 52 l1.6 3.2 3.4.4 -2.5 2.4.6 3.4 -3.1 -1.7 -3.1 1.7.6 -3.4 -2.5 -2.4 3.4 -.4z" fill="#f472b6"/>'),
+umbrella: S( scene('#e0f2fe')
+  + '<g stroke="#38bdf8" stroke-width="3" stroke-linecap="round"><path d="M14 8 v8 M30 4 v8 M104 6 v8 M90 2 v8"/></g>'
+  + '<path d="M14 44 a38 26 0 0 1 76 0 q-9.5 7 -19 0 q-9.5 7 -19 0 q-9.5 7 -19 0 q-9.5 7 -19 0z" fill="#facc15" stroke="#d97706" stroke-width="2"/>'
+  + '<path d="M52 20 v34" stroke="#92400e" stroke-width="3.6"/><path d="M52 54 v12 a7 7 0 0 1 -14 0" stroke="#92400e" stroke-width="3.6" fill="none" stroke-linecap="round"/>'
+  + '<circle cx="44" cy="36" r="1.8" fill="#92400e"/><circle cx="60" cy="36" r="1.8" fill="#92400e"/><path d="M45 41 q7 4 14 0" stroke="#92400e" stroke-width="2" fill="none" stroke-linecap="round"/>'
+  + '<ellipse cx="52" cy="82" rx="34" ry="4.6" fill="#7dd3fc"/>'),
+book: S( scene('#fef3c7')
+  + '<path d="M60 24 q-18 -9 -38 -4 v48 q20 -5 38 4 q18 -9 38 -4 v-48 q-20 -5 -38 4z" fill="#fff7ed" stroke="#2563eb" stroke-width="3"/>'
+  + '<path d="M60 24 v48" stroke="#2563eb" stroke-width="2.4"/>'
+  + '<g stroke="#94a3b8" stroke-width="2.2" stroke-linecap="round"><path d="M29 32 h22 M29 41 h22 M29 50 h22 M69 32 h22 M69 41 h22 M69 50 h22"/></g>'
+  + '<path d="M84 20 v16 l-5 -4 -5 4 v-16z" fill="#dc2626"/>'
+  + '<rect x="88" y="58" width="5" height="24" rx="2.4" transform="rotate(28 90 70)" fill="#facc15"/><path d="M97 78 l4 7 l-7 -2z" fill="#f59e0b"/>'),
+schoolbag: S( scene('#dcfce7')
+  + '<rect x="58" y="8" width="9" height="20" rx="3" fill="#dc2626"/><rect x="68" y="6" width="9" height="22" rx="3" fill="#16a34a"/>'
+  + '<path d="M30 34 a30 16 0 0 1 60 0 v34 a12 12 0 0 1 -12 12 h-36 a12 12 0 0 1 -12 -12z" fill="#2563eb"/>'
+  + '<path d="M30 40 a30 14 0 0 1 60 0 v6 h-60z" fill="#1d4ed8"/>'
+  + '<rect x="42" y="52" width="36" height="24" rx="8" fill="#38bdf8" stroke="#1d4ed8" stroke-width="2"/>'
+  + '<path d="M60 57 l2.2 4.4 4.9.7 -3.5 3.5.8 4.9 -4.4 -2.3 -4.4 2.3.8 -4.9 -3.5 -3.5 4.9 -.7z" fill="#fff"/>'
+  + '<path d="M50 26 a10 8 0 0 1 20 0" stroke="#1e3a8a" stroke-width="4" fill="none"/>'),
+grandparents: S( scene('#ffe4e6')
+  + '<path d="M60 8 l3.4 6 6.6 1 -4.8 4.6 1.2 6.6 -6.4 -3.4 -6.4 3.4 1.2 -6.6 -4.8 -4.6 6.6 -1z" fill="#ef4444" transform="translate(0,-2) scale(.9) translate(7,0)"/>' /* heart-ish star -> heart below */
+  + '<path d="M60 14 c-3 -6 -14 -4 -14 3 c0 6 8 9 14 14 c6 -5 14 -8 14 -14 c0 -7 -11 -9 -14 -3z" fill="#f43f5e"/>'
+  + '<circle cx="30" cy="52" r="14" fill="#ffcf9e"/><circle cx="90" cy="52" r="14" fill="#ffd9b3"/><circle cx="60" cy="58" r="13" fill="#ffcf9e"/>'
+  + '<path d="M16 50 a14 12 0 0 1 28 0 q-14 -8 -28 0z" fill="#d6d3d1"/><path d="M76 50 a14 12 0 0 1 28 0 q-3 -10 -10 -11 a12 10 0 0 0 -18 11z" fill="#e7e5e4"/>'
+  + '<circle cx="88" cy="39" r="5" fill="#e7e5e4"/>' /* grandma bun */
+  + '<g fill="none" stroke="#374151" stroke-width="1.8"><circle cx="25" cy="53" r="4.4"/><circle cx="36" cy="53" r="4.4"/><circle cx="85" cy="53" r="4.4"/><circle cx="96" cy="53" r="4.4"/></g>'
+  + '<circle cx="55" cy="58" r="1.7" fill="#22304a"/><circle cx="65" cy="58" r="1.7" fill="#22304a"/><path d="M55 64 q5 4 10 0" stroke="#b45309" stroke-width="1.8" fill="none" stroke-linecap="round"/>'
+  + '<path d="M47 52 a13 11 0 0 1 26 0 q-13 -7 -26 0z" fill="#7c4a21"/>'
+  + '<path d="M14 88 v-8 a16 10 0 0 1 32 0 v8z" fill="#0ea5e9"/><path d="M74 88 v-8 a16 10 0 0 1 32 0 v8z" fill="#a855f7"/><path d="M44 88 v-6 a16 10 0 0 1 32 0 v6z" fill="#f97316"/>'),
+cards: S( scene('#fef3c7')
+  + '<circle cx="30" cy="34" r="12" fill="#ffcf9e"/><circle cx="90" cy="34" r="12" fill="#ffd9b3"/>'
+  + '<path d="M18 32 a12 10 0 0 1 24 0 q-12 -6 -24 0z" fill="#7c4a21"/><path d="M78 32 a12 10 0 0 1 24 0 q-4 -8 -9 -9 a11 9 0 0 0 -15 9z" fill="#c2410c"/>'
+  + '<circle cx="26" cy="35" r="1.6" fill="#22304a"/><circle cx="34" cy="35" r="1.6" fill="#22304a"/><circle cx="86" cy="35" r="1.6" fill="#22304a"/><circle cx="94" cy="35" r="1.6" fill="#22304a"/>'
+  + '<rect x="14" y="58" width="92" height="24" rx="9" fill="#b45309"/><rect x="14" y="58" width="92" height="8" rx="4" fill="#d97706"/>'
+  + '<g><rect x="38" y="62" width="14" height="18" rx="2" transform="rotate(-8 45 71)" fill="#fff" stroke="#cbd5e1"/><text x="45" y="75" text-anchor="middle" font-size="10" fill="#dc2626">♥</text></g>'
+  + '<g><rect x="58" y="62" width="14" height="18" rx="2" transform="rotate(6 65 71)" fill="#fff" stroke="#cbd5e1"/><text x="65" y="75" text-anchor="middle" font-size="10" fill="#2563eb">★</text></g>'
+  + '<rect x="22" y="64" width="11" height="15" rx="2" transform="rotate(-16 27 71)" fill="#fff" stroke="#cbd5e1"/><rect x="86" y="64" width="11" height="15" rx="2" transform="rotate(16 91 71)" fill="#fff" stroke="#cbd5e1"/>'),
+doctor: S( scene('#ecfeff')
+  + '<rect x="8" y="22" width="42" height="56" rx="4" fill="#f8fafc" stroke="#94a3b8" stroke-width="2"/>'
+  + '<rect x="21" y="8" width="16" height="16" rx="3" fill="#fff" stroke="#94a3b8" stroke-width="2"/><path d="M29 11 v10 M24 16 h10" stroke="#dc2626" stroke-width="3.4"/>'
+  + '<rect x="24" y="58" width="10" height="20" fill="#38bdf8"/><rect x="14" y="34" width="9" height="9" fill="#bae6fd"/><rect x="35" y="34" width="9" height="9" fill="#bae6fd"/>'
+  + '<circle cx="82" cy="34" r="14" fill="#ffd9b3"/>'
+  + '<path d="M68 32 a14 12 0 0 1 28 0 q-14 -7 -28 0z" fill="#1f2937"/>'
+  + '<circle cx="77" cy="35" r="1.7" fill="#22304a"/><circle cx="87" cy="35" r="1.7" fill="#22304a"/><path d="M77 42 q5 4 10 0" stroke="#b45309" stroke-width="1.8" fill="none" stroke-linecap="round"/>'
+  + '<path d="M62 84 v-22 a20 12 0 0 1 40 0 v22z" fill="#fff" stroke="#cbd5e1" stroke-width="2"/>'
+  + '<path d="M82 62 v14 M75 69 h14" stroke="#dc2626" stroke-width="3.6"/>'
+  + '<path d="M68 66 q-4 12 6 14 M96 66 q4 12 -6 14" stroke="#374151" stroke-width="2.6" fill="none"/><circle cx="74" cy="81" r="3.4" fill="#374151"/><circle cx="90" cy="81" r="3.4" fill="#374151"/>'),
+shops: S( scene('#f0f9ff')
+  + '<rect x="4" y="34" width="36" height="44" fill="#bbf7d0"/><rect x="42" y="28" width="38" height="50" fill="#bfdbfe"/><rect x="82" y="34" width="34" height="44" fill="#fed7aa"/>'
+  + '<path d="M2 34 h40 l-4 -10 h-32z" fill="#16a34a"/><path d="M40 28 h42 l-4 -11 h-34z" fill="#2563eb"/><path d="M80 34 h38 l-4 -10 h-30z" fill="#ea580c"/>'
+  + '<text x="21" y="31" text-anchor="middle" font-size="6.2" font-weight="800" fill="#fff">PET SHOP</text>'
+  + '<text x="61" y="24.6" text-anchor="middle" font-size="6.2" font-weight="800" fill="#fff">SPORTS</text>'
+  + '<text x="99" y="31" text-anchor="middle" font-size="6.2" font-weight="800" fill="#fff">BAKERY</text>'
+  + '<circle cx="61" cy="56" r="11" fill="#fff" stroke="#1f2937" stroke-width="1.6"/><path d="M54 49 a11 11 0 0 1 8 3 l-4 5 -6 -1z M68 51 a11 11 0 0 1 -2 10 l-6 -3 3 -6z M56 64 a11 11 0 0 1 -5 -7 l6 1 3 5z" fill="#1f2937"/>'
+  + '<ellipse cx="21" cy="58" rx="8" ry="6.4" fill="#b45309"/><circle cx="14" cy="50" r="3" fill="#b45309"/><circle cx="21" cy="48" r="3.2" fill="#b45309"/><circle cx="28" cy="50" r="3" fill="#b45309"/><circle cx="17" cy="56" r="1.6" fill="#451a03"/><circle cx="25" cy="56" r="1.6" fill="#451a03"/>'
+  + '<path d="M90 62 a9 7 0 0 1 18 0z" fill="#f59e0b"/><path d="M93 55 l4 5 M99 54 l4 6 M105 55 l3 5" stroke="#b45309" stroke-width="1.8"/>'
+  + '<rect x="12" y="66" width="18" height="12" fill="#38bdf8"/><rect x="52" y="70" width="18" height="8" fill="#64748b"/><rect x="90" y="66" width="18" height="12" fill="#fbbf24"/>'
+  + '<path d="M2 80 h114" stroke="#86c06c" stroke-width="4" stroke-linecap="round"/>'),
+campsite: S( scene('#dcfce7')
+  + '<circle cx="100" cy="14" r="8" fill="#fde047"/>'
+  + '<path d="M6 62 l10 -26 l10 26z" fill="#15803d"/><path d="M94 62 l9 -22 l9 22z" fill="#16a34a"/><rect x="14" y="60" width="4" height="9" fill="#92400e"/><rect x="101" y="58" width="4" height="9" fill="#92400e"/>'
+  + '<path d="M28 72 l26 -34 l26 34z" fill="#f97316"/><path d="M41 72 l13 -18 l13 18z" fill="#7c2d12"/><path d="M28 72 l26 -34 l4 5 -24 29z" fill="#fb923c"/>'
+  + '<g><rect x="82" y="66" width="16" height="4" rx="2" transform="rotate(18 90 68)" fill="#92400e"/><rect x="82" y="66" width="16" height="4" rx="2" transform="rotate(-18 90 68)" fill="#78350f"/>'
+  + '<path d="M90 52 q7 9 0 16 q-7 -7 0 -16z" fill="#f97316"/><path d="M90 58 q4 5 0 9 q-4 -4 0 -9z" fill="#facc15"/></g>'
+  + '<circle cx="24" cy="67" r="7" fill="#ffcf9e"/><path d="M17 66 a7 6 0 0 1 14 0 q-7 -3.4 -14 0z" fill="#7c4a21"/><circle cx="21.6" cy="68" r="1.1" fill="#22304a"/><circle cx="26.4" cy="68" r="1.1" fill="#22304a"/>'
+  + '<circle cx="70" cy="69" r="6.4" fill="#ffd9b3"/><path d="M63.6 68 a6.4 5.6 0 0 1 12.8 0 q-6.4 -3 -12.8 0z" fill="#c2410c"/><circle cx="67.8" cy="70" r="1" fill="#22304a"/><circle cx="72.2" cy="70" r="1" fill="#22304a"/>'
+  + '<path d="M4 80 h112" stroke="#4d7c0f" stroke-width="4" stroke-linecap="round"/>'),
+giraffe: S( scene('#fef9c3')
+  + '<circle cx="14" cy="12" r="7" fill="#fde047"/>'
+  + '<path d="M84 66 a16 12 0 0 1 30 0 v14 h-30z" fill="#16a34a"/><rect x="97" y="76" width="4" height="8" fill="#92400e"/>'
+  + '<path d="M30 84 q30 -10 60 0 v6 h-60z" fill="#7dd3fc"/><path d="M38 86 q6 -3 12 0 q6 3 12 0 q6 -3 12 0" stroke="#0284c7" stroke-width="2" fill="none"/>'
+  + '<path d="M40 78 v-16 q0 -6 6 -6 h22 v22z" fill="#fbbf24"/>' /* body */
+  + '<path d="M62 60 l14 -30 q2 -5 8 -4 l4 1 q3 1 2 5 l-10 30z" fill="#fbbf24"/>' /* neck */
+  + '<ellipse cx="90" cy="24" rx="11" ry="7.4" fill="#fbbf24" transform="rotate(24 90 24)"/>'
+  + '<path d="M84 16 l-2 -7 M94 15 l1 -7" stroke="#92400e" stroke-width="2.6" stroke-linecap="round"/><circle cx="82" cy="8" r="2.6" fill="#92400e"/><circle cx="95" cy="7" r="2.6" fill="#92400e"/>'
+  + '<circle cx="90" cy="22" r="1.8" fill="#22304a"/><circle cx="97" cy="27" r="1.4" fill="#92400e"/>'
+  + '<g fill="#d97706"><circle cx="48" cy="64" r="3.4"/><circle cx="58" cy="70" r="2.8"/><circle cx="70" cy="46" r="3"/><circle cx="76" cy="34" r="2.6"/><circle cx="44" cy="72" r="2.4"/></g>'
+  + '<path d="M40 78 v6 M64 78 v6" stroke="#92400e" stroke-width="3"/>'
+  + '<path d="M96 44 q10 2 16 8 M98 52 q8 4 10 10" stroke="#16a34a" stroke-width="3" fill="none" stroke-linecap="round"/><path d="M104 40 l6 6 M110 46 l7 3" stroke="#16a34a" stroke-width="2.4" stroke-linecap="round"/>'),
+piggybag: S( scene('#fdf2f8')
+  + '<ellipse cx="34" cy="58" rx="21" ry="16" fill="#f9a8d4"/><circle cx="50" cy="54" r="9" fill="#f9a8d4"/>'
+  + '<ellipse cx="53" cy="55" rx="4.6" ry="3.6" fill="#f472b6"/><circle cx="51.6" cy="55" r="1" fill="#9d174d"/><circle cx="54.6" cy="55" r="1" fill="#9d174d"/>'
+  + '<path d="M24 46 l4 -7 l6 5z" fill="#f472b6"/><circle cx="42" cy="52" r="1.8" fill="#22304a"/>'
+  + '<path d="M14 56 q-6 2 -4 8" stroke="#f472b6" stroke-width="2.6" fill="none" stroke-linecap="round"/>'
+  + '<path d="M26 72 v6 M42 72 v6" stroke="#f472b6" stroke-width="4" stroke-linecap="round"/>'
+  + '<circle cx="32" cy="26" r="8" fill="#facc15" stroke="#d97706" stroke-width="2"/><text x="32" y="29.4" text-anchor="middle" font-size="8" font-weight="800" fill="#92400e">₫</text>'
+  + '<path d="M32 34 v8" stroke="#d97706" stroke-width="2" stroke-dasharray="2.4 2.4"/>'
+  + '<circle cx="12" cy="80" r="5" fill="#facc15" stroke="#d97706" stroke-width="1.6"/><circle cx="52" cy="82" r="5" fill="#facc15" stroke="#d97706" stroke-width="1.6"/>'
+  + '<path d="M76 30 a16 10 0 0 1 32 0 v36 a10 10 0 0 1 -10 10 h-12 a10 10 0 0 1 -10 -10z" fill="#dc2626"/>'
+  + '<rect x="82" y="46" width="20" height="15" rx="4" fill="#991b1b"/><rect x="80" y="66" width="24" height="11" rx="2" fill="#fff" stroke="#cbd5e1"/><text x="92" y="74.4" text-anchor="middle" font-size="6.4" font-weight="800" fill="#991b1b">100,000₫</text>'),
+nightcamp: S( scene('#1e3a8a')
+  + '<path d="M100 10 a10 10 0 1 0 8 16 a12 12 0 1 1 -8 -16z" fill="#fde68a"/>'
+  + '<g fill="#fff"><circle cx="16" cy="12" r="1.6"/><circle cx="34" cy="20" r="1.3"/><circle cx="58" cy="9" r="1.5"/><circle cx="76" cy="18" r="1.2"/><circle cx="26" cy="30" r="1.1"/></g>'
+  + '<path d="M6 74 l16 -22 l16 22z" fill="#0ea5e9"/><path d="M15 74 l7 -10 l7 10z" fill="#082f49"/>'
+  + '<g><rect x="52" y="68" width="18" height="4" rx="2" transform="rotate(16 61 70)" fill="#92400e"/><rect x="52" y="68" width="18" height="4" rx="2" transform="rotate(-16 61 70)" fill="#78350f"/>'
+  + '<path d="M61 50 q8 10 0 19 q-8 -9 0 -19z" fill="#f97316"/><path d="M61 57 q4.6 5.6 0 10.6 q-4.6 -5 0 -10.6z" fill="#facc15"/></g>'
+  + '<circle cx="88" cy="58" r="8" fill="#ffd9b3"/><path d="M80 56 a8 7 0 0 1 16 0 q-8 -4 -16 0z" fill="#c2410c"/><rect x="92" y="62" width="12" height="10" rx="2" fill="#16a34a"/>'
+  + '<circle cx="34" cy="60" r="8" fill="#ffcf9e"/><path d="M26 58 a8 7 0 0 1 16 0 q-8 -4 -16 0z" fill="#7c4a21"/>'
+  + '<rect x="38" y="62" width="11" height="8" rx="2" fill="#111827"/><circle cx="43.4" cy="66" r="2.8" fill="#38bdf8"/>'
+  + '<path d="M2 82 h116" stroke="#14532d" stroke-width="5" stroke-linecap="round"/>'),
+cake: S( scene('#fdf2f8')
+  + '<ellipse cx="60" cy="80" rx="42" ry="6" fill="#e9d5ff"/>'
+  + '<rect x="28" y="58" width="64" height="20" rx="5" fill="#f472b6"/><rect x="28" y="58" width="64" height="7" rx="3.4" fill="#fff"/>'
+  + '<rect x="38" y="40" width="44" height="18" rx="5" fill="#fbbf24"/><rect x="38" y="40" width="44" height="6.4" rx="3" fill="#fff"/>'
+  + '<g fill="#fda4af"><circle cx="34" cy="66" r="2.2"/><circle cx="48" cy="71" r="2.2"/><circle cx="66" cy="66" r="2.2"/><circle cx="84" cy="71" r="2.2"/><circle cx="58" cy="49" r="2.2"/></g>'
+  + '<g><rect x="45" y="26" width="3.6" height="13" fill="#38bdf8"/><rect x="58" y="24" width="3.6" height="15" fill="#f43f5e"/><rect x="71" y="26" width="3.6" height="13" fill="#22c55e"/>'
+  + '<path d="M46.8 18 q3.4 4.6 0 8 q-3.4 -3.4 0 -8z" fill="#f97316"/><path d="M59.8 16 q3.4 4.6 0 8 q-3.4 -3.4 0 -8z" fill="#f97316"/><path d="M72.8 18 q3.4 4.6 0 8 q-3.4 -3.4 0 -8z" fill="#f97316"/></g>'
+  + '<g fill="#a78bfa"><circle cx="12" cy="16" r="2.2"/><circle cx="106" cy="12" r="2.2"/><circle cx="100" cy="30" r="2.2"/></g>'
+  + '<path d="M8 30 l4 -6 M110 44 l5 -5" stroke="#f59e0b" stroke-width="2.4" stroke-linecap="round"/>')
+};
+</script>
+<script>
+"use strict";
+/* ================= DATA — chép từ Section 1 trang gốc, đáp án đối chiếu bản cũ =================
+   Ghi chú: Câu 2 trong sách in "Viet Max" (lỗi in) — bản vẽ lại sửa thành "Viet Nam". */
+var GROUPS = [
+  { tag: "BASIC",             sub: "Câu 1–3",   c1: "#16a34a", c2: "#22c55e", brd: "#a9dcbc" },
+  { tag: "ELEMENTARY",        sub: "Câu 4–6",   c1: "#0284c7", c2: "#38bdf8", brd: "#a5d8f5" },
+  { tag: "INTERMEDIATE",      sub: "Câu 7–9",   c1: "#ea580c", c2: "#fb923c", brd: "#f6c9a0" },
+  { tag: "UPPER-INTERMEDIATE",sub: "Câu 10–12", c1: "#7c3aed", c2: "#a78bfa", brd: "#cdbcf2" },
+  { tag: "ADVANCED IOE",      sub: "Câu 13–15", c1: "#db2777", c2: "#f472b6", brd: "#f3aec9" }
+];
+var B = '<span class="blank">&nbsp;</span>';
+var QUESTIONS = [
+  { n:1,  g:0, art:"camera",   q:"We use a camera to " + B + ".", opts:["play tug of war","build a campfire","wash the dishes","take a photo"], ans:3 },
+  { n:2,  g:0, art:"hanoi",    q:"Noah lives in Ha Noi. He is from " + B + ".", opts:["Japan","Britain","Australia","Viet Nam"], ans:3 },
+  { n:3,  g:0, art:"britain",  q:"Ruby comes from Britain. She is " + B + ".", opts:["American","Japanese","British","Britain"], ans:2 },
+  { n:4,  g:1, art:"umbrella", q:"This is " + B + " umbrella.", opts:["two","these","an","a"], ans:2 },
+  { n:5,  g:1, art:"book",     q:"Look at the book near me. " + B + " book is new.", opts:["These","That","This","Those"], ans:2 },
+  { n:6,  g:1, art:"schoolbag",q:"Leo " + B + " a blue school bag.", opts:["having","has","have","to have"], ans:1 },
+  { n:7,  g:2, art:"grandparents", q:"Every Sunday, Max " + B + " his grandparents.", opts:["visits","visiting","visit","is visit"], ans:0 },
+  { n:8,  g:2, art:"cards",    q:"The children " + B + " card games at the moment.", opts:["is playing","are playing","play","plays"], ans:1 },
+  { n:9,  g:2, art:"doctor",   q:B + " does the doctor work? – At a hospital.", opts:["Where","When","Why","How much"], ans:0 },
+  { n:10, g:3, art:"shops",    q:"The sports shop is opposite the pet shop, and the bakery is " + B + " them.", opts:["between","at","under","into"], ans:0 },
+  { n:11, g:3, art:"campsite", q:"Last summer, Leo and Lily " + B + " at a campsite near Sydney.", opts:["was","is","were","are"], ans:2 },
+  { n:12, g:3, art:"giraffe",  q:"Look at the giraffe. It " + B + " grass near the river now.", opts:["are eating","eats","eat","is eating"], ans:3 },
+  { n:13, g:4, art:"piggybag", q:"The school bag costs one hundred thousand dong, so it is the most " + B + " item on the list.", opts:["cheap","expense","expensive","beautifully"], ans:2 },
+  { n:14, g:4, art:"nightcamp",q:"At the moment, Leo is taking a photo, and Lily " + B + " a story beside the campfire.", opts:["tells every day now","is telling","tell","are telling"], ans:1 },
+  { n:15, g:4, art:"cake",     q:"Which sentence correctly asks about a birthday month?", opts:["When is your birthday?","When does your birthday is?","What your birthday does?","Where your birthday is?"], ans:0 }
+];
+var LET = ["A","B","C","D"];
+var TOTAL = QUESTIONS.length;
+var sel = {};        // n -> chosen idx
+var submitted = false;
+
+/* ================= AUDIO (WebAudio tự tổng hợp, chuẩn các trang trước) ================= */
+var AC = null;
+function ac(){ if(!AC){ try{ AC = new (window.AudioContext||window.webkitAudioContext)(); }catch(e){ AC=null; } } if(AC && AC.state==="suspended") AC.resume(); return AC; }
+function tone(f0,f1,delay,dur){ var c=ac(); if(!c) return; var o=c.createOscillator(), g=c.createGain(), st=c.currentTime+delay;
+  o.type="sine"; o.frequency.setValueAtTime(f0,st); o.frequency.exponentialRampToValueAtTime(Math.max(f1,1),st+dur);
+  g.gain.setValueAtTime(0.0001,st); g.gain.exponentialRampToValueAtTime(0.22,st+0.02); g.gain.exponentialRampToValueAtTime(0.0001,st+dur);
+  o.connect(g); g.connect(c.destination); o.start(st); o.stop(st+dur+0.05); }
+function sfxRight(){ tone(680,880,0,0.16); tone(960,1150,0.12,0.2); }
+function sfxWrong(){ tone(180,110,0,0.35); }
+function sfxWin(){ [523,659,784,1046].forEach(function(f,i){ tone(f,f,i*0.15,0.22); }); }
+function sfxLose(){ [280,200,150].forEach(function(f,i){ tone(f,f,i*0.25,0.22); }); }
+function vibrate(p){ if(navigator.vibrate){ try{ navigator.vibrate(p); }catch(e){} } }
+
+/* ================= FIREWORKS ================= */
+var FW_COLORS = ["#ff8a65","#81c784","#64b5f6","#ffd54f","#ba68c8","#4dd0e1"];
+function launchFireworks(){
+  if(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  var cv=document.getElementById("fwCanvas"), ctx=cv.getContext("2d");
+  if(!ctx) return;
+  cv.width=window.innerWidth; cv.height=window.innerHeight; cv.style.display="block";
+  var parts=[], bursts=0;
+  function burst(){ var ox=cv.width*(0.1+Math.random()*0.8), oy=cv.height*(0.05+Math.random()*0.4);
+    for(var i=0;i<38;i++){ var a=Math.random()*Math.PI*2, sp=1.5+Math.random()*4.2;
+      parts.push({x:ox,y:oy,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp,life:1,decay:0.008+Math.random()*0.012,col:FW_COLORS[i%FW_COLORS.length]}); } }
+  burst(); bursts++;
+  var timer=setInterval(function(){ burst(); bursts++; if(bursts>=10) clearInterval(timer); },320);
+  (function frame(){ ctx.clearRect(0,0,cv.width,cv.height);
+    parts=parts.filter(function(p){ return p.life>0; });
+    parts.forEach(function(p){ p.x+=p.vx; p.y+=p.vy; p.vy+=0.045; p.vx*=0.99; p.life-=p.decay;
+      ctx.globalAlpha=Math.max(p.life,0); ctx.fillStyle=p.col; ctx.beginPath(); ctx.arc(p.x,p.y,3,0,Math.PI*2); ctx.fill(); });
+    ctx.globalAlpha=1;
+    if(parts.length||bursts<10) requestAnimationFrame(frame); else { cv.style.display="none"; ctx.clearRect(0,0,cv.width,cv.height); } })();
+}
+
+/* ================= RENDER ================= */
+function $(id){ return document.getElementById(id); }
+$("heroBoy").innerHTML = ART.heroBoy;
+$("heroGirl").innerHTML = ART.heroGirl;
+$("owlArt").innerHTML = ART.owl;
+$("megaArt").innerHTML = ART.mega;
+
+var quizEl = $("quiz");
+QUESTIONS.forEach(function(q, qi){
+  var g = GROUPS[q.g];
+  if(qi===0 || QUESTIONS[qi-1].g !== q.g){
+    var head=document.createElement("div"); head.className="group-head";
+    head.innerHTML = '<span class="group-tag" style="background:linear-gradient(135deg,'+g.c1+','+g.c2+')">'+g.tag+'</span>'
+      + '<span class="g-sub">'+g.sub+'</span><span class="g-line"></span>';
+    quizEl.appendChild(head);
+  }
+  var card=document.createElement("article"); card.className="qcard"; card.id="qcard"+q.n; card.style.borderColor=g.brd;
+  var top=document.createElement("div"); top.className="qtop";
+  top.innerHTML = '<span class="qnum" style="background:linear-gradient(135deg,'+g.c1+','+g.c2+')">Câu '+q.n+'</span>'
+    + '<p class="qtext">'+q.q+'</p>'
+    + '<div class="qart">'+ART[q.art]+'</div>';
+  card.appendChild(top);
+  var opts=document.createElement("div"); opts.className="opts";
+  q.opts.forEach(function(text, oi){
+    var b=document.createElement("button"); b.className="opt"; b.type="button";
+    b.setAttribute("data-q", q.n); b.setAttribute("data-o", oi);
+    b.innerHTML = '<span class="let">'+LET[oi]+'</span><span>'+text+'</span>';
+    b.addEventListener("click", function(){ choose(q, oi); });
+    opts.appendChild(b);
+  });
+  card.appendChild(opts);
+  var fb=document.createElement("div"); fb.className="fb"; fb.id="fb"+q.n;
+  card.appendChild(fb);
+  quizEl.appendChild(card);
+});
+
+function optBtn(n, oi){ return document.querySelector('.opt[data-q="'+n+'"][data-o="'+oi+'"]'); }
+function updateProgress(){
+  var done=Object.keys(sel).length;
+  $("doneCnt").textContent=done;
+  $("progFill").style.width=(done/TOTAL*100)+"%";
+}
+function choose(q, oi){
+  if(submitted) return;
+  var isNew = sel[q.n] !== oi;
+  sel[q.n]=oi;
+  for(var k=0;k<4;k++){ var b=optBtn(q.n,k); b.classList.remove("sel","ok","bad"); }
+  var fb=$("fb"+q.n), correct = oi===q.ans, btn=optBtn(q.n,oi);
+  if(correct){
+    btn.classList.add("ok");
+    fb.className="fb show ok";
+    fb.textContent="✅ ĐÚNG! Đáp án " + LET[oi] + " – " + q.opts[oi];
+  } else {
+    btn.classList.add("bad");
+    var good=optBtn(q.n,q.ans); good.classList.add("ok");
+    fb.className="fb show bad";
+    fb.textContent="❌ SAI! Bạn chọn " + LET[oi] + " – Đúng là " + LET[q.ans] + " – " + q.opts[q.ans];
+  }
+  if(isNew){ if(correct) sfxRight(); else sfxWrong(); }
+  updateProgress();
+}
+
+function score(){
+  var s=0; QUESTIONS.forEach(function(q){ if(sel[q.n]===q.ans) s++; }); return s;
+}
+$("btnSubmit").addEventListener("click", function(){
+  if(submitted) return;
+  submitted=true;
+  document.body.classList.add("locked");
+  var s=score(), pct=s/TOTAL, pass=pct>=0.9;
+  var banner=$("scoreBanner");
+  banner.className="score-banner show " + (pass?"pass":"fail");
+  banner.innerHTML = pass
+    ? '<span class="result-title">🎉 XUẤT SẮC!</span><span class="big-score">'+s+' / '+TOTAL+'</span><span class="subline">Bé đạt '+Math.round(pct*100)+'% — vượt chuẩn 90% rồi!</span>'
+    : '<span class="result-title">💪 CỐ LÊN NHÉ!</span><span class="big-score">'+s+' / '+TOTAL+'</span><span class="subline">Đạt '+Math.round(pct*100)+'% — cần đúng thêm '+(Math.ceil(0.9*TOTAL)-s)+' câu nữa mới đạt chuẩn 90%.</span>';
+  $("scoreField").value = s + " / " + TOTAL;
+  /* xem lại */
+  var list=$("reviewList"); list.innerHTML="";
+  QUESTIONS.forEach(function(q){
+    var chosen = (q.n in sel) ? sel[q.n] : null, ok = chosen===q.ans;
+    var d=document.createElement("div"); d.className="rev-item "+(ok?"ok":"bad");
+    d.innerHTML = "<b>Câu "+q.n+":</b> " + q.q.replace(/<[^>]+>/g,"") + "<br/>"
+      + (chosen===null ? "Bạn chưa chọn – " : "Bạn chọn <b>"+LET[chosen]+"</b> – ") + "Đúng: <b>"+LET[q.ans]+"</b> – " + q.opts[q.ans];
+    list.appendChild(d);
+  });
+  $("review").style.display="block";
+  if(pass){ sfxWin(); vibrate([80,40,80,40,150]); launchFireworks(); }
+  else { sfxLose(); vibrate([200,80,200,80,300]); }
+  if(banner.scrollIntoView) banner.scrollIntoView({behavior:"smooth", block:"center"});
+});
+$("btnRetry").addEventListener("click", function(){
+  submitted=false; sel={};
+  document.body.classList.remove("locked");
+  document.querySelectorAll(".opt").forEach(function(b){ b.classList.remove("sel","ok","bad"); });
+  document.querySelectorAll(".fb").forEach(function(f){ f.className="fb"; f.textContent=""; });
+  var banner=$("scoreBanner"); banner.className="score-banner"; banner.innerHTML="";
+  $("review").style.display="none"; $("scoreField").value="";
+  updateProgress();
+  window.scrollTo({top:0, behavior:"smooth"});
+});
+updateProgress();
+</script>
+</body>
+</html>
