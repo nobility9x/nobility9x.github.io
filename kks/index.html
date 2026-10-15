@@ -60,8 +60,10 @@ ul{margin:6px 0 6px 18px;padding:0}li{margin:3px 0;line-height:1.5}
 .almname small{color:var(--mut);font-weight:400}
 .dwgscroll{overflow:auto;max-height:80vh;border:1px solid var(--line);border-radius:10px;background:#fff}
 .dwgwrap{position:relative}.dwgwrap img{display:block;width:100%}
-.spot{position:absolute;width:16px;height:16px;margin:-8px 0 0 -8px;border-radius:50%;background:#ff8c1a;border:2px solid #fff;box-shadow:0 0 0 2px rgba(0,0,0,.35);cursor:pointer;padding:0;z-index:2}
-.spot.mft,.spot.trip{background:#dc2626}.spot.alarm{background:#f59e0b}.spot.link{background:#3b82f6}.spot.info{background:#94a3b8}
+.spot{position:absolute;width:2.6%;min-width:11px;max-width:22px;aspect-ratio:1;height:auto;transform:translate(-50%,-50%);border-radius:50%;background:rgba(255,140,26,.78);border:1.5px solid #fff;box-shadow:0 0 0 1px rgba(0,0,0,.4);cursor:pointer;padding:0;z-index:2}
+.spot::after{content:'';position:absolute;inset:-10px;border-radius:50%}
+.spot.on{box-shadow:0 0 0 2.5px #2563eb,0 0 0 4.5px #fff;z-index:4}
+.spot.mft,.spot.trip{background:rgba(220,38,38,.85)}.spot.alarm{background:rgba(245,158,11,.85)}.spot.link{background:rgba(59,130,246,.8)}.spot.info{background:rgba(148,163,184,.8)}
 .zbtn{background:var(--panel);border:1px solid var(--line);color:var(--txt);border-radius:14px;padding:5px 13px;cursor:pointer}
 .tagcard{background:#0d2138;border:1px solid var(--acc);border-radius:10px;padding:12px 14px;margin-top:10px}
 .tagcard .tk{font-weight:800;font-size:17px;color:var(--acc2)}
@@ -225,6 +227,8 @@ function openDwg(code, fromId){
 function dwgVer(code, suf){const im=document.getElementById('dwgimg'); if(im) im.src='ban-ve/'+code+suf+'.jpg'}
 function dwgZoom(z){const w=document.getElementById('dwgwrap'); if(w) w.style.width=z+'%'}
 function showTag(code, tag){
+  document.querySelectorAll('.spot.on').forEach(b=>b.classList.remove('on'));
+  document.querySelectorAll('.spot').forEach(b=>{if(b.getAttribute('aria-label')===tag)b.classList.add('on')});
   const m=DWGMAP[code]; const pid=m.pts[tag]; const card=document.getElementById('tagcard'); if(!card) return;
   if(pid==null||!DATA[pid]){card.innerHTML=`<div class="tagcard"><div class="tk">${esc(tag)}</div><p>Tag trên bản vẽ (bộ tag Tổ máy 1) — không khớp điểm nào trong danh mục Tổ máy 2.</p></div>`; if(card.scrollIntoView)card.scrollIntoView({behavior:'smooth',block:'nearest'}); return}
   const d=DATA[pid]; const a=ALM[d.kks];
