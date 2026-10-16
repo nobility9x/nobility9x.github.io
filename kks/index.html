@@ -60,9 +60,9 @@ ul{margin:6px 0 6px 18px;padding:0}li{margin:3px 0;line-height:1.5}
 .almname small{color:var(--mut);font-weight:400}
 .dwgscroll{position:relative;height:72vh;overflow:hidden;border:1px solid var(--line);border-radius:10px;background:#fff;touch-action:none;cursor:grab}
 .dwgwrap{position:absolute;left:0;top:0;width:100%;transform-origin:0 0}.dwgwrap img{display:block;width:100%}
-.spot{position:absolute;transform:translate(-50%,-50%);border-radius:999px;box-sizing:border-box;background:rgba(var(--c),.018);border:1px solid rgba(var(--c),.30);box-shadow:none;cursor:pointer;padding:0;z-index:2;--c:255,140,26}
+.spot{position:absolute;transform:translate(-50%,-50%);border-radius:999px;box-sizing:border-box;background:rgba(var(--c),.018);border:var(--bw,1px) solid rgba(var(--c),.34);box-shadow:none;cursor:pointer;padding:0;z-index:2;--c:255,140,26}
 .spot::after{content:'';position:absolute;inset:-2px;border-radius:999px}
-.spot.on{border:2px solid #2563eb;background:rgba(var(--c),.18);box-shadow:none;z-index:4}
+.spot.on{border:var(--bw2,1.6px) solid #2563eb;background:rgba(37,99,235,.13);box-shadow:none;z-index:4}
 .spot.mft,.spot.trip{--c:220,38,38}.spot.alarm{--c:245,158,11}.spot.link{--c:59,130,246}.spot.info{--c:100,116,139}
 .zbtn{background:var(--panel);border:1px solid var(--line);color:var(--txt);border-radius:14px;padding:5px 13px;cursor:pointer}
 #tagcard{position:fixed;left:8px;right:8px;bottom:8px;z-index:60}
@@ -277,4 +277,25 @@ document.addEventListener('click', function(e){
   });
   if(best && best !== e.target){ e.stopPropagation(); e.preventDefault(); best.click(); }
 }, true);
+// Constant on-screen border width: spot borders live inside the zoomed wrap,
+// so divide by the current zoom scale (parsed from the wrap's transform).
+function __syncBW(wrap){
+  var t = wrap.style.transform || '', sc = 1, m;
+  if((m = t.match(/scale\(([\d.]+)\)/))) sc = parseFloat(m[1]);
+  else if((m = t.match(/matrix\(([\d.]+),/))) sc = parseFloat(m[1]);
+  if(!sc || sc <= 0) sc = 1;
+  var bw = Math.max(0.35, Math.min(2.2, 1.05 / sc));
+  var bw2 = Math.max(0.5, Math.min(3.0, 1.7 / sc));
+  var cur = wrap.style.getPropertyValue('--bw');
+  if(Math.abs(parseFloat(cur || '0') - bw) > 0.02){
+    wrap.style.setProperty('--bw', bw.toFixed(3) + 'px');
+    wrap.style.setProperty('--bw2', bw2.toFixed(3) + 'px');
+  }
+}
+new MutationObserver(function(ms){
+  ms.forEach(function(mu){
+    if(mu.target && mu.target.classList && mu.target.classList.contains('dwgwrap')) __syncBW(mu.target);
+  });
+}).observe(document.body, {attributes: true, attributeFilter: ['style'], subtree: true});
+document.querySelectorAll('.dwgwrap').forEach(__syncBW);
 </script></body></html>
