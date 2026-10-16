@@ -213,14 +213,14 @@ function openPoint(id){
 }
 function openDwg(code, fromId){
   const m=DWGMAP[code]; if(!m) return;
-  const n=Object.keys(m.tags).length;
+  const n=Object.keys(m.pts).length;
   view.innerHTML=`<div class="wrap"><button class="backbtn" onclick="${fromId!=null?'openPoint('+fromId+')':'goHome()'}">← Quay lại</button>
   <div class="sec"><h2>🗺 Sơ đồ tương tác ${esc(code)}</h2>
   <p style="color:var(--mut)">${n} tag điểm đo ấn được — chạm vào khung ôm quanh mã để xem điểm đo gì + thông số đặt. Khung đỏ = TRIP/MFT, vàng = ALARM, xanh = LIÊN ĐỘNG, cam sáng = chưa có ngưỡng trong bảng định mức. Dùng 2 ngón tay phóng to/thu nhỏ, kéo để di chuyển trong ô.</p>
   <div style="display:flex;gap:6px;margin:8px 0;flex-wrap:wrap"><button class="zbtn" onclick="dwgVer('${code}','')">Bản gốc</button><button class="zbtn" onclick="dwgVer('${code}','-vi')">Bản dịch tiếng Việt</button><button class="zbtn" onclick="dwgFit()">⤾ Toàn cảnh</button><button class="zbtn" onclick="dwgCover()">🔍 To hết cỡ</button></div>
   <div class="dwgscroll" id="dwgstage"><div class="dwgwrap" id="dwgwrap">
   <img id="dwgimg" src="ban-ve/${code}.jpg" alt="Sơ đồ ${esc(code)}">
-  ${Object.entries(m.tags).map(([tag,xy])=>{const pid=m.pts[tag]; const a=(pid!=null&&DATA[pid])?ALM[DATA[pid].kks]:null; return `<button class="spot ${a?a.cls:''}" style="left:${xy[0]}%;top:${xy[1]}%;width:${xy[2]||2.6}%;height:${xy[3]||1.6}%" onclick="showTag('${code}','${tag}')" aria-label="${esc(tag)}"></button>`}).join('')}
+  ${Object.entries(m.tags).filter(([tag])=>m.pts[tag]!=null&&DATA[m.pts[tag]]).map(([tag,xy])=>{const pid=m.pts[tag]; const a=(pid!=null&&DATA[pid])?ALM[DATA[pid].kks]:null; return `<button class="spot ${a?a.cls:''}" style="left:${xy[0]}%;top:${xy[1]}%;width:${xy[2]||2.6}%;height:${xy[3]||1.6}%" onclick="showTag('${code}','${tag}')" aria-label="${esc(tag)}"></button>`}).join('')}
   </div></div><div id="tagcard"></div>
   <p style="margin-top:10px"><a href="ban-ve/${code}.pdf" target="_blank" rel="noopener">📐 Mở PDF gốc của bản vẽ này</a></p>
   </div></div>`;
