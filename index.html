@@ -3468,13 +3468,14 @@ html.dark .view{background-image:none}
    two-line compact tile (Unit + count on line 1, name clamped to 2 lines) */
 #view-english .en-grade-row{display:flex;flex-wrap:nowrap;overflow-x:auto;gap:8px;padding:2px 2px 8px;scrollbar-width:none}
 #view-english .en-grade-row::-webkit-scrollbar{display:none}
-#view-english .en-grade-chip{flex:0 0 auto;display:inline-flex;align-items:baseline;gap:6px;padding:8px 13px;border-radius:999px}
+#view-english .en-grade-chip{flex:0 0 auto;display:inline-flex;align-items:baseline;gap:6px;padding:8px 13px;border-radius:16px}
 #view-english .en-grade-chip small{display:inline;margin:0;font-size:11.5px;opacity:.75}
-#view-english .en-unit-grid{gap:9px}
-#view-english .en-unit-chip{display:flex;flex-wrap:wrap;align-items:baseline;column-gap:7px;padding:9px 12px 8px;text-align:left}
+#view-english .en-unit-grid{gap:9px;align-items:start}
+#view-english .en-unit-chip{display:flex;flex-wrap:wrap;align-items:baseline;column-gap:7px;padding:9px 12px 8px;text-align:left;min-width:0}
 #view-english .en-unit-chip b{order:1;font-size:14.5px}
 #view-english .en-unit-chip small{order:2;margin-left:auto}
-#view-english .en-unit-chip span{order:3;flex:1 1 100%;font-size:13.5px;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+#view-english .en-unit-chip span{order:3;flex:1 1 100%;min-width:0;max-width:100%;white-space:normal;overflow-wrap:break-word;font-size:13.5px;line-height:1.3}
+@media (max-width:640px){#view-english .en-unit-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 /* ===== dark companions for the skin ===== */
 html.dark .view .page-title{box-shadow:0 4px 0 rgba(0,0,0,.4)}
 html.dark #view-quiz .quiz-chip{background:#252141!important;color:#edeaf7;box-shadow:0 3px 0 var(--t1)}
