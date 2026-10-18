@@ -2081,18 +2081,18 @@ function __svgShape(kind){var c='stroke="currentColor" stroke-width="2.4" fill="
   var pts=[];for(var i=0;i<5;i++){var an=-Math.PI/2+i*2*Math.PI/5;pts.push(Math.round(80+44*Math.cos(an))+','+Math.round(58+44*Math.sin(an)));}
   return __svgOpen()+'<polygon points="'+pts.join(' ')+'" '+c+'/></svg></span>';}
 function __svgSquare(a){return __svgOpen()+'<rect x="40" y="12" width="80" height="80" stroke="currentColor" stroke-width="2.4" fill="rgba(90,130,255,.14)"/>'+__svgTxt(80,110,a+' cm')+'</svg></span>';}
-function __svgRect(dd,rr){var k=Math.min(118/dd,78/rr),w=Math.round(dd*k),h=Math.round(rr*k),x=Math.round((160-w)/2),y=Math.round((102-h)/2);
-  return __svgOpen()+'<rect x="'+x+'" y="'+y+'" width="'+w+'" height="'+h+'" stroke="currentColor" stroke-width="2.4" fill="rgba(90,130,255,.14)"/>'+__svgTxt(x+Math.round(w/2),y+h+16,dd+' cm')+__svgTxt(Math.max(x-6,10),y+Math.round(h/2)+4,rr+' cm','end')+'</svg></span>';}
-function __svgTri(a,b,cc){var sides=[a,b,cc].sort(function(x,y){return y-x;}),L=sides[0],p=sides[1],q=sides[2],sc=118/L,cxu=(p*p-q*q+L*L)/(2*L),cx=cxu*sc,cy=Math.sqrt(Math.max(p*p-cxu*cxu,4))*sc*0.82;
-  var ax=21,ay=100,bx=ax+118,px=ax+Math.round(cx),py=ay-Math.round(cy);
+function __svgRect(dd,rr){var k=Math.min(118/dd,78/rr),w=Math.round(dd*k),h=Math.round(rr*k),x=Math.max(2,Math.min(Math.round((160-w)/2),160-w-42)),y=Math.round((102-h)/2);
+  return __svgOpen()+'<rect x="'+x+'" y="'+y+'" width="'+w+'" height="'+h+'" stroke="currentColor" stroke-width="2.4" fill="rgba(90,130,255,.14)"/>'+__svgTxt(x+Math.round(w/2),y+h+16,dd+' cm')+__svgTxt(x+w+6,y+Math.round(h/2)+4,rr+' cm','start')+'</svg></span>';}
+function __svgTri(a,b,cc){var sides=[a,b,cc].sort(function(x,y){return y-x;}),L=sides[0],p=sides[1],q=sides[2],cxu=(p*p-q*q+L*L)/(2*L),htri=Math.sqrt(Math.max(p*p-cxu*cxu,1)),sc=Math.min(118/L,94/htri),cx=cxu*sc,cy=htri*sc;
+  var ax=Math.round((160-L*sc)/2),ay=100,bx=ax+Math.round(L*sc),px=ax+Math.round(cx),py=ay-Math.round(cy);
   var c='stroke="currentColor" stroke-width="2.4" fill="rgba(90,130,255,.14)" stroke-linejoin="round"';
   return __svgOpen()+'<polygon points="'+ax+','+ay+' '+bx+','+ay+' '+px+','+py+'" '+c+'/>'+__svgTxt(Math.round((ax+bx)/2),ay+15,L+' cm')+__svgTxt(Math.round((ax+px)/2)-9,Math.round((ay+py)/2),p+' cm')+__svgTxt(Math.round((bx+px)/2)+9,Math.round((ay+py)/2),q+' cm')+'</svg></span>';}
 function __svgCircle(r){return __svgOpen()+'<circle cx="80" cy="54" r="36" stroke="currentColor" stroke-width="2.4" fill="rgba(90,130,255,.14)"/><line x1="80" y1="54" x2="116" y2="54" stroke="currentColor" stroke-width="1.8"/><circle cx="80" cy="54" r="2.6" fill="currentColor"/>'+__svgTxt(98,46,r+' cm')+__svgTxt(80,110,'Hình tròn')+'</svg></span>';}
 function __svgAngle(kind){if(kind==='bet')return __svgOpen()+'<line x1="10" y1="96" x2="150" y2="96" stroke="currentColor" stroke-width="2.4"/><circle cx="80" cy="96" r="3" fill="currentColor"/><path d="M 102 96 A 22 22 0 0 0 58 96" fill="none" stroke="currentColor" stroke-width="1.8"/></svg></span>';
-  var deg=kind==='nhon'?42:kind==='vuong'?90:128;var rad=deg*Math.PI/180,ex=Math.round(36+88*Math.cos(rad)),ey=Math.round(96-88*Math.sin(rad));
-  var arc='<path d="M 58 96 A 22 22 0 0 0 '+Math.round(36+22*Math.cos(rad))+' '+Math.round(96-22*Math.sin(rad))+'" fill="none" stroke="currentColor" stroke-width="1.8"/>';
-  var sq=kind==='vuong'?'<path d="M 52 96 L 52 80 L 36 80" fill="none" stroke="currentColor" stroke-width="1.6"/>':'';
-  return __svgOpen()+'<line x1="36" y1="96" x2="142" y2="96" stroke="currentColor" stroke-width="2.4"/><line x1="36" y1="96" x2="'+ex+'" y2="'+ey+'" stroke="currentColor" stroke-width="2.4"/>'+arc+sq+'</svg></span>';}
+  var deg=kind==='nhon'?42:kind==='vuong'?90:128;var vx=kind==='tu'?64:36,L=kind==='tu'?82:88;var rad=deg*Math.PI/180,ex=Math.round(vx+L*Math.cos(rad)),ey=Math.round(96-L*Math.sin(rad));
+  var arc='<path d="M '+(vx+22)+' 96 A 22 22 0 0 0 '+Math.round(vx+22*Math.cos(rad))+' '+Math.round(96-22*Math.sin(rad))+'" fill="none" stroke="currentColor" stroke-width="1.8"/>';
+  var sq=kind==='vuong'?'<path d="M '+(vx+16)+' 96 L '+(vx+16)+' 80 L '+vx+' 80" fill="none" stroke="currentColor" stroke-width="1.6"/>':'';
+  return __svgOpen()+'<line x1="'+vx+'" y1="96" x2="150" y2="96" stroke="currentColor" stroke-width="2.4"/><line x1="'+vx+'" y1="96" x2="'+ex+'" y2="'+ey+'" stroke="currentColor" stroke-width="2.4"/>'+arc+sq+'</svg></span>';}
 function __svgGrid(cols,rows){var cs=27,w=cols*cs,h=rows*cs,x=Math.round((160-w)/2),y=Math.round((112-h)/2),lines='';
   for(var i=0;i<=cols;i++)lines+='<line x1="'+(x+i*cs)+'" y1="'+y+'" x2="'+(x+i*cs)+'" y2="'+(y+h)+'"/>';
   for(var j=0;j<=rows;j++)lines+='<line x1="'+x+'" y1="'+(y+j*cs)+'" x2="'+(x+w)+'" y2="'+(y+j*cs)+'"/>';
