@@ -3479,15 +3479,22 @@ html.dark .view{background-image:none}
 /* fixes from Cuong's phone screenshots 2026-10-19:
    - text symbols "1M+" (so-lon) and "9x9" (sudoku) overflowed their 54px
      tile at the 37px emoji size and overlapped the card title: shrink
-     them and clip the tile.
+     them. Do NOT clip the tile (overflow:hidden cut the phone's emoji
+     glyphs, which sit low in their em box) - just set line-height:1 so
+     the glyph centres properly.
    - the question number was a 10px pale superscript glued to the first
-     letter: turn it into a clear gradient badge floated before the prompt.
-   - card descriptions were 9-10px: raise to a readable 13.5px. */
-.math-op-symbol{overflow:hidden;white-space:nowrap}
+     letter: turn it into a clear gradient badge floated before the prompt. */
+.math-op-symbol{line-height:1}
 .math-operation-card[data-math-activity="so-lon"] .math-op-symbol{font-size:18px;letter-spacing:-.5px}
 .math-operation-card[data-game-activity="sudoku"] .math-op-symbol{font-size:19px}
 .math-session-question .math-question-number{position:static;float:left;display:inline-flex;align-items:center;justify-content:center;min-width:25px;height:25px;padding:0 6px;margin:0 9px 3px 0;border-radius:999px;background:linear-gradient(135deg,#2f6bd8,#6ea8ff);color:#fff;font-size:14px;font-weight:900;box-shadow:0 2px 0 rgba(40,30,90,.25)}
-.math-op-copy small{font-size:13.5px;line-height:1.4;color:#6d6a84}
+/* Cuong 2026-10-19: main text bigger and clearer; the small note text
+   under card titles stays small as before (no rule here on purpose). */
+.math-op-copy b{font-size:18.5px;line-height:1.25}
+.math-session-question .math-question-prompt{font-size:18px}
+.math-session-question .math-question-prompt.word{font-size:18px}
+.math-session-question input.math-session-input{font-size:19px}
+.qz-opt{font-size:18px}
 /* ===== dark companions for the skin ===== */
 html.dark .view .page-title{box-shadow:0 4px 0 rgba(0,0,0,.4)}
 html.dark #view-quiz .quiz-chip{background:#252141!important;color:#edeaf7;box-shadow:0 3px 0 var(--t1)}
@@ -3497,7 +3504,6 @@ html.dark .math-operation-card{background:#252141!important;background-image:non
 html.dark .english-word-grid:not([data-topic="alphabet"]):not([data-topic="numbers"]) .english-word-emoji{background:radial-gradient(circle at 50% 38%,#3a2f14,#2a2110)}
 html.dark #view-english .en-unit-chip{background:#252141!important;color:#edeaf7}
 html.dark #view-english .en-unit-chip.active{background:linear-gradient(120deg,#d97706,#ffb84d)!important;color:#fff}
-html.dark .math-op-copy small{color:#b9b4d6}
 </style>
 <script>
 (function(){
