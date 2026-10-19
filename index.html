@@ -2371,6 +2371,7 @@ function __cdCode(k,hard){
 function __cdTable(map,pics){
   function cell(p){return '<span style="display:inline-grid;grid-template-columns:28px 12px 16px;align-items:center;justify-items:center"><span style="font-size:19px">'+p+'</span><span>=</span><b>'+map[p]+'</b></span>';}
   function row(items){return '<div style="display:flex;justify-content:center;gap:16px">'+items.map(cell).join('')+'</div>';}
+  if(pics.length===4)return row(pics.slice(0,2))+row(pics.slice(2,4));
   return row(pics.slice(0,3))+(pics.length>3?row(pics.slice(3,6)):'');
 }
 function __cdWrap(inner){return '<div style="display:block;width:100%;flex:1 1 100%;min-width:0">'+inner+'</div>';}
@@ -2380,8 +2381,8 @@ function __cdEq(){
   var cl=[__ri(1,3),__ri(1,3),__ri(1,3)];
   function cluster(p,n){var o='';for(var z=0;z<n;z++)o+=p;return o;}
   function row(c1,op2,c2,op3,c3,tot){
-    return '<div style="display:grid;grid-template-columns:1fr 26px 1fr 26px 1fr 26px 48px;align-items:center;text-align:center">'
-      +'<div>'+c1+'</div><div>'+op2+'</div><div>'+c2+'</div><div>'+op3+'</div><div>'+c3+'</div><div>=</div><div>'+tot+'</div></div>';
+    return '<div style="display:grid;grid-template-columns:1fr 22px 1fr 22px 1fr 22px 42px;align-items:center;text-align:center">'
+      +'<div style="font-size:15.5px;line-height:1.25">'+c1+'</div><div>'+op2+'</div><div style="font-size:15.5px;line-height:1.25">'+c2+'</div><div>'+op3+'</div><div style="font-size:15.5px;line-height:1.25">'+c3+'</div><div>=</div><div>'+tot+'</div></div>';
   }
   var rows=[];
   for(var r=0;r<3;r++){var c=cluster(items[r],cl[r]);rows.push(row(c,'+',c,'+',c,String(3*vals[r]*cl[r])));}
@@ -2450,25 +2451,31 @@ function __cdBal(){
   var lw=repr(L),rw=repr(R);
   if(!lw||!rw||!lw.length||!rw.length)return __cdEq();
   function boxes(n){var o='';for(var i=0;i<n;i++)o+=it[1];return o;}
-  function wtxt(w){return w.map(function(v){return v+'g';}).join(' + ');}
-  function pan(cx,pics,ws){
-    return '<line x1="'+(cx-54)+'" y1="28" x2="'+(cx-15)+'" y2="60" stroke="#8a6d3b" stroke-width="2"/>'
+  function weight(wx,v){
+    return '<circle cx="'+wx+'" cy="40" r="3.2" fill="none" stroke="#546e7a" stroke-width="2"/>'
+      +'<path d="M '+(wx-11)+' 62 L '+(wx-8)+' 46 Q '+wx+' 42 '+(wx+8)+' 46 L '+(wx+11)+' 62 Z" fill="#90a4ae" stroke="#607d8b" stroke-width="1.5"/>'
+      +'<text x="'+wx+'" y="59" font-size="8" font-weight="700" fill="#ffffff" text-anchor="middle">'+v+'g</text>';
+  }
+  function pan(cx,n,ws){
+    var bw=n*17,kw=ws.length*27,W=bw+kw+(ws.length?2:0),x0=cx-W/2;
+    var out='<line x1="'+(cx-54)+'" y1="28" x2="'+(cx-15)+'" y2="60" stroke="#8a6d3b" stroke-width="2"/>'
       +'<line x1="'+(cx+54)+'" y1="28" x2="'+(cx+15)+'" y2="60" stroke="#8a6d3b" stroke-width="2"/>'
       +'<path d="M '+(cx-58)+' 60 Q '+cx+' 86 '+(cx+58)+' 60 L '+(cx+44)+' 60 Q '+cx+' 75 '+(cx-44)+' 60 Z" fill="#ffd98a" stroke="#b8860b" stroke-width="2"/>'
-      +'<text x="'+cx+'" y="56" font-size="20" text-anchor="middle">'+pics+'</text>'
-      +'<text x="'+cx+'" y="106" font-size="13" font-weight="700" text-anchor="middle">'+ws+'</text>';
+      +'<text x="'+(x0+bw/2)+'" y="56" font-size="20" text-anchor="middle">'+boxes(n)+'</text>';
+    for(var q=0;q<ws.length;q++)out+=weight(Math.round(x0+bw+2+q*27+13),ws[q]);
+    return out;
   }
-  var svg='<svg viewBox="0 0 340 114" style="width:100%;max-width:340px;display:block;margin:2px auto 0">'
+  var svg='<svg viewBox="0 0 340 100" style="width:100%;max-width:340px;display:block;margin:2px auto 0">'
     +'<circle cx="170" cy="12" r="4" fill="#b8860b"/>'
     +'<line x1="28" y1="28" x2="312" y2="28" stroke="#8a6d3b" stroke-width="4" stroke-linecap="round"/>'
-    +'<line x1="170" y1="16" x2="170" y2="98" stroke="#8a6d3b" stroke-width="4"/>'
-    +'<path d="M 144 110 L 196 110 L 187 98 L 153 98 Z" fill="#b8860b"/>'
-    +pan(85,boxes(a),wtxt(lw))
-    +pan(255,boxes(b),wtxt(rw))
+    +'<line x1="170" y1="16" x2="170" y2="84" stroke="#8a6d3b" stroke-width="4"/>'
+    +'<path d="M 144 96 L 196 96 L 187 84 L 153 84 Z" fill="#b8860b"/>'
+    +pan(85,a,lw)
+    +pan(255,b,rw)
     +'</svg>';
   var html='<div style="text-align:center;font-size:15px">⚖️ Cân đang thăng bằng</div>'+svg
     +'<div style="text-align:center;font-size:14.5px;margin-top:4px">Mỗi '+it[0]+' nặng như nhau. Hỏi 1 '+it[0]+' nặng bao nhiêu gam?</div>';
-  return {id:'code|bal|'+a+'|'+b+'|'+x,prompt:__cdWrap(html),answer:String(x),value:x,kind:'fx'};
+  return {id:'code|bal|'+x,prompt:__cdWrap(html),answer:String(x),value:x,kind:'fx'};
 }
 function __cdCry2(){
   function colHtml(rows,S,note){return __cdColGrid(rows,S,note);}
@@ -2548,14 +2555,16 @@ function randomCodeQuestion(){
     var opts=[seq2.join(' ')];var guard=0;
     while(opts.length<4&&guard++<60){var alt=[];for(var j=0;j<m2;j++)alt.push(__pick(pics));var a2=alt.join(' ');if(opts.indexOf(a2)<0)opts.push(a2);}
     return {id:'code|enc|'+digits,prompt:__cdWrap('<div style=\'text-align:center;font-size:17px;margin-bottom:5px\'>'+__cdTable(map,pics)+'</div><div style=\'text-align:center\'>Dãy số '+digits.split('').join(' ')+' được mã hoá thành dãy hình nào?</div>'),options:shuffle(opts),answer:seq2.join(' '),kind:'geo'};}
-  var a=__pick(pics),b=__pick(pics),op=Math.random()<0.6?'+':'-';
-  var va=map[a],vb=map[b];
+  var others=pics.slice();var a=__pick(others);others.splice(others.indexOf(a),1);var b=__pick(others);others.splice(others.indexOf(b),1);
+  var op=Math.random()<0.6?'+':'-';var va=map[a],vb=map[b];
   if(op==='-'&&vb>va){var tp=a;a=b;b=tp;var tv=va;va=vb;vb=tv;}
-  var use3=hard&&Math.random()<0.5;var expr=a+' '+op+' '+b,res=op==='+'?va+vb:va-vb,prompt2='Tính: '+a+' '+op+' '+b+' = ?';
-  if(use3){var c=__pick(pics),op2=Math.random()<0.5?'+':'-';var vc=map[c];
-    if(op2==='-'&&vc>res){op2='+';}
-    res=op2==='+'?res+vc:res-vc;expr+=' '+op2+' '+c;prompt2='Tính: '+expr+' = ?';}
-  return {id:'code|calc|'+expr+'|'+res,prompt:__cdWrap('<div style=\'text-align:center;font-size:17px;margin-bottom:5px\'>'+__cdTable(map,pics)+'</div><div style=\'text-align:center;font-size:18px\'>'+prompt2+'</div>'),answer:String(res),value:res,kind:'fx'};
+  var expr=a+' '+op+' '+b,res=op==='+'?va+vb:va-vb,prompt2='Tính: '+a+' '+op+' '+b+' = ?';
+  var used=[a,b];
+  if(Math.random()<0.6&&others.length){var c=__pick(others);others.splice(others.indexOf(c),1);var op2=Math.random()<0.5?'+':'-';var vc=map[c];
+    if(op2==='-'&&vc>res)op2='+';
+    res=op2==='+'?res+vc:res-vc;expr+=' '+op2+' '+c;prompt2='Tính: '+expr+' = ?';used.push(c);}
+  var show=used.slice();if(others.length)show.push(others[0]);
+  return {id:'code|calc|'+expr+'|'+res,prompt:__cdWrap('<div style=\'text-align:center;font-size:17px;margin-bottom:5px\'>'+__cdTable(map,show)+'</div><div style=\'text-align:center;font-size:18px\'>'+prompt2+'</div>'),answer:String(res),value:res,kind:'fx'};
 }
 
   
@@ -2706,14 +2715,20 @@ function __cdCat(){
   var pr=__pick(pairs);
   var small=__pick([30,40,50,60,70,80]),big=small+__pick([60,80,100,120,140,160]);
   var S=small+big,D=big-small;
-  var hS=Math.round(110*small/S),hB=Math.round(110*big/S);
-  function bars(aH,bH,cap){
-    return '<div style="flex:1;border:2px solid currentColor;border-radius:12px;padding:8px 4px;text-align:center"><div style="display:flex;align-items:flex-end;justify-content:center;gap:10px;height:118px"><div style="width:30px;background:#5fd68a;border-radius:6px 6px 0 0;height:'+bH+'px"></div><div style="width:30px;background:#6ea8ff;border-radius:6px 6px 0 0;height:'+aH+'px"></div></div><div style="font-size:13.5px;margin-top:4px">'+cap+'</div></div>';
-  }
-  var html='<div style="display:flex;gap:8px;justify-content:center">'
-    +bars(hS,hB,pr[3]+' cao hơn '+pr[1]+' là '+D+' cm')
-    +'<div style="flex:1;border:2px solid currentColor;border-radius:12px;padding:8px 4px;text-align:center"><div style="display:flex;align-items:flex-end;justify-content:center;height:118px"><div style="width:30px;background:#6ea8ff;border-radius:6px 6px 0 0;height:110px"></div></div><div style="font-size:13.5px;margin-top:4px">'+pr[1]+' đứng trên '+pr[3]+': từ mặt đất đến đầu '+pr[1]+' là '+S+' cm</div></div>'
-    +'</div>';
+  var fsB=54,fsS=Math.max(26,Math.round(54*small/big));
+  var scene1='<div style="flex:1.25;border:2px solid currentColor;border-radius:12px;padding:8px 4px 6px;text-align:center">'
+    +'<div style="display:flex;align-items:flex-end;justify-content:center;gap:14px;border-bottom:3px solid #b08968;padding:0 2px 2px">'
+    +'<div style="font-size:'+fsB+'px;line-height:1">'+pr[3]+'</div>'
+    +'<div style="font-size:'+fsS+'px;line-height:1">'+pr[1]+'</div>'
+    +'</div>'
+    +'<div style="font-size:13.5px;margin-top:5px">'+pr[3]+' cao hơn '+pr[1]+' là <b>'+D+' cm</b></div></div>';
+  var scene2='<div style="flex:1;border:2px solid currentColor;border-radius:12px;padding:8px 4px 6px;text-align:center">'
+    +'<div style="display:flex;flex-direction:column;align-items:center;border-bottom:3px solid #b08968;padding:0 2px 2px">'
+    +'<div style="font-size:'+fsS+'px;line-height:0.95">'+pr[1]+'</div>'
+    +'<div style="font-size:'+fsB+'px;line-height:0.95">'+pr[3]+'</div>'
+    +'</div>'
+    +'<div style="font-size:13.5px;margin-top:5px">'+pr[1]+' đứng trên '+pr[3]+': từ mặt đất đến đầu '+pr[1]+' là <b>'+S+' cm</b></div></div>';
+  var html='<div style="display:flex;gap:8px;justify-content:center">'+scene1+scene2+'</div>';
   if(Math.random()<0.5){
     return {id:'code|cat|'+small,prompt:__cdWrap(html+'<div style="text-align:center;font-size:14.5px;margin-top:6px">Hỏi '+pr[1]+' cao bao nhiêu cm?</div>'),answer:String(small),value:small,kind:'fx'};
   }
