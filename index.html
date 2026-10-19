@@ -2137,8 +2137,23 @@ function __svgLines(kind){var c='stroke="currentColor" stroke-width="2.4"';
   return __svgOpen()+'<line x1="20" y1="88" x2="140" y2="34" '+c+'/><line x1="30" y1="30" x2="128" y2="96" '+c+'/></svg></span>';}
 var __GEO_SHAPES=[['vuong','Hình vuông'],['chunhat','Hình chữ nhật'],['tamgiac','Hình tam giác'],['tron','Hình tròn'],['thang','Hình thang'],['binhhanh','Hình bình hành'],['thoi','Hình thoi'],['ngugiac','Hình ngũ giác']];
 function __geoOpts(correct,all){var pool=all.filter(function(x){return x!==correct;});var out=[correct];while(out.length<4){var c=__pick(pool);if(out.indexOf(c)<0)out.push(c);}return out;}
+
+function __svgPyramid(){var c='stroke="currentColor" stroke-width="2.2" fill="rgba(90,130,255,.14)"';
+  return __svgOpen()+'<polygon points="80,16 34,88 126,88" '+c+'/><polygon points="80,16 126,88 146,66 98,66" fill="rgba(90,130,255,.05)" stroke="currentColor" stroke-width="2.2"/><line x1="80" y1="16" x2="98" y2="66" stroke="currentColor" stroke-width="1.6" stroke-dasharray="4 3"/><line x1="34" y1="88" x2="54" y2="66" stroke="currentColor" stroke-width="1.6" stroke-dasharray="4 3"/><polygon points="34,88 126,88 146,66 54,66" fill="none" stroke="currentColor" stroke-width="2.2"/></svg></span>';}
+function __svgPrism(){var c='stroke="currentColor" stroke-width="2.2" fill="rgba(90,130,255,.14)"';
+  return __svgOpen()+'<polygon points="30,84 74,84 52,36" '+c+'/><polygon points="86,84 130,84 108,36" fill="rgba(90,130,255,.05)" stroke="currentColor" stroke-width="2.2"/><line x1="30" y1="84" x2="86" y2="84" stroke="currentColor" stroke-width="2.2"/><line x1="74" y1="84" x2="130" y2="84" stroke="currentColor" stroke-width="2.2"/><line x1="52" y1="36" x2="108" y2="36" stroke="currentColor" stroke-width="2.2"/></svg></span>';}
+function __svgSegPoints(n){var out='<line x1="14" y1="56" x2="150" y2="56" stroke="currentColor" stroke-width="2.2"/>';
+  var letters='ABCDEFG';
+  for(var i=0;i<n;i++){var x=22+i*(106/(n-1));out+='<circle cx="'+Math.round(x)+'" cy="56" r="4" fill="currentColor"/>'+__svgTxt(Math.round(x),82,letters[i],'middle');}
+  return __svgOpen()+out+'</svg></span>';}
+function __svgRays(n){var angs=[12,42,74,108,146],out='';
+  for(var i=0;i<n;i++){var rad=angs[i]*Math.PI/180,ex=Math.round(30+86*Math.cos(rad)),ey=Math.round(98-86*Math.sin(rad));
+    out+='<line x1="30" y1="98" x2="'+ex+'" y2="'+ey+'" stroke="currentColor" stroke-width="2.4"/>';}
+  out+='<circle cx="30" cy="98" r="4" fill="currentColor"/>'+__svgTxt(22,112,'O','middle');
+  return __svgOpen()+out+'</svg></span>';}
+var __GEO_SOLIDS=[['Hình chóp tam giác',4,4,6,'pyr'],['Hình chóp tứ giác',5,5,8,'pyr'],['Hình chóp ngũ giác',6,6,10,'pyr'],['Hình lăng trụ tam giác',5,6,9,'pri'],['Hình lăng trụ tứ giác',6,8,12,'pri'],['Hình lăng trụ ngũ giác',7,10,15,'pri']];
 function randomGeometryQuestion(){
-  var t=__ri(1,20);
+  var t=__ri(1,24);
   if(t===1){var sh=__pick(__GEO_SHAPES);var names=__GEO_SHAPES.map(function(x){return x[1];});
     return {id:'geo|nhan|'+sh[0],prompt:'Đây là hình gì?<br>'+__svgShape(sh[0]),options:__geoOpts(sh[1],names),answer:sh[1],kind:'geo'};}
   if(t===2){var a=__ri(3,25);return {id:'geo|cv-vuong|'+a,prompt:'Hình vuông có cạnh '+a+' cm. Tính chu vi hình vuông.<br>'+__svgSquare(a),answer:String(a*4),value:a*4,kind:'fx'};}
@@ -2171,8 +2186,18 @@ function randomGeometryQuestion(){
     return {id:'geo|khaitrien|'+net[0],prompt:'Hình khai triển dưới đây gấp lại thành hình gì?<br>'+__svgNet(net[0]),options:__geoOpts(net[1],['Hình lập phương','Hình hộp chữ nhật','Hình tam giác','Hình tròn']),answer:net[1],kind:'geo'};}
   if(t===19){var dg=__pick([[35,'Góc nhọn'],[65,'Góc nhọn'],[90,'Góc vuông'],[120,'Góc tù'],[150,'Góc tù'],[180,'Góc bẹt']]);
     return {id:'geo|do-goc|'+dg[0],prompt:'Góc trong hình có số đo là '+dg[0]+'°. Đó là góc gì?<br>'+__svgAngleDeg(dg[0]),options:__geoOpts(dg[1],['Góc nhọn','Góc vuông','Góc tù','Góc bẹt']),answer:dg[1],kind:'geo'};}
-  var ln=__pick([['song','Song song với nhau'],['vuong','Vuông góc với nhau'],['cat','Cắt nhau']]);
-  return {id:'geo|duong|'+ln[0],prompt:'Hai đường thẳng trong hình có quan hệ gì với nhau?<br>'+__svgLines(ln[0]),options:__geoOpts(ln[1],['Song song với nhau','Vuông góc với nhau','Cắt nhau','Trùng nhau']),answer:ln[1],kind:'geo'};
+  if(t===20){var ln=__pick([['song','Song song với nhau'],['vuong','Vuông góc với nhau'],['cat','Cắt nhau']]);
+    return {id:'geo|duong|'+ln[0],prompt:'Hai đường thẳng trong hình có quan hệ gì với nhau?<br>'+__svgLines(ln[0]),options:__geoOpts(ln[1],['Song song với nhau','Vuông góc với nhau','Cắt nhau','Trùng nhau']),answer:ln[1],kind:'geo'};}
+  if(t===21){var so=__pick(__GEO_SOLIDS),attr=__ri(0,2),anames=['số mặt','số đỉnh','số cạnh'],aval=[so[1],so[2],so[3]][attr];
+    var fig=so[4]==='pyr'?__svgPyramid():__svgPrism();
+    return {id:'geo|khoi|'+so[0]+'|'+attr,prompt:so[0]+' có '+anames[attr]+' là bao nhiêu?<br>'+fig,answer:String(aval),value:aval,kind:'fx'};}
+  if(t===22){var np=__ri(4,7),seg=np*(np-1)/2;
+    return {id:'geo|dem-doan|'+np,prompt:'Trên đường thẳng có '+np+' điểm phân biệt như hình. Hỏi có bao nhiêu đoạn thẳng được tạo thành?<br>'+__svgSegPoints(np),answer:String(seg),value:seg,kind:'fx'};}
+  if(t===23){var nr=__ri(3,5),ang=nr*(nr-1)/2;
+    return {id:'geo|dem-goc|'+nr,prompt:'Có '+nr+' tia chung gốc O như hình. Hỏi có bao nhiêu góc được tạo thành?<br>'+__svgRays(nr),answer:String(ang),value:ang,kind:'fx'};}
+  var gr2=__pick([[2,2],[2,3],[3,2],[3,3]]);
+  var rects=(gr2[0]+1)*gr2[0]/2*((gr2[1]+1)*gr2[1]/2);
+  return {id:'geo|dem-hcn|'+gr2[0]+'x'+gr2[1],prompt:'Đếm số hình chữ nhật có trong hình sau (hình vuông cũng là hình chữ nhật):<br>'+__svgGrid(gr2[0],gr2[1]),answer:String(rects),value:rects,kind:'fx'};
 }
 
   
@@ -2332,7 +2357,7 @@ function randomAssumptionQuestion(){
   if(t<=7){return {id:'gtt|chenh|'+A+'|'+nA+'|'+nB,prompt:intro+' Số '+more+' nhiều hơn số '+less+' là '+d+' '+cu+'. Biết rằng '+totT.replace('{T}',T2)+', hỏi có bao nhiêu '+cu+' '+less+'?',answer:String(lessN),value:lessN,kind:'fx'};}
   return {id:'gtt|chenh2|'+A+'|'+nA+'|'+nB,prompt:intro+' Số '+more+' nhiều hơn số '+less+' là '+d+' '+cu+'. Biết rằng '+totT.replace('{T}',T2)+'. Hỏi có bao nhiêu '+cu+' '+A+' và bao nhiêu '+cu+' '+B+'?',lab1:A+' ('+cu+')',lab2:B+' ('+cu+')',v1:nA,v2:nB,kind:'pair'};
 }
-function __tdMixed(){if(Math.random()<0.22)return randomAssumptionQuestion();return __tdExtra();}
+function __tdMixed(){var r=Math.random();if(r<0.20)return randomAssumptionQuestion();if(r<0.36)return randomTimoQuestion();return __tdExtra();}
 
   
 var __CD_PICS=['🍕','🐶','⭐','❤️','🚗','🍓','🦁','🌻','🚀','🎈','🧸','🍎','⛵','🐱','🌙','🍀','🔵','🔺','⬛','⬟'];
@@ -2343,7 +2368,11 @@ function __cdCode(k,hard){
   var map={};for(var j=0;j<k;j++)map[pics[j]]=vals[j];
   return {pics:pics,map:map};
 }
-function __cdTable(map,pics){var out=[];for(var j=0;j<pics.length;j++)out.push(pics[j]+' = '+map[pics[j]]);return out.join(' · ');}
+function __cdTable(map,pics){
+  function cell(p){return '<span style="display:inline-grid;grid-template-columns:28px 12px 16px;align-items:center;justify-items:center"><span style="font-size:19px">'+p+'</span><span>=</span><b>'+map[p]+'</b></span>';}
+  function row(items){return '<div style="display:flex;justify-content:center;gap:16px">'+items.map(cell).join('')+'</div>';}
+  return row(pics.slice(0,3))+(pics.length>3?row(pics.slice(3,6)):'');
+}
 function __cdWrap(inner){return '<div style="display:block;width:100%;flex:1 1 100%;min-width:0">'+inner+'</div>';}
 function __cdEq(){
   var items=shuffle(__CD_PICS.slice()).slice(0,3);
@@ -2375,6 +2404,18 @@ function __cdCryCount(a,b,c,d,k,four){
     }}
   return cnt;
 }
+
+function __cdColGrid(rows,S,note){
+  var L=rows[0].length;
+  function rowHtml(str,bold){
+    var cells='';
+    for(var i=0;i<str.length;i++){var ch=str.charAt(i);cells+='<div>'+(ch===' '?'&nbsp;':ch)+'</div>';}
+    return '<div style="display:grid;grid-template-columns:repeat('+str.length+',26px);justify-content:end;text-align:center'+(bold?';font-weight:800':'')+'">'+cells+'</div>';
+  }
+  var tot=String(S);while(tot.length<L)tot=' '+tot;
+  var html='<div style="font-size:21px;line-height:1.5">'+rows.map(function(r){return rowHtml(r,false);}).join('')+'<div style="border-top:3px solid currentColor;margin:2px 0 2px auto;width:'+(L*26)+'px"></div>'+rowHtml(tot,true)+'</div><div style="text-align:center;font-size:14.5px">'+note+'</div>';
+  return __cdWrap(html);
+}
 function __cdCry(){
   var four=Math.random()<0.5;
   for(var attempt=0;attempt<60;attempt++){
@@ -2384,14 +2425,14 @@ function __cdCry(){
       while(k===a||k===b||k===c||k===d)k=__ri(1,9);
       if(__cdCryCount(a,b,c,d,k,true)!==1)continue;
       var S=(1000*a+100*b+10*c+d)+(100*b+10*c+d)+(10*c+d)+k;
-      var rows=['abcd','+ bcd','+  cd','+   '+k];
-      var html='<div style="font-family:monospace;font-size:21px;line-height:1.5;text-align:right;letter-spacing:3px;padding-right:8px">'+rows.join('<br>')+'<br>――――<br>'+S+'</div><div style="text-align:center;font-size:14.5px">Mỗi chữ cái là một chữ số, các chữ cái khác nhau là các chữ số khác nhau. Hỏi số abcd là số nào?</div>';
+      var rows=['  abcd','+  bcd','+   cd','+    '+k];
+      var html=__cdColGrid(rows,S,'Mỗi chữ cái là một chữ số, các chữ cái khác nhau là các chữ số khác nhau. Hỏi số abcd là số nào?');
       return {id:'code|cry4|'+S,prompt:__cdWrap(html),answer:String(1000*a+100*b+10*c+d),value:1000*a+100*b+10*c+d,kind:'fx'}}
     var k2=__ri(1,9);while(k2===a||k2===b||k2===c)k2=__ri(1,9);
     if(__cdCryCount(a,b,c,0,k2,false)!==1)continue;
     var S2=(100*a+10*b+c)+(10*b+c)+c+k2;
-    var rows2=['abc','+ bc','+  c','+  '+k2];
-    var html2='<div style="font-family:monospace;font-size:21px;line-height:1.5;text-align:right;letter-spacing:3px;padding-right:8px">'+rows2.join('<br>')+'<br>――――<br>'+S2+'</div><div style="text-align:center;font-size:14.5px">Mỗi chữ cái là một chữ số, các chữ cái khác nhau là các chữ số khác nhau. Hỏi số abc là số nào?</div>';
+    var rows2=['  abc','+  bc','+   c','+   '+k2];
+    var html2=__cdColGrid(rows2,S2,'Mỗi chữ cái là một chữ số, các chữ cái khác nhau là các chữ số khác nhau. Hỏi số abc là số nào?');
     return {id:'code|cry3|'+S2,prompt:__cdWrap(html2),answer:String(100*a+10*b+c),value:100*a+10*b+c,kind:'fx'};
   }
   return __cdEq();
@@ -2410,18 +2451,93 @@ function __cdBal(){
   if(!lw||!rw||!lw.length||!rw.length)return __cdEq();
   function boxes(n){var o='';for(var i=0;i<n;i++)o+=it[1];return o;}
   function wtxt(w){return w.map(function(v){return v+'g';}).join(' + ');}
-  var html='<div style="text-align:center;font-size:15px">⚖️ Cân đang thăng bằng</div>'
-    +'<div style="display:flex;gap:8px;justify-content:center;margin-top:6px">'
-    +'<div style="flex:1;border:2px solid currentColor;border-radius:12px;padding:8px 4px;text-align:center">Đĩa trái<br><span style="font-size:22px">'+boxes(a)+'</span><br>'+wtxt(lw)+'</div>'
-    +'<div style="flex:1;border:2px solid currentColor;border-radius:12px;padding:8px 4px;text-align:center">Đĩa phải<br><span style="font-size:22px">'+boxes(b)+'</span><br>'+wtxt(rw)+'</div>'
-    +'</div><div style="text-align:center;font-size:14.5px;margin-top:6px">Mỗi '+it[0]+' nặng như nhau. Hỏi 1 '+it[0]+' nặng bao nhiêu gam?</div>';
+  function pan(cx,pics,ws){
+    return '<line x1="'+(cx-54)+'" y1="28" x2="'+(cx-15)+'" y2="60" stroke="#8a6d3b" stroke-width="2"/>'
+      +'<line x1="'+(cx+54)+'" y1="28" x2="'+(cx+15)+'" y2="60" stroke="#8a6d3b" stroke-width="2"/>'
+      +'<path d="M '+(cx-58)+' 60 Q '+cx+' 86 '+(cx+58)+' 60 L '+(cx+44)+' 60 Q '+cx+' 75 '+(cx-44)+' 60 Z" fill="#ffd98a" stroke="#b8860b" stroke-width="2"/>'
+      +'<text x="'+cx+'" y="56" font-size="20" text-anchor="middle">'+pics+'</text>'
+      +'<text x="'+cx+'" y="106" font-size="13" font-weight="700" text-anchor="middle">'+ws+'</text>';
+  }
+  var svg='<svg viewBox="0 0 340 114" style="width:100%;max-width:340px;display:block;margin:2px auto 0">'
+    +'<circle cx="170" cy="12" r="4" fill="#b8860b"/>'
+    +'<line x1="28" y1="28" x2="312" y2="28" stroke="#8a6d3b" stroke-width="4" stroke-linecap="round"/>'
+    +'<line x1="170" y1="16" x2="170" y2="98" stroke="#8a6d3b" stroke-width="4"/>'
+    +'<path d="M 144 110 L 196 110 L 187 98 L 153 98 Z" fill="#b8860b"/>'
+    +pan(85,boxes(a),wtxt(lw))
+    +pan(255,boxes(b),wtxt(rw))
+    +'</svg>';
+  var html='<div style="text-align:center;font-size:15px">⚖️ Cân đang thăng bằng</div>'+svg
+    +'<div style="text-align:center;font-size:14.5px;margin-top:4px">Mỗi '+it[0]+' nặng như nhau. Hỏi 1 '+it[0]+' nặng bao nhiêu gam?</div>';
   return {id:'code|bal|'+a+'|'+b+'|'+x,prompt:__cdWrap(html),answer:String(x),value:x,kind:'fx'};
 }
+function __cdCry2(){
+  function colHtml(rows,S,note){return __cdColGrid(rows,S,note);}
+  if(Math.random()<0.35){
+    for(var att=0;att<60;att++){
+      var B=__ri(1,9),A=__ri(1,9);if(A===B)continue;
+      var S=(10*B+B)+(10*A+B);
+      if(S<100)continue;
+      var prods=[];
+      for(var a2=1;a2<=9;a2++)for(var b2=1;b2<=9;b2++){if(a2===b2)continue;if((10*b2+b2)+(10*a2+b2)===S)prods.push(a2*b2);}
+      if(!prods.length)continue;
+      var askMax=Math.random()<0.6;
+      var ans=askMax?Math.max.apply(null,prods):Math.min.apply(null,prods);
+      return {id:'code|cry2m|'+S+'|'+ans,prompt:colHtml(['  BB','+ AB'],S,'A và B là hai chữ số khác nhau. Hỏi giá trị '+(askMax?'lớn nhất':'nhỏ nhất')+' của A × B là bao nhiêu?'),answer:String(ans),value:ans,kind:'fx'};
+    }
+  }
+  for(var att2=0;att2<90;att2++){
+    var cols=[__ri(0,2),__ri(0,2),__ri(0,2)];
+    var vals=[__ri(0,9),__ri(0,9),__ri(0,9)];
+    var ok=true,i3;
+    for(i3=0;i3<3;i3++)if(cols[i3]===2&&vals[i3]===0)ok=false;
+    if(!ok)continue;
+    var terms=[];
+    for(var t3=0;t3<3;t3++){
+      var digs=[];
+      for(var cc=2;cc>=0;cc--){
+        if(cc===cols[t3])digs.push('ABC'.charAt(t3));
+        else digs.push(String(cc===2?__ri(1,9):__ri(0,9)));
+      }
+      terms.push(digs.join(''));
+    }
+    function termVal(ti,vv){
+      var str=terms[ti],out=0;
+      for(var p=0;p<3;p++){var ch=str.charAt(p);var d=(ch>='A'&&ch<='C')?vv[ch.charCodeAt(0)-65]:Number(ch);out=out*10+d;}
+      return out;
+    }
+    var S3=termVal(0,vals)+termVal(1,vals)+termVal(2,vals);
+    if(S3<300||S3>1999)continue;
+    var sums=new Set(),setA=new Set(),setB=new Set(),setC=new Set(),cnt=0;
+    for(var A3=0;A3<=9;A3++)for(var B3=0;B3<=9;B3++)for(var C3=0;C3<=9;C3++){
+      var vv=[A3,B3,C3],bad=false;
+      for(var i4=0;i4<3;i4++)if(cols[i4]===2&&vv[i4]===0)bad=true;
+      if(bad)continue;
+      if(termVal(0,vv)+termVal(1,vv)+termVal(2,vv)===S3){cnt++;sums.add(A3+B3+C3);setA.add(A3);setB.add(B3);setC.add(C3);}
+    }
+    if(!cnt)continue;
+    var rows=['  '+terms[0],'  '+terms[1],'+ '+terms[2]];
+    if(Math.random()<0.55){
+      if(sums.size!==1)continue;
+      var ansS=Array.from(sums)[0];
+      return {id:'code|cry2s|'+S3,prompt:colHtml(rows,S3,'A, B, C là các chữ số. Hỏi A + B + C bằng bao nhiêu?'),answer:String(ansS),value:ansS,kind:'fx'};
+    }
+    var sets=[setA,setB,setC],names=['A','B','C'],cand=[];
+    for(var i5=0;i5<3;i5++)if(sets[i5].size===1)cand.push(i5);
+    if(!cand.length)continue;
+    var pick=cand[__ri(0,cand.length-1)];
+    var ansC=Array.from(sets[pick])[0];
+    return {id:'code|cry2o|'+S3+'|'+names[pick],prompt:colHtml(rows,S3,'A, B, C là các chữ số. Hỏi '+names[pick]+' là chữ số nào?'),answer:String(ansC),value:ansC,kind:'fx'};
+  }
+  return __cdCry();
+}
+
 function randomCodeQuestion(){
-  var t=__ri(1,12);
+  var t=__ri(1,16);
   if(t===8||t===9)return __cdEq();
   if(t===10||t===11)return __cdBal();
-  if(t===12)return __cdCry();
+  if(t===12||t===13)return __cdCube();
+  if(t===14||t===15)return __cdCat();
+  if(t===16)return Math.random()<0.5?__cdCry():__cdCry2();
   var hard=Math.random()<0.3;
   var cd=__cdCode(hard?6:__ri(3,5),hard),map=cd.map,pics=cd.pics;
   if(t<=3){var m=hard?5:__ri(3,4),seq=[];for(var i=0;i<m;i++)seq.push(__pick(pics));
@@ -2440,6 +2556,168 @@ function randomCodeQuestion(){
     if(op2==='-'&&vc>res){op2='+';}
     res=op2==='+'?res+vc:res-vc;expr+=' '+op2+' '+c;prompt2='Tính: '+expr+' = ?';}
   return {id:'code|calc|'+expr+'|'+res,prompt:__cdWrap('<div style=\'text-align:center;font-size:17px;margin-bottom:5px\'>'+__cdTable(map,pics)+'</div><div style=\'text-align:center;font-size:18px\'>'+prompt2+'</div>'),answer:String(res),value:res,kind:'fx'};
+}
+
+  
+var __TM_DAYS=['Chủ nhật','thứ Hai','thứ Ba','thứ Tư','thứ Năm','thứ Sáu','thứ Bảy'];
+function __tmWrap(inner){return '<div style="display:block;width:100%;flex:1 1 100%;min-width:0">'+inner+'</div>';}
+function __tmDayChu(){
+  var mode=__ri(1,3),start=__ri(0,5),letters=[],i;
+  if(mode===1){var step=__ri(2,3);for(i=0;i<5;i++)letters.push(start+step*i);
+    var ans=start+step*5;}
+  else if(mode===2){var d0=__ri(1,2),pos=start;for(i=0;i<5;i++){letters.push(pos);pos+=d0+i;}
+    var ans=pos;}
+  else{var st=__ri(14,20),step2=__ri(2,3);for(i=0;i<5;i++)letters.push(st-step2*i);
+    var ans=st-step2*5;}
+  if(ans<0||ans>25)return __tmDayChu();
+  var L=function(n){return String.fromCharCode(65+n);};
+  var shown=letters.map(L).join(', ');
+  var opts=[L(ans)];var guard=0;
+  while(opts.length<4&&guard++<40){var cand=L(Math.max(0,Math.min(25,ans+__pick([-3,-2,-1,1,2,3]))));if(opts.indexOf(cand)<0)opts.push(cand);}
+  return {id:'timo|daychu|'+ans,prompt:'Tìm chữ cái tiếp theo trong dãy: '+shown+', ?',options:shuffle(opts),answer:L(ans),kind:'geo'};
+}
+function __tmThu(){
+  var h=__ri(0,6),n=__ri(3,40),fwd=Math.random()<0.7;
+  var ans=fwd?(h+n)%7:(h-n%7+7)%7;
+  var prompt=fwd?('Hôm nay là '+__TM_DAYS[h]+'. Hỏi '+n+' ngày nữa là thứ mấy?'):('Hôm nay là '+__TM_DAYS[h]+'. Hỏi '+n+' ngày trước là thứ mấy?');
+  var opts=[__TM_DAYS[ans]];var guard=0;
+  while(opts.length<4&&guard++<40){var cand=__TM_DAYS[__ri(0,6)];if(opts.indexOf(cand)<0)opts.push(cand);}
+  return {id:'timo|thu|'+ans,prompt:prompt,options:shuffle(opts),answer:__TM_DAYS[ans],kind:'geo'};
+}
+function __tmDienDau(){
+  var OPS=['+','-','×'],NAMES={'+':'cộng','-':'trừ','×':'nhân'};
+  function val(a,o1,b,o2,c){
+    var parts=[a];var ops=[o1,o2];var nums=[b,c];
+    var stack=[a];
+    for(var i=0;i<2;i++){if(ops[i]==='×')stack[stack.length-1]=stack[stack.length-1]*nums[i];else stack.push(ops[i]==='+'?nums[i]:-nums[i]);}
+    var r=0;for(var j=0;j<stack.length;j++)r+=stack[j];return r;
+  }
+  for(var att=0;att<80;att++){
+    var a=__ri(2,9),b=__ri(2,9),c=__ri(2,9);
+    var o1=__pick(OPS),o2=__pick(OPS),k=val(a,o1,b,o2,c);
+    if(k<0||k>90)continue;
+    var sols=[];
+    for(var x=0;x<3;x++)for(var y=0;y<3;y++){if(val(a,OPS[x],b,OPS[y],c)===k)sols.push(OPS[x]+' và '+OPS[y]);}
+    if(sols.length!==1)continue;
+    var opts=sols.slice();var guard=0;
+    while(opts.length<4&&guard++<60){var cand=__pick(OPS)+' và '+__pick(OPS);if(opts.indexOf(cand)<0&&val(a,cand.split(' và ')[0],b,cand.split(' và ')[1],c)!==k)opts.push(cand);}
+    if(opts.length<4)continue;
+    return {id:'timo|dau|'+a+o1+b+o2+c,prompt:'Điền dấu vào phép tính: '+a+' □ '+b+' □ '+c+' = '+k+'. Chọn cặp dấu đúng theo thứ tự:',options:shuffle(opts),answer:o1+' và '+o2,kind:'geo'};
+  }
+  return __tmThu();
+}
+function __tmBang(){
+  function ambCheck(g,hr,hc,ans){
+    function at(r,c){return (r===hr&&c===hc)?null:g[r][c];}
+    var rules=[
+      {rels:[[at(0,0),at(1,0),at(2,0)],[at(0,1),at(1,1),at(2,1)],[at(0,2),at(1,2),at(2,2)]],f:function(x,y){return x+y;},inv:function(z,o){return z-o;}},
+      {rels:[0,1,2].map(function(r){return [at(r,0),at(r,1),at(r,2)];}),f:function(x,y){return x+y;},inv:function(z,o){return z-o;}},
+      {rels:[0,1,2].map(function(r){return [at(r,0),at(r,1),at(r,2)];}),f:function(x,y){return x*y;},inv:function(z,o){return (o!==0&&z%o===0)?z/o:null;}}
+    ];
+    for(var i2=0;i2<rules.length;i2++){
+      var R=rules[i2],ok=true,v=null;
+      for(var j2=0;j2<3;j2++){
+        var t=R.rels[j2],n=0,k2;
+        for(k2=0;k2<3;k2++)if(t[k2]===null)n++;
+        if(n===0){if(R.f(t[0],t[1])!==t[2]){ok=false;break;}continue;}
+        if(n>1){ok=false;break;}
+        var cand=t[2]===null?R.f(t[0],t[1]):(t[0]===null?R.inv(t[2],t[1]):R.inv(t[2],t[0]));
+        if(cand===null||cand<0){ok=false;break;}
+        v=cand;
+      }
+      if(ok&&v!==null&&v!==ans)return true;
+    }
+    return false;
+  }
+  for(var att=0;att<40;att++){
+    var mode=__ri(1,3),g=[],r,c;
+    if(mode===1){var r1=[__ri(2,9),__ri(2,9),__ri(2,9)],r2=[__ri(2,9),__ri(2,9),__ri(2,9)];
+      g=[r1,r2,[r1[0]+r2[0],r1[1]+r2[1],r1[2]+r2[2]]];}
+    else if(mode===2){g=[];for(r=0;r<3;r++){var x=__ri(2,9),y=__ri(2,9);g.push([x,y,x+y]);}}
+    else{g=[];for(r=0;r<3;r++){var x2=__ri(2,5),y2=__ri(2,5);g.push([x2,y2,x2*y2]);}}
+    var hr=__ri(0,2),hc=__ri(0,2),ans=g[hr][hc];
+    if(ambCheck(g,hr,hc,ans))continue;
+    var cells='';
+    for(r=0;r<3;r++)for(c=0;c<3;c++){
+      var v=(r===hr&&c===hc)?'?':g[r][c];
+      cells+='<div style="border:2px solid currentColor;border-radius:8px;padding:7px 0;font-size:18px;font-weight:800;'+(v==='?'?'background:rgba(255,180,60,.35);':'')+'">'+v+'</div>';
+    }
+    var html='<div style="display:grid;grid-template-columns:repeat(3,52px);gap:5px;justify-content:center;text-align:center">'+cells+'</div><div style="text-align:center;font-size:14.5px;margin-top:6px">Tìm quy luật của bảng số rồi cho biết ô ? là số mấy.</div>';
+    return {id:'timo|bang|'+mode+'|'+ans,prompt:__tmWrap(html),answer:String(ans),value:ans,kind:'fx'};
+  }
+  return __tmThu();
+}
+function __tmLapSo(){
+  for(var att=0;att<60;att++){
+    var mode=__ri(1,3),cond,desc;
+    if(mode===1){var S=__ri(10,17);cond=function(n){return Math.floor(n/100)+Math.floor(n/10)%10+n%10===S;};desc='tổng các chữ số bằng '+S;}
+    else if(mode===2){var m=__pick([2,3]);cond=function(n){return Math.floor(n/100)===m*(n%10);};desc='chữ số hàng trăm gấp '+m+' lần chữ số hàng đơn vị';}
+    else{var d=__ri(1,4);cond=function(n){return Math.floor(n/10)%10===(n%10)+d;};desc='chữ số hàng chục lớn hơn chữ số hàng đơn vị là '+d;}
+    var list=[];for(var n=100;n<=999;n++)if(cond(n))list.push(n);
+    if(list.length<3||list.length>200)continue;
+    var ask=__ri(1,3);
+    if(ask===1)return {id:'timo|lapso|min|'+list[0],prompt:'Viết số có 3 chữ số, biết '+desc+'. Hỏi số bé nhất viết được là số nào?',answer:String(list[0]),value:list[0],kind:'fx'};
+    if(ask===2)return {id:'timo|lapso|max|'+list[list.length-1],prompt:'Viết số có 3 chữ số, biết '+desc+'. Hỏi số lớn nhất viết được là số nào?',answer:String(list[list.length-1]),value:list[list.length-1],kind:'fx'};
+    return {id:'timo|lapso|cnt|'+list.length,prompt:'Có bao nhiêu số có 3 chữ số mà '+desc+'?',answer:String(list.length),value:list.length,kind:'fx'};
+  }
+  return __tmThu();
+}
+function __tmDuongDi(){
+  var mx=__ri(2,4),my=__ri(2,3);
+  function C(n,k){var r=1;for(var i=0;i<k;i++)r=r*(n-i)/(i+1);return r;}
+  var ans=C(mx+my,mx);
+  var cells='';
+  for(var r=0;r<=my;r++)for(var c=0;c<=mx;c++){
+    var mark=(r===0&&c===0)?'A':(r===my&&c===mx)?'B':'';
+    cells+='<div style="border:2px solid currentColor;border-radius:6px;height:30px;display:flex;align-items:center;justify-content:center;font-weight:800;'+(mark?'background:rgba(90,200,120,.35);':'')+'">'+mark+'</div>';
+  }
+  var html='<div style="display:grid;grid-template-columns:repeat('+(mx+1)+',34px);gap:4px;justify-content:center">'+cells+'</div><div style="text-align:center;font-size:14.5px;margin-top:6px">Từ ô A đến ô B, mỗi bước chỉ được đi sang phải hoặc đi xuống. Hỏi có bao nhiêu cách đi?</div>';
+  return {id:'timo|duongdi|'+mx+'|'+my,prompt:__tmWrap(html),answer:String(ans),value:ans,kind:'fx'};
+}
+function randomTimoQuestion(){
+  var t=__ri(1,6);
+  if(t===1)return __tmDayChu();
+  if(t===2)return __tmThu();
+  if(t===3)return __tmDienDau();
+  if(t===4)return __tmBang();
+  if(t===5)return __tmLapSo();
+  return __tmDuongDi();
+}
+function __cdCube(){
+  var h=[],r,c,total=0,front=[],topCount=0;
+  for(c=0;c<3;c++)front.push(0);
+  for(r=0;r<3;r++){h.push([]);for(c=0;c<3;c++){var v=__ri(0,3);h[r].push(v);total+=v;if(v>front[c])front[c]=v;if(v>0)topCount++;}}
+  if(total<6)return __cdCube();
+  var frontSum=front[0]+front[1]+front[2];
+  var cells='';
+  for(r=0;r<3;r++)for(c=0;c<3;c++){
+    var v=h[r][c];
+    var bg=v===0?'transparent':('rgba(47,107,216,'+(0.25+0.22*v)+')');
+    cells+='<div style="border:2px solid currentColor;border-radius:8px;padding:8px 0;font-size:18px;font-weight:800;background:'+bg+'">'+(v===0?'·':v)+'</div>';
+  }
+  var grid='<div style="display:grid;grid-template-columns:repeat(3,52px);gap:5px;justify-content:center;text-align:center">'+cells+'</div>';
+  var ask=__ri(1,3);
+  if(ask===1)return {id:'code|cube|tong|'+total,prompt:__cdWrap(grid+'<div style="text-align:center;font-size:14.5px;margin-top:6px">Mỗi ô cho biết số khối lập phương nhỏ xếp chồng lên nhau ở ô đó. Hỏi tất cả có bao nhiêu khối?</div>'),answer:String(total),value:total,kind:'fx'};
+  if(ask===2)return {id:'code|cube|truoc|'+frontSum,prompt:__cdWrap(grid+'<div style="text-align:center;font-size:14.5px;margin-top:6px">Mỗi ô cho biết số khối lập phương nhỏ xếp chồng lên nhau ở ô đó. Nhìn từ phía trước (hàng dưới cùng của sơ đồ là mặt trước), em thấy bao nhiêu khối? (Khối bị che khuất không tính.)</div>'),answer:String(frontSum),value:frontSum,kind:'fx'};
+  return {id:'code|cube|tren|'+topCount,prompt:__cdWrap(grid+'<div style="text-align:center;font-size:14.5px;margin-top:6px">Mỗi ô cho biết số khối lập phương nhỏ xếp chồng lên nhau ở ô đó. Nhìn từ trên xuống, em thấy bao nhiêu ô có khối?</div>'),answer:String(topCount),value:topCount,kind:'fx'};
+}
+function __cdCat(){
+  var pairs=[['con mèo','🐱','cái cây','🌳','cao'],['con chó','🐶','cái bàn','🪑','cao'],['bạn thỏ','🐰','chồng sách','📚','cao'],['con gà','🐔','cái ghế','🪑','cao']];
+  var pr=__pick(pairs);
+  var small=__pick([30,40,50,60,70,80]),big=small+__pick([60,80,100,120,140,160]);
+  var S=small+big,D=big-small;
+  var hS=Math.round(110*small/S),hB=Math.round(110*big/S);
+  function bars(aH,bH,cap){
+    return '<div style="flex:1;border:2px solid currentColor;border-radius:12px;padding:8px 4px;text-align:center"><div style="display:flex;align-items:flex-end;justify-content:center;gap:10px;height:118px"><div style="width:30px;background:#5fd68a;border-radius:6px 6px 0 0;height:'+bH+'px"></div><div style="width:30px;background:#6ea8ff;border-radius:6px 6px 0 0;height:'+aH+'px"></div></div><div style="font-size:13.5px;margin-top:4px">'+cap+'</div></div>';
+  }
+  var html='<div style="display:flex;gap:8px;justify-content:center">'
+    +bars(hS,hB,pr[3]+' cao hơn '+pr[1]+' là '+D+' cm')
+    +'<div style="flex:1;border:2px solid currentColor;border-radius:12px;padding:8px 4px;text-align:center"><div style="display:flex;align-items:flex-end;justify-content:center;height:118px"><div style="width:30px;background:#6ea8ff;border-radius:6px 6px 0 0;height:110px"></div></div><div style="font-size:13.5px;margin-top:4px">'+pr[1]+' đứng trên '+pr[3]+': từ mặt đất đến đầu '+pr[1]+' là '+S+' cm</div></div>'
+    +'</div>';
+  if(Math.random()<0.5){
+    return {id:'code|cat|'+small,prompt:__cdWrap(html+'<div style="text-align:center;font-size:14.5px;margin-top:6px">Hỏi '+pr[1]+' cao bao nhiêu cm?</div>'),answer:String(small),value:small,kind:'fx'};
+  }
+  return {id:'code|cat2|'+small+'|'+big,prompt:__cdWrap(html+'<div style="text-align:center;font-size:14.5px;margin-top:6px">Hỏi mỗi thứ cao bao nhiêu cm?</div>'),lab1:pr[1]+' (cm)',lab2:pr[3]+' (cm)',v1:small,v2:big,kind:'pair'};
 }
 
   function buildMathSession(){mathSessionSubmitted=false;document.getElementById('math-pair-row').hidden=!['add','subtract','multiply','divide'].includes(mathSessionType);document.getElementById('math-level-row').hidden=mathSessionType!=='word';if(mathSessionType==='word')renderWordLevelTabs();
