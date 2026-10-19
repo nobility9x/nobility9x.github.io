@@ -2392,10 +2392,32 @@ function __cdCry(){
   }
   return __cdEq();
 }
+
+function __cdBal(){
+  var items=[['hộp','📦'],['túi','🛍️'],['chai','🍾']];
+  var it=__pick(items);
+  var x=__pick([100,125,150,200,250,300,350,400,450,500]);
+  var a=__ri(2,4),b=__ri(1,a-1),diff=(a-b)*x;
+  var L=__pick([50,100,150,200,250,300,400,500]),R=L+diff;
+  function repr(total){var denoms=[500,250,200,100,50],out=[],rem=total;
+    for(var i=0;i<denoms.length;i++){while(rem>=denoms[i]){out.push(denoms[i]);rem-=denoms[i];}}
+    return rem===0?out:null;}
+  var lw=repr(L),rw=repr(R);
+  if(!lw||!rw||!lw.length||!rw.length)return __cdEq();
+  function boxes(n){var o='';for(var i=0;i<n;i++)o+=it[1];return o;}
+  function wtxt(w){return w.map(function(v){return v+'g';}).join(' + ');}
+  var html='<div style="text-align:center;font-size:15px">⚖️ Cân đang thăng bằng</div>'
+    +'<div style="display:flex;gap:8px;justify-content:center;margin-top:6px">'
+    +'<div style="flex:1;border:2px solid currentColor;border-radius:12px;padding:8px 4px;text-align:center">Đĩa trái<br><span style="font-size:22px">'+boxes(a)+'</span><br>'+wtxt(lw)+'</div>'
+    +'<div style="flex:1;border:2px solid currentColor;border-radius:12px;padding:8px 4px;text-align:center">Đĩa phải<br><span style="font-size:22px">'+boxes(b)+'</span><br>'+wtxt(rw)+'</div>'
+    +'</div><div style="text-align:center;font-size:14.5px;margin-top:6px">Mỗi '+it[0]+' nặng như nhau. Hỏi 1 '+it[0]+' nặng bao nhiêu gam?</div>';
+  return {id:'code|bal|'+a+'|'+b+'|'+x,prompt:__cdWrap(html),answer:String(x),value:x,kind:'fx'};
+}
 function randomCodeQuestion(){
-  var t=__ri(1,10);
+  var t=__ri(1,12);
   if(t===8||t===9)return __cdEq();
-  if(t===10)return __cdCry();
+  if(t===10||t===11)return __cdBal();
+  if(t===12)return __cdCry();
   var hard=Math.random()<0.3;
   var cd=__cdCode(hard?6:__ri(3,5),hard),map=cd.map,pics=cd.pics;
   if(t<=3){var m=hard?5:__ri(3,4),seq=[];for(var i=0;i<m;i++)seq.push(__pick(pics));
