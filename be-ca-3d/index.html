@@ -277,85 +277,164 @@ makePlant(1.6, 1.05, 0.8, 0x3fae62, 0x5cc178, 8);       // front carpet-ish
 makePlant(-1.4, 1.0, 0.7, 0x35a852, 0x57bd74, 7);
 makePlant(0.4, -0.2, 1.1, 0x2f9e57, 0x45b96b, 7);       // mid accent
 
-/* ---------- Fish (procedural 3D) ---------- */
-function fishTexture(top, mid, belly) {
-  const c = document.createElement('canvas'); c.width = 64; c.height = 128;
+/* ---------- Fish: species-modeled (molly + swordtail) ---------- */
+function fishTexture(top, mid, belly, spots) {
+  const c = document.createElement('canvas'); c.width = 128; c.height = 128;
   const x = c.getContext('2d');
   const gr = x.createLinearGradient(0, 0, 0, 128);
   gr.addColorStop(0, top); gr.addColorStop(0.55, mid); gr.addColorStop(1, belly);
-  x.fillStyle = gr; x.fillRect(0, 0, 64, 128);
+  x.fillStyle = gr; x.fillRect(0, 0, 128, 128);
+  // subtle scale shimmer
+  x.globalAlpha = 0.05; x.fillStyle = '#ffffff';
+  for (let r = 0; r < 9; r++) for (let col = 0; col < 12; col++) {
+    x.beginPath(); x.arc(col * 12 + (r % 2) * 6, r * 15 + 6, 5.5, 0, 6.29); x.fill();
+  }
+  x.globalAlpha = 1;
+  if (spots) { // dalmatian molly markings
+    x.fillStyle = '#22242a';
+    const pts = [[20,40,9],[42,70,7],[64,34,10],[84,62,8],[104,44,7],[32,92,6],[58,96,8],[92,90,6],[70,58,5],[14,66,6],[112,74,5],[48,20,6]];
+    for (const [px, py, pr] of pts) { x.beginPath(); x.ellipse(px, py, pr, pr * 0.7, 0.4, 0, 6.29); x.fill(); }
+  }
   const t = new THREE.CanvasTexture(c);
   t.colorSpace = THREE.SRGBColorSpace;
   return t;
 }
-const FISH_KINDS = [
-  { top: '#ffb03a', mid: '#f58a1d', belly: '#ffd98f', fin: 0xf07f13, s: 1.0 },   // goldfish orange
-  { top: '#7dd7ff', mid: '#3b82f6', belly: '#d6efff', fin: 0x2563eb, s: 0.62 },  // neon blue
-  { top: '#ff9a9a', mid: '#ef4444', belly: '#ffd9d9', fin: 0xdc2626, s: 0.66 },  // red
-  { top: '#ffe066', mid: '#f2c41c', belly: '#fff3b0', fin: 0xeab308, s: 0.6 },   // yellow
-  { top: '#d8b4fe', mid: '#9b5de5', belly: '#f1e6ff', fin: 0x7c3aed, s: 0.8 },   // purple
-  { top: '#ffc2d4', mid: '#f771a5', belly: '#ffe6ef', fin: 0xf43f8e, s: 0.7 },   // pink
-  { top: '#ffb03a', mid: '#f58a1d', belly: '#ffd98f', fin: 0xf07f13, s: 0.78 },
-  { top: '#a5e8ff', mid: '#38b6d9', belly: '#e2f7ff', fin: 0x1d8fb8, s: 0.58 }
-];
+/* Body: sphere vertices tapered — pointed snout for swordtail, deep blunt body for molly */
+function bodyGeometry(len, hgt, thk, snout) {
+  const geo = new THREE.SphereGeometry(0.30, 30, 22);
+  const pos = geo.attributes.position;
+  for (let i = 0; i < pos.count; i++) {
+    let x = pos.getX(i), y = pos.getY(i), z = pos.getZ(i);
+    const nx = x / 0.30; // -1 tail .. +1 head
+    let taper = 1;
+    if (nx > 0.45) taper = 1 - (nx - 0.45) / 0.55 * snout;          // snout point
+    if (nx < -0.45) taper = 1 - (-nx - 0.45) / 0.55 * 0.42;        // tail peduncle
+    pos.setXYZ(i, x * len, y * hgt * taper + (y < 0 ? 0.012 : 0), z * thk * taper);
+  }
+  geo.computeVertexNormals();
+  return geo;
+}
+function finMesh(points, mat) {
+  const sh = new THREE.Shape();
+  sh.moveTo(points[0][0], points[0][1]);
+  for (let i = 1; i < points.length; i++) sh.lineTo(points[i][0], points[i][1]);
+  sh.closePath();
+  return new THREE.Mesh(new THREE.ShapeGeometry(sh), mat);
+}
+function curvedFin(pts, mat) { // pts: [move, quadCtrl, quadEnd, ...] simple smooth fan
+  const sh = new THREE.Shape();
+  sh.moveTo(pts[0][0], pts[0][1]);
+  sh.quadraticCurveTo(pts[1][0], pts[1][1], pts[2][0], pts[2][1]);
+  sh.quadraticCurveTo(pts[3][0], pts[3][1], pts[4][0], pts[4][1]);
+  sh.closePath();
+  return new THREE.Mesh(new THREE.ShapeGeometry(sh), mat);
+}
 const fishes = [];
-function makeFish(kind, x, y, z) {
+function baseFish(tex, finColor, opacity) {
   const g = new THREE.Group();
-  const mat = new THREE.MeshStandardMaterial({ map: fishTexture(kind.top, kind.mid, kind.belly), roughness: 0.38, metalness: 0.12 });
-  const body = new THREE.Mesh(new THREE.SphereGeometry(0.30, 28, 20), mat);
-  body.scale.set(1.55, 0.92, 0.52);
-  body.castShadow = true;
-  g.add(body);
-  const finMat = new THREE.MeshStandardMaterial({ color: kind.fin, roughness: 0.5, transparent: true, opacity: 0.92, side: THREE.DoubleSide });
-  // tail (pivot group at rear)
-  const tailPivot = new THREE.Group();
-  tailPivot.position.set(-0.44, 0, 0);
-  const tailShape = new THREE.Shape();
-  tailShape.moveTo(0, 0); tailShape.lineTo(-0.30, 0.20); tailShape.lineTo(-0.24, 0); tailShape.lineTo(-0.30, -0.20); tailShape.lineTo(0, 0);
-  const tail = new THREE.Mesh(new THREE.ShapeGeometry(tailShape), finMat);
-  tail.rotation.y = Math.PI / 2;
-  tailPivot.add(tail);
-  g.add(tailPivot);
-  // dorsal fin
-  const dorsal = new THREE.Mesh(new THREE.ConeGeometry(0.13, 0.3, 6), finMat);
-  dorsal.scale.set(1.5, 1, 0.25);
-  dorsal.position.set(-0.02, 0.3, 0);
-  g.add(dorsal);
-  // pectoral fins
+  const mat = new THREE.MeshStandardMaterial({ map: tex, roughness: 0.35, metalness: 0.15 });
+  const finMat = new THREE.MeshStandardMaterial({ color: finColor, roughness: 0.45, transparent: true, opacity: opacity == null ? 0.95 : opacity, side: THREE.DoubleSide });
+  return { g, mat, finMat };
+}
+function addEyes(g, ex, ey, ez) {
+  const eyeMat = new THREE.MeshStandardMaterial({ color: 0x14161a, roughness: 0.2 });
   [-1, 1].forEach(side => {
-    const pf = new THREE.Mesh(new THREE.ConeGeometry(0.07, 0.22, 5), finMat);
-    pf.scale.set(1, 1, 0.3);
-    pf.position.set(0.16, -0.1, side * 0.17);
-    pf.rotation.set(side * 0.9, 0, 0.7);
-    g.add(pf);
-  });
-  // eyes
-  const eyeMat = new THREE.MeshStandardMaterial({ color: 0x14161a, roughness: 0.25 });
-  [-1, 1].forEach(side => {
-    const eye = new THREE.Mesh(new THREE.SphereGeometry(0.045, 10, 10), eyeMat);
-    eye.position.set(0.33, 0.07, side * 0.145);
+    const eye = new THREE.Mesh(new THREE.SphereGeometry(0.042, 10, 10), eyeMat);
+    eye.position.set(ex, ey, side * ez);
     g.add(eye);
-    const glint = new THREE.Mesh(new THREE.SphereGeometry(0.016, 6, 6), new THREE.MeshBasicMaterial({ color: 0xffffff }));
-    glint.position.set(0.35, 0.1, side * 0.175);
+    const glint = new THREE.Mesh(new THREE.SphereGeometry(0.015, 6, 6), new THREE.MeshBasicMaterial({ color: 0xffffff }));
+    glint.position.set(ex + 0.018, ey + 0.02, side * (ez + 0.028));
     g.add(glint);
   });
-  g.scale.setScalar(kind.s);
-  g.position.set(x, y, z);
+}
+function addPectorals(g, finMat, px, pz) {
+  [-1, 1].forEach(side => {
+    const pf = finMesh([[0, 0.05], [-0.13, -0.02], [-0.05, -0.11]], finMat);
+    pf.position.set(px, -0.05, side * pz);
+    pf.rotation.y = side * 0.85;
+    g.add(pf);
+  });
+}
+function registerFish(g, tailPivot, speedMul) {
   scene.add(g);
-  const f = { g, tailPivot, target: new THREE.Vector3(x, y, z), speed: 0.55 + Math.random() * 0.5, phase: Math.random() * 6.28, kind };
+  const f = { g, tailPivot, target: g.position.clone(), speed: (0.5 + Math.random() * 0.45) * (speedMul || 1), phase: Math.random() * 6.28 };
   fishes.push(f);
   return f;
 }
-makeFish(FISH_KINDS[0], -1.6, 0.7, 0.55);
-makeFish(FISH_KINDS[0], 1.9, -0.2, -0.5);
-makeFish(FISH_KINDS[1], -0.5, 1.25, -0.75);
-makeFish(FISH_KINDS[1], 0.7, 1.45, 0.3);
-makeFish(FISH_KINDS[2], 2.5, 0.9, 0.7);
-makeFish(FISH_KINDS[3], -2.5, -0.45, 0.85);
-makeFish(FISH_KINDS[4], 0.2, 0.15, -1.0);
-makeFish(FISH_KINDS[5], -1.1, 1.7, 0.9);
-makeFish(FISH_KINDS[6], 2.9, -0.6, -0.9);
-makeFish(FISH_KINDS[7], -2.9, 1.5, -0.4);
+/* --- Swordtail (cá huyết kiếm): slender torpedo, male carries a long sword --- */
+function makeSwordtail(variant, male, x, y, z) {
+  const V = {
+    red:   { top: '#ff8a5c', mid: '#f0441e', belly: '#ffc9a8', fin: 0xe63e14 },
+    orange:{ top: '#ffb03a', mid: '#f07f13', belly: '#ffe0ae', fin: 0xe06f00 },
+    green: { top: '#a8c69a', mid: '#69985c', belly: '#eef3da', fin: 0xd8542e }
+  }[variant];
+  const { g, mat, finMat } = baseFish(fishTexture(V.top, V.mid, V.belly), V.fin);
+  const body = new THREE.Mesh(bodyGeometry(1.95, 0.80, 0.42, 0.52), mat);
+  body.castShadow = true;
+  g.add(body);
+  // tail fan + sword (male)
+  const tailPivot = new THREE.Group();
+  tailPivot.position.set(-0.55, 0, 0);
+  const fan = curvedFin([[0.02, 0.13], [-0.20, 0.24], [-0.30, 0.13], [-0.32, -0.06], [0.02, -0.12]], finMat);
+  tailPivot.add(fan);
+  if (male) {
+    const sword = finMesh([[-0.16, -0.06], [-0.86, -0.30], [-0.80, -0.36], [-0.14, -0.15]], finMat);
+    tailPivot.add(sword);
+  }
+  g.add(tailPivot);
+  // small dorsal + anal fins
+  const dorsal = finMesh([[-0.16, 0.20], [0.05, 0.27], [0.16, 0.19]], finMat);
+  g.add(dorsal);
+  const anal = finMesh([[-0.30, -0.19], [-0.13, -0.28], [-0.06, -0.18]], finMat);
+  g.add(anal);
+  addPectorals(g, finMat, 0.22, 0.10);
+  addEyes(g, 0.42, 0.045, 0.105);
+  g.position.set(x, y, z);
+  return registerFish(g, tailPivot, 1.25);
+}
+/* --- Molly: deep body, rounded fan tail, male sailfin dorsal --- */
+function makeMolly(variant, male, x, y, z) {
+  const V = {
+    black: { top: '#3a3d42', mid: '#24262b', belly: '#55575e', fin: 0x1d1f24, spots: false },
+    gold:  { top: '#ffd76a', mid: '#f5a623', belly: '#fff0bf', fin: 0xe8930c, spots: false },
+    dalma: { top: '#f4f6f8', mid: '#dde3e8', belly: '#ffffff', fin: 0xcfd8de, spots: true },
+    silver:{ top: '#cfe3ec', mid: '#9fc3d4', belly: '#f2fafc', fin: 0x8fb8c9, spots: false }
+  }[variant];
+  const { g, mat, finMat } = baseFish(fishTexture(V.top, V.mid, V.belly, V.spots), V.fin, variant === 'dalma' ? 0.9 : 0.95);
+  const body = new THREE.Mesh(bodyGeometry(1.5, 1.06, 0.55, 0.30), mat);
+  body.castShadow = true;
+  g.add(body);
+  // rounded fan tail
+  const tailPivot = new THREE.Group();
+  tailPivot.position.set(-0.42, 0, 0);
+  const fan = curvedFin([[0.02, 0.15], [-0.22, 0.26], [-0.34, 0.02], [-0.24, -0.22], [0.02, -0.15]], finMat);
+  tailPivot.add(fan);
+  g.add(tailPivot);
+  // dorsal: tall sail for males, low fin for females
+  if (male) {
+    const sail = curvedFin([[-0.30, 0.22], [-0.10, 0.52], [0.22, 0.44], [0.34, 0.30], [0.30, 0.20]], finMat);
+    g.add(sail);
+  } else {
+    const dorsal = curvedFin([[ -0.22, 0.24], [-0.02, 0.36], [0.20, 0.30], [0.26, 0.22], [0.10, 0.20]], finMat);
+    g.add(dorsal);
+  }
+  const anal = curvedFin([[ -0.26, -0.22], [-0.12, -0.33], [0.04, -0.26], [0.06, -0.19], [-0.08, -0.17]], finMat);
+  g.add(anal);
+  addPectorals(g, finMat, 0.20, 0.14);
+  addEyes(g, 0.33, 0.06, 0.145);
+  g.position.set(x, y, z);
+  return registerFish(g, tailPivot, 0.85);
+}
+makeSwordtail('red', true, -1.7, 0.75, 0.55);     // male red swordtail with sword
+makeSwordtail('red', false, 1.8, 0.1, -0.55);     // female red
+makeSwordtail('orange', true, 2.6, 1.15, 0.7);    // male orange with sword
+makeSwordtail('green', false, -0.6, 1.5, -0.8);   // female green
+makeMolly('black', true, 0.3, 0.3, -1.0);         // black sailfin male
+makeMolly('gold', false, -2.6, -0.4, 0.85);       // gold female
+makeMolly('dalma', true, 2.9, -0.55, -0.85);      // dalmatian sailfin male
+makeMolly('silver', false, -1.2, 1.75, 0.9);      // silver female
+makeMolly('gold', true, 0.9, -0.75, 1.0);         // gold sailfin male
+makeSwordtail('red', true, -2.9, 1.45, -0.35);    // second red male
 
 /* Bubbles */
 const bubbles = [];
