@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Bể Cá 3D — Bản thử</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@700;800&family=Nunito:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden}
+body{font-family:'Nunito',system-ui,sans-serif;background:#17130e;color:#2b2620}
+#scene{position:fixed;inset:0;touch-action:none}
+#scene canvas{display:block}
+.hud{position:fixed;z-index:10}
+#titlePill{top:12px;left:12px;background:rgba(255,253,247,.94);border:2px solid #e8dcc2;border-radius:16px;box-shadow:0 8px 22px rgba(0,0,0,.28);padding:9px 16px}
+#titlePill h1{font-family:'Baloo 2';font-size:21px;line-height:1.05}
+#titlePill p{font-size:12.5px;color:#7a6e5e;font-weight:700}
+#hint{bottom:14px;left:50%;transform:translateX(-50%);background:rgba(30,25,18,.72);color:#fff;font-weight:700;font-size:13.5px;padding:8px 16px;border-radius:999px;white-space:nowrap}
+#dock{bottom:52px;left:50%;transform:translateX(-50%);display:flex;gap:9px}
+#dock button{padding:12px 20px;border:none;border-radius:15px;font-family:'Baloo 2';font-size:16.5px;cursor:pointer;background:linear-gradient(180deg,#fffdf7,#f4ecd9);box-shadow:0 4px 0 #cbbd97,0 10px 20px rgba(0,0,0,.3);color:#2b2620}
+#dock button:active{transform:translateY(3px);box-shadow:0 1px 0 #cbbd97}
+#dock button.hl{background:linear-gradient(180deg,#fb7bb0,#f43f8e);color:#fff;box-shadow:0 4px 0 #b3135f,0 10px 20px rgba(0,0,0,.3)}
+#loading{position:fixed;inset:0;z-index:30;background:linear-gradient(180deg,#20303c,#0f1c26);display:flex;flex-direction:column;gap:12px;align-items:center;justify-content:center;color:#eaf4ff;font-family:'Baloo 2';font-size:20px;transition:opacity .6s}
+#loading .spin{width:44px;height:44px;border-radius:50%;border:5px solid rgba(255,255,255,.25);border-top-color:#7dd7ff;animation:sp 0.9s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+#err{position:fixed;inset:auto 12px 12px 12px;z-index:40;display:none;background:#b3352b;color:#fff;font-weight:700;padding:12px 16px;border-radius:12px;font-size:14px}
+</style>
+</head>
+<body>
+<div id="scene"></div>
+<div class="hud" id="titlePill"><h1>🐠 Bể Cá 3D</h1><p>Bản thử góc nhìn · cá bơi không gian thật</p></div>
+<div class="hud" id="dock">
+ <button class="hl" id="btnFeed">🍚 Cho ăn</button>
+ <button id="btnLight">💡 Tắt đèn</button>
+ <button id="btnCam">🔄 Góc nhìn</button>
+</div>
+<div class="hud" id="hint">Kéo tay để xoay bể · Cuộn / chụm để phóng gần xa</div>
+<div id="loading"><div class="spin"></div>Đang dựng bể 3D…</div>
+<div id="err"></div>
+
+<script type="importmap">
+{"imports":{"three":"https://unpkg.com/three@0.160.0/build/three.module.js","three/addons/":"https://unpkg.com/three@0.160.0/examples/jsm/"}}
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+const errBox = document.getElementById('err');
+window.addEventListener('error', e => { errBox.style.display = 'block'; errBox.textContent = 'Có lỗi khi dựng 3D: ' + (e.message || 'không rõ'); });
+
+/* ---------- Renderer / Scene / Camera ---------- */
+const container = document.getElementById('scene');
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.setSize(innerWidth, innerHeight);
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.12;
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+container.appendChild(renderer.domElement);
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0xead9b8);
+scene.fog = new THREE.Fog(0xead9b8, 18, 34);
+
+const camera = new THREE.PerspectiveCamera(42, innerWidth / innerHeight, 0.1, 100);
+camera.position.set(0, 2.4, 11.6);
+
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.target.set(0, 0.35, 0);
+controls.enableDamping = true;
+controls.dampingFactor = 0.06;
+controls.minDistance = 6.5;
+controls.maxDistance = 16;
+controls.minAzimuthAngle = -0.85;
+controls.maxAzimuthAngle = 0.85;
+controls.minPolarAngle = 0.95;
+controls.maxPolarAngle = 1.72;
+controls.enablePan = false;
+controls.autoRotate = true;
+controls.autoRotateSpeed = 0.55;
+let idleTimer = null;
+controls.addEventListener('start', () => { controls.autoRotate = false; clearTimeout(idleTimer); });
+controls.addEventListener('end', () => { idleTimer = setTimeout(() => controls.autoRotate = true, 5000); });
+
+/* ---------- Lights ---------- */
+scene.add(new THREE.AmbientLight(0xfff2dd, 0.55));
+const sun = new THREE.DirectionalLight(0xfff1d6, 1.6);
+sun.position.set(5, 9, 6);
+sun.castShadow = true;
+sun.shadow.mapSize.set(2048, 2048);
+sun.shadow.camera.left = -9; sun.shadow.camera.right = 9;
+sun.shadow.camera.top = 8; sun.shadow.camera.bottom = -6;
+scene.add(sun);
+const tankLight = new THREE.PointLight(0xbfe6ff, 12, 14, 1.6);
+tankLight.position.set(0, 3.4, 1.2);
+scene.add(tankLight);
+const rim = new THREE.DirectionalLight(0x9fd0ff, 0.5);
+rim.position.set(-6, 3, -5);
+scene.add(rim);
+
+/* ---------- Room ---------- */
+const floor = new THREE.Mesh(
+  new THREE.PlaneGeometry(46, 30),
+  new THREE.MeshStandardMaterial({ color: 0xb9834c, roughness: 0.9 })
+);
+floor.rotation.x = -Math.PI / 2;
+floor.position.y = -2.62;
+floor.receiveShadow = true;
+scene.add(floor);
+// floor plank grooves
+for (let i = -5; i <= 5; i++) {
+  const g = new THREE.Mesh(new THREE.BoxGeometry(46, 0.012, 0.03), new THREE.MeshStandardMaterial({ color: 0x96682f }));
+  g.position.set(0, -2.61, i * 2.2);
+  scene.add(g);
+}
+const wall = new THREE.Mesh(new THREE.PlaneGeometry(46, 22), new THREE.MeshStandardMaterial({ color: 0xe9dcc0, roughness: 1 }));
+wall.position.set(0, 6, -5.4);
+wall.receiveShadow = true;
+scene.add(wall);
+
+/* ---------- Tank geometry constants ---------- */
+const TW = 7.6, TH = 4.3, TD = 3.1;           // tank outer size
+const TCY = 0.42;                              // tank center Y
+const BOTTOM = TCY - TH / 2;                   // -1.73
+const WATER_TOP = TCY + TH / 2 - 0.28;
+
+/* Cabinet */
+const cabinet = new THREE.Group();
+const cabMat = new THREE.MeshStandardMaterial({ color: 0xb57a38, roughness: 0.75 });
+const cab = new THREE.Mesh(new THREE.BoxGeometry(TW + 0.5, 0.92, TD + 0.4), cabMat);
+cab.position.y = BOTTOM - 0.46;
+cab.castShadow = cab.receiveShadow = true;
+cabinet.add(cab);
+const doorMat = new THREE.MeshStandardMaterial({ color: 0xa06a2e, roughness: 0.8 });
+[-1.85, 1.85].forEach(x => {
+  const door = new THREE.Mesh(new THREE.BoxGeometry(3.3, 0.66, 0.05), doorMat);
+  door.position.set(x, BOTTOM - 0.46, (TD + 0.4) / 2 + 0.01);
+  cabinet.add(door);
+  const knob = new THREE.Mesh(new THREE.SphereGeometry(0.045, 12, 12), new THREE.MeshStandardMaterial({ color: 0x5f3c14, roughness: 0.4, metalness: 0.5 }));
+  knob.position.set(x + (x < 0 ? 1.35 : -1.35), BOTTOM - 0.46, (TD + 0.4) / 2 + 0.06);
+  cabinet.add(knob);
+});
+scene.add(cabinet);
+
+/* CO2 bottle */
+const co2 = new THREE.Group();
+const bottle = new THREE.Mesh(new THREE.CylinderGeometry(0.30, 0.30, 1.5, 24), new THREE.MeshStandardMaterial({ color: 0x2e8b57, roughness: 0.35, metalness: 0.25 }));
+bottle.castShadow = true;
+co2.add(bottle);
+const valve = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.16, 0.16), new THREE.MeshStandardMaterial({ color: 0x66666c, roughness: 0.4, metalness: 0.6 }));
+valve.position.y = 0.83;
+co2.add(valve);
+co2.position.set(-TW / 2 - 0.62, BOTTOM + 0.72, 0.7);
+scene.add(co2);
+
+/* Glass + water */
+const glassMat = new THREE.MeshPhysicalMaterial({ color: 0xd9f2ff, transparent: true, opacity: 0.10, roughness: 0.06, metalness: 0, side: THREE.DoubleSide, depthWrite: false });
+const glass = new THREE.Mesh(new THREE.BoxGeometry(TW, TH, TD), glassMat);
+glass.position.y = TCY;
+scene.add(glass);
+const frameMat = new THREE.MeshStandardMaterial({ color: 0x232120, roughness: 0.5 });
+const edges = new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(TW, TH, TD)), new THREE.LineBasicMaterial({ color: 0x1c1a18 }));
+edges.position.y = TCY;
+scene.add(edges);
+// top rim + LED bar
+const rimBar = new THREE.Mesh(new THREE.BoxGeometry(TW * 0.62, 0.09, 0.3), new THREE.MeshStandardMaterial({ color: 0xb9bfc4, roughness: 0.35, metalness: 0.6 }));
+rimBar.position.set(0, TCY + TH / 2 + 0.10, 0);
+rimBar.castShadow = true;
+scene.add(rimBar);
+
+const water = new THREE.Mesh(
+  new THREE.BoxGeometry(TW - 0.1, TH - 0.34, TD - 0.1),
+  new THREE.MeshPhysicalMaterial({ color: 0x3f9db8, transparent: true, opacity: 0.16, roughness: 0.15, depthWrite: false })
+);
+water.position.y = TCY - 0.12;
+scene.add(water);
+// animated water surface
+const surfGeo = new THREE.PlaneGeometry(TW - 0.12, TD - 0.12, 26, 10);
+const surf = new THREE.Mesh(surfGeo, new THREE.MeshStandardMaterial({ color: 0xaadcf2, transparent: true, opacity: 0.5, roughness: 0.25 }));
+surf.rotation.x = -Math.PI / 2;
+surf.position.y = WATER_TOP;
+scene.add(surf);
+
+/* Substrate + pebbles */
+const sand = new THREE.Mesh(new THREE.BoxGeometry(TW - 0.12, 0.30, TD - 0.12), new THREE.MeshStandardMaterial({ color: 0xc2a878, roughness: 1 }));
+sand.position.y = BOTTOM + 0.15;
+sand.receiveShadow = true;
+scene.add(sand);
+const pebbleMats = [0x8d8578, 0xa79c86, 0x776f60, 0xb5a888].map(c => new THREE.MeshStandardMaterial({ color: c, roughness: 0.9 }));
+for (let i = 0; i < 46; i++) {
+  const p = new THREE.Mesh(new THREE.SphereGeometry(0.05 + Math.random() * 0.075, 10, 8), pebbleMats[i % 4]);
+  p.scale.y = 0.55;
+  p.position.set((Math.random() - 0.5) * (TW - 0.7), BOTTOM + 0.31, (Math.random() - 0.5) * (TD - 0.6));
+  p.castShadow = true;
+  scene.add(p);
+}
+
+/* Light rays (fake god rays) */
+const rayMat = new THREE.MeshBasicMaterial({ color: 0xfff3c0, transparent: true, opacity: 0.055, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide });
+const rays = new THREE.Group();
+for (let i = 0; i < 4; i++) {
+  const ray = new THREE.Mesh(new THREE.PlaneGeometry(0.8 + Math.random() * 0.7, TH - 0.4), rayMat);
+  ray.position.set(-2.4 + i * 1.55 + Math.random() * 0.4, TCY, -0.4 + Math.random() * 0.5);
+  ray.rotation.z = 0.32;
+  rays.add(ray);
+}
+scene.add(rays);
+
+/* Driftwood: bent segments */
+const woodMat = new THREE.MeshStandardMaterial({ color: 0x7a5230, roughness: 0.95 });
+const wood = new THREE.Group();
+const woodPts = [[-3.1, BOTTOM + 0.35, -0.5], [-1.6, BOTTOM + 1.15, -0.3], [0.1, BOTTOM + 1.45, -0.45], [1.8, BOTTOM + 1.0, -0.25], [3.05, BOTTOM + 0.5, -0.5]];
+for (let i = 0; i < woodPts.length - 1; i++) {
+  const a = new THREE.Vector3(...woodPts[i]), b = new THREE.Vector3(...woodPts[i + 1]);
+  const len = a.distanceTo(b);
+  const seg = new THREE.Mesh(new THREE.CylinderGeometry(0.11, 0.14, len, 10), woodMat);
+  seg.position.copy(a).lerp(b, 0.5);
+  seg.lookAt(b); seg.rotateX(Math.PI / 2);
+  seg.castShadow = true;
+  wood.add(seg);
+}
+const branch = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.08, 1.1, 8), woodMat);
+branch.position.set(0.35, BOTTOM + 1.85, -0.45);
+branch.rotation.z = -0.6;
+branch.castShadow = true;
+wood.add(branch);
+scene.add(wood);
+
+/* Rocks */
+for (let i = 0; i < 6; i++) {
+  const r = new THREE.Mesh(new THREE.DodecahedronGeometry(0.22 + Math.random() * 0.2), new THREE.MeshStandardMaterial({ color: 0x8b8b90, roughness: 0.95, flatShading: true }));
+  r.position.set((Math.random() - 0.5) * (TW - 1.4), BOTTOM + 0.38, (Math.random() - 0.5) * (TD - 1));
+  r.scale.y = 0.65;
+  r.rotation.set(Math.random(), Math.random() * 3, Math.random());
+  r.castShadow = r.receiveShadow = true;
+  scene.add(r);
+}
+
+/* Plants: layered — back (dark, tall), mid, front (bright, low) */
+const plants = [];
+function makePlant(x, z, h, colA, colB, blades) {
+  const g = new THREE.Group();
+  const mA = new THREE.MeshStandardMaterial({ color: colA, roughness: 0.7, side: THREE.DoubleSide });
+  const mB = new THREE.MeshStandardMaterial({ color: colB, roughness: 0.7, side: THREE.DoubleSide });
+  for (let i = 0; i < blades; i++) {
+    const bh = h * (0.7 + Math.random() * 0.5);
+    const blade = new THREE.Mesh(new THREE.ConeGeometry(0.075, bh, 5), i % 2 ? mA : mB);
+    blade.scale.z = 0.32;
+    blade.position.set((Math.random() - 0.5) * 0.42, bh / 2, (Math.random() - 0.5) * 0.3);
+    blade.rotation.z = (Math.random() - 0.5) * 0.35;
+    blade.castShadow = true;
+    g.add(blade);
+    if (i % 3 === 0) {
+      const leaf = new THREE.Mesh(new THREE.SphereGeometry(0.14, 8, 6), i % 2 ? mB : mA);
+      leaf.scale.set(1, 0.45, 0.7);
+      leaf.position.set(blade.position.x, bh * (0.55 + Math.random() * 0.3), blade.position.z);
+      g.add(leaf);
+    }
+  }
+  g.position.set(x, BOTTOM + 0.28, z);
+  g.userData.phase = Math.random() * 6.28;
+  scene.add(g);
+  plants.push(g);
+  return g;
+}
+makePlant(-3.25, -1.05, 2.9, 0x1d6b3c, 0x2a7d47, 11);   // back left tall dark
+makePlant(-2.2, -1.15, 2.4, 0x1d6b3c, 0x35854e, 9);
+makePlant(3.3, -1.05, 2.7, 0x1d6b3c, 0x2a7d47, 11);     // back right
+makePlant(2.1, -1.2, 2.1, 0x22713f, 0x35854e, 8);
+makePlant(-0.4, -1.25, 1.9, 0x1d6b3c, 0x2f8a4c, 8);
+makePlant(-2.9, 0.9, 1.15, 0x35a852, 0x4cb765, 9);      // front left bright
+makePlant(3.0, 0.95, 1.3, 0xe9f2f0, 0xffffff, 10);      // front right white plant
+makePlant(1.6, 1.05, 0.8, 0x3fae62, 0x5cc178, 8);       // front carpet-ish
+makePlant(-1.4, 1.0, 0.7, 0x35a852, 0x57bd74, 7);
+makePlant(0.4, -0.2, 1.1, 0x2f9e57, 0x45b96b, 7);       // mid accent
+
+/* ---------- Fish (procedural 3D) ---------- */
+function fishTexture(top, mid, belly) {
+  const c = document.createElement('canvas'); c.width = 64; c.height = 128;
+  const x = c.getContext('2d');
+  const gr = x.createLinearGradient(0, 0, 0, 128);
+  gr.addColorStop(0, top); gr.addColorStop(0.55, mid); gr.addColorStop(1, belly);
+  x.fillStyle = gr; x.fillRect(0, 0, 64, 128);
+  const t = new THREE.CanvasTexture(c);
+  t.colorSpace = THREE.SRGBColorSpace;
+  return t;
+}
+const FISH_KINDS = [
+  { top: '#ffb03a', mid: '#f58a1d', belly: '#ffd98f', fin: 0xf07f13, s: 1.0 },   // goldfish orange
+  { top: '#7dd7ff', mid: '#3b82f6', belly: '#d6efff', fin: 0x2563eb, s: 0.62 },  // neon blue
+  { top: '#ff9a9a', mid: '#ef4444', belly: '#ffd9d9', fin: 0xdc2626, s: 0.66 },  // red
+  { top: '#ffe066', mid: '#f2c41c', belly: '#fff3b0', fin: 0xeab308, s: 0.6 },   // yellow
+  { top: '#d8b4fe', mid: '#9b5de5', belly: '#f1e6ff', fin: 0x7c3aed, s: 0.8 },   // purple
+  { top: '#ffc2d4', mid: '#f771a5', belly: '#ffe6ef', fin: 0xf43f8e, s: 0.7 },   // pink
+  { top: '#ffb03a', mid: '#f58a1d', belly: '#ffd98f', fin: 0xf07f13, s: 0.78 },
+  { top: '#a5e8ff', mid: '#38b6d9', belly: '#e2f7ff', fin: 0x1d8fb8, s: 0.58 }
+];
+const fishes = [];
+function makeFish(kind, x, y, z) {
+  const g = new THREE.Group();
+  const mat = new THREE.MeshStandardMaterial({ map: fishTexture(kind.top, kind.mid, kind.belly), roughness: 0.38, metalness: 0.12 });
+  const body = new THREE.Mesh(new THREE.SphereGeometry(0.30, 28, 20), mat);
+  body.scale.set(1.55, 0.92, 0.52);
+  body.castShadow = true;
+  g.add(body);
+  const finMat = new THREE.MeshStandardMaterial({ color: kind.fin, roughness: 0.5, transparent: true, opacity: 0.92, side: THREE.DoubleSide });
+  // tail (pivot group at rear)
+  const tailPivot = new THREE.Group();
+  tailPivot.position.set(-0.44, 0, 0);
+  const tailShape = new THREE.Shape();
+  tailShape.moveTo(0, 0); tailShape.lineTo(-0.30, 0.20); tailShape.lineTo(-0.24, 0); tailShape.lineTo(-0.30, -0.20); tailShape.lineTo(0, 0);
+  const tail = new THREE.Mesh(new THREE.ShapeGeometry(tailShape), finMat);
+  tail.rotation.y = Math.PI / 2;
+  tailPivot.add(tail);
+  g.add(tailPivot);
+  // dorsal fin
+  const dorsal = new THREE.Mesh(new THREE.ConeGeometry(0.13, 0.3, 6), finMat);
+  dorsal.scale.set(1.5, 1, 0.25);
+  dorsal.position.set(-0.02, 0.3, 0);
+  g.add(dorsal);
+  // pectoral fins
+  [-1, 1].forEach(side => {
+    const pf = new THREE.Mesh(new THREE.ConeGeometry(0.07, 0.22, 5), finMat);
+    pf.scale.set(1, 1, 0.3);
+    pf.position.set(0.16, -0.1, side * 0.17);
+    pf.rotation.set(side * 0.9, 0, 0.7);
+    g.add(pf);
+  });
+  // eyes
+  const eyeMat = new THREE.MeshStandardMaterial({ color: 0x14161a, roughness: 0.25 });
+  [-1, 1].forEach(side => {
+    const eye = new THREE.Mesh(new THREE.SphereGeometry(0.045, 10, 10), eyeMat);
+    eye.position.set(0.33, 0.07, side * 0.145);
+    g.add(eye);
+    const glint = new THREE.Mesh(new THREE.SphereGeometry(0.016, 6, 6), new THREE.MeshBasicMaterial({ color: 0xffffff }));
+    glint.position.set(0.35, 0.1, side * 0.175);
+    g.add(glint);
+  });
+  g.scale.setScalar(kind.s);
+  g.position.set(x, y, z);
+  scene.add(g);
+  const f = { g, tailPivot, target: new THREE.Vector3(x, y, z), speed: 0.55 + Math.random() * 0.5, phase: Math.random() * 6.28, kind };
+  fishes.push(f);
+  return f;
+}
+makeFish(FISH_KINDS[0], -1.6, 0.7, 0.55);
+makeFish(FISH_KINDS[0], 1.9, -0.2, -0.5);
+makeFish(FISH_KINDS[1], -0.5, 1.25, -0.75);
+makeFish(FISH_KINDS[1], 0.7, 1.45, 0.3);
+makeFish(FISH_KINDS[2], 2.5, 0.9, 0.7);
+makeFish(FISH_KINDS[3], -2.5, -0.45, 0.85);
+makeFish(FISH_KINDS[4], 0.2, 0.15, -1.0);
+makeFish(FISH_KINDS[5], -1.1, 1.7, 0.9);
+makeFish(FISH_KINDS[6], 2.9, -0.6, -0.9);
+makeFish(FISH_KINDS[7], -2.9, 1.5, -0.4);
+
+/* Bubbles */
+const bubbles = [];
+const bubbleMat = new THREE.MeshPhysicalMaterial({ color: 0xffffff, transparent: true, opacity: 0.35, roughness: 0.05 });
+function spawnBubble() {
+  const b = new THREE.Mesh(new THREE.SphereGeometry(0.02 + Math.random() * 0.035, 8, 8), bubbleMat);
+  b.position.set(-3.3 + Math.random() * 0.3, BOTTOM + 0.35, 0.9 + Math.random() * 0.3);
+  b.userData.v = 0.5 + Math.random() * 0.5;
+  scene.add(b);
+  bubbles.push(b);
+}
+/* Food pellets */
+const pellets = [];
+const pelletMat = new THREE.MeshStandardMaterial({ color: 0x9a6224, roughness: 0.8 });
+function dropFood() {
+  for (let i = 0; i < 10; i++) {
+    const p = new THREE.Mesh(new THREE.SphereGeometry(0.045, 8, 8), pelletMat);
+    p.position.set((Math.random() - 0.5) * 2.6, WATER_TOP - 0.05, (Math.random() - 0.5) * 1.4);
+    p.userData.floor = BOTTOM + 0.6 + Math.random() * 2.2;
+    scene.add(p);
+    pellets.push(p);
+  }
+}
+
+/* ---------- Interaction ---------- */
+let lightOn = true;
+document.getElementById('btnFeed').addEventListener('click', dropFood);
+document.getElementById('btnLight').addEventListener('click', (e) => {
+  lightOn = !lightOn;
+  tankLight.intensity = lightOn ? 12 : 0.6;
+  sun.intensity = lightOn ? 1.6 : 0.55;
+  rays.visible = lightOn;
+  surf.material.opacity = lightOn ? 0.5 : 0.18;
+  e.currentTarget.textContent = lightOn ? '💡 Tắt đèn' : '💡 Bật đèn';
+});
+const camAngles = [[0, 2.4, 11.6], [6.4, 1.6, 9.4], [-6.4, 3.2, 9.2], [0, 5.4, 8.6]];
+let camIdx = 0;
+document.getElementById('btnCam').addEventListener('click', () => {
+  camIdx = (camIdx + 1) % camAngles.length;
+  const [x, y, z] = camAngles[camIdx];
+  camera.position.set(x, y, z);
+});
+
+/* ---------- Animate ---------- */
+const clock = new THREE.Clock();
+const fwd = new THREE.Vector3();
+let bubbleTimer = 0, firstFrame = true;
+function pickTarget(f) {
+  f.target.set((Math.random() - 0.5) * (TW - 1.5), BOTTOM + 0.75 + Math.random() * (TH - 1.6), (Math.random() - 0.5) * (TD - 1.1));
+}
+function animate() {
+  requestAnimationFrame(animate);
+  const dt = Math.min(clock.getDelta(), 0.05);
+  const t = clock.elapsedTime;
+  // water surface waves
+  const pos = surfGeo.attributes.position;
+  for (let i = 0; i < pos.count; i++) {
+    pos.setZ(i, Math.sin(pos.getX(i) * 2.1 + t * 1.7) * 0.02 + Math.cos(pos.getY(i) * 3.0 + t * 1.3) * 0.015);
+  }
+  pos.needsUpdate = true;
+  // plants sway
+  for (const p of plants) p.rotation.z = Math.sin(t * 0.9 + p.userData.phase) * 0.045;
+  rays.rotation.z = Math.sin(t * 0.22) * 0.02;
+  // bubbles
+  bubbleTimer += dt;
+  if (bubbleTimer > 0.24) { bubbleTimer = 0; spawnBubble(); }
+  for (let i = bubbles.length - 1; i >= 0; i--) {
+    const b = bubbles[i];
+    b.position.y += b.userData.v * dt;
+    b.position.x += Math.sin(t * 3 + i) * 0.0009;
+    if (b.position.y > WATER_TOP - 0.05) { scene.remove(b); bubbles.splice(i, 1); }
+  }
+  // pellets sink
+  for (let i = pellets.length - 1; i >= 0; i--) {
+    const p = pellets[i];
+    if (p.position.y > p.userData.floor) p.position.y -= dt * 0.55;
+  }
+  // fish swim (3D wander + chase food)
+  for (const f of fishes) {
+    let tgt = f.target, best = Infinity, pellet = null;
+    for (const p of pellets) { const d = p.position.distanceTo(f.g.position); if (d < best) { best = d; pellet = p; } }
+    if (pellet && best < 3.4) tgt = pellet.position;
+    if (pellet && best < 0.30) { scene.remove(pellet); pellets.splice(pellets.indexOf(pellet), 1); }
+    fwd.copy(tgt).sub(f.g.position);
+    const dist = fwd.length();
+    if (dist < 0.25 && !pellet) pickTarget(f);
+    fwd.normalize();
+    const spd = f.speed * (pellet ? 1.8 : 1.0);
+    f.g.position.addScaledVector(fwd, Math.min(dist, spd * dt));
+    // orient: face movement direction smoothly
+    const targetYaw = Math.atan2(-fwd.z, fwd.x);
+    let cur = f.g.rotation.y;
+    let diff = targetYaw - cur;
+    while (diff > Math.PI) diff -= Math.PI * 2;
+    while (diff < -Math.PI) diff += Math.PI * 2;
+    f.g.rotation.y = cur + diff * Math.min(1, dt * 4.5);
+    f.g.rotation.z = THREE.MathUtils.clamp(-diff * 0.35, -0.4, 0.4);       // banking
+    f.g.rotation.x = THREE.MathUtils.clamp(fwd.y * -0.35, -0.35, 0.35);      // pitch up/down
+    f.tailPivot.rotation.y = Math.sin(t * 9 * f.speed + f.phase) * 0.5;     // tail wag
+    f.g.position.y += Math.sin(t * 2 + f.phase) * 0.0007;                    // gentle bob
+  }
+  controls.update();
+  renderer.render(scene, camera);
+  if (firstFrame) {
+    firstFrame = false;
+    const ld = document.getElementById('loading');
+    ld.style.opacity = '0';
+    setTimeout(() => ld.remove(), 700);
+  }
+}
+animate();
+
+addEventListener('resize', () => {
+  camera.aspect = innerWidth / innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight);
+});
+</script>
+</body>
+</html>
