@@ -3911,10 +3911,34 @@ if(document.fonts&&document.fonts.load){document.fonts.load('100px PatrickHandKV
       } catch (e) {}
       setTimeout(fitAppViewport, 120);
     }
+    let kvFsExitGuardUntil = 0;
     function kvUnlockLandscape() {
+      kvFsExitGuardUntil = Date.now() + 900;
       try { if (screen.orientation && screen.orientation.unlock) screen.orientation.unlock(); } catch (e) {}
       try { if (document.fullscreenElement && document.exitFullscreen) { const xp = document.exitFullscreen(); if (xp && xp.catch) xp.catch(() => {}); } } catch (e) {}
     }
+    // Google TTS returns 404 for any request carrying this page's Referer,
+    // and Chrome IGNORES referrerPolicy on <audio> elements (verified with a
+    // local logging server). A document-level no-referrer meta DOES apply
+    // to media fetches, so it is present only while this section is open.
+    function kvSetNoReferrer(on) {
+      let m = document.getElementById('kvNoRefMeta');
+      if (on && !m) {
+        m = document.createElement('meta');
+        m.id = 'kvNoRefMeta'; m.name = 'referrer'; m.content = 'no-referrer';
+        document.head.appendChild(m);
+      } else if (!on && m) m.remove();
+    }
+    // If the browser itself leaves fullscreen (Android Back consumes the
+    // first press to exit fullscreen) while this section is still open, go
+    // straight home instead of leaving the section sitting in portrait.
+    document.addEventListener('fullscreenchange', () => {
+      if (document.fullscreenElement) return;
+      if (Date.now() < kvFsExitGuardUntil) return;
+      if (!kvViewActive()) return;
+      const h = document.querySelector('[data-view="home"]');
+      if (h) h.click();
+    });
     // The tap that opens the section is itself a valid user gesture, so the
     // fullscreen+lock flow starts from that same tap (capture phase).
     document.addEventListener('click', (e) => {
@@ -3925,10 +3949,11 @@ if(document.fonts&&document.fonts.load){document.fonts.load('100px PatrickHandKV
     const kvSecEl = document.getElementById('view-numbers');
     if (kvSecEl && window.MutationObserver) {
       let kvWasActive = kvSecEl.classList.contains('active');
+      kvSetNoReferrer(kvWasActive);
       new MutationObserver(() => {
         const now = kvSecEl.classList.contains('active');
-        if (kvWasActive && !now) kvUnlockLandscape();
-        if (!kvWasActive && now) kvLockTries = 0;
+        if (kvWasActive && !now) { kvUnlockLandscape(); kvSetNoReferrer(false); }
+        if (!kvWasActive && now) { kvLockTries = 0; kvSetNoReferrer(true); }
         kvWasActive = now;
       }).observe(kvSecEl, { attributes: true, attributeFilter: ['class'] });
     }
