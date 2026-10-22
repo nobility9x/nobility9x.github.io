@@ -450,7 +450,7 @@
           <div class="flex flex-nowrap gap-1.5 shrink-0 mb-2 w-full">
             <button id="spellTabWords" type="button" data-tab="words" class="kid-btn spell-tab on">📚 Tiếng</button>
             <button id="spellTabRimes" type="button" data-tab="rimes" class="kid-btn spell-tab">🎵 Vần</button>
-            <button id="spellTabTone" type="button" data-tab="tone" class="kid-btn spell-tab">🎯 Luyện dấu</button>
+            <button id="spellTabTone" type="button" data-tab="tone" class="kid-btn spell-tab">🎯 Luyện</button>
             <button id="spellTabCombo" type="button" data-tab="combo" class="kid-btn spell-tab">🧩 Bảng ghép</button>
           </div>
           <div id="spellPanelTitle" class="text-base font-black text-slate-700 mb-2">📚 Chọn một tiếng để đánh vần:</div>
@@ -2284,7 +2284,7 @@ const FONTMETRICS = {"upem": 1000, "glyphs": {"A": {"x0": 24, "y0": -1, "x1": 46
         const el = document.getElementById(id);
         if (el) el.classList.toggle('hidden', k !== p);
       });
-      const titles = { words: '📚 Chọn một tiếng để đánh vần:', initials: '🔤 Bảng âm đầu — chạm vào một âm:', rimes: '🎵 Bảng vần — chạm vào một vần:', tone: '🎯 Luyện dấu thanh — chọn dấu đúng:', combo: '🧩 Bảng ghép âm đầu + vần — chạm vào tiếng để nghe:' };
+      const titles = { words: '📚 Chọn một tiếng để đánh vần:', initials: '🔤 Bảng âm đầu — chạm vào một âm:', rimes: '🎵 Bảng vần — chạm vào một vần:', tone: '🎯 Luyện — chọn dấu đúng:', combo: '🧩 Bảng ghép âm đầu + vần — chạm vào tiếng để nghe:' };
       document.getElementById('spellPanelTitle').textContent = titles[p];
       document.querySelectorAll('.spell-tab').forEach(b => b.classList.toggle('on', b.dataset.tab === p));
       if (p === 'tone') renderTone();
