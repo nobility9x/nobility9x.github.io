@@ -459,13 +459,6 @@
           <div id="spellInitials" class="hidden grid grid-cols-5 gap-2 overflow-y-auto no-scrollbar pr-1 content-start"></div>
           <div id="spellRimes" class="hidden grid grid-cols-5 gap-2 overflow-y-auto no-scrollbar pr-1 content-start"></div>
           <div id="spellCombo" class="hidden flex-1 flex flex-col min-h-0">
-            <div class="flex items-center gap-2 shrink-0 mb-1.5">
-              <div id="comboBigLetter" class="font-black text-rose-500 leading-none w-14 shrink-0 text-center">b</div>
-              <div class="flex flex-col gap-1 min-w-0 flex-1">
-                <div id="comboHeadText" class="text-xs font-black text-slate-600 leading-tight">Âm đầu "b" (bờ) — chọn âm:</div>
-                <div id="comboOnsets" class="flex gap-1 flex-nowrap overflow-x-auto no-scrollbar pb-0.5"></div>
-              </div>
-            </div>
             <div id="comboTable" class="flex-1 min-w-0 min-h-0 overflow-y-auto no-scrollbar pr-1"></div>
           </div>
           <div id="spellTone" class="hidden flex-1 flex flex-col items-center justify-center gap-2 overflow-y-auto no-scrollbar">
@@ -2373,45 +2366,38 @@ const FONTMETRICS = {"upem": 1000, "glyphs": {"A": {"x0": 24, "y0": -1, "x1": 46
     function spellingToneRow(onset, vowel) { if (!spellingBlendRule(onset, vowel)) return { combo: spellingBlendPrefix(onset) + vowel, tones: '— không ghép theo quy tắc chính tả' }; const prefix = spellingBlendPrefix(onset), tones = SPELL_TONE_ORDER.map(tone => prefix + SPELL_TONE_MARKS[vowel][tone]).join(' '); return { combo: prefix + vowel, tones }; }
 
     function renderCombo() {
-      const box = document.getElementById('comboOnsets');
-      box.innerHTML = '';
-      SPELL_FULL.initials.forEach(x => {
-        const b = document.createElement('button');
-        b.type = 'button';
-        b.className = 'kid-btn shrink-0 whitespace-nowrap rounded-xl px-2.5 py-1 border-2 font-black text-sm ' + (x.on === comboOnset ? 'bg-rose-500 text-white border-rose-200 shadow' : 'bg-rose-50 text-rose-700 border-rose-200');
-        b.textContent = x.on;
-        b.addEventListener('click', () => { comboOnset = x.on; playPopSound(1); renderCombo(); });
-        box.appendChild(b);
-      });
       const tbl = document.getElementById('comboTable');
       tbl.innerHTML = '';
-      const cur = SPELL_FULL.initials.find(x => x.on === comboOnset);
-      document.getElementById('comboBigLetter').textContent = comboOnset;
-      document.getElementById('comboHeadText').textContent = 'Âm đầu "' + comboOnset + '" (' + (cur ? cur.name : '') + ') — chọn âm:';
-      SPELL_VOWELS.forEach(v => {
-        const row = spellingToneRow(comboOnset, v);
-        const line = document.createElement('div');
-        line.className = 'flex items-center gap-1.5 bg-white rounded-2xl border-2 border-emerald-100 px-2 py-1 mb-1.5';
-        const vEl = document.createElement('span');
-        vEl.className = 'w-6 shrink-0 text-center text-lg font-black text-teal-600';
-        vEl.textContent = v;
-        line.appendChild(vEl);
-        const tonesBox = document.createElement('div');
-        tonesBox.className = 'flex gap-1 flex-nowrap items-center';
-        if (row.tones.startsWith('—')) {
-          tonesBox.innerHTML = '<span class="text-xs font-bold text-slate-400">' + row.tones + '</span>';
-        } else {
-          row.tones.split(' ').forEach(t => {
-            const tb = document.createElement('button');
-            tb.type = 'button';
-            tb.className = 'kid-btn rounded-lg px-1 py-0.5 bg-sky-50 border border-sky-200 text-sky-700 font-black text-sm whitespace-nowrap';
-            tb.textContent = t;
-            tb.addEventListener('click', () => { playPopSound(1); speakWithGoogleVoice(t); });
-            tonesBox.appendChild(tb);
-          });
-        }
-        line.appendChild(tonesBox);
-        tbl.appendChild(line);
+      SPELL_FULL.initials.forEach(x => {
+        const head = document.createElement('div');
+        head.className = 'flex items-baseline gap-2 mt-2 mb-1';
+        head.innerHTML = '<span class="text-3xl font-black text-rose-500 leading-none">' + x.on + '</span><span class="text-xs font-black text-slate-500">(' + x.name + ')</span>';
+        tbl.appendChild(head);
+        SPELL_VOWELS.forEach(v => {
+          const row = spellingToneRow(x.on, v);
+          const line = document.createElement('div');
+          line.className = 'flex items-center gap-1.5 bg-white rounded-2xl border-2 border-emerald-100 px-2 py-1 mb-1.5';
+          const vEl = document.createElement('span');
+          vEl.className = 'w-6 shrink-0 text-center text-lg font-black text-teal-600';
+          vEl.textContent = v;
+          line.appendChild(vEl);
+          const tonesBox = document.createElement('div');
+          tonesBox.className = 'flex gap-1 flex-nowrap items-center';
+          if (row.tones.startsWith('—')) {
+            tonesBox.innerHTML = '<span class="text-xs font-bold text-slate-400">' + row.tones + '</span>';
+          } else {
+            row.tones.split(' ').forEach(t => {
+              const tb = document.createElement('button');
+              tb.type = 'button';
+              tb.className = 'kid-btn rounded-lg px-1 py-0.5 bg-sky-50 border border-sky-200 text-sky-700 font-black text-sm whitespace-nowrap';
+              tb.textContent = t;
+              tb.addEventListener('click', () => { playPopSound(1); speakWithGoogleVoice(t); });
+              tonesBox.appendChild(tb);
+            });
+          }
+          line.appendChild(tonesBox);
+          tbl.appendChild(line);
+        });
       });
     }
 
