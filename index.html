@@ -2024,6 +2024,7 @@
     // Hard stop for all audio and timers so it NEVER reads continuously
     function stopAllAudio() {
       currentSpeechToken += 1;
+      if (window.__kvChainStop) { try { window.__kvChainStop(); } catch (e) {} }
       if (state.countingTimer) {
         clearInterval(state.countingTimer);
         state.countingTimer = null;
@@ -3582,10 +3583,28 @@ const SPELL_RIME_WORDS = {"an":["bàn","nhãn","sản","bản","gian","an","ph�
     }
 
     let spellRunId = 0;
+    let spellChainAudio = null;
+    function spellStopChain() {
+      if (spellChainAudio) {
+        try { spellChainAudio.onended = null; spellChainAudio.onerror = null; spellChainAudio.pause(); } catch (e) {}
+        spellChainAudio = null;
+      }
+    }
+    // Any other speech in the app routes through stopAllAudio(), which the
+    // build patches to call this hook — so starting any other sound stops
+    // the spelling chain at once instead of talking over it.
+    window.__kvChainStop = function () { spellRunId++; spellStopChain(); spellBusy = false; };
+    function spellTtsUrls(text) {
+      const q = encodeURIComponent(sanitizeForSpeech(text));
+      return [
+        'https://translate.google.com/translate_tts?ie=UTF-8&tl=vi&client=tw-ob&q=' + q,
+        'https://clients5.google.com/translate_tts?ie=UTF-8&tl=vi&client=gtx&q=' + q,
+        'https://translate.googleapis.com/translate_tts?ie=UTF-8&tl=vi&client=gtx&q=' + q
+      ];
+    }
     function runSpell() {
-      // Chain each sound to the REAL end of the previous clip (the speech
-      // helper's onEndCallback). Fixed timers cut clips mid-sound whenever
-      // a clip ran long or loaded slowly — that was the stutter Cường heard.
+      spellStopChain();
+      try { stopAllAudio(); } catch (e) {}
       const myRun = ++spellRunId;
       spellBusy = true;
       const item = curSpellItem();
@@ -3593,14 +3612,25 @@ const SPELL_RIME_WORDS = {"an":["bàn","nhãn","sản","bản","gian","an","ph�
       const parts = cellsEl._parts || [];
       const wordEl = document.getElementById('spellWord');
       const lit = ['ring-4', 'ring-amber-300', 'scale-110', 'brightness-110'];
-      // Đánh vần: âm đầu đọc TÊN ĐƠN VỊ (ch = chờ, tr = trờ — không tách
-      // cờ+hờ), phần vần tách từng chữ cái. Vd chuẩn của Cường:
-      // bàn = bờ – a – nờ – an – huyền – bàn.
+      // Đánh vần: âm đầu đọc TÊN ĐƠN VỊ; phần vần tách từng chữ cái, NHƯNG
+      // chữ ghép ở cuối vần (ch/nh/ng) cũng là MỘT đơn vị — chờ/nhờ/ngờ,
+      // tuyệt đối không tách cờ+hờ. Vd chuẩn của Cường:
+      // bàn = bờ – a – nờ – an – huyền – bàn · lệch = lờ – ê – chờ – êch – nặng – lệch.
       const st = stripToneSyllable(String(item.w).toLowerCase());
       const steps = [];
       const onsetLen = item.on ? [...item.on].length : 0;
       if (item.on) steps.push({ say: String(item.onName || item.on).replace(/ ghép$/, ''), el: parts[0], kind: 'onset' });
-      [...st.base].slice(onsetLen).forEach((ch, k) => steps.push({ say: SPELL_LETTER_NAMES[ch] || ch, letter: onsetLen + k, kind: 'ltr' }));
+      const FINAL_UNITS = { ch: 'chờ', nh: 'nhờ', ng: 'ngờ' };
+      const rimeLetters = [...st.base].slice(onsetLen);
+      for (let k = 0; k < rimeLetters.length; k++) {
+        const two = (rimeLetters[k] || '') + (rimeLetters[k + 1] || '');
+        if (k === rimeLetters.length - 2 && FINAL_UNITS[two]) {
+          steps.push({ say: FINAL_UNITS[two], letters: [onsetLen + k, onsetLen + k + 1], kind: 'ltr' });
+          k++;
+        } else {
+          steps.push({ say: SPELL_LETTER_NAMES[rimeLetters[k]] || rimeLetters[k], letters: [onsetLen + k], kind: 'ltr' });
+        }
+      }
       steps.push({ say: spellRimeBase(item), el: parts[item.on ? 1 : 0], kind: 'rime' });
       if (st.toneName !== 'ngang') steps.push({ say: st.toneName, el: parts[parts.length - 1], kind: 'tone' });
       steps.push({ say: item.w, el: parts[parts.length - 1], kind: 'word' });
@@ -3609,44 +3639,64 @@ const SPELL_RIME_WORDS = {"an":["bàn","nhãn","sản","bản","gian","an","ph�
         parts.forEach(p => { if (p._cell) p._cell.classList.remove(...lit); });
         wordEl.querySelectorAll('.spell-ltr').forEach(s => s.classList.remove(...lit, 'text-amber-500'));
       };
+      // Prefetch EVERY clip right now (parallel) so no step waits on the
+      // network when its turn comes — that per-step fetch latency (~1s on
+      // Cường's phone) was what made the spelling feel slow. The clips are
+      // then played back-to-back on their real 'ended' events.
+      const soundOn = !(typeof state !== 'undefined' && state && state.soundEnabled === false);
+      const audios = soundOn ? steps.map(s => {
+        const a = new Audio();
+        a.preload = 'auto';
+        a.referrerPolicy = 'no-referrer';
+        a._host = 0;
+        a.src = spellTtsUrls(s.say)[0];
+        try { a.load(); } catch (e) {}
+        return a;
+      }) : [];
       let i = 0;
-      const step = () => {
-        if (myRun !== spellRunId) return; // a newer spell took over
+      const playNext = () => {
+        if (myRun !== spellRunId) return; // a newer spell or other speech took over
         clearHi();
         if (i >= steps.length) {
           spellBusy = false;
+          spellChainAudio = null;
           document.getElementById('spellMsg').textContent = '🎉 ' + steps.map(s => s.say).join(' – ') + '!';
           playCheerMelody();
           return;
         }
-        const s = steps[i++];
+        const s = steps[i];
+        const a = audios[i];
+        i++;
         if (s.kind === 'ltr') {
-          const sp = wordEl.querySelector('[data-li="' + s.letter + '"]');
-          if (sp) sp.classList.add(...lit, 'text-amber-500');
+          (s.letters || []).forEach(li => {
+            const sp = wordEl.querySelector('[data-li="' + li + '"]');
+            if (sp) sp.classList.add(...lit, 'text-amber-500');
+          });
         } else if (s.el && s.el._cell) s.el._cell.classList.add(...lit);
-        let advanced = false;
-        const tickBefore = window.__kvSpeechTick || 0;
-        const advance = () => {
-          if (advanced || myRun !== spellRunId) return;
-          advanced = true;
-          setTimeout(step, 140);
+        let done = false;
+        const finish = () => {
+          if (done || myRun !== spellRunId) return;
+          done = true;
+          setTimeout(playNext, 70);
         };
-        speakWithGoogleVoice(s.say, null, advance);
+        if (!soundOn || !a) { setTimeout(finish, 420); return; }
+        spellChainAudio = a;
+        a.onended = finish;
+        a.onerror = () => {
+          if (done || myRun !== spellRunId) return;
+          a._host++;
+          const urls = spellTtsUrls(s.say);
+          if (a._host < urls.length) {
+            a.src = urls[a._host];
+            const p = a.play(); if (p && p.catch) p.catch(() => {});
+          } else finish();
+        };
+        const p = a.play();
+        if (p && p.catch) p.catch(() => {});
         playPopSound(2);
-        // Safety: if the end callback never comes (interrupted speech sets
-        // it adrift), move on — unless someone else spoke meanwhile, which
-        // means this chain was interrupted on purpose: stop quietly.
-        setTimeout(() => {
-          if (advanced || myRun !== spellRunId) return;
-          if ((window.__kvSpeechTick || 0) !== tickBefore + 1) {
-            spellBusy = false;
-            clearHi();
-            return;
-          }
-          advance();
-        }, 4000);
+        setTimeout(finish, 3500); // safety: never stall the chain
       };
-      step();
+      playNext();
     }
 
     // ================= BẢNG GHÉP ÂM ĐẦU + VẦN (nguyên văn cơ chế trang Bé Học Vui) =================
