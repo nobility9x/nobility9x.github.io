@@ -2054,6 +2054,7 @@
 
     // ONLY Google Translate TTS stream — NEVER uses window.speechSynthesis machine voice!
     function speakWithGoogleVoice(rawText, langOverride = null, onEndCallback = null) {
+      window.__kvSpeechTick = (window.__kvSpeechTick || 0) + 1;
       stopAllAudio();
       const myToken = currentSpeechToken;
       const cleanText = sanitizeForSpeech(rawText);
@@ -3488,6 +3489,11 @@ const SPELL_RIME_WORDS = {"an":["bàn","nhãn","sản","bản","gian","an","ph�
 
     function curSpellItem() { return spellItem || SPELL_WORDS[spellIdx]; }
 
+    // Some lesson words store the rime WITH its tone ('ãn'); the stage cell
+    // and the spoken rime step must use the toneless base ('an') — the tone
+    // is read separately as its own step.
+    function spellRimeBase(item) { return stripToneSyllable(item.rime || '').base || item.rime; }
+
     function selectSpellWord(w) {
       const i = SPELL_WORDS.findIndex(x => x.w === w);
       if (i >= 0) { spellItem = null; spellIdx = i; renderSpell(); }
@@ -3511,7 +3517,7 @@ const SPELL_RIME_WORDS = {"an":["bàn","nhãn","sản","bản","gian","an","ph�
         plus.textContent = '+';
         cells.appendChild(plus);
       }
-      const rimeCell = spellCell(item.rime, 'Vần', 'bg-sky-50 border-sky-300 text-sky-600');
+      const rimeCell = spellCell(spellRimeBase(item), 'Vần', 'bg-sky-50 border-sky-300 text-sky-600');
       cells.appendChild(rimeCell);
       parts.push(rimeCell);
       const eq = document.createElement('div');
@@ -3575,8 +3581,12 @@ const SPELL_RIME_WORDS = {"an":["bàn","nhãn","sản","bản","gian","an","ph�
       });
     }
 
+    let spellRunId = 0;
     function runSpell() {
-      if (spellBusy) return;
+      // Chain each sound to the REAL end of the previous clip (the speech
+      // helper's onEndCallback). Fixed timers cut clips mid-sound whenever
+      // a clip ran long or loaded slowly — that was the stutter Cường heard.
+      const myRun = ++spellRunId;
       spellBusy = true;
       const item = curSpellItem();
       const cellsEl = document.getElementById('spellCells');
@@ -3584,14 +3594,14 @@ const SPELL_RIME_WORDS = {"an":["bàn","nhãn","sản","bản","gian","an","ph�
       const wordEl = document.getElementById('spellWord');
       const lit = ['ring-4', 'ring-amber-300', 'scale-110', 'brightness-110'];
       // Đánh vần: âm đầu đọc TÊN ĐƠN VỊ (ch = chờ, tr = trờ — không tách
-      // cờ+hờ), phần vần tách từng chữ cái: chờ – a – nhờ... vd chuẩn của
-      // Cường: bàn = bờ – a – nờ – an – huyền – bàn.
+      // cờ+hờ), phần vần tách từng chữ cái. Vd chuẩn của Cường:
+      // bàn = bờ – a – nờ – an – huyền – bàn.
       const st = stripToneSyllable(String(item.w).toLowerCase());
       const steps = [];
       const onsetLen = item.on ? [...item.on].length : 0;
       if (item.on) steps.push({ say: String(item.onName || item.on).replace(/ ghép$/, ''), el: parts[0], kind: 'onset' });
       [...st.base].slice(onsetLen).forEach((ch, k) => steps.push({ say: SPELL_LETTER_NAMES[ch] || ch, letter: onsetLen + k, kind: 'ltr' }));
-      steps.push({ say: item.rime, el: parts[item.on ? 1 : 0], kind: 'rime' });
+      steps.push({ say: spellRimeBase(item), el: parts[item.on ? 1 : 0], kind: 'rime' });
       if (st.toneName !== 'ngang') steps.push({ say: st.toneName, el: parts[parts.length - 1], kind: 'tone' });
       steps.push({ say: item.w, el: parts[parts.length - 1], kind: 'word' });
       document.getElementById('spellMsg').textContent = '🔤 Đang đánh vần...';
@@ -3601,6 +3611,7 @@ const SPELL_RIME_WORDS = {"an":["bàn","nhãn","sản","bản","gian","an","ph�
       };
       let i = 0;
       const step = () => {
+        if (myRun !== spellRunId) return; // a newer spell took over
         clearHi();
         if (i >= steps.length) {
           spellBusy = false;
@@ -3613,9 +3624,27 @@ const SPELL_RIME_WORDS = {"an":["bàn","nhãn","sản","bản","gian","an","ph�
           const sp = wordEl.querySelector('[data-li="' + s.letter + '"]');
           if (sp) sp.classList.add(...lit, 'text-amber-500');
         } else if (s.el && s.el._cell) s.el._cell.classList.add(...lit);
-        speakWithGoogleVoice(s.say);
+        let advanced = false;
+        const tickBefore = window.__kvSpeechTick || 0;
+        const advance = () => {
+          if (advanced || myRun !== spellRunId) return;
+          advanced = true;
+          setTimeout(step, 140);
+        };
+        speakWithGoogleVoice(s.say, null, advance);
         playPopSound(2);
-        setTimeout(step, s.kind === 'ltr' ? 720 : 950);
+        // Safety: if the end callback never comes (interrupted speech sets
+        // it adrift), move on — unless someone else spoke meanwhile, which
+        // means this chain was interrupted on purpose: stop quietly.
+        setTimeout(() => {
+          if (advanced || myRun !== spellRunId) return;
+          if ((window.__kvSpeechTick || 0) !== tickBefore + 1) {
+            spellBusy = false;
+            clearHi();
+            return;
+          }
+          advance();
+        }, 4000);
       };
       step();
     }
