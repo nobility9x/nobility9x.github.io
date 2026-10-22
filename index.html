@@ -3529,8 +3529,6 @@ const SPELL_RIME_WORDS = {"an":["bàn","nhãn","sản","bản","gian","an","ph�
       cells.appendChild(wordCell);
       parts.push(wordCell);
       cells._parts = parts;
-      // Warm this word's clips now so a tap on Đánh vần plays instantly.
-      try { spellSays(item).forEach(say => spellClip(say)); } catch (e) {}
     }
 
     function setSpellPanel(p) {
@@ -3604,46 +3602,10 @@ const SPELL_RIME_WORDS = {"an":["bàn","nhãn","sản","bản","gian","an","ph�
         'https://translate.googleapis.com/translate_tts?ie=UTF-8&tl=vi&client=gtx&q=' + q
       ];
     }
-    // The spoken step list for an item (onset unit, rime units, rime, tone,
-    // word) — used to warm the clip cache before the child even taps.
-    function spellSays(item) {
-      const st = stripToneSyllable(String(item.w).toLowerCase());
-      const says = [];
-      const onsetLen = item.on ? [...item.on].length : 0;
-      if (item.on) says.push(String(item.onName || item.on).replace(/ ghép$/, ''));
-      const FINAL_UNITS = { ch: 'chờ', nh: 'nhờ', ng: 'ngờ' };
-      const rl = [...st.base].slice(onsetLen);
-      for (let k = 0; k < rl.length; k++) {
-        const two = (rl[k] || '') + (rl[k + 1] || '');
-        if (k === rl.length - 2 && FINAL_UNITS[two]) { says.push(FINAL_UNITS[two]); k++; }
-        else says.push(SPELL_LETTER_NAMES[rl[k]] || rl[k]);
-      }
-      says.push(spellRimeBase(item));
-      if (st.toneName !== 'ngang') says.push(st.toneName);
-      says.push(item.w);
-      return says;
-    }
-    // Clips are cached per spoken text and played at 1.2x: the voice itself
-    // runs a little quicker and repeats cost no network wait at all.
-    const spellClipCache = new Map();
-    function spellClip(say) {
-      let a = spellClipCache.get(say);
-      if (a) return a;
-      if (spellClipCache.size > 60) {
-        spellClipCache.forEach(x => { try { x.pause(); } catch (e) {} });
-        spellClipCache.clear();
-      }
-      a = new Audio();
-      a.preload = 'auto';
-      a.referrerPolicy = 'no-referrer';
-      a.playbackRate = 1.2;
-      a._host = 0;
-      a._say = say;
-      a.src = spellTtsUrls(say)[0];
-      try { a.load(); } catch (e) {}
-      spellClipCache.set(say, a);
-      return a;
-    }
+    // (No clip cache and no render-time warming: elements created ahead of
+    // their play moment went mute on Cường's phone — steps sat silent for
+    // exactly the safety-timeout span. Playback creates each element at its
+    // own step, with one-step lookahead only. See runSpell.)
     function runSpell() {
       spellStopChain();
       try { stopAllAudio(); } catch (e) {}
@@ -3681,12 +3643,26 @@ const SPELL_RIME_WORDS = {"an":["bàn","nhãn","sản","bản","gian","an","ph�
         parts.forEach(p => { if (p._cell) p._cell.classList.remove(...lit); });
         wordEl.querySelectorAll('.spell-ltr').forEach(s => s.classList.remove(...lit, 'text-amber-500'));
       };
-      // Prefetch EVERY clip right now (parallel) so no step waits on the
-      // network when its turn comes — that per-step fetch latency (~1s on
-      // Cường's phone) was what made the spelling feel slow. The clips are
-      // then played back-to-back on their real 'ended' events.
+      // Playback: a FRESH Audio element per step, created at the step's own
+      // moment (the pattern that reliably plays on Cường's phone), plus
+      // ONE-step lookahead — while a clip plays, the next step's element is
+      // created and starts loading, so its fetch overlaps the current sound
+      // instead of leaving dead air after it. A failed host or a rejected
+      // play() moves on at once; nothing waits out a long timeout in silence.
       const soundOn = !(typeof state !== 'undefined' && state && state.soundEnabled === false);
-      const audios = soundOn ? steps.map(s => spellClip(s.say)) : [];
+      const prepared = [];
+      const prepare = j => {
+        if (!soundOn || j >= steps.length || prepared[j]) return;
+        const a = new Audio();
+        a.preload = 'auto';
+        a.referrerPolicy = 'no-referrer';
+        a.playbackRate = 1.2;
+        a._host = 0;
+        a._say = steps[j].say;
+        a.src = spellTtsUrls(steps[j].say)[0];
+        try { a.load(); } catch (e) {}
+        prepared[j] = a;
+      };
       let i = 0;
       const playNext = () => {
         if (myRun !== spellRunId) return; // a newer spell or other speech took over
@@ -3699,7 +3675,7 @@ const SPELL_RIME_WORDS = {"an":["bàn","nhãn","sản","bản","gian","an","ph�
           return;
         }
         const s = steps[i];
-        const a = audios[i];
+        const idx = i;
         i++;
         if (s.kind === 'ltr') {
           (s.letters || []).forEach(li => {
@@ -3713,23 +3689,29 @@ const SPELL_RIME_WORDS = {"an":["bàn","nhãn","sản","bản","gian","an","ph�
           done = true;
           setTimeout(playNext, 50);
         };
-        if (!soundOn || !a) { setTimeout(finish, 420); return; }
+        if (!soundOn) { setTimeout(finish, 420); return; }
+        prepare(idx);
+        let a = prepared[idx];
+        if (!a || a.networkState === 3) { prepared[idx] = null; prepare(idx); a = prepared[idx]; }
         spellChainAudio = a;
-        try { a.currentTime = 0; } catch (e) {}
-        a.onended = finish;
-        a.onerror = () => {
+        prepare(idx + 1); // lookahead: fetch the next clip during this one
+        const hostFail = () => {
           if (done || myRun !== spellRunId) return;
           a._host++;
           const urls = spellTtsUrls(s.say);
-          if (a._host < urls.length) {
-            a.src = urls[a._host];
-            const p = a.play(); if (p && p.catch) p.catch(() => {});
-          } else finish();
+          if (a._host < urls.length) { a.src = urls[a._host]; tryPlay(); }
+          else finish();
         };
-        const p = a.play();
-        if (p && p.catch) p.catch(() => {});
+        const tryPlay = () => {
+          if (done || myRun !== spellRunId) return;
+          const p = a.play();
+          if (p && p.catch) p.catch(() => hostFail());
+        };
+        a.onended = finish;
+        a.onerror = hostFail;
+        tryPlay();
         playPopSound(2);
-        setTimeout(finish, 3500); // safety: never stall the chain
+        setTimeout(finish, 3000); // backstop only; failures advance via hostFail
       };
       playNext();
     }
