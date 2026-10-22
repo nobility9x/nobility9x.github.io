@@ -614,10 +614,10 @@
             <div id="spellRimeExamples" class="grid grid-cols-4 gap-2 content-start overflow-y-auto no-scrollbar pr-1"></div>
           </div>
           <div id="spellCombo" class="hidden flex-1 flex flex-col min-h-0">
-            <div class="flex items-center gap-2 shrink-0 mb-1.5">
-              <div id="comboBigLetter" class="font-black text-rose-500 leading-none w-12 shrink-0 text-center">b</div>
-              <div id="comboOnsets" class="flex-1 flex gap-1 flex-nowrap overflow-x-auto no-scrollbar py-0.5"></div>
+            <div class="flex items-center justify-center shrink-0 mb-1">
+              <div id="comboBigLetter" class="font-black text-rose-500 leading-none text-center">b</div>
             </div>
+            <div id="comboOnsets" class="flex gap-1.5 flex-nowrap overflow-x-auto no-scrollbar py-0.5 shrink-0 mb-1.5 w-full"></div>
             <div id="comboTable" class="flex-1 min-w-0 min-h-0 overflow-y-auto no-scrollbar pr-1"></div>
           </div>
           <div id="spellTone" class="hidden flex-1 flex flex-col items-center justify-center gap-2 overflow-y-auto no-scrollbar">
@@ -3732,7 +3732,7 @@ const SPELL_RIME_WORDS = {"an":["bàn","nhãn","sản","bản","gian","an","ph�
       SPELL_FULL.initials.forEach(x => {
         const b = document.createElement('button');
         b.type = 'button';
-        b.className = 'kid-btn shrink-0 whitespace-nowrap rounded-xl px-2.5 py-1 border-2 font-black text-sm ' + (x.on === comboOnset ? 'bg-rose-500 text-white border-rose-200 shadow' : 'bg-rose-50 text-rose-700 border-rose-200');
+        b.className = 'kid-btn shrink-0 whitespace-nowrap rounded-xl px-3 py-1.5 border-2 font-black text-base ' + (x.on === comboOnset ? 'bg-rose-500 text-white border-rose-200 shadow' : 'bg-rose-50 text-rose-700 border-rose-200');
         b.textContent = x.on;
         b.addEventListener('click', () => { comboOnset = x.on; playPopSound(1); renderCombo(); });
         box.appendChild(b);
@@ -3743,9 +3743,9 @@ const SPELL_RIME_WORDS = {"an":["bàn","nhãn","sản","bản","gian","an","ph�
       SPELL_VOWELS.forEach(v => {
         const row = spellingToneRow(comboOnset, v);
         const line = document.createElement('div');
-        line.className = 'flex items-center gap-1.5 bg-white rounded-2xl border-2 border-emerald-100 px-2 py-1 mb-1.5';
+        line.className = 'flex items-center gap-2 bg-white rounded-2xl border-2 border-emerald-100 px-2 py-1.5 mb-1.5';
         const vEl = document.createElement('span');
-        vEl.className = 'w-6 shrink-0 text-center text-lg font-black text-teal-600';
+        vEl.className = 'w-8 shrink-0 text-center text-[22px] font-black text-teal-600';
         vEl.textContent = v;
         line.appendChild(vEl);
         const tonesBox = document.createElement('div');
@@ -3756,9 +3756,23 @@ const SPELL_RIME_WORDS = {"an":["bàn","nhãn","sản","bản","gian","an","ph�
           row.tones.split(' ').forEach(t => {
             const tb = document.createElement('button');
             tb.type = 'button';
-            tb.className = 'kid-btn rounded-lg px-1 py-0.5 bg-sky-50 border border-sky-200 text-sky-700 font-black text-sm whitespace-nowrap';
+            tb.className = 'kid-btn rounded-lg px-2 py-1 bg-sky-50 border border-sky-200 text-sky-700 font-black text-lg whitespace-nowrap';
             tb.textContent = t;
-            tb.addEventListener('click', () => { playPopSound(1); speakWithGoogleVoice(t); });
+            // Bảng ghép cũng đọc KIỂU ĐÁNH VẦN như panel Vần (lệnh Cường
+            // 2026-10-22): bấm ô là sân khấu chuyển sang tiếng đó và chạy
+            // chuỗi đánh vần đầy đủ, không đọc trơn một tiếng nữa.
+            tb.addEventListener('click', () => {
+              playPopSound(1);
+              const found = SPELL_WORDS.find(x => x.w === t);
+              if (found) spellItem = found;
+              else {
+                const onLetters = comboOnset === 'q' ? 'qu' : comboOnset;
+                const ini = SPELL_FULL.initials.find(x => x.on === comboOnset);
+                spellItem = { w: t, on: onLetters, onName: ini ? ini.name : onLetters, rime: v, e: '', mean: '' };
+              }
+              renderSpell();
+              runSpell();
+            });
             tonesBox.appendChild(tb);
           });
         }
