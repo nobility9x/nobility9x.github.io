@@ -3626,18 +3626,32 @@ const SPELL_RIME_WORDS = {"an":["bàn","nhãn","sản","bản","gian","an","ph�
       if (item.on) steps.push({ say: String(item.onName || item.on).replace(/ ghép$/, ''), el: parts[0], kind: 'onset' });
       const FINAL_UNITS = { ch: 'chờ', nh: 'nhờ', ng: 'ngờ' };
       const rimeLetters = [...st.base].slice(onsetLen);
+      let letterSteps = 0;
       for (let k = 0; k < rimeLetters.length; k++) {
         const two = (rimeLetters[k] || '') + (rimeLetters[k + 1] || '');
         if (k === rimeLetters.length - 2 && FINAL_UNITS[two]) {
           steps.push({ say: FINAL_UNITS[two], letters: [onsetLen + k, onsetLen + k + 1], kind: 'ltr' });
+          letterSteps++;
           k++;
         } else {
           steps.push({ say: SPELL_LETTER_NAMES[rimeLetters[k]] || rimeLetters[k], letters: [onsetLen + k], kind: 'ltr' });
+          letterSteps++;
         }
       }
-      steps.push({ say: spellRimeBase(item), el: parts[item.on ? 1 : 0], kind: 'rime' });
+      // Vần chỉ MỘT chữ cái (a/o/ô/ơ... — mọi dòng Bảng ghép): bước "cả vần"
+      // đọc lại đúng chữ đó là SAI (bờ–a–a–hỏi–bả; Cường bắt lỗi qua video
+      // 2026-10-22). Đúng phải là bước GHÉP âm đầu+vần thành tiếng chưa dấu:
+      // bờ – a – ba – hỏi – bả. Không có âm đầu thì bỏ bước cả vần (chữ cái
+      // đã đọc rồi). Vần nhiều chữ giữ nguyên mẫu cũ (bờ–a–nờ–an–huyền–bàn).
+      const blend = letterSteps === 1 && !!item.on;
+      if (blend) {
+        const ngang = st.toneName === 'ngang';
+        steps.push({ say: st.base, el: ngang ? parts[parts.length - 1] : parts[1], kind: ngang ? 'word' : 'rime' });
+      } else if (letterSteps > 1) {
+        steps.push({ say: spellRimeBase(item), el: parts[item.on ? 1 : 0], kind: 'rime' });
+      }
       if (st.toneName !== 'ngang') steps.push({ say: st.toneName, el: parts[parts.length - 1], kind: 'tone' });
-      steps.push({ say: item.w, el: parts[parts.length - 1], kind: 'word' });
+      if (!(blend && st.toneName === 'ngang')) steps.push({ say: item.w, el: parts[parts.length - 1], kind: 'word' });
       document.getElementById('spellMsg').textContent = '🔤 Đang đánh vần...';
       const clearHi = () => {
         parts.forEach(p => { if (p._cell) p._cell.classList.remove(...lit); });
@@ -3743,20 +3757,30 @@ const SPELL_RIME_WORDS = {"an":["bàn","nhãn","sản","bản","gian","an","ph�
       SPELL_VOWELS.forEach(v => {
         const row = spellingToneRow(comboOnset, v);
         const line = document.createElement('div');
-        line.className = 'flex items-center gap-2 bg-white rounded-2xl border-2 border-emerald-100 px-2 py-1.5 mb-1.5';
+        line.className = 'flex items-stretch gap-2 mb-1.5';
+        // Nhãn vần đầu dòng = Ô RIÊNG nổi bật (lệnh Cường 2026-10-22 sau khi
+        // em tách nhầm dòng chip ở trên): hộp gradient tím riêng, tách hẳn
+        // khỏi dãy ô tiếng bên phải.
         const vEl = document.createElement('span');
-        vEl.className = 'w-8 shrink-0 text-center text-[22px] font-black text-teal-600';
+        vEl.className = 'shrink-0 font-black';
+        // Inline styles: the fragment's static Tailwind set has no gradient /
+        // w-11 utilities, so the box must not depend on them.
+        vEl.style.cssText = 'width:44px;display:flex;align-items:center;justify-content:center;border-radius:16px;background:linear-gradient(135deg,#8b5cf6,#6366f1);color:#fff;font-size:22px;box-shadow:0 2px 6px rgba(99,102,241,.45)';
         vEl.textContent = v;
         line.appendChild(vEl);
+        const pill = document.createElement('div');
+        pill.className = 'flex-1 min-w-0 flex items-center bg-white rounded-2xl border-2 border-emerald-100 px-2 py-1.5';
         const tonesBox = document.createElement('div');
         tonesBox.className = 'flex gap-1 flex-nowrap items-center';
         if (row.tones.startsWith('—')) {
           tonesBox.innerHTML = '<span class="text-xs font-bold text-slate-400">' + row.tones + '</span>';
         } else {
-          row.tones.split(' ').forEach(t => {
+          row.tones.split(' ').forEach((t, ti) => {
             const tb = document.createElement('button');
             tb.type = 'button';
-            tb.className = 'kid-btn rounded-lg px-2 py-1 bg-sky-50 border border-sky-200 text-sky-700 font-black text-lg whitespace-nowrap';
+            // Ô tiếng đầu dòng (chưa dấu — tiếng gốc của dòng) tô vàng riêng
+            // cho nổi bật cùng ô nhãn.
+            tb.className = 'kid-btn rounded-lg px-2 py-1 font-black text-lg whitespace-nowrap border ' + (ti === 0 ? 'bg-amber-100 border-amber-400 text-amber-800' : 'bg-sky-50 border-sky-200 text-sky-700');
             tb.textContent = t;
             // Bảng ghép cũng đọc KIỂU ĐÁNH VẦN như panel Vần (lệnh Cường
             // 2026-10-22): bấm ô là sân khấu chuyển sang tiếng đó và chạy
@@ -3776,7 +3800,8 @@ const SPELL_RIME_WORDS = {"an":["bàn","nhãn","sản","bản","gian","an","ph�
             tonesBox.appendChild(tb);
           });
         }
-        line.appendChild(tonesBox);
+        pill.appendChild(tonesBox);
+        line.appendChild(pill);
         tbl.appendChild(line);
       });
     }
