@@ -31,19 +31,21 @@
     setEnemyCCHP(hp) : đặt máu Tổ Quái địch (mục tiêu thắng)
     endGame(result), select(ids) (tự cắt còn tối đa 12)
     cam {x,y,z}, setZoom(z), getZoom(), zoomAt(sx,sy,z)
-    enterFullscreen() : vào toàn màn hình (KHÔNG khóa hướng — chơi được cả dọc lẫn ngang)
+    enterFullscreen() : vào toàn màn hình (KHÔNG khóa hướng — màn hình không bao giờ tự xoay)
     isFullscreen(), fsAttempted
+    toStage(clientX, clientY) -> {x, y} : đổi tọa độ viewport -> tọa độ khung ngang (đã tính cả phép xoay 90°)
+    stageInfo : {w, h, rotated} — kích thước khung ngang; rotated=true khi viewport dọc (khung bị xoay 90° nguyên khối)
   }
 -->
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{width:100%;height:100%;height:100dvh;overflow:hidden;background:#000;color:#dfe9f5;font-family:Arial,Helvetica,sans-serif}
-body{display:flex;justify-content:center;align-items:stretch}
-/* MỘT bố cục duy nhất: khung DỌC cố định. Viewport rộng hơn cao (máy tính) -> khung dọc đứng giữa, hai bên đen (pillarbox), không bao giờ chuyển thành bố cục ngang. */
-#app{display:flex;flex-direction:column;width:100%;height:100dvh;position:relative;background:#07090d}
-@media (min-aspect-ratio: 1/1){
- #app{width:calc(100dvh * 0.5625);box-shadow:0 0 0 2px #2a3040,0 0 70px rgba(0,0,0,.95)}
-}
+/* MỘT thiết kế duy nhất: khung NGANG kiểu StarCraft (bản đồ trên, console ngang dưới, tài nguyên góc phải-trên).
+   Màn hình điện thoại vẫn DỌC và KHÔNG BAO GIỜ xoay — toàn bộ khung ngang được XOAY 90° nguyên khối (CSS transform)
+   đặt vào khung dọc, nên console hiện dọc mép TRÁI màn hình và chữ đọc ngang theo khung khi cầm ngang máy.
+   Viewport ngang (máy tính): khung không xoay, phủ kín viewport. Kích thước + transform do layoutStage() đặt. */
+#rotWrap{position:fixed;inset:0;width:100vw;height:100dvh;overflow:hidden;background:#000}
+#stage{position:absolute;left:50%;top:50%;display:flex;flex-direction:column;background:#07090d;transform:translate(-50%,-50%) rotate(0deg);box-shadow:0 0 0 2px #2a3040,0 0 70px rgba(0,0,0,.95)}
 /* ===== THANH TRÊN: tài nguyên bằng BIỂU TƯỢNG (không nhãn chữ) ===== */
 #topbar{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:4px 8px;background:linear-gradient(180deg,#262b36,#12151c);border-bottom:2px solid #3d4454;min-height:44px;z-index:8}
 .tb-left{display:flex;align-items:center;gap:8px;min-width:0}
@@ -58,52 +60,51 @@ body{display:flex;justify-content:center;align-items:stretch}
 .iconBtn{width:40px;height:40px;flex:none;display:flex;align-items:center;justify-content:center;background:linear-gradient(180deg,#2b303c,#171a21);border:2px solid #454e61;border-radius:6px;cursor:pointer;color:#dfe9f5;padding:0}
 .iconBtn svg{width:21px;height:21px}
 .iconBtn:active{transform:translateY(1px)}
-/* ===== SÂN KHẤU (bản đồ) ===== */
-#main{flex:1;display:flex;flex-direction:row;min-height:0;width:100%}
-#stage{position:relative;flex:1;min-height:0;min-width:0;background:#05060a;order:2}
+/* ===== KHUNG NHÌN BẢN ĐỒ ===== */
+#view{position:relative;flex:1;min-height:0;min-width:0;background:#05060a}
 #game{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none;cursor:crosshair}
-#zoomBtns{position:absolute;top:8px;right:8px;display:flex;flex-direction:column;gap:6px;z-index:6}
+#zoomBtns{position:absolute;bottom:8px;right:8px;display:flex;flex-direction:column;gap:6px;z-index:6}
 #zoomBtns button{width:44px;height:44px;background:rgba(10,14,22,.85);border:2px solid #454e61;color:#fff;border-radius:8px;font-size:22px;font-weight:900;cursor:pointer;line-height:1}
-#msg{position:absolute;top:8px;left:8px;background:rgba(5,7,12,.88);border:2px solid #b45309;color:#fde68a;border-radius:8px;padding:7px 11px;font-weight:700;font-size:13px;display:none;z-index:6;max-width:72%}
-/* ===== CONSOLE DƯỚI (kiểu StarCraft): minimap | thông tin | lưới lệnh 3x3 ===== */
-/* Console ĐỨNG dọc mép trái khung: minimap -> thông tin -> MENU -> nâng cấp -> lưới lệnh (đáy cột). Biên bậc thang: minimap 100%, thông tin/MENU/nâng cấp hẹp hơn, lưới lệnh 92%. */
-#console{display:flex;flex-direction:column;gap:6px;padding:6px;width:42%;flex:none;order:1;overflow-y:auto;background:linear-gradient(90deg,#232833,#0c0e13 30%,#141821);border-right:3px solid #3d4454;box-shadow:inset -2px 0 0 #59637a}
-#leftCol{display:flex;flex-direction:column;gap:6px;flex:none;width:100%}
-#mmWrap{flex:none;width:100%;height:104px;display:flex;flex-direction:column;background:#05070c;border:2px solid #39404f;border-radius:4px;overflow:hidden;position:relative}
-#upgPanel{display:flex;background:#05070c;border:2px solid #39404f;border-radius:4px;padding:7px 8px;flex-direction:column;gap:6px;justify-content:center;width:95%;align-self:flex-start;flex:none}
-#menuBlock{display:flex;background:#05070c;border:2px solid #39404f;border-radius:4px;padding:6px;flex-direction:column;align-items:center;gap:2px;cursor:pointer;width:88%;align-self:flex-start;flex:none}
-#menuBlock img{max-width:92%;max-height:58px}
+#msg{position:absolute;top:8px;left:8px;background:rgba(5,7,12,.88);border:2px solid #b45309;color:#fde68a;border-radius:8px;padding:7px 11px;font-weight:700;font-size:13px;display:none;z-index:6;max-width:62%}
+/* Dòng giá lệnh: dải mảnh nổi ở đáy-trái khung nhìn bản đồ */
+#cmdCost{position:absolute;left:8px;bottom:8px;z-index:7;display:flex;align-items:center;gap:12px;min-height:22px;background:rgba(5,7,12,.88);border:1px solid #39404f;border-radius:5px;padding:3px 9px;font-size:12.5px;font-weight:700;color:#cfe3f5;overflow:hidden;white-space:nowrap;pointer-events:none}
+#cmdCost:empty{display:none}
+/* ===== CONSOLE NGANG Ở ĐÁY KHUNG (kiểu StarCraft): minimap | thông tin + nâng cấp | MENU | lưới lệnh 3x3 ===== */
+#console{flex:none;height:158px;display:flex;flex-direction:row;gap:8px;padding:7px 8px;background:linear-gradient(180deg,#232833,#0c0e13 30%,#141821);border-top:3px solid #3d4454;box-shadow:inset 0 2px 0 #59637a;align-items:stretch}
+#mmWrap{flex:none;width:172px;display:flex;flex-direction:column;background:#05070c;border:2px solid #39404f;border-radius:4px;overflow:hidden;position:relative}
+#infoCol{flex:1;min-width:0;display:flex;flex-direction:column;gap:6px}
+#upgPanel{display:flex;background:#05070c;border:2px solid #39404f;border-radius:4px;padding:5px 8px;flex-direction:row;flex-wrap:wrap;gap:5px 16px;align-items:center;width:100%;flex:none}
+#menuBlock{display:flex;background:#05070c;border:2px solid #39404f;border-radius:4px;padding:6px;flex-direction:column;align-items:center;justify-content:center;gap:2px;cursor:pointer;width:86px;flex:none}
+#menuBlock img{max-width:92%;max-height:88px}
 #menuBlock .menuLbl{font-size:11px;font-weight:900;letter-spacing:3px;color:#e8c15a}
-.upgRow{display:flex;align-items:center;gap:5px;flex-wrap:wrap;font-size:11.5px;font-weight:800;color:#d7e5f5}
+.upgRow{display:flex;align-items:center;gap:5px;flex:1 1 0;min-width:0;font-size:11.5px;font-weight:800;color:#d7e5f5}
 .upgRow svg{width:18px;height:18px;flex:none}
 .upgRow .uName{white-space:nowrap}
 .upgRow .pips{color:#22d3ee;letter-spacing:1px;font-size:11px}
 .upgRow .pips .off{color:#2c3a4d}
 .upgRow button{margin-left:auto;background:linear-gradient(180deg,#2b303c,#171a21);border:2px solid #4a5468;border-radius:5px;color:#e8c15a;font-weight:900;font-size:10.5px;padding:4px 7px;min-height:32px;cursor:pointer}
 .upgRow button:disabled{opacity:.35;cursor:not-allowed}
-.upgStat{font-size:11px;color:#8dff9a;font-weight:700}
-/* Dải tài nguyên xếp DỌC theo mép phải bản đồ, neo phía dưới-phải */
-#resCluster{display:flex;flex-direction:column;gap:5px;position:absolute;right:6px;bottom:10px;z-index:15;min-width:96px}
-#resCluster .res{min-height:31px;font-size:13px;padding:2px 7px;background:rgba(5,7,12,.88);justify-content:flex-start}
+.upgStat{font-size:10.5px;color:#8dff9a;font-weight:700;white-space:nowrap;flex:1 1 100%}
+/* Cụm tài nguyên ở góc PHẢI-TRÊN của bản đồ (như bản gốc): icon + số, không nhãn chữ */
+#resCluster{display:flex;flex-direction:row;gap:5px;position:absolute;right:8px;top:8px;z-index:15}
+#resCluster .res{min-height:31px;font-size:13px;padding:2px 8px;background:rgba(5,7,12,.88);justify-content:flex-start}
 #resCluster .res svg{width:16px;height:16px}
 #mmWrap.alert{border-color:#ef4444;box-shadow:0 0 14px rgba(239,68,68,.8)}
 #minimap{width:100%;height:100%;display:block;touch-action:none;cursor:pointer}
-#infoPanel{flex:none;width:95%;align-self:flex-start;min-height:92px;background:#05070c;border:2px solid #39404f;border-radius:4px;padding:6px;overflow:hidden;display:flex;gap:8px;align-items:stretch}
-#infoPanel .portraitBox{display:none}
-#cmdWrap{flex:none;width:92%;align-self:flex-start;margin-top:auto;display:flex;flex-direction:column;gap:6px}
-#cmdGrid{display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,60px);gap:4px;flex:none}
-.cmdBtn{position:relative;background:linear-gradient(180deg,#2b303c,#14171f);border:2px solid #4a5468;border-radius:6px;min-width:48px;min-height:44px;display:flex;align-items:center;justify-content:center;cursor:pointer;padding:2px;color:#e8c15a}
+#infoPanel{flex:1;width:100%;min-height:0;background:#05070c;border:2px solid #39404f;border-radius:4px;padding:6px;overflow:hidden;display:flex;gap:8px;align-items:stretch}
+#cmdWrap{flex:none;display:flex;flex-direction:column;justify-content:center;gap:6px}
+#cmdGrid{display:grid;grid-template-columns:repeat(3,48px);grid-template-rows:repeat(3,44px);gap:5px;flex:none}
+.cmdBtn{position:relative;background:linear-gradient(180deg,#2b303c,#14171f);border:2px solid #4a5468;border-radius:6px;min-width:44px;min-height:44px;display:flex;align-items:center;justify-content:center;cursor:pointer;padding:2px;color:#e8c15a}
 .cmdBtn svg{width:30px;height:30px;pointer-events:none}
 .cmdBtn img{max-width:88%;max-height:88%;pointer-events:none;filter:drop-shadow(0 2px 2px rgba(0,0,0,.6))}
 .cmdBtn:disabled{opacity:.32;cursor:not-allowed}
 .cmdBtn.active{border-color:#22d3ee;box-shadow:0 0 10px rgba(34,211,238,.55)}
 .cmdBtn .lvl{position:absolute;right:3px;bottom:1px;font-size:11px;font-weight:900;color:#7dd7ff;text-shadow:0 1px 2px #000;pointer-events:none}
 .cmdBtn:active:not(:disabled){transform:translateY(1px)}
-#cmdCost{min-height:20px;display:flex;align-items:center;gap:12px;font-size:12.5px;font-weight:700;color:#cfe3f5;padding:0 2px;overflow:hidden;white-space:nowrap}
 #cmdCost svg{width:15px;height:15px;vertical-align:-3px}
 #cmdCost .cm{color:#8fe3ff}#cmdCost .cg{color:#8dff9a}#cmdCost .cs{color:#ffd76a}
 /* --- khung thông tin ở giữa console --- */
-.portraitBox{flex:none;width:86px;height:86px;align-self:center;background:#0a0f16;border:2px solid #6b5a2a;border-radius:4px;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.portraitBox{flex:none;width:68px;height:68px;align-self:center;background:#0a0f16;border:2px solid #6b5a2a;border-radius:4px;display:flex;align-items:center;justify-content:center;overflow:hidden}
 .portraitBox img{max-width:94%;max-height:94%}
 .portraitBox svg{width:52px;height:52px}
 .infoMain{flex:1;min-width:0;display:flex;flex-direction:column;justify-content:center;gap:5px}
@@ -146,30 +147,21 @@ body{display:flex;justify-content:center;align-items:stretch}
 .legend{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:10px 0 2px}
 .legend .lg{display:flex;align-items:center;gap:7px;background:#05070c;border:1px solid #39404f;border-radius:6px;padding:6px 10px;font-size:13px;font-weight:700}
 .legend svg{width:21px;height:21px}
-/* Điện thoại hẹp: ẩn logo + chip giờ trên thanh trên cho thoáng (chỉ ẩn chữ, KHÔNG đổi bố cục) */
-#app.compact .logo{display:none}
-#app.compact .chip.timeChip{display:none}
-#app.compact .chip{padding:3px 7px;font-size:11.5px}
+/* Khung hẹp: ẩn logo + chip giờ trên thanh trên cho thoáng (chỉ ẩn chữ, KHÔNG đổi bố cục) */
+#stage.compact .logo{display:none}
+#stage.compact .chip.timeChip{display:none}
+#stage.compact .chip{padding:3px 7px;font-size:11.5px}
 @media (max-width:700px){
- .logo{display:none}
- .chip.timeChip{display:none}
  .card{padding:14px}
  .card h1{font-size:20px}
  .card p{font-size:12px;line-height:1.45;margin:4px 0}
  .card button{min-height:46px;padding:9px 22px;font-size:16px;margin-top:6px}
 }
-/* Khung thấp (vd viewport ngang bị pillarbox): nén nhẹ các khung trong cột để vẫn vừa, bố cục không đổi */
-@media (max-height:560px){
- #topbar{min-height:38px;padding:2px 8px}
- #mmWrap{height:74px}
- #menuBlock img{max-height:38px}
- #cmdGrid{grid-template-rows:repeat(3,46px)}
- #infoPanel{min-height:74px}
-}
 </style>
 </head>
 <body>
-<div id="app">
+<div id="rotWrap">
+<div id="stage">
 <div id="topbar">
   <div class="tb-left">
     <div class="logo">CHIẾN TRANH VŨ TRỤ</div>
@@ -182,29 +174,27 @@ body{display:flex;justify-content:center;align-items:stretch}
     <button class="iconBtn" id="btnFs" type="button" aria-label="Toàn màn hình"></button>
   </div>
 </div>
-<div id="main">
-  <div id="stage">
+<div id="view">
     <canvas id="game"></canvas>
     <div id="zoomBtns"><button id="btnZoomIn" type="button" aria-label="Phóng to">+</button><button id="btnZoomOut" type="button" aria-label="Thu nhỏ">−</button></div>
     <div id="msg"></div>
+    <div id="cmdCost"></div>
     <div id="resCluster">
       <div class="res min" data-res="min"></div>
       <div class="res gas" data-res="gas"></div>
       <div class="res sup" data-res="sup"></div>
     </div>
-  </div>
-  <div id="console">
-    <div id="leftCol">
-      <div id="mmWrap"><canvas id="minimap" width="212" height="132"></canvas></div>
+</div>
+<div id="console">
+    <div id="mmWrap"><canvas id="minimap" width="212" height="132"></canvas></div>
+    <div id="infoCol">
       <div id="infoPanel"><div class="infoHint">Chưa chọn gì.<br>Chạm vào quân / nhà của mình để xem thông tin tại đây — giống bảng điều khiển của chỉ huy.</div></div>
-      <div id="menuBlock" title="Menu / Tạm dừng"><img id="menuPortrait" src="assets/sprites/command.png" alt=""><div class="menuLbl">MENU</div></div>
       <div id="upgPanel"></div>
     </div>
+    <div id="menuBlock" title="Menu / Tạm dừng"><img id="menuPortrait" src="assets/sprites/command.png" alt=""><div class="menuLbl">MENU</div></div>
     <div id="cmdWrap">
       <div id="cmdGrid"></div>
-      <div id="cmdCost"></div>
     </div>
-  </div>
 </div>
 <div class="overlay" id="startOverlay">
   <div class="card">
@@ -221,9 +211,9 @@ body{display:flex;justify-content:center;align-items:stretch}
     <div class="teamNote" id="teamNote" style="display:none">Bản đồ nhỏ chỉ đấu 2 đội</div>
     <p>• <b>Tài nguyên nhìn bằng biểu tượng</b> (góc phải-trên): tinh thể xanh = <b>khoáng</b>, bình xanh lá = <b>khí</b>, hình người vàng = <b>dân số</b> (đang dùng / tối đa). Hết dân số thì xây thêm <b>Kho Tiếp Tế</b> (+8).</p>
     <p>• <b>Điều khiển cảm ứng:</b> chạm 1 ngón = chọn / ra lệnh theo ngữ cảnh; kéo 1 ngón = khoanh vùng chọn quân (<b>tối đa 12 quân</b> như bản gốc); chụm–mở 2 ngón = zoom, kéo 2 ngón = lia bản đồ. Chuột: click trái chọn, click phải ra lệnh, lăn chuột zoom.</p>
-    <p>• <b>Kinh tế:</b> bắt đầu 50 khoáng, 4 Robot Thợ. Thợ mang về <b>8 khoáng/chuyến</b>. Muốn hút <b>khí</b>: chọn thợ → xây <b>Trạm Lọc Khí</b> ngay trên mạch khí xanh lá, rồi cho thợ vào hút (8 khí/chuyến).</p>
+    <p>• <b>Kinh tế:</b> bắt đầu 50 khoáng, 4 Robot Thợ <b>tự khai thác khoáng ngay từ giây đầu</b> (không cần ra lệnh) và có sẵn <b>2 Lính Bắn Tia</b> canh giữ Trung Tâm. Thợ mang về <b>8 khoáng/chuyến</b>. Muốn hút <b>khí</b>: chọn thợ → xây <b>Trạm Lọc Khí</b> ngay trên mạch khí xanh lá, rồi cho thợ vào hút (8 khí/chuyến).</p>
     <p>• <b>Quân &amp; khắc chế:</b> Lính (rẻ, đa năng) • Lính Phun Lửa (đốt đàn quái nhỏ, yếu trước quân to) • Xe Tăng (pháo xa, nổ lan, mạnh với quân to) • Robot Chiến Đấu (bắn nhanh, cơ động). <b>Nâng cấp:</b> Doanh Trại nghiên cứu <b>Vũ Khí +1→+3</b>, Xưởng Cơ Khí nghiên cứu <b>Giáp +1→+3</b> (giá tăng dần 100/100 → 175/175 → 250/250).</p>
-    <p>• <b>Thắng:</b> phá hết <b>Tổ Quái</b> của (các) đội máy. <b>Thua:</b> mất Trung Tâm Chỉ Huy. Địch tràn ra theo đợt ngày càng đông, về sau có cả quái khổng lồ. Ở kiểu 3 đội, hai đội máy cũng tự đánh nhau. Máy bay vận tải sẽ có ở bản sau.</p>
+    <p>• <b>Thắng:</b> phá hết <b>Tổ Quái</b> của (các) đội máy. <b>Thua:</b> mất Trung Tâm Chỉ Huy. <b>Đợt địch đầu tiên chỉ đến sau 2 phút rưỡi</b> (3 quái nhỏ) — kịp khai thác và dựng quân; các đợt sau cách nhau ~80 giây, đông dần, quái khổng lồ chỉ xuất hiện từ ~phút 9. Đồng hồ "Đợt" trên thanh trên luôn đếm ngược tới đợt kế. Ở kiểu 3 đội, hai đội máy cũng tự đánh nhau. Máy bay vận tải sẽ có ở bản sau.</p>
     <button id="btnStart" type="button">BẮT ĐẦU</button>
   </div>
 </div>
@@ -234,7 +224,8 @@ body{display:flex;justify-content:center;align-items:stretch}
     <button id="btnRestart" type="button">CHƠI LẠI</button>
   </div>
 </div>
-</div><!-- /#app -->
+</div><!-- /#stage -->
+</div><!-- /#rotWrap -->
 <script>
 'use strict';
 /* ============ ICON SVG (vẽ tay, nét vàng/xanh như bản gốc) ============ */
@@ -408,7 +399,7 @@ var Z_MIN = 0.45, Z_MAX = 2.2;
 var cam = {x:0, y:WORLD_H-620, z:1};
 var FOG_CELL = 40, FOG_COLS = Math.ceil(WORLD_W/FOG_CELL), FOG_ROWS = Math.ceil(WORLD_H/FOG_CELL);
 var fog = new Uint8Array(FOG_COLS*FOG_ROWS);       /* 0 chưa khám phá · 1 đã thấy · 2 đang thấy */
-var fogT = 0;
+var fogT = 0, hudT = 0;
 function fogIdx(cx, cy){ return cy*FOG_COLS + cx; }
 function fogAtWorld(wx, wy){
   var cx = clamp((wx/FOG_CELL)|0, 0, FOG_COLS-1), cy = clamp((wy/FOG_CELL)|0, 0, FOG_ROWS-1);
@@ -519,7 +510,7 @@ function resetGame(){
   FOG_COLS = Math.ceil(WORLD_W/FOG_CELL); FOG_ROWS = Math.ceil(WORLD_H/FOG_CELL);
   S = { started:false, paused:false, over:false, result:null, fsAttempted:false, time:0, wave:0,
         map:chosenMap, teams:chosenTeams,
-        ai:{ ai1:{wave:0, nextAt:40}, ai2:{wave:0, nextAt:55} },
+        ai:{ ai1:{wave:0, nextAt:150}, ai2:{wave:0, nextAt:170} },
         minerals:50, gas:0, supplyUsed:0, supplyCap:10, upgrades:{weapon:0, armor:0},
         units:[], buildings:[], nodes:[], projectiles:[],
         selectedIds:[], selectedBuildingId:0, stats:{kills:0, losses:0, trained:0} };
@@ -536,7 +527,18 @@ function resetGame(){
     S.units.push(makeUnit(b.faction,'hydralisk', b.x + sx*190, b.y + 115));
   });
   for(i=0;i<4;i++) S.units.push(makeUnit('player','worker', pb[0]+95+(i%2)*48, pb[1]-75+((i/2)|0)*48));
+  /* 2 Lính Bắn Tia canh sẵn quanh Trung Tâm — đợt dò thám đầu không còn chí mạng */
+  S.units.push(makeUnit('player','marine', pb[0]-110, pb[1]+100));
+  S.units.push(makeUnit('player','marine', pb[0]+155, pb[1]+100));
   layout.nodes.forEach(function(n){ addNode(n.type, n.x, n.y, n.amount); });
+  /* Cả 4 thợ TỰ khai thác khoáng từ giây đầu tiên — kinh tế chảy ngay trong lúc người chơi học điều khiển */
+  var minNodes = S.nodes.filter(function(n){ return n.type==='mineral'; });
+  if(minNodes.length) S.units.forEach(function(u){
+    if(u.faction!=='player' || u.type!=='worker') return;
+    var best = null, bd = Infinity;
+    minNodes.forEach(function(n){ var d = dist(u.x, u.y, n.x, n.y); if(d < bd){ bd = d; best = n; } });
+    if(best) orderHarvest(u.id, best.id);
+  });
   cam.x = clamp(pb[0]-450, 0, WORLD_W); cam.y = clamp(pb[1]-380, 0, WORLD_H); cam.z = 1;
   placing = null; pendingOrder = null; cmdPage = 'main'; panelSig = '';
   recalcSupply(); updateFog(); buildTerrain();
@@ -688,6 +690,8 @@ function combatDamage(attacker, target){
   }
   var dmg = raw;
   if(target.faction==='player') dmg = Math.max(1, raw - S.upgrades.armor);
+  /* Ân hạn đầu trận: trước phút 5, quái đánh NHÀ chỉ bằng 50% — gây áp lực chứ không phá tan căn cứ còn non */
+  if(target.kind==='building' && attacker.faction && attacker.faction!=='player' && S.time < 300) dmg *= 0.5;
   return dmg;
 }
 function damageById(id, amount){
@@ -914,7 +918,7 @@ function tickAI(dt){
     if(!base) return;
     var st = S.ai[team];
     if(S.time >= st.nextAt && !S.over){
-      st.wave++; st.nextAt += 45;
+      st.wave++; st.nextAt += 80;
       S.wave = Math.max(S.wave, st.wave);
       /* mục tiêu: một phe đối thủ NGẪU NHIÊN (người chơi hoặc đội máy còn lại) */
       var targets = [];
@@ -926,7 +930,13 @@ function tickAI(dt){
       });
       if(targets.length){
         var tgt = targets[(rng()*targets.length)|0];
-        var nLing = Math.min(2 + st.wave*2, 14), nHyd = st.wave>=2 ? Math.min(st.wave-1, 6) : 0, nUlt = st.wave>=5 ? Math.min(st.wave-4, 3) : 0, i, u;
+        /* Nhịp sóng hiền: đợt 1 (t=150s) chỉ 3 quái nhỏ; sau đó mỗi ~80s lớn dần —
+           đợt n: quái nhỏ 2+n (tối đa 12) • quái bắn gai từ đợt 3 • quái khổng lồ từ đợt 6 (~phút 9) */
+        var wc = st.wave;
+        var nLing = wc===1 ? 3 : Math.min(2 + wc, 12);
+        var nHyd = wc>=3 ? Math.min(wc-2, 5) : 0;
+        var nUlt = wc>=6 ? Math.min(1 + ((wc-6)/2|0), 3) : 0;
+        var i, u;
         var sx = base.x < WORLD_W/2 ? 1 : -1;
         for(i=0;i<nLing;i++){ u = makeUnit(team,'zergling', base.x + sx*(60+(i%4)*42), base.y+105+((i/4)|0)*40); u.order={type:'attackmove',x:tgt.x,y:tgt.y,targetId:0,nodeId:0,phase:'',harvestT:0}; S.units.push(u); }
         for(i=0;i<nHyd;i++){ u = makeUnit(team,'hydralisk', base.x + sx*(70+(i%3)*46), base.y+130+((i/3)|0)*42); u.order={type:'attackmove',x:tgt.x,y:tgt.y,targetId:0,nodeId:0,phase:'',harvestT:0}; S.units.push(u); }
@@ -961,6 +971,7 @@ function tick(dt){
   tickSeparation();
   tickParticles(dt);
   fogT += dt; if(fogT >= 0.25){ fogT = 0; updateFog(); }
+  hudT += dt; if(hudT >= 0.25){ hudT = 0; updateHUD(); }
   var spd = 520*dt/cam.z;
   if(keys['w']||keys['arrowup']) cam.y -= spd;
   if(keys['s']||keys['arrowdown']) cam.y += spd;
@@ -1014,7 +1025,11 @@ function updateHUD(){
   document.querySelectorAll('[data-res="gas"]').forEach(function(el){ el.innerHTML = IC.gas + '<span>' + (S.gas|0) + '</span>'; });
   document.querySelectorAll('[data-res="sup"]').forEach(function(el){ el.innerHTML = IC.supply + '<span>' + S.supplyUsed + '/' + S.supplyCap + '</span>'; });
   document.getElementById('resTime').textContent = fmtTime(S.time);
-  document.getElementById('resWave').textContent = S.wave;
+  /* Chỉ số đợt địch hiện ĐẾM NGƯỢC trung thực tới đợt kế: "Đợt 1 sau 2:30", sau đó "Đợt 2 · sau 1:15"... */
+  var nx = Infinity;
+  ['ai1','ai2'].forEach(function(t){ if(t==='ai2' && S.teams<3) return; if(S.ai && S.ai[t]) nx = Math.min(nx, S.ai[t].nextAt); });
+  var remain = isFinite(nx) ? Math.max(0, nx - S.time) : 0;
+  document.getElementById('resWave').textContent = S.wave===0 ? ('1 sau ' + fmtTime(remain)) : (S.wave + ' · sau ' + fmtTime(remain));
 }
 function selectedUnits(){ return S.units.filter(function(u){ return S.selectedIds.indexOf(u.id)>=0; }); }
 function segBarHTML(hp, maxHp, segs){
@@ -1203,11 +1218,44 @@ try{ mmCtx = mmCanvas.getContext('2d'); }catch(e){}
 if(!mmCtx) mmCtx = dummyCtx();
 function viewW(){ return (canvas.width || 960) / cam.z; }
 function viewH(){ return (canvas.height || 620) / cam.z; }
+/* ===== KHUNG NGANG + XOAY 90° =====
+   Thiết kế luôn là khung NGANG. Viewport dọc -> khung được đặt kích thước hoán đổi (w=vh, h=vw)
+   và xoay +90° quanh tâm bằng CSS: đáy khung (console) áp vào mép TRÁI màn hình, góc phải-trên
+   (tài nguyên) áp vào mép phải phía dưới — đúng như ảnh mẫu người dùng đã xoay. Viewport ngang -> không xoay. */
+var stageW = 960, stageH = 540, stageRot = false;
+var layoutVersion = 0; /* tăng mỗi lần layoutStage chạy — test/hook dùng để biết khung đã ổn định ở kích thước mới chưa */
+function layoutStage(){
+  layoutVersion++;
+  var vw = window.innerWidth || 960, vh = window.innerHeight || 540;
+  stageRot = vw < vh;
+  if(stageRot){ stageW = vh; stageH = vw; } else { stageW = vw; stageH = vh; }
+  var el = document.getElementById('stage');
+  if(el){
+    el.style.width = stageW + 'px'; el.style.height = stageH + 'px';
+    el.style.transform = 'translate(-50%,-50%) rotate(' + (stageRot ? 90 : 0) + 'deg)';
+  }
+}
+/* client (viewport) -> tọa độ khung. Xoay +90° quanh tâm: (sx,sy) -> (vw - sy, sx) nên đảo ngược: sx = cy, sy = vw - cx. */
+function toStage(cx, cy){
+  if(!stageRot) return { x: cx, y: cy };
+  return { x: cy, y: window.innerWidth - cx };
+}
+/* Vị trí của một phần tử trong tọa độ khung (offset layout — không bị ảnh hưởng bởi transform) */
+function elStageOffset(el){
+  var x = 0, y = 0, n = el;
+  while(n && n.id !== 'stage'){ x += n.offsetLeft || 0; y += n.offsetTop || 0; n = n.offsetParent; }
+  return { x: x, y: y };
+}
+function clientToCanvas(cx, cy){
+  var p = toStage(cx, cy), off = elStageOffset(canvas);
+  return { sx: p.x - off.x, sy: p.y - off.y };
+}
 function resize(){
-  var stage = document.getElementById('stage');
-  var appEl = document.getElementById('app');
-  if(appEl) appEl.classList.toggle('compact', (appEl.clientWidth || 999) < 560);
-  var w = stage.clientWidth || window.innerWidth || 960, h = stage.clientHeight || 500;
+  layoutStage();
+  var view = document.getElementById('view');
+  var frame = document.getElementById('stage');
+  if(frame) frame.classList.toggle('compact', stageW < 560);
+  var w = (view && view.clientWidth) || window.innerWidth || 960, h = (view && view.clientHeight) || 500;
   /* giữ nguyên tâm khung nhìn khi xoay máy giữa trận (không nhảy hình, không mất chọn) */
   var had = canvas.width>0 && canvas.height>0;
   var cx = had ? cam.x + (canvas.width/cam.z)/2 : 0, cy = had ? cam.y + (canvas.height/cam.z)/2 : 0;
@@ -1215,10 +1263,20 @@ function resize(){
   if(had){ cam.x = cx - (canvas.width/cam.z)/2; cam.y = cy - (canvas.height/cam.z)/2; }
   clampCam();
 }
-window.addEventListener('resize', resize);
-document.addEventListener('fullscreenchange', resize);
-document.addEventListener('webkitfullscreenchange', resize);
-window.addEventListener('orientationchange', function(){ setTimeout(resize, 60); setTimeout(resize, 300); });
+/* Layout tự chữa: mọi nguồn đổi kích thước (resize cửa sổ, xoay máy, thanh trình duyệt hiện/ẩn làm
+   visualViewport đổi, fullscreen) đều đi qua scheduleLayout — gộp qua requestAnimationFrame để không
+   chạy thừa, cộng một lần kiểm lại sau ~250ms phòng khi innerWidth/innerHeight ổn định muộn. */
+var layoutQueued = false, layoutGuardT = null;
+function scheduleLayout(){
+  if(!layoutQueued){ layoutQueued = true; requestAnimationFrame(function(){ layoutQueued = false; resize(); }); }
+  if(layoutGuardT) clearTimeout(layoutGuardT);
+  layoutGuardT = setTimeout(function(){ layoutGuardT = null; resize(); }, 250);
+}
+window.addEventListener('resize', scheduleLayout);
+window.addEventListener('orientationchange', scheduleLayout);
+if(window.visualViewport) window.visualViewport.addEventListener('resize', scheduleLayout);
+document.addEventListener('fullscreenchange', scheduleLayout);
+document.addEventListener('webkitfullscreenchange', scheduleLayout);
 /* Địa hình: sàn lắp ghép kim loại xám đậm như căn cứ trong ảnh gốc — vẽ 1 lần ra canvas đệm */
 var terrainCv = null;
 function buildTerrain(){
@@ -1517,7 +1575,7 @@ function render(){ if(!S) return; drawWorld(); drawMinimap(); renderPanel(false)
 
 /* ============ ĐIỀU KHIỂN ============ */
 var dragBox = null, rightDrag = null, mmDrag = false, pinch = null, gestureBlocked = false;
-function toWorld(cx, cy){ var r = canvas.getBoundingClientRect(); var sx = cx - r.left, sy = cy - r.top; return { x: sx/cam.z + cam.x, y: sy/cam.z + cam.y, sx: sx, sy: sy }; }
+function toWorld(cx, cy){ var p = clientToCanvas(cx, cy); return { x: p.sx/cam.z + cam.x, y: p.sy/cam.z + cam.y, sx: p.sx, sy: p.sy }; }
 function pickOwn(wx, wy){
   var i, u, b;
   for(i=0;i<S.units.length;i++){ u=S.units[i]; if(u.faction==='player' && dist(wx,wy,u.x,u.y)<22) return {unit:u}; }
@@ -1570,7 +1628,7 @@ canvas.addEventListener('mousemove', function(ev){
 });
 canvas.addEventListener('wheel', function(ev){
   ev.preventDefault();
-  var r = canvas.getBoundingClientRect(), sx = ev.clientX - r.left, sy = ev.clientY - r.top;
+  var cp = clientToCanvas(ev.clientX, ev.clientY), sx = cp.sx, sy = cp.sy;
   mouse.x = sx; mouse.y = sy; mouse.inside = true;
   var f = Math.exp(-(ev.deltaY||0) * 0.0016);
   if(!isFinite(f) || f<=0) return;
@@ -1587,7 +1645,7 @@ canvas.addEventListener('mouseup', function(ev){
 });
 canvas.addEventListener('mouseleave', function(){ mouse.inside=false; dragBox=null; rightDrag=null; });
 canvas.addEventListener('contextmenu', function(ev){ ev.preventDefault(); });
-function touchPt(t){ var r = canvas.getBoundingClientRect(); return { sx: t.clientX - r.left, sy: t.clientY - r.top }; }
+function touchPt(t){ return clientToCanvas(t.clientX, t.clientY); }
 canvas.addEventListener('touchstart', function(ev){
   ev.preventDefault();
   if(ev.touches.length===2){
@@ -1629,10 +1687,11 @@ function endTouch(ev){
 canvas.addEventListener('touchend', endTouch, {passive:false});
 canvas.addEventListener('touchcancel', endTouch, {passive:false});
 function mmGo(ev){
-  var r = mmCanvas.getBoundingClientRect();
-  var cx = (ev.clientX!==undefined? ev.clientX : ev.touches[0].clientX) - r.left, cy = (ev.clientY!==undefined? ev.clientY : ev.touches[0].clientY) - r.top;
-  cam.x = cx/r.width*WORLD_W - viewW()/2;
-  cam.y = cy/r.height*WORLD_H - viewH()/2;
+  var rawX = (ev.clientX!==undefined? ev.clientX : ev.touches[0].clientX), rawY = (ev.clientY!==undefined? ev.clientY : ev.touches[0].clientY);
+  var p = toStage(rawX, rawY), off = elStageOffset(mmCanvas);
+  var cx = p.x - off.x, cy = p.y - off.y;
+  cam.x = cx/(mmCanvas.clientWidth||1)*WORLD_W - viewW()/2;
+  cam.y = cy/(mmCanvas.clientHeight||1)*WORLD_H - viewH()/2;
   clampCam();
 }
 mmCanvas.addEventListener('mousedown', function(ev){ mmDrag=true; mmGo(ev); });
@@ -1798,7 +1857,10 @@ window.__RTS__ = {
   zoomAt: function(sx, sy, z){ zoomAt(sx, sy, z); return cam.z; },
   enterFullscreen: enterFullscreen,
   isFullscreen: isFullscreen,
-  get fsAttempted(){ return fsAttempted; }
+  get fsAttempted(){ return fsAttempted; },
+  toStage: function(x, y){ return toStage(x, y); },
+  get stageInfo(){ return { w: stageW, h: stageH, rotated: stageRot, layoutVersion: layoutVersion }; },
+  get layoutVersion(){ return layoutVersion; }
 };
 </script>
 </body>
