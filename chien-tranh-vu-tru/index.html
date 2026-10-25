@@ -46,12 +46,7 @@ html,body{width:100%;height:100%;height:100dvh;overflow:hidden;background:#000;c
    Viewport ngang (máy tính): khung không xoay, phủ kín viewport. Kích thước + transform do layoutStage() đặt. */
 #rotWrap{position:fixed;inset:0;width:100vw;height:100dvh;overflow:hidden;background:#000}
 #stage{position:absolute;left:50%;top:50%;display:flex;flex-direction:column;background:#07090d;transform:translate(-50%,-50%) rotate(0deg);box-shadow:0 0 0 2px #2a3040,0 0 70px rgba(0,0,0,.95)}
-/* ===== THANH TRÊN: tài nguyên bằng BIỂU TƯỢNG (không nhãn chữ) ===== */
-#topbar{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:0 8px;background:linear-gradient(180deg,#262b36,#12151c);border-bottom:2px solid #3d4454;min-height:30px;z-index:8}
-.tb-left{display:flex;align-items:center;gap:8px;min-width:0}
-.logo{font-weight:900;letter-spacing:.5px;color:#7dd7ff;font-size:13px;text-shadow:0 0 8px #0369a1;white-space:nowrap}
-.chip{display:flex;align-items:center;gap:5px;background:#05070c;border:1px solid #39404f;border-radius:5px;padding:2px 7px;font-weight:700;font-size:11px;color:#b9c7da;white-space:nowrap}
-.tb-right{display:flex;align-items:center;gap:6px}
+/* KHÔNG còn thanh trên: giờ + đợt + nút tiếng/tạm dừng/toàn màn hình nằm hết trong console cho gọn */
 .res{display:flex;align-items:center;gap:6px;background:#05070c;border:1px solid #39404f;border-radius:5px;padding:3px 9px;font-weight:800;font-size:15px;min-height:34px}
 .res svg{width:19px;height:19px;flex:none}
 .res.min{color:#8fe3ff}.res.gas{color:#8dff9a}.res.sup{color:#ffd76a}
@@ -72,11 +67,18 @@ html,body{width:100%;height:100%;height:100dvh;overflow:hidden;background:#000;c
 /* ===== CONSOLE NGANG Ở ĐÁY KHUNG (kiểu StarCraft): minimap | thông tin + nâng cấp | MENU | lưới lệnh 3x3 ===== */
 #console{flex:none;height:100px;display:flex;flex-direction:row;gap:6px;padding:1px 6px;background:linear-gradient(180deg,#232833,#0c0e13 30%,#141821);border-top:2px solid #3d4454;box-shadow:inset 0 2px 0 #59637a;align-items:stretch}
 #mmWrap{flex:none;width:104px;height:80px;align-self:center;display:flex;flex-direction:column;background:#05070c;border:2px solid #39404f;border-radius:4px;overflow:hidden;position:relative}
-#infoCol{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
-#upgPanel{display:flex;background:#05070c;border:2px solid #39404f;border-radius:4px;padding:2px 6px;flex-direction:row;flex-wrap:wrap;gap:2px 12px;align-items:center;width:100%;flex:none}
-#menuBlock{display:flex;background:#05070c;border:2px solid #39404f;border-radius:4px;padding:3px;flex-direction:column;align-items:center;justify-content:center;gap:2px;cursor:pointer;width:56px;flex:none}
+#infoCol{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+#upgPanel{display:flex;background:#05070c;border:2px solid #39404f;border-radius:4px;padding:1px 6px;flex-direction:row;flex-wrap:wrap;gap:2px 12px;align-items:center;width:100%;flex:none}
+#menuBlock{display:flex;background:#05070c;border:2px solid #39404f;border-radius:4px;padding:3px;flex-direction:row;align-items:center;justify-content:center;gap:5px;width:92px;flex:none}
+#menuBlock .mbLeft{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;cursor:pointer}
 #menuBlock img{width:40px;height:40px;object-fit:contain}
 #menuBlock .menuLbl{font-size:9px;font-weight:900;letter-spacing:2px;color:#e8c15a}
+#menuBlock .mbBtns{display:flex;flex-direction:column;gap:3px}
+#menuBlock .mbBtns .iconBtn{width:28px;height:28px}
+/* Dải trạng thái mảnh trong cột thông tin của console: giờ trận + đếm ngược đợt địch (cập nhật trực tiếp) */
+#statBar{flex:none;height:14px;display:flex;align-items:center;gap:6px;padding:0 3px;font-size:10px;font-weight:800;color:#b9c7da;white-space:nowrap;overflow:hidden}
+#statBar #resTime{color:#7dd7ff}
+#statBar #resWave{color:#f3d27a}
 .upgRow{display:flex;align-items:center;gap:5px;flex:1 1 0;min-width:0;font-size:11px;font-weight:800;color:#d7e5f5}
 .upgRow svg{width:14px;height:14px;flex:none}
 .upgRow .uName{white-space:nowrap}
@@ -91,7 +93,7 @@ html,body{width:100%;height:100%;height:100dvh;overflow:hidden;background:#000;c
 #resCluster .res svg{width:14px;height:14px}
 #mmWrap.alert{border-color:#ef4444;box-shadow:0 0 14px rgba(239,68,68,.8)}
 #minimap{width:100%;height:100%;display:block;touch-action:none;cursor:pointer}
-#infoPanel{flex:1;width:100%;min-height:0;background:#05070c;border:2px solid #39404f;border-radius:4px;padding:3px 5px;overflow:hidden;display:flex;gap:6px;align-items:stretch}
+#infoPanel{flex:1;width:100%;min-height:0;background:#05070c;border:2px solid #39404f;border-radius:4px;padding:2px 5px;overflow:hidden;display:flex;gap:6px;align-items:stretch}
 #cmdWrap{flex:none;display:flex;flex-direction:column;justify-content:center;gap:6px}
 #cmdGrid{display:grid;grid-template-columns:repeat(3,30px);grid-template-rows:repeat(3,30px);gap:2px;flex:none}
 .cmdBtn{position:relative;background:linear-gradient(180deg,#2b303c,#14171f);border:2px solid #4a5468;border-radius:6px;min-width:0;min-height:0;display:flex;align-items:center;justify-content:center;cursor:pointer;padding:2px;color:#e8c15a}
@@ -107,7 +109,7 @@ html,body{width:100%;height:100%;height:100dvh;overflow:hidden;background:#000;c
 .portraitBox{flex:none;width:54px;height:54px;max-height:100%;align-self:center;background:#0a0f16;border:2px solid #6b5a2a;border-radius:4px;display:flex;align-items:center;justify-content:center;overflow:hidden}
 .portraitBox img{max-width:94%;max-height:94%}
 .portraitBox svg{width:40px;height:40px}
-.infoMain{flex:1;min-width:0;display:flex;flex-direction:column;justify-content:center;gap:3px}
+.infoMain{flex:1;min-width:0;display:flex;flex-direction:column;justify-content:center;gap:2px}
 .infoName{font-weight:900;font-size:12px;color:#f3d27a;letter-spacing:.3px;line-height:1.25}
 .infoSub{font-size:11px;color:#9fb4cc}
 .hpSegs{display:flex;gap:2px;width:100%;max-width:340px}
@@ -147,10 +149,6 @@ html,body{width:100%;height:100%;height:100dvh;overflow:hidden;background:#000;c
 .legend{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:10px 0 2px}
 .legend .lg{display:flex;align-items:center;gap:7px;background:#05070c;border:1px solid #39404f;border-radius:6px;padding:6px 10px;font-size:13px;font-weight:700}
 .legend svg{width:21px;height:21px}
-/* Khung hẹp: ẩn logo + chip giờ trên thanh trên cho thoáng (chỉ ẩn chữ, KHÔNG đổi bố cục) */
-#stage.compact .logo{display:none}
-#stage.compact .chip.timeChip{display:none}
-#stage.compact .chip{padding:3px 7px;font-size:11.5px}
 @media (max-width:700px){
  .card{padding:14px}
  .card h1{font-size:20px}
@@ -162,18 +160,6 @@ html,body{width:100%;height:100%;height:100dvh;overflow:hidden;background:#000;c
 <body>
 <div id="rotWrap">
 <div id="stage">
-<div id="topbar">
-  <div class="tb-left">
-    <div class="logo">CHIẾN TRANH VŨ TRỤ</div>
-    <div class="chip timeChip"><span id="resTime">00:00</span></div>
-    <div class="chip">Đợt <span id="resWave">0</span></div>
-  </div>
-  <div class="tb-right">
-    <button class="iconBtn" id="btnMute" type="button" aria-label="Bật / tắt tiếng"></button>
-    <button class="iconBtn" id="btnPause" type="button" aria-label="Tạm dừng"></button>
-    <button class="iconBtn" id="btnFs" type="button" aria-label="Toàn màn hình"></button>
-  </div>
-</div>
 <div id="view">
     <canvas id="game"></canvas>
     <div id="zoomBtns"><button id="btnZoomIn" type="button" aria-label="Phóng to">+</button><button id="btnZoomOut" type="button" aria-label="Thu nhỏ">−</button></div>
@@ -188,10 +174,18 @@ html,body{width:100%;height:100%;height:100dvh;overflow:hidden;background:#000;c
 <div id="console">
     <div id="mmWrap"><canvas id="minimap" width="208" height="160"></canvas></div>
     <div id="infoCol">
+      <div id="statBar"><span id="resTime">00:00</span><span>·</span><span>Đợt <span id="resWave">0</span></span></div>
       <div id="infoPanel"><div class="infoHint">Chưa chọn gì.<br>Chạm vào quân / nhà của mình để xem thông tin tại đây — giống bảng điều khiển của chỉ huy.</div></div>
       <div id="upgPanel"></div>
     </div>
-    <div id="menuBlock" title="Menu / Tạm dừng"><img id="menuPortrait" src="assets/sprites/command.png" alt=""><div class="menuLbl">MENU</div></div>
+    <div id="menuBlock">
+      <div class="mbLeft" id="menuBtn" title="Menu / Tạm dừng"><img id="menuPortrait" src="assets/sprites/command.png" alt=""><div class="menuLbl">MENU</div></div>
+      <div class="mbBtns">
+        <button class="iconBtn" id="btnMute" type="button" aria-label="Bật / tắt tiếng"></button>
+        <button class="iconBtn" id="btnPause" type="button" aria-label="Tạm dừng"></button>
+        <button class="iconBtn" id="btnFs" type="button" aria-label="Toàn màn hình"></button>
+      </div>
+    </div>
     <div id="cmdWrap">
       <div id="cmdGrid"></div>
     </div>
@@ -213,7 +207,7 @@ html,body{width:100%;height:100%;height:100dvh;overflow:hidden;background:#000;c
     <p>• <b>Điều khiển cảm ứng:</b> chạm 1 ngón = chọn / ra lệnh theo ngữ cảnh; kéo 1 ngón = khoanh vùng chọn quân (<b>tối đa 12 quân</b> như bản gốc); chụm–mở 2 ngón = zoom, kéo 2 ngón = lia bản đồ. Chuột: click trái chọn, click phải ra lệnh, lăn chuột zoom.</p>
     <p>• <b>Kinh tế:</b> bắt đầu 50 khoáng, 4 Robot Thợ <b>tự khai thác khoáng ngay từ giây đầu</b> (không cần ra lệnh) và có sẵn <b>2 Lính Bắn Tia</b> canh giữ Trung Tâm. Thợ mang về <b>8 khoáng/chuyến</b>. Muốn hút <b>khí</b>: chọn thợ → xây <b>Trạm Lọc Khí</b> ngay trên mạch khí xanh lá, rồi cho thợ vào hút (8 khí/chuyến).</p>
     <p>• <b>Quân &amp; khắc chế:</b> Lính (rẻ, đa năng) • Lính Phun Lửa (đốt đàn quái nhỏ, yếu trước quân to) • Xe Tăng (pháo xa, nổ lan, mạnh với quân to) • Robot Chiến Đấu (bắn nhanh, cơ động). <b>Nâng cấp:</b> Doanh Trại nghiên cứu <b>Vũ Khí +1→+3</b>, Xưởng Cơ Khí nghiên cứu <b>Giáp +1→+3</b> (giá tăng dần 100/100 → 175/175 → 250/250).</p>
-    <p>• <b>Thắng:</b> phá hết <b>Tổ Quái</b> của (các) đội máy. <b>Thua:</b> mất Trung Tâm Chỉ Huy. <b>Đợt địch đầu tiên chỉ đến sau 2 phút rưỡi</b> (3 quái nhỏ) — kịp khai thác và dựng quân; các đợt sau cách nhau ~80 giây, đông dần, quái khổng lồ chỉ xuất hiện từ ~phút 9. Đồng hồ "Đợt" trên thanh trên luôn đếm ngược tới đợt kế. Ở kiểu 3 đội, hai đội máy cũng tự đánh nhau. Máy bay vận tải sẽ có ở bản sau.</p>
+    <p>• <b>Thắng:</b> phá hết <b>Tổ Quái</b> của (các) đội máy. <b>Thua:</b> mất Trung Tâm Chỉ Huy. <b>Đợt địch đầu tiên chỉ đến sau 2 phút rưỡi</b> (3 quái nhỏ) — kịp khai thác và dựng quân; các đợt sau cách nhau ~80 giây, đông dần, quái khổng lồ chỉ xuất hiện từ ~phút 9. Đồng hồ "Đợt" trong bảng điều khiển bên dưới luôn đếm ngược tới đợt kế. Ở kiểu 3 đội, hai đội máy cũng tự đánh nhau. Máy bay vận tải sẽ có ở bản sau.</p>
     <button id="btnStart" type="button">BẮT ĐẦU</button>
   </div>
 </div>
@@ -1180,7 +1174,7 @@ function renderPanel(force){
     if(mp.getAttribute('src') !== msrc) mp.src = msrc;
   }
 }
-document.getElementById('menuBlock').addEventListener('click', function(){
+document.getElementById('menuBtn').addEventListener('click', function(){
   if(!S || !S.started || S.over) return;
   togglePause();
   showMsg(S.paused ? 'Đã tạm dừng — bấm MENU để chơi tiếp' : 'Tiếp tục trận đấu');
@@ -1267,8 +1261,6 @@ function clientToCanvas(cx, cy){
 function resize(){
   layoutStage();
   var view = document.getElementById('view');
-  var frame = document.getElementById('stage');
-  if(frame) frame.classList.toggle('compact', stageW < 560);
   var w = (view && view.clientWidth) || window.innerWidth || 960, h = (view && view.clientHeight) || 500;
   /* giữ nguyên tâm khung nhìn khi xoay máy giữa trận (không nhảy hình, không mất chọn) */
   var had = canvas.width>0 && canvas.height>0;
