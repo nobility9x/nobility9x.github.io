@@ -3,18 +3,21 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Cờ Cá Ngựa — Đua ngựa trả lời câu hỏi cho 2–4 người chơi</title>
+<title>Cờ Cá Ngựa — Đua ngựa theo luật Việt Nam</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Be+Vietnam+Pro:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-:root{--ink:#1e293b}
+:root{
+  --indigo:#4338ca;--blue:#2563eb;--cyan:#0891b2;--green:#16a34a;--red:#dc2626;
+  --amber:#f59e0b;--ink:#1e293b;--paper:#fff7e6;
+}
 html,body{min-height:100%}
 body{
   font-family:'Be Vietnam Pro',system-ui,sans-serif;color:var(--ink);
   background:
-    radial-gradient(circle at 12% 18%, rgba(22,163,74,.13) 3px, transparent 3.5px) 0 0/46px 46px,
+    radial-gradient(circle at 12% 18%, rgba(37,99,235,.14) 3px, transparent 3.5px) 0 0/46px 46px,
     radial-gradient(circle at 78% 64%, rgba(245,158,11,.16) 3px, transparent 3.5px) 23px 23px/46px 46px,
     linear-gradient(180deg,#fff7e6,#ffedd5);
   padding:0 0 34px;
@@ -25,15 +28,16 @@ body{
 @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
 .hero{
   margin:14px 0 16px;padding:22px 16px 20px;text-align:center;color:#fff;border-radius:26px;
-  background:linear-gradient(135deg,#15803d 0%,#16a34a 45%,#06b6d4 110%);
-  box-shadow:0 10px 26px rgba(22,163,74,.35);border:3px solid rgba(255,255,255,.35);
+  background:linear-gradient(135deg,#b45309 0%,#dc2626 55%,#7c3aed 100%);
+  box-shadow:0 10px 26px rgba(185,28,28,.32);border:3px solid rgba(255,255,255,.35);
+  position:relative;overflow:hidden;
 }
-.hero h1{font-family:'Baloo 2','Be Vietnam Pro',sans-serif;font-size:34px;font-weight:800;line-height:1.12;text-shadow:0 3px 0 rgba(0,0,0,.18)}
-.hero p{margin-top:6px;font-size:15px;font-weight:600;opacity:.96}
-.hero .horse-emoji{display:inline-block;font-size:42px;animation:floaty 3s ease-in-out infinite}
-@keyframes floaty{0%,100%{transform:translateY(0) rotate(-5deg)}50%{transform:translateY(-7px) rotate(5deg)}}
-.card{background:#fff;border-radius:22px;border:2.5px solid #bbf7d0;box-shadow:0 6px 0 #86efac,0 14px 24px rgba(22,163,74,.13);padding:18px 16px;margin-bottom:16px}
-.card h2{font-family:'Baloo 2','Be Vietnam Pro',sans-serif;font-size:21px;font-weight:800;margin-bottom:10px;color:#15803d}
+.hero h1{font-family:'Baloo 2','Be Vietnam Pro',sans-serif;font-size:34px;font-weight:800;line-height:1.12;text-shadow:0 3px 0 rgba(0,0,0,.18);letter-spacing:.4px}
+.hero p{margin-top:6px;font-size:15px;font-weight:600;opacity:.95}
+.hero .big-emoji{display:inline-block;font-size:40px;animation:floaty 3s ease-in-out infinite}
+@keyframes floaty{0%,100%{transform:translateY(0) rotate(-6deg)}50%{transform:translateY(-7px) rotate(6deg)}}
+.card{background:#fff;border-radius:22px;border:2.5px solid #fde68a;box-shadow:0 6px 0 #fcd34d,0 14px 24px rgba(217,119,6,.13);padding:18px 16px;margin-bottom:16px}
+.card h2{font-family:'Baloo 2','Be Vietnam Pro',sans-serif;font-size:21px;font-weight:800;margin-bottom:10px;color:#92400e}
 .btn{
   display:block;width:100%;font-family:'Baloo 2','Be Vietnam Pro',sans-serif;font-weight:800;cursor:pointer;
   border:2.2px solid rgba(0,0,0,.15);border-radius:18px;color:#fff;text-align:center;
@@ -41,164 +45,237 @@ body{
 }
 .btn:active{transform:translateY(4px);box-shadow:0 1px 0 rgba(0,0,0,.25)}
 .btn-big{background:linear-gradient(135deg,#f97316,#f59e0b);font-size:24px;padding:17px 12px}
-.btn-blue{background:linear-gradient(135deg,#2563eb,#06b6d4)}
 .btn-green{background:linear-gradient(135deg,#16a34a,#22c55e)}
+.btn-blue{background:linear-gradient(135deg,#2563eb,#06b6d4)}
 .btn:disabled{opacity:.55;pointer-events:none}
-.howto{font-size:14.5px;line-height:1.65;font-weight:600;color:#57534e}
-.howto b{color:#b45309}
+.chips{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:14px}
+.chip{
+  font-family:'Baloo 2','Be Vietnam Pro',sans-serif;font-size:19px;font-weight:800;color:#fff;
+  border:2.2px solid rgba(0,0,0,.14);border-radius:16px;padding:13px 8px;cursor:pointer;
+  box-shadow:0 4px 0 rgba(0,0,0,.22);transition:transform .08s, box-shadow .08s, outline .08s;outline:3px solid transparent;
+}
+.chip:active{transform:translateY(3px);box-shadow:0 1px 0 rgba(0,0,0,.22)}
+.chip.sel{outline:3px solid #f59e0b;transform:scale(1.04)}
+.chip small{display:block;font-family:'Be Vietnam Pro',sans-serif;font-size:11.5px;font-weight:600;opacity:.92;margin-top:2px}
+.note{font-size:13.5px;font-weight:600;color:#78716c;text-align:center;line-height:1.55;margin-top:10px}
+/* ===== LUAT CHOI ===== */
+.rules{display:grid;gap:9px}
+.rule{display:flex;gap:11px;align-items:flex-start;background:#fffbeb;border:2px solid #fde68a;border-radius:16px;padding:11px 12px}
+.rule .ric{flex:0 0 auto;width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:21px;background:#fff;border:2px solid #fde68a}
+.rule p{font-size:14.5px;line-height:1.55;font-weight:600;color:#44403c}
+.rule p b{color:#b45309}
+/* ===== TOPBAR / HUD ===== */
 .topbar{display:flex;gap:8px;align-items:center;margin:14px 0 12px}
-.home-btn{font-family:'Baloo 2','Be Vietnam Pro',sans-serif;font-weight:800;font-size:15px;background:#fff;color:#15803d;border:2.2px solid #bbf7d0;border-radius:999px;padding:8px 13px;cursor:pointer;box-shadow:0 3px 0 #bbf7d0}
-.home-btn:active{transform:translateY(2px);box-shadow:0 1px 0 #bbf7d0}
+.home-btn{
+  font-family:'Baloo 2','Be Vietnam Pro',sans-serif;font-weight:800;font-size:15px;background:#fff;color:#b45309;
+  border:2.2px solid #fcd34d;border-radius:999px;padding:8px 13px;cursor:pointer;box-shadow:0 3px 0 #fcd34d;
+}
+.home-btn:active{transform:translateY(2px);box-shadow:0 1px 0 #fcd34d}
 .spacer{flex:1}
-.pcount-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
-.pcount{
-  font-family:'Baloo 2','Be Vietnam Pro',sans-serif;font-size:19px;font-weight:800;color:#fff;cursor:pointer;
-  border:2.2px solid rgba(0,0,0,.14);border-radius:16px;padding:13px 6px;box-shadow:0 4px 0 rgba(0,0,0,.22);
-  transition:transform .08s, box-shadow .08s, outline .08s;outline:3px solid transparent;text-align:center;
+#hud{display:grid;gap:8px;margin-bottom:12px}
+.hud-row{display:flex;align-items:center;gap:9px;flex-wrap:wrap;background:#fff;border:2.5px solid #e7e5e4;border-radius:16px;padding:8px 12px;box-shadow:0 3px 0 #e7e5e4}
+.hud-row.cur{box-shadow:0 3px 0 rgba(0,0,0,.18),0 0 0 3px rgba(245,158,11,.4)}
+.hud-dot{flex:0 0 auto;width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;border:2.5px solid #fff;box-shadow:0 2px 5px rgba(0,0,0,.25)}
+.hud-name{font-family:'Baloo 2','Be Vietnam Pro',sans-serif;font-weight:800;font-size:16px;min-width:0}
+.hud-pips{display:flex;gap:4px;margin-left:auto}
+.pip{width:25px;height:25px;border-radius:50%;border:2px solid #d6d3d1;background:#f5f5f4;display:flex;align-items:center;justify-content:center;font-size:11.5px;font-weight:800;color:#78716c}
+.pip.race{background:#fff;border-color:#f59e0b;color:#92400e}
+.pip.done{background:linear-gradient(135deg,#f59e0b,#f97316);border-color:#fff;color:#fff;box-shadow:0 2px 5px rgba(217,119,6,.4)}
+.hud-fin{font-size:12.5px;font-weight:800;color:#b45309;white-space:nowrap}
+/* ===== BAN CO 15x15 ===== */
+.board-wrap{background:linear-gradient(135deg,#fffbeb,#fff);border:3px solid #b45309;border-radius:20px;box-shadow:0 8px 0 #92400e,0 16px 28px rgba(146,64,14,.2);padding:9px;margin-bottom:10px}
+.board{position:relative;width:100%;aspect-ratio:1/1}
+.cells{display:grid;grid-template-columns:repeat(15,1fr);grid-template-rows:repeat(15,1fr);width:100%;height:100%}
+.cell{border:1px solid #e3d5b8;background:#fdf6e3;position:relative}
+.cell.track{background:#fff}
+.cell.start{display:flex;align-items:center;justify-content:center;color:#fff;font-size:clamp(9px,2.9vw,15px)}
+.cell.home{display:flex;align-items:center;justify-content:center;font-family:'Baloo 2','Be Vietnam Pro',sans-serif;font-weight:800;font-size:clamp(8px,2.6vw,14px)}
+.yard{position:absolute;border-radius:12%;box-shadow:inset 0 0 0 2px rgba(255,255,255,.45);z-index:2}
+.yard .ybox{position:absolute;inset:15%;background:#fff;border-radius:16%;box-shadow:0 2px 6px rgba(0,0,0,.18)}
+.yard .ycirc{position:absolute;width:31%;height:31%;border-radius:50%;background:#fff;border:3px solid;box-sizing:border-box}
+.yard.off{filter:grayscale(.85);opacity:.38}
+.center-box{position:absolute;z-index:2;border-radius:8%;overflow:hidden;box-shadow:0 0 0 2px #fff,0 3px 8px rgba(0,0,0,.25)}
+.center-box svg{display:block;width:100%;height:100%}
+.center-cup{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-size:clamp(13px,4.4vw,24px);filter:drop-shadow(0 2px 2px rgba(0,0,0,.35));z-index:3}
+#tokens{position:absolute;inset:0;z-index:6}
+.token{
+  position:absolute;width:6.4%;height:6.4%;transform:translate(-50%,-50%);border-radius:50%;
+  border:2.5px solid #fff;box-shadow:0 3px 7px rgba(0,0,0,.35);
+  display:flex;align-items:center;justify-content:center;
+  transition:left .19s linear,top .19s linear,width .15s,height .15s;
 }
-.pcount:active{transform:translateY(3px);box-shadow:0 1px 0 rgba(0,0,0,.22)}
-.pcount.sel{outline:3px solid #f59e0b;transform:scale(1.03)}
-.pcount small{display:block;font-family:'Be Vietnam Pro',sans-serif;font-size:12.5px;font-weight:600;opacity:.92;margin-top:3px}
-.pc2{background:linear-gradient(135deg,#ef4444,#2563eb)}
-.pc3{background:linear-gradient(135deg,#ef4444,#16a34a)}
-.pc4{background:linear-gradient(135deg,#7c3aed,#db2777)}
-.player-preview{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
-.pp-chip{display:flex;align-items:center;gap:7px;font-weight:800;font-size:14.5px;background:#f8fafc;border:2px solid #e2e8f0;border-radius:999px;padding:6px 12px 6px 7px}
-.pp-dot{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;border:2px solid #fff;box-shadow:0 2px 4px rgba(0,0,0,.25)}
-/* HUD tien trinh */
-.hud{display:grid;gap:7px;margin-bottom:10px}
-.hud-row{display:flex;align-items:center;gap:9px;background:#fff;border:2.2px solid #e2e8f0;border-radius:14px;padding:7px 11px;transition:border-color .2s, box-shadow .2s}
-.hud-row.turn{border-color:#f59e0b;box-shadow:0 0 0 3px rgba(245,158,11,.25)}
-.hud-dot{flex:0 0 auto;width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;border:2.2px solid #fff;box-shadow:0 2px 5px rgba(0,0,0,.25)}
-.hud-name{font-family:'Baloo 2','Be Vietnam Pro',sans-serif;font-weight:800;font-size:15.5px;min-width:74px}
-.hud-bar{flex:1;height:12px;border-radius:99px;background:#f1f5f9;border:1.5px solid #e2e8f0;overflow:hidden}
-.hud-fill{height:100%;border-radius:99px;transition:width .3s ease}
-.hud-pos{font-family:'Baloo 2','Be Vietnam Pro',sans-serif;font-weight:800;font-size:14.5px;color:#475569;min-width:44px;text-align:right}
-/* Banner luot */
-.turn-banner{
-  text-align:center;font-family:'Baloo 2','Be Vietnam Pro',sans-serif;font-weight:800;font-size:21px;
-  background:#fff;border:3px solid #94a3b8;border-radius:18px;padding:11px 14px;margin-bottom:12px;
-  box-shadow:0 5px 0 rgba(0,0,0,.14);animation:pop .35s ease;
+.token .thm{font-size:clamp(10px,3.4vw,19px);line-height:1;filter:drop-shadow(0 1px 1px rgba(0,0,0,.3))}
+.token .tnum{position:absolute;right:-5px;top:-5px;width:15px;height:15px;border-radius:50%;background:#1e293b;color:#fff;font-size:9.5px;font-weight:800;display:flex;align-items:center;justify-content:center;border:1.5px solid #fff}
+.token.mini{width:4.7%;height:4.7%}
+.token.mini .thm{font-size:clamp(7px,2.3vw,12px)}
+.token.mini .tnum{width:12px;height:12px;font-size:8px;right:-4px;top:-4px}
+.token.fin{width:4.5%;height:4.5%}
+.token.fin .thm{font-size:clamp(7px,2.2vw,12px)}
+.token.canmove{cursor:pointer;z-index:9;animation:canpulse .75s ease-in-out infinite}
+@keyframes canpulse{0%,100%{box-shadow:0 0 0 0 rgba(245,158,11,.85),0 3px 7px rgba(0,0,0,.35)}50%{box-shadow:0 0 0 7px rgba(245,158,11,0),0 3px 7px rgba(0,0,0,.35)}}
+.dir-note{text-align:center;font-size:13px;font-weight:700;color:#92400e;margin-bottom:12px}
+/* ===== DIEU KHIEN / XUC XAC ===== */
+.ctrl-card{background:#fff;border-radius:22px;border:2.5px solid #bfdbfe;box-shadow:0 6px 0 #93c5fd,0 14px 24px rgba(37,99,235,.13);padding:16px;margin-bottom:14px}
+#turn-banner{
+  font-family:'Baloo 2','Be Vietnam Pro',sans-serif;font-weight:800;font-size:19px;color:#fff;text-align:center;
+  border-radius:15px;padding:11px 12px;margin-bottom:13px;box-shadow:0 4px 0 rgba(0,0,0,.2);line-height:1.35;
 }
-@keyframes pop{0%{transform:scale(.92)}60%{transform:scale(1.03)}100%{transform:scale(1)}}
-/* Ban co */
-.board-zone{width:min(94vw,404px);margin:0 auto 6px}
-#board-svg{width:100%;height:auto;display:block;filter:drop-shadow(0 10px 18px rgba(21,128,61,.28))}
-.token{transition:transform .26s ease}
-/* Xuc xac */
-.dice-zone{display:flex;align-items:center;gap:14px;background:#fff;border:2.5px solid #bbf7d0;border-radius:20px;box-shadow:0 5px 0 #86efac;padding:13px 15px;margin-top:10px}
+#turn-banner small{display:block;font-family:'Be Vietnam Pro',sans-serif;font-size:13.5px;font-weight:600;opacity:.95;margin-top:2px}
+.dice-row{display:flex;gap:14px;align-items:center}
 #dice-face{
-  flex:0 0 auto;width:74px;height:74px;border-radius:18px;background:linear-gradient(145deg,#fff,#fef3c7);
-  border:3px solid #f59e0b;display:flex;align-items:center;justify-content:center;font-size:52px;line-height:1;
-  box-shadow:0 4px 0 #d97706;color:#b45309;font-family:'Baloo 2',sans-serif;
+  flex:0 0 auto;width:84px;height:84px;border-radius:20px;background:linear-gradient(135deg,#fffbeb,#fef3c7);
+  border:3px solid #f59e0b;box-shadow:0 5px 0 #d97706;display:flex;align-items:center;justify-content:center;
+  font-size:56px;line-height:1;color:#b45309;
 }
-#dice-face.rolling{animation:shake .12s linear infinite}
-@keyframes shake{0%{transform:rotate(-7deg) translateY(0)}50%{transform:rotate(6deg) translateY(-4px)}100%{transform:rotate(-5deg) translateY(1px)}}
-.dice-info{flex:1}
-.dice-info .d-title{font-family:'Baloo 2','Be Vietnam Pro',sans-serif;font-weight:800;font-size:17.5px;margin-bottom:7px}
-/* Cau hoi */
-.q-card{display:none;background:#fff;border-radius:22px;border:2.5px solid #bfdbfe;box-shadow:0 6px 0 #93c5fd,0 14px 24px rgba(37,99,235,.13);padding:18px 16px;margin-top:14px}
+#dice-face.shake{animation:dshake .55s ease}
+@keyframes dshake{0%,100%{transform:rotate(0)}20%{transform:rotate(-13deg) scale(1.07)}45%{transform:rotate(11deg)}70%{transform:rotate(-7deg) scale(1.04)}}
+.dice-side{flex:1;min-width:0}
+#msg{margin-top:9px;font-size:14.5px;font-weight:700;color:#57534e;line-height:1.5;min-height:21px}
+#moves{display:none;gap:9px;flex-wrap:wrap;margin-top:13px}
+#moves.on{display:flex}
+.move-btn{
+  flex:1 1 44%;font-family:'Baloo 2','Be Vietnam Pro',sans-serif;font-weight:800;font-size:16.5px;cursor:pointer;
+  color:#fff;border:2.2px solid rgba(0,0,0,.15);border-radius:15px;padding:12px 8px;
+  box-shadow:0 4px 0 rgba(0,0,0,.25);animation:pop .3s ease;
+}
+.move-btn:active{transform:translateY(3px);box-shadow:0 1px 0 rgba(0,0,0,.25)}
+@keyframes pop{0%{transform:scale(.7)}60%{transform:scale(1.06)}100%{transform:scale(1)}}
+/* ===== CAU HOI ===== */
+.q-card{display:none;background:#fff;border-radius:22px;border:2.5px solid #bfdbfe;box-shadow:0 6px 0 #93c5fd,0 14px 24px rgba(37,99,235,.13);padding:18px 16px;margin-bottom:16px}
 .q-card.on{display:block;animation:fadeIn .3s ease}
 .q-pill{display:inline-block;font-family:'Baloo 2','Be Vietnam Pro',sans-serif;font-weight:800;font-size:14.5px;color:#fff;background:linear-gradient(135deg,#2563eb,#7c3aed);border-radius:999px;padding:5px 13px;margin-bottom:10px}
 .q-text{font-size:21px;font-weight:800;line-height:1.45;margin-bottom:14px}
 .answers{display:grid;gap:10px}
-.ans{display:flex;align-items:center;gap:11px;text-align:left;width:100%;cursor:pointer;background:#f8fafc;border:2.2px solid #e2e8f0;border-radius:16px;padding:11px 12px;font-family:'Be Vietnam Pro',sans-serif;font-size:17.5px;font-weight:700;color:var(--ink);transition:transform .08s, background .15s, border-color .15s, box-shadow .15s}
+.ans{
+  display:flex;align-items:center;gap:11px;text-align:left;width:100%;cursor:pointer;
+  background:#f8fafc;border:2.2px solid #e2e8f0;border-radius:16px;padding:11px 12px;
+  font-family:'Be Vietnam Pro',sans-serif;font-size:17.5px;font-weight:700;color:var(--ink);
+  transition:transform .08s, background .15s, border-color .15s;
+}
 .ans:active{transform:scale(.985)}
-.ans .badge{flex:0 0 auto;width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Baloo 2','Be Vietnam Pro',sans-serif;font-size:19px;font-weight:800;color:#fff;background:linear-gradient(135deg,#6366f1,#2563eb);box-shadow:0 3px 0 rgba(0,0,0,.2)}
-.ans.correct{border-color:#16a34a;background:#f0fdf4;box-shadow:0 0 0 4px rgba(22,163,74,.14)}
+.ans .badge{
+  flex:0 0 auto;width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-family:'Baloo 2','Be Vietnam Pro',sans-serif;font-size:19px;font-weight:800;color:#fff;
+  background:linear-gradient(135deg,#6366f1,#2563eb);box-shadow:0 3px 0 rgba(0,0,0,.2);
+}
+.ans:disabled{cursor:default;opacity:.92}
+.ans.correct{background:#f0fdf4;border-color:#16a34a;box-shadow:0 0 0 4px rgba(22,163,74,.14)}
 .ans.correct .badge{background:linear-gradient(135deg,#16a34a,#22c55e)}
-.ans.wrong{border-color:#dc2626;background:#fef2f2;animation:blinkSoft .5s ease 3}
+.ans.wrong{background:#fef2f2;border-color:#dc2626;animation:blinkSoft .5s ease 3}
 .ans.wrong .badge{background:linear-gradient(135deg,#dc2626,#ef4444)}
-.ans.locked{pointer-events:none}
-@keyframes blinkSoft{0%,100%{opacity:1}50%{opacity:.45}}
-.feedback{display:none;border-radius:16px;padding:12px 14px;font-size:16.5px;font-weight:700;line-height:1.5;margin-top:13px;border:2px solid}
-.feedback.ok{display:block;background:#ecfdf5;border-color:#a7f3d0;color:#065f46}
-.feedback.bad{display:block;background:#fef2f2;border-color:#fecaca;color:#991b1b}
-.next-row{display:none;margin-top:13px}
-.next-row.on{display:block}
-/* Ket qua */
-.result-card{border-radius:22px;border:3px solid #16a34a;background:linear-gradient(135deg,#ecfdf5,#d1fae5);padding:22px 16px;text-align:center;margin-bottom:16px}
-.result-trophy{font-size:56px;line-height:1.1}
-.result-title{font-family:'Baloo 2','Be Vietnam Pro',sans-serif;font-size:28px;font-weight:800;margin:4px 0 6px;color:#15803d}
-.result-sub{font-size:16px;font-weight:700;line-height:1.55}
-.rank-row{display:flex;gap:10px;align-items:center;background:#fff;border:2px solid #e7e5e4;border-radius:14px;padding:10px 12px;margin-bottom:8px;font-size:15.5px;font-weight:700}
-.rank-row.first{border-color:#f59e0b;background:#fffbeb}
-.rank-row .rk{flex:0 0 auto;font-family:'Baloo 2','Be Vietnam Pro',sans-serif;font-weight:800;font-size:17px;min-width:34px}
-.rank-row .pts{margin-left:auto;flex:0 0 auto;font-family:'Baloo 2','Be Vietnam Pro',sans-serif;font-weight:800;color:#b45309}
-.btn-row{display:grid;gap:10px;margin-top:12px}
-#fx{position:fixed;inset:0;pointer-events:none;z-index:99;display:none}
-.foot{text-align:center;font-size:13px;font-weight:600;color:#a8a29e;margin-top:8px}
-@media (max-width:380px){.hero h1{font-size:29px}.q-text{font-size:19px}.ans{font-size:16px}.turn-banner{font-size:18.5px}}
+@keyframes blinkSoft{0%,100%{box-shadow:0 0 0 0 rgba(220,38,38,0)}50%{box-shadow:0 0 0 6px rgba(220,38,38,.22)}}
+.feedback{display:none;margin-top:13px;border-radius:15px;padding:12px 14px;font-size:16px;font-weight:700;line-height:1.5}
+.feedback.on{display:block;animation:pop .3s ease}
+.feedback.ok{background:#ecfdf5;border:2px solid #a7f3d0;color:#065f46}
+.feedback.bad{background:#fef2f2;border:2px solid #fecaca;color:#991b1b}
+/* ===== KET QUA ===== */
+.result-card{background:#fff;border-radius:24px;border:3px solid #fcd34d;box-shadow:0 8px 0 #f59e0b,0 18px 30px rgba(217,119,6,.2);padding:24px 18px;text-align:center;margin-bottom:16px}
+.result-card .cup{font-size:64px;line-height:1.1}
+#result-title{font-family:'Baloo 2','Be Vietnam Pro',sans-serif;font-size:30px;font-weight:800;line-height:1.25;margin:8px 0 4px}
+#result-sub{font-size:15.5px;font-weight:600;color:#57534e;margin-bottom:16px}
+#ranking{display:grid;gap:9px;text-align:left;margin-bottom:18px}
+.rank-row{display:flex;align-items:center;gap:11px;border:2.5px solid #e7e5e4;border-radius:16px;padding:10px 13px;background:#fffbeb}
+.rank-row.first{border-color:#f59e0b;box-shadow:0 4px 0 #fcd34d}
+.rank-medal{font-size:24px;flex:0 0 auto}
+.rank-name{font-family:'Baloo 2','Be Vietnam Pro',sans-serif;font-weight:800;font-size:17.5px}
+.rank-detail{margin-left:auto;font-size:13.5px;font-weight:700;color:#78716c;text-align:right}
+/* ===== LOP PHU LUAT ===== */
+#help-overlay{position:fixed;inset:0;background:rgba(30,27,75,.55);z-index:80;display:none;align-items:flex-start;justify-content:center;overflow-y:auto;padding:18px 12px}
+#help-overlay.on{display:flex}
+.help-box{background:#fff7e6;border-radius:24px;border:3px solid #f59e0b;max-width:560px;width:100%;padding:20px 16px;box-shadow:0 16px 40px rgba(0,0,0,.35)}
+.help-box h2{font-family:'Baloo 2','Be Vietnam Pro',sans-serif;font-size:23px;font-weight:800;color:#92400e;margin-bottom:12px;text-align:center}
+#fx{position:fixed;inset:0;pointer-events:none;display:none;z-index:90}
 </style>
 </head>
 <body>
 <canvas id="fx"></canvas>
 <div class="wrap">
 
+  <!-- ===== MAN HUONG DAN + CHON NGUOI ===== -->
   <section class="screen on" id="scr-home">
     <div class="hero">
-      <span class="horse-emoji">🐴</span>
-      <h1>CỜ CÁ NGỰA</h1>
-      <p>Đua ngựa quanh bàn cờ 24 ô cùng bạn bè!<br>Gieo xúc xắc, trả lời đúng để ngựa phi nước đại về đích 🏆</p>
+      <span class="big-emoji">🐴</span>
+      <h1>Cờ Cá Ngựa</h1>
+      <p>Đua 4 chú ngựa về chuồng theo luật cờ cá ngựa Việt Nam — gieo xúc xắc, trả lời đúng mới được đi, đá ngựa bạn về chuồng!</p>
     </div>
     <div class="card">
-      <h2>👨‍👩‍👧‍👦 Chọn số người chơi</h2>
-      <div class="pcount-row" id="pcount-row">
-        <button class="pcount pc2 sel" data-n="2">2 NGƯỜI<small>🔴 đấu 🔵</small></button>
-        <button class="pcount pc3" data-n="3">3 NGƯỜI<small>thêm 🟢</small></button>
-        <button class="pcount pc4" data-n="4">4 NGƯỜI<small>thêm 🟣</small></button>
-      </div>
-      <div class="player-preview" id="player-preview"></div>
-      <div style="height:14px"></div>
-      <button class="btn btn-big" id="btn-start">▶ BẮT ĐẦU ĐUA</button>
-      <p class="howto" style="margin-top:12px">Tới lượt, bấm <b>GIEO XÚC XẮC</b> rồi trả lời 1 câu hỏi: <b>đúng → ngựa tiến đúng số ô trên xúc xắc</b>, sai → đứng yên chờ lượt sau. Gieo được <b>6</b> mà trả lời đúng thì được <b>gieo thêm</b> (tối đa 2 lần phụ). Ngựa nào chạy đủ <b>24 ô</b> về đích trước là <b>THẮNG</b> 🎉. Tất cả người chơi dùng chung một máy, chuyền tay nhau nhé!</p>
+      <h2>📖 Hướng dẫn chơi — đọc trước khi vào nhé!</h2>
+      <div class="rules" id="rules-home"></div>
     </div>
-    <p class="foot">Dựng lại từ mẫu game PowerPoint “Cờ cá ngựa KP”</p>
+    <div class="card">
+      <h2>👨‍👩‍👧 Chọn số người chơi (cùng một máy)</h2>
+      <div class="chips" id="pcounts">
+        <button class="chip pcount sel" data-n="2" style="background:linear-gradient(135deg,#2563eb,#06b6d4)">2 NGƯỜI<small>Đỏ vs Xanh dương</small></button>
+        <button class="chip pcount" data-n="3" style="background:linear-gradient(135deg,#16a34a,#0891b2)">3 NGƯỜI<small>Thêm Xanh lá</small></button>
+        <button class="chip pcount" data-n="4" style="background:linear-gradient(135deg,#dc2626,#f59e0b)">4 NGƯỜI<small>Thêm Vàng — đủ bộ!</small></button>
+      </div>
+      <button class="btn btn-big" id="btn-start">▶ BẮT ĐẦU CHƠI</button>
+      <p class="note">Mỗi người 4 con ngựa. Ai đưa cả 4 ngựa lên chuồng trước là thắng! 🏆</p>
+    </div>
   </section>
 
+  <!-- ===== MAN CHOI ===== -->
   <section class="screen" id="scr-game">
     <div class="topbar">
-      <button class="home-btn" data-home>🏠 Trang chủ</button>
-      <div class="spacer"></div>
-      <span style="font-family:'Baloo 2',sans-serif;font-weight:800;font-size:15px;color:#15803d">🏁 Đích: 24 ô</span>
+      <button class="home-btn" id="btn-quit">🏠 Trang chủ</button>
+      <span class="spacer"></span>
+      <button class="home-btn" id="btn-help">📖 Luật chơi</button>
     </div>
-    <div class="hud" id="hud"></div>
-    <div class="turn-banner" id="turn-banner">🎲 Lượt của Người 1</div>
-    <div class="board-zone"><div id="board-host"></div></div>
-    <div class="dice-zone">
-      <div id="dice-face">🎲</div>
-      <div class="dice-info">
-        <div class="d-title" id="dice-title">Bấm nút để gieo xúc xắc!</div>
-        <button class="btn btn-green" id="btn-roll" style="padding:12px 10px;font-size:19px">🎲 GIEO XÚC XẮC</button>
+    <div id="hud"></div>
+    <div class="board-wrap">
+      <div class="board" id="board">
+        <div class="cells" id="cells"></div>
+        <div id="decor"></div>
+        <div id="tokens"></div>
       </div>
     </div>
+    <p class="dir-note">Đường đua 52 ô chạy ↺ ngược chiều kim đồng hồ · Ô màu ⭐ là ô Xuất phát an toàn của từng người</p>
+    <div class="ctrl-card">
+      <div id="turn-banner"></div>
+      <div class="dice-row">
+        <div id="dice-face">🎲</div>
+        <div class="dice-side">
+          <button class="btn btn-green" id="btn-roll">🎲 GIEO XÚC XẮC</button>
+          <div id="msg">Người chơi đầu tiên bấm gieo xúc xắc nhé!</div>
+        </div>
+      </div>
+      <div id="moves"></div>
+    </div>
     <div class="q-card" id="q-card">
-      <span class="q-pill" id="q-pill">Câu hỏi</span>
+      <span class="q-pill">❓ Trả lời đúng mới được đi!</span>
       <div class="q-text" id="q-text"></div>
       <div class="answers" id="answers"></div>
       <div class="feedback" id="feedback"></div>
-      <div class="next-row" id="next-row"><button class="btn btn-blue" id="btn-next">Lượt tiếp theo ➜</button></div>
     </div>
   </section>
 
+  <!-- ===== MAN KET QUA ===== -->
   <section class="screen" id="scr-result">
-    <div style="height:14px"></div>
+    <div class="hero" style="background:linear-gradient(135deg,#16a34a,#0891b2 60%,#2563eb)">
+      <span class="big-emoji">🏆</span>
+      <h1>Kết Thúc Cuộc Đua!</h1>
+      <p>Cuộc đua ngựa đã có người chiến thắng rồi!</p>
+    </div>
     <div class="result-card">
-      <div class="result-trophy">🏆</div>
-      <div class="result-title" id="result-title">Người 1 THẮNG!</div>
-      <div class="result-sub" id="result-sub"></div>
-    </div>
-    <div class="card">
-      <h2>🏁 Bảng thứ hạng</h2>
+      <div class="cup">🐴🏆</div>
+      <div id="result-title"></div>
+      <div id="result-sub"></div>
       <div id="ranking"></div>
-    </div>
-    <div class="btn-row">
-      <button class="btn btn-big" id="btn-again">🔁 ĐUA LẠI</button>
-      <button class="btn btn-blue" data-home>🏠 ĐỔI SỐ NGƯỜI CHƠI</button>
+      <button class="btn btn-big" id="btn-again" style="margin-bottom:10px">🔁 ĐUA LẠI</button>
+      <button class="btn btn-blue" id="btn-home2">🏠 Đổi số người chơi</button>
     </div>
   </section>
-
 </div>
+
+<!-- ===== LOP PHU LUAT CHOI ===== -->
+<div id="help-overlay">
+  <div class="help-box">
+    <h2>📖 Luật chơi Cờ Cá Ngựa</h2>
+    <div class="rules" id="rules-help"></div>
+    <button class="btn btn-big" id="btn-close-help" style="margin-top:14px">✔ ĐÃ HIỂU, CHƠI TIẾP</button>
+  </div>
+</div>
+
 <script>
 'use strict';
 const BANKS = {
@@ -319,324 +396,442 @@ function fireworks(nBursts){
   }, 320);
 }
 
-/* ============ DIEU HUONG MAN HINH ============ */
+
+/* ============ LUAT CHOI (hien o man huong dan + lop phu) ============ */
+const RULES = [
+ ['🏁','<b>Bàn cờ & quân:</b> 4 người chơi 4 màu — <b>ĐỎ, XANH DƯƠNG, XANH LÁ, VÀNG</b>. Mỗi người có <b>4 con ngựa</b> ở trong chuồng (khu góc màu của mình). Đường đua chung có <b>52 ô</b>, chạy <b>ngược chiều kim đồng hồ</b>.'],
+ ['🚪','<b>Xuất quân:</b> muốn đưa ngựa từ chuồng ra ô <b>Xuất phát</b> (ô màu ⭐ của mình) phải gieo được <b>1 hoặc 6</b>. Đứng ở ô Xuất phát thì <b>an toàn</b>, không ai đá được.'],
+ ['⭐','<b>Gieo được 6</b> thì được <b>gieo thêm 1 lần nữa</b> (tối đa 2 lần gieo thêm liên tiếp).'],
+ ['❓','<b>Trả lời câu hỏi:</b> gieo xúc xắc xong phải <b>trả lời ĐÚNG 1 câu hỏi</b> mới được đi nước đó. Trả lời sai thì <b>mất nước đi</b> (gieo 6 mà trả lời sai cũng không được gieo thêm).'],
+ ['👆','<b>Chọn ngựa:</b> trả lời đúng xong, các ngựa đi được sẽ <b>sáng lên nhấp nháy</b> — hãy <b>chạm vào con ngựa</b> muốn đi (hoặc bấm nút chọn ngựa). Ngựa đi đúng số ô bằng số xúc xắc.'],
+ ['💥','<b>Đá ngựa:</b> ngựa của bạn dừng đúng ô đang có <b>1 ngựa đối thủ</b> đứng một mình → ngựa đối thủ bị <b>đá về chuồng</b>! Hai ngựa cùng màu đứng chung một ô gọi là <b>chồng quân</b> — không bị đá, và ngựa khác cũng không vào đá được ô đó.'],
+ ['🏠','<b>Về chuồng:</b> đi hết 1 vòng đường đua, ngựa rẽ vào <b>cột nhà</b> màu của mình gồm <b>6 ô</b> tiến về tâm. Trong cột nhà phải gieo <b>đúng số</b> mới tiến được và <b>không được nhảy qua</b> ngựa của mình đang đứng trước. Lên tới ô 6 là <b>LÊN CHUỒNG</b> — ở đây an toàn tuyệt đối!'],
+ ['🏆','<b>Thắng cuộc:</b> người đầu tiên đưa <b>cả 4 ngựa lên chuồng</b> là người chiến thắng!']
+];
+function renderRules(el){
+  el.innerHTML = RULES.map(r => '<div class="rule"><div class="ric">' + r[0] + '</div><p>' + r[1] + '</p></div>').join('');
+}
+
+/* ============ BAN CO 15x15 — duong dua 52 o, nguoc chieu kim dong ho ============ */
+// PATH[i] = [hang, cot]; i tang = di nguoc chieu kim dong ho
+const PATH = [[6,0],[7,0],[8,0],[8,1],[8,2],[8,3],[8,4],[8,5],[9,6],[10,6],[11,6],[12,6],[13,6],[14,6],[14,7],[14,8],[13,8],[12,8],[11,8],[10,8],[9,8],[8,9],[8,10],[8,11],[8,12],[8,13],[8,14],[7,14],[6,14],[6,13],[6,12],[6,11],[6,10],[6,9],[5,8],[4,8],[3,8],[2,8],[1,8],[0,8],[0,7],[0,6],[1,6],[2,6],[3,6],[4,6],[5,6],[6,5],[6,4],[6,3],[6,2],[6,1]];
+const COLORS = [
+  { name:'ĐỎ',         main:'#dc2626', dark:'#991b1b', grad:'linear-gradient(135deg,#ef4444,#dc2626)', off:2,  yard:[9,0], home:[[7,1],[7,2],[7,3],[7,4],[7,5],[7,6]],   fin:[7.5,6.8] },
+  { name:'XANH DƯƠNG', main:'#2563eb', dark:'#1e40af', grad:'linear-gradient(135deg,#3b82f6,#2563eb)', off:15, yard:[9,9], home:[[13,7],[12,7],[11,7],[10,7],[9,7],[8,7]], fin:[8.2,7.5] },
+  { name:'XANH LÁ',    main:'#16a34a', dark:'#166534', grad:'linear-gradient(135deg,#22c55e,#16a34a)', off:28, yard:[0,9], home:[[7,13],[7,12],[7,11],[7,10],[7,9],[7,8]], fin:[7.5,8.2] },
+  { name:'VÀNG',       main:'#eab308', dark:'#a16207', grad:'linear-gradient(135deg,#facc15,#eab308)', off:41, yard:[0,0], home:[[1,7],[2,7],[3,7],[4,7],[5,7],[6,7]],   fin:[6.8,7.5] }
+];
+const YARD_SLOTS = [[1.92,1.92],[1.92,4.08],[4.08,1.92],[4.08,4.08]]; // [dHang, dCot] trong khu chuong 6x6
+const FACES = ['⚀','⚁','⚂','⚃','⚄','⚅'];
+const LETTERS = ['A','B','C','D'];
+
+/* ============ TRANG THAI ============ */
+const G = {
+  nPlayers: 2, cur: 0, phase: 'idle', // roll | question | move | anim | over
+  dice: 0, extraUsed: 0, forced: null,
+  players: [], deck: [], deckPos: 0, curQ: null, qOrder: [],
+  moves: [], winner: null, started: false, lastKick: ''
+};
+function absOf(ci, p){ return (COLORS[ci].off + p) % 52; }
+function pl(){ return G.players[G.cur]; }
+function finishedCount(pi){ return G.players[pi].horses.filter(p => p === 57).length; }
+function progressSum(pi){ return G.players[pi].horses.reduce((s, p) => s + Math.max(p, 0), 0); }
+
 function show(id){
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('on'));
   document.getElementById(id).classList.add('on');
-  scrollTo({top:0, behavior:'smooth'});
+  scrollTo({ top: 0, behavior: 'smooth' });
 }
-document.querySelectorAll('[data-home]').forEach(b => b.addEventListener('click', () => { sfx('click'); show('scr-home'); }));
 
-/* ============ LOGIC CO CA NGUA ============ */
-const TRACK = 24;
-const PLAYER_DEFS = [
-  {name:'Người 1', color:'#ef4444', soft:'#fee2e2'},
-  {name:'Người 2', color:'#2563eb', soft:'#dbeafe'},
-  {name:'Người 3', color:'#16a34a', soft:'#dcfce7'},
-  {name:'Người 4', color:'#7c3aed', soft:'#ede9fe'}
-];
-const DICE_FACES = ['⚀','⚁','⚂','⚃','⚄','⚅'];
-let numPlayers = 2;
-let G = null;
-function shuffle(arr){ const a = arr.slice(); for(let i=a.length-1;i>0;i--){ const j = (Math.random()*(i+1))|0; [a[i],a[j]]=[a[j],a[i]]; } return a; }
-
-/* --- Ban co SVG: ban VUONG dung kieu co ca ngua / Ludo that ---
-   Duong dua = vong 24 o VUONG chay quanh ban sat trong vien, danh so 1-24 theo
-   chieu kim dong ho. 4 chuong la o vuong mau o 4 goc ban (do TL, xanh duong TR,
-   xanh la BR, tim BL). O xuat phat 1/7/13/19 mang mau 4 nguoi choi, cach nhau 6 o,
-   sat chuong tuong ung. Tam ban la o DICH 4 tam giac mau + vong tron vang.
-   Chi la vi tri VE: nguoi choi i dung o o (i*6 + pos) tren vong; pos giu nguyen
-   nghia (0 = trong chuong, 1-24 = so buoc da di, du 24 = ve dich o tam). */
-const CENTERS = [32, 88, 144, 200, 256, 312, 368];
-const CELL_CENTERS = [];
-for(let k=0;k<7;k++) CELL_CENTERS.push([CENTERS[k], 32]);   // hang tren: o 1-7
-for(let k=1;k<6;k++) CELL_CENTERS.push([368, CENTERS[k]]);   // cot phai: o 8-12
-CELL_CENTERS.push([368, 368]);                               // o 13 (goc duoi-phai)
-for(let k=5;k>=0;k--) CELL_CENTERS.push([CENTERS[k], 368]);  // hang duoi: o 14-19
-for(let k=5;k>=1;k--) CELL_CENTERS.push([32, CENTERS[k]]);   // cot trai: o 20-24
-const YARD_RECT = [[60,60],[248,60],[248,248],[60,248]];
-const YARD_XY = [[106,106],[294,106],[294,294],[106,294]];
-const START_CELLS = [0, 6, 12, 18];
-function trackIdx(pl){ return (pl.idx * 6 + pl.pos - 1) % TRACK; }
+/* ============ DUNG BAN CO ============ */
 function buildBoard(){
-  let s = '<svg id="board-svg" viewBox="0 0 400 400" aria-label="Bàn cờ cá ngựa">';
-  s += '<rect x="3" y="3" width="394" height="394" rx="22" fill="#fffdf5" stroke="#b45309" stroke-width="4"/>';
-  s += '<rect x="58" y="58" width="284" height="284" rx="14" fill="#fef9ec"/>';
-  // chuong 4 goc: o vuong mau + vong tron trang chua ngua khi o pos 0
-  for(let p=0;p<4;p++){
-    const d = PLAYER_DEFS[p], xr = YARD_RECT[p][0], yr = YARD_RECT[p][1];
-    const active = p < G.players.length;
-    s += '<g class="yard" opacity="' + (active ? 1 : 0.25) + '">';
-    s += '<rect x="' + xr + '" y="' + yr + '" width="92" height="92" rx="14" fill="' + d.soft + '" stroke="' + d.color + '" stroke-width="3"/>';
-    s += '<text x="' + (xr + 46) + '" y="' + (yr + 16) + '" text-anchor="middle" font-family="Baloo 2, sans-serif" font-weight="800" font-size="10.5" fill="' + d.color + '">CHUỒNG</text>';
-    s += '<circle cx="' + YARD_XY[p][0] + '" cy="' + YARD_XY[p][1] + '" r="25" fill="#ffffff" stroke="' + d.color + '" stroke-width="2.4"/>';
-    s += '</g>';
-  }
-  // o dich o tam: vuong chia 4 tam giac 4 mau kieu Ludo + vong tron vang chua cup
-  s += '<g>';
-  s += '<polygon points="200,200 158,158 242,158" fill="#ef4444" opacity="0.8"/>';
-  s += '<polygon points="200,200 242,158 242,242" fill="#2563eb" opacity="0.8"/>';
-  s += '<polygon points="200,200 242,242 158,242" fill="#16a34a" opacity="0.8"/>';
-  s += '<polygon points="200,200 158,242 158,158" fill="#7c3aed" opacity="0.8"/>';
-  s += '<rect x="158" y="158" width="84" height="84" rx="10" fill="none" stroke="#d97706" stroke-width="2"/>';
-  s += '<circle cx="200" cy="200" r="23" fill="#f59e0b" stroke="#ffffff" stroke-width="3"/>';
-  s += '<text x="200" y="198" text-anchor="middle" font-size="16">🏆</text>';
-  s += '<text x="200" y="215" text-anchor="middle" font-family="Baloo 2, sans-serif" font-weight="800" font-size="10" fill="#ffffff">ĐÍCH</text>';
-  s += '</g>';
-  // duong dua: 24 o vuong danh so 1-24, o xuat phat to mau nguoi choi
-  for(let i=0;i<24;i++){
-    const x = CELL_CENTERS[i][0], y = CELL_CENTERS[i][1];
-    const si = START_CELLS.indexOf(i);
-    const fill = si >= 0 ? PLAYER_DEFS[si].color : (i % 2 ? '#ffffff' : '#fef3c7');
-    s += '<rect class="cell" x="' + (x - 26) + '" y="' + (y - 26) + '" width="52" height="52" rx="9" fill="' + fill + '" stroke="#d97706" stroke-width="1.8"/>';
-    s += '<text x="' + x + '" y="' + (y + 1) + '" text-anchor="middle" dominant-baseline="middle" font-family="Baloo 2, sans-serif" font-weight="800" font-size="15" fill="' + (si >= 0 ? '#ffffff' : '#92400e') + '">' + (i + 1) + '</text>';
-  }
-  s += '<g id="tokens"></g></svg>';
-  document.getElementById('board-host').innerHTML = s;
-  const tg = document.getElementById('tokens');
-  G.players.forEach((pl, i) => {
-    const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-    g.setAttribute('class', 'token'); g.id = 'tok' + i;
-    g.innerHTML = '<circle r="16.5" fill="' + pl.def.color + '" stroke="#fff" stroke-width="2.6"/>' +
-      '<text text-anchor="middle" dominant-baseline="middle" font-size="16.5" y="1">🐴</text>';
-    tg.appendChild(g);
+  const cellsEl = document.getElementById('cells');
+  const kind = {}; // "r,c" -> {type, ci, label}
+  PATH.forEach((rc, i) => { kind[rc[0] + ',' + rc[1]] = { type: 'track', abs: i }; });
+  COLORS.forEach((col, ci) => {
+    const s = PATH[col.off];
+    kind[s[0] + ',' + s[1]] = { type: 'start', ci: ci, abs: col.off };
+    col.home.forEach((rc, k) => { kind[rc[0] + ',' + rc[1]] = { type: 'home', ci: ci, n: k + 1 }; });
   });
-  renderTokens();
+  let html = '';
+  for (let r = 0; r < 15; r++) for (let c = 0; c < 15; c++) {
+    const k = kind[r + ',' + c];
+    if (!k) html += '<div class="cell"></div>';
+    else if (k.type === 'track') html += '<div class="cell track" data-abs="' + k.abs + '"></div>';
+    else if (k.type === 'start') html += '<div class="cell start" data-abs="' + k.abs + '" data-ci="' + k.ci + '" style="background:' + COLORS[k.ci].main + '">⭐</div>';
+    else html += '<div class="cell home" data-ci="' + k.ci + '" style="background:' + COLORS[k.ci].main + '26;color:' + COLORS[k.ci].dark + ';border-color:' + COLORS[k.ci].main + '">' + k.n + '</div>';
+  }
+  cellsEl.innerHTML = html;
+  // Chuồng 4 góc + tâm
+  let decor = '';
+  COLORS.forEach((col, ci) => {
+    decor += '<div class="yard" id="yard' + ci + '" style="left:' + (col.yard[1] / 15 * 100) + '%;top:' + (col.yard[0] / 15 * 100) + '%;width:40%;height:40%;background:' + col.main + '"><div class="ybox"></div>' +
+      '<div class="ycirc" style="left:17%;top:17%;border-color:' + col.main + '"></div>' +
+      '<div class="ycirc" style="left:52%;top:17%;border-color:' + col.main + '"></div>' +
+      '<div class="ycirc" style="left:17%;top:52%;border-color:' + col.main + '"></div>' +
+      '<div class="ycirc" style="left:52%;top:52%;border-color:' + col.main + '"></div></div>';
+  });
+  decor += '<div class="center-box" style="left:40%;top:40%;width:20%;height:20%">' +
+    '<svg viewBox="0 0 60 60" preserveAspectRatio="none">' +
+    '<polygon points="0,0 60,0 30,30" fill="' + COLORS[3].main + '"/>' +
+    '<polygon points="60,0 60,60 30,30" fill="' + COLORS[2].main + '"/>' +
+    '<polygon points="60,60 0,60 30,30" fill="' + COLORS[1].main + '"/>' +
+    '<polygon points="0,60 0,0 30,30" fill="' + COLORS[0].main + '"/>' +
+    '<circle cx="30" cy="30" r="11" fill="#f59e0b" stroke="#fff" stroke-width="2.5"/></svg>' +
+    '<span class="center-cup">🏆</span></div>';
+  document.getElementById('decor').innerHTML = decor;
 }
-function tokenXY(pl){
-  if(pl.pos <= 0) return YARD_XY[pl.idx];
-  if(pl.pos >= TRACK) return [200, 200];
-  return CELL_CENTERS[trackIdx(pl)];
+
+/* ============ TOKEN NGUA ============ */
+let tokenEls = [];
+function buildTokens(){
+  const host = document.getElementById('tokens');
+  host.innerHTML = ''; tokenEls = [];
+  G.players.forEach((p, pi) => {
+    tokenEls[pi] = [];
+    p.horses.forEach((_, hi) => {
+      const d = document.createElement('div');
+      d.className = 'token'; d.id = 'tok' + pi + '-' + hi;
+      d.style.background = COLORS[p.color].grad;
+      d.innerHTML = '<span class="thm">🐴</span><span class="tnum">' + (hi + 1) + '</span>';
+      d.addEventListener('click', () => {
+        if (G.phase === 'move' && G.cur === pi && G.moves.some(m => m.hi === hi)) chooseMove(hi);
+      });
+      host.appendChild(d); tokenEls[pi][hi] = d;
+    });
+  });
 }
+function coordOf(pi, hi){
+  const p = G.players[pi], ci = p.color, pos = p.horses[hi];
+  if (pos === -1) {
+    const y = COLORS[ci].yard, s = YARD_SLOTS[hi];
+    return [y[0] + s[0], y[1] + s[1]];
+  }
+  if (pos <= 51) { const rc = PATH[absOf(ci, pos)]; return [rc[0] + 0.5, rc[1] + 0.5]; }
+  if (pos <= 56) { const rc = COLORS[ci].home[pos - 52]; return [rc[0] + 0.5, rc[1] + 0.5]; }
+  const f = COLORS[ci].fin, mo = [[-0.17, -0.17], [-0.17, 0.17], [0.17, -0.17], [0.17, 0.17]][hi];
+  return [f[0] + mo[0], f[1] + mo[1]];
+}
+const GROUP_OFF = [[0, 0], [-0.24, -0.24], [0.24, -0.24], [-0.24, 0.24], [0.24, 0.24], [0, -0.3], [0, 0.3], [-0.3, 0], [0.3, 0]];
 function renderTokens(){
-  if(!G) return;
-  // dem so ngua trung o de lech nhe tranh de nhau
-  const counts = {};
-  G.players.forEach(pl => {
-    const k = pl.pos <= 0 ? 'base' + pl.idx : (pl.pos >= TRACK ? 'fin' : 'c' + trackIdx(pl));
-    pl._slot = counts[k] || 0; counts[k] = (counts[k] || 0) + 1;
-  });
-  const offs = [[0,0],[-11,-11],[11,-11],[-11,11],[11,11]];
-  G.players.forEach(pl => {
-    const el = document.getElementById('tok' + pl.idx);
-    if(!el) return;
-    const [x, y] = tokenXY(pl);
-    const o = offs[Math.min(pl._slot, 4)];
-    el.style.transform = 'translate(' + (x + o[0]) + 'px,' + (y + o[1]) + 'px)';
-  });
+  if (!G.started) return;
+  const groups = {};
+  G.players.forEach((p, pi) => p.horses.forEach((pos, hi) => {
+    const key = pos === -1 ? 'Y' + pi + '-' + hi : (pos === 57 ? 'F' + p.color : 'C' + coordOf(pi, hi).join(','));
+    (groups[key] = groups[key] || []).push([pi, hi]);
+  }));
+  G.players.forEach((p, pi) => p.horses.forEach((pos, hi) => {
+    const el = tokenEls[pi] && tokenEls[pi][hi]; if (!el) return;
+    const key = pos === -1 ? 'Y' + pi + '-' + hi : (pos === 57 ? 'F' + p.color : 'C' + coordOf(pi, hi).join(','));
+    const grp = groups[key], idx = grp.findIndex(x => x[0] === pi && x[1] === hi);
+    const off = (grp.length > 1 && pos !== -1) ? (GROUP_OFF[idx] || [0, 0]) : [0, 0];
+    const base = coordOf(pi, hi);
+    el.style.left = ((base[1] + off[1]) / 15 * 100) + '%';
+    el.style.top = ((base[0] + off[0]) / 15 * 100) + '%';
+    el.classList.toggle('mini', grp.length > 1 && pos !== -1 && pos !== 57);
+    el.classList.toggle('fin', pos === 57);
+    el.classList.toggle('canmove', G.phase === 'move' && G.cur === pi && G.moves.some(m => m.hi === hi));
+  }));
 }
+
+/* ============ HUD + BANNER ============ */
 function renderHUD(){
-  const host = document.getElementById('hud'); host.innerHTML = '';
-  G.players.forEach((pl, i) => {
-    const row = document.createElement('div');
-    row.className = 'hud-row' + (i === G.cur && G.phase !== 'done' ? ' turn' : '');
-    row.innerHTML = '<span class="hud-dot" style="background:' + pl.def.color + '">🐴</span>' +
-      '<span class="hud-name">' + pl.def.name + '</span>' +
-      '<span class="hud-bar"><span class="hud-fill" style="display:block;background:' + pl.def.color + ';width:' + Math.min(pl.pos, TRACK)/TRACK*100 + '%"></span></span>' +
-      '<span class="hud-pos">' + Math.min(pl.pos, TRACK) + '/' + TRACK + '</span>';
-    host.appendChild(row);
-  });
+  const host = document.getElementById('hud');
+  host.innerHTML = G.players.map((p, pi) => {
+    const col = COLORS[p.color];
+    const pips = p.horses.map(pos =>
+      pos === 57 ? '<span class="pip done">⭐</span>' :
+      pos === -1 ? '<span class="pip">🏠</span>' :
+      '<span class="pip race">' + (pos >= 52 ? '🏠' + (pos - 51) : pos) + '</span>').join('');
+    return '<div class="hud-row' + (G.cur === pi && G.phase !== 'over' ? ' cur' : '') + '" style="color:' + col.main + '">' +
+      '<span class="hud-dot" style="background:' + col.grad + '">🐴</span>' +
+      '<span class="hud-name" style="color:' + col.dark + '">Người ' + (pi + 1) + ' · ' + col.name + '</span>' +
+      '<span class="hud-pips">' + pips + '</span>' +
+      '<span class="hud-fin">🏁 ' + finishedCount(pi) + '/4</span></div>';
+  }).join('');
 }
-function renderBanner(extra){
-  const pl = G.players[G.cur];
+function phaseHint(){
+  if (G.phase === 'roll') return 'Bấm GIEO XÚC XẮC nhé!';
+  if (G.phase === 'question') return 'Trả lời đúng câu hỏi để được đi ' + G.dice + ' ô!';
+  if (G.phase === 'move') return 'Đúng rồi! Chạm vào ngựa đang nhấp nháy (hoặc bấm nút) để đi ' + G.dice + ' ô.';
+  if (G.phase === 'anim') return 'Ngựa đang phi… 🐴💨';
+  return '';
+}
+function renderBanner(){
+  const p = pl(); if (!p) return;
   const b = document.getElementById('turn-banner');
-  b.style.borderColor = pl.def.color;
-  b.style.background = pl.def.soft;
-  b.textContent = extra || ('🎲 Lượt của ' + pl.def.name + ' — gieo xúc xắc nhé!');
+  b.style.background = COLORS[p.color].grad;
+  b.innerHTML = '🎲 Lượt của Người ' + (G.cur + 1) + ' · ' + COLORS[p.color].name + '<small>' + phaseHint() + '</small>';
+  document.getElementById('btn-roll').disabled = G.phase !== 'roll';
 }
+function setMsg(t){ document.getElementById('msg').innerHTML = t; }
 function renderAll(){ renderHUD(); renderBanner(); renderTokens(); }
 
-/* --- Chon so nguoi --- */
-function renderPreview(){
-  const host = document.getElementById('player-preview'); host.innerHTML = '';
-  for(let i=0;i<numPlayers;i++){
-    const d = PLAYER_DEFS[i];
-    const c = document.createElement('span'); c.className = 'pp-chip';
-    c.innerHTML = '<span class="pp-dot" style="background:' + d.color + '">🐴</span>' + d.name;
-    host.appendChild(c);
-  }
-}
-document.getElementById('pcount-row').addEventListener('click', e => {
-  const b = e.target.closest('.pcount'); if(!b) return;
-  document.querySelectorAll('.pcount').forEach(c => c.classList.remove('sel'));
-  b.classList.add('sel'); numPlayers = parseInt(b.dataset.n, 10); sfx('click'); renderPreview();
-});
-renderPreview();
-
-/* --- Van choi --- */
-function newGame(){
-  const deck = shuffle(BANKS.tonghop.map((o, i) => i));
-  G = {
-    players: PLAYER_DEFS.slice(0, numPlayers).map((d, i) => ({idx:i, def:d, pos:0})),
-    cur: 0, phase: 'roll', dice: 0, extraChain: 0, nextAction: 'next',
-    deck: deck, deckPos: 0, lastQ: -1, curQ: null, winner: -1
-  };
-  buildBoard(); renderAll();
-  document.getElementById('q-card').className = 'q-card';
-  document.getElementById('dice-face').textContent = '🎲';
-  document.getElementById('dice-title').textContent = G.players[0].def.name + ' gieo trước nhé!';
-  const rb = document.getElementById('btn-roll');
-  rb.disabled = false; rb.textContent = '🎲 GIEO XÚC XẮC';
-  show('scr-game');
-}
-document.getElementById('btn-start').addEventListener('click', () => { ac(); sfx('fanfare'); newGame(); });
-document.getElementById('btn-again').addEventListener('click', () => { sfx('click'); newGame(); });
-
-function nextQuestionObj(){
-  if(G.deckPos >= G.deck.length){
-    let nd = shuffle(BANKS.tonghop.map((o, i) => i));
-    if(nd[0] === G.lastQ && nd.length > 1){ const t = nd[0]; nd[0] = nd[1]; nd[1] = t; }
-    G.deck = nd; G.deckPos = 0;
-  }
-  const qi = G.deck[G.deckPos++];
-  G.lastQ = qi;
-  return BANKS.tonghop[qi];
-}
-
-document.getElementById('btn-roll').addEventListener('click', () => {
-  if(!G || G.phase !== 'roll') return;
-  G.phase = 'rolling';
-  const rb = document.getElementById('btn-roll'); rb.disabled = true;
-  const face = document.getElementById('dice-face');
-  face.classList.add('rolling');
-  document.getElementById('dice-title').textContent = 'Đang gieo…';
-  let ticks = 0;
-  const iv = setInterval(() => {
-    face.textContent = DICE_FACES[(Math.random()*6)|0];
-    sfx('tick');
-    if(++ticks >= 7){
-      clearInterval(iv);
-      G.dice = 1 + ((Math.random()*6)|0);
-      face.textContent = DICE_FACES[G.dice - 1];
-      face.classList.remove('rolling');
-      document.getElementById('dice-title').textContent = 'Ra số ' + G.dice + '! Trả lời đúng để tiến ' + G.dice + ' ô.';
-      vibrate(40);
-      setTimeout(showQuestion, 450);
-    }
-  }, 95);
-});
-
-function showQuestion(){
-  const q = nextQuestionObj();
-  G.curQ = q; G.phase = 'question';
-  const pl = G.players[G.cur];
-  document.getElementById('q-pill').textContent = pl.def.name + ' · xúc xắc ' + G.dice;
-  document.getElementById('q-pill').style.background = pl.def.color;
-  document.getElementById('q-text').textContent = q.q;
-  const host = document.getElementById('answers'); host.innerHTML = '';
-  document.getElementById('feedback').className = 'feedback';
-  document.getElementById('next-row').className = 'next-row';
-  const order = shuffle([0,1,2,3]);
-  const letters = ['A','B','C','D'];
-  order.forEach((origIdx, pos) => {
-    const b = document.createElement('button');
-    b.className = 'ans'; b.dataset.orig = origIdx;
-    b.innerHTML = '<span class="badge">' + letters[pos] + '</span><span></span>';
-    b.lastElementChild.textContent = q.a[origIdx];
-    b.addEventListener('click', () => answer(b, origIdx));
-    host.appendChild(b);
+/* ============ KHOI TAO VAN ============ */
+function shuffle(a){ for (let i = a.length - 1; i > 0; i--) { const j = (Math.random() * (i + 1)) | 0; const t = a[i]; a[i] = a[j]; a[j] = t; } return a; }
+function startGame(){
+  G.players = [];
+  for (let i = 0; i < G.nPlayers; i++) G.players.push({ color: i, horses: [-1, -1, -1, -1] });
+  G.cur = 0; G.phase = 'roll'; G.dice = 0; G.extraUsed = 0; G.forced = null;
+  G.moves = []; G.winner = null; G.started = true; G.lastKick = '';
+  G.deck = shuffle(BANKS.tonghop.slice()); G.deckPos = 0;
+  COLORS.forEach((col, ci) => {
+    const y = document.getElementById('yard' + ci);
+    if (y) y.classList.toggle('off', ci >= G.nPlayers);
   });
-  document.getElementById('q-card').className = 'q-card on';
-  document.getElementById('q-card').scrollIntoView({behavior:'smooth', block:'center'});
+  buildTokens();
+  document.getElementById('dice-face').textContent = '🎲';
+  document.getElementById('q-card').classList.remove('on');
+  document.getElementById('moves').classList.remove('on');
+  setMsg('Người 1 · ' + COLORS[0].name + ' gieo xúc xắc trước nhé!');
+  show('scr-game');
+  renderAll();
 }
 
-function answer(btn, origIdx){
-  if(!G || G.phase !== 'question') return;
-  const q = G.curQ, pl = G.players[G.cur];
-  const letters = ['A','B','C','D'];
-  const btns = Array.from(document.querySelectorAll('#answers .ans'));
-  btns.forEach(b => {
-    b.classList.add('locked');
-    if(parseInt(b.dataset.orig, 10) === q.c) b.classList.add('correct');
+/* ============ GIEO XUC XAC + CAU HOI ============ */
+function rollDice(){
+  if (G.phase !== 'roll') return;
+  ac();
+  G.dice = G.forced != null ? G.forced : 1 + ((Math.random() * 6) | 0);
+  G.forced = null;
+  G.phase = 'rolling';
+  const face = document.getElementById('dice-face');
+  face.classList.remove('shake'); void face.offsetWidth; face.classList.add('shake');
+  let n = 0;
+  const iv = setInterval(() => {
+    face.textContent = FACES[(Math.random() * 6) | 0];
+    if (++n >= 7) {
+      clearInterval(iv);
+      face.textContent = FACES[G.dice - 1];
+      sfx('click');
+      setMsg('🎲 Gieo được <b>' + G.dice + '</b>! Trả lời đúng câu hỏi để đi ' + G.dice + ' ô nhé.');
+      drawQuestion();
+    }
+  }, 70);
+  renderBanner();
+}
+function drawQuestion(){
+  if (G.deckPos >= G.deck.length) { G.deck = shuffle(BANKS.tonghop.slice()); G.deckPos = 0; }
+  G.curQ = G.deck[G.deckPos++];
+  G.qOrder = shuffle([0, 1, 2, 3]);
+  G.phase = 'question';
+  const qc = document.getElementById('q-card');
+  qc.classList.add('on');
+  document.getElementById('q-text').textContent = G.curQ.q;
+  const fb = document.getElementById('feedback');
+  fb.className = 'feedback'; fb.textContent = '';
+  document.getElementById('answers').innerHTML = G.qOrder.map((orig, i) =>
+    '<button class="ans" data-orig="' + orig + '"><span class="badge">' + LETTERS[i] + '</span><span>' + G.curQ.a[orig] + '</span></button>').join('');
+  document.querySelectorAll('#answers .ans').forEach(b =>
+    b.addEventListener('click', () => answer(parseInt(b.dataset.orig, 10), b)));
+  renderBanner();
+  setTimeout(() => qc.scrollIntoView({ behavior: 'smooth', block: 'center' }), 120);
+}
+function answer(orig, btn){
+  if (G.phase !== 'question') return;
+  const q = G.curQ, ok = orig === q.c;
+  document.querySelectorAll('#answers .ans').forEach(b => {
+    b.disabled = true;
+    if (parseInt(b.dataset.orig, 10) === q.c) b.classList.add('correct');
   });
   const fb = document.getElementById('feedback');
-  if(origIdx === q.c){
-    G.phase = 'moving';
-    fb.className = 'feedback ok';
-    fb.textContent = '✅ ĐÚNG! ' + pl.def.name + ' tiến ' + G.dice + ' ô. Đáp án ' + letters[btns.indexOf(btn)] + ' — ' + q.a[q.c];
-    sfx('correct'); vibrate(40);
-    setTimeout(() => moveHorse(pl, G.dice), 550);
-  } else {
+  if (!ok) {
     btn.classList.add('wrong');
-    const rightBtn = btns.find(b => parseInt(b.dataset.orig, 10) === q.c);
-    fb.className = 'feedback bad';
-    fb.textContent = '❌ SAI! Bạn chọn ' + letters[btns.indexOf(btn)] + ' — Đúng là ' + letters[btns.indexOf(rightBtn)] + ' — ' + q.a[q.c] + '. ' + pl.def.name + ' đứng yên nhé!';
-    sfx('wrong'); vibrate(150);
-    G.phase = 'next'; G.nextAction = 'next';
-    document.getElementById('btn-next').textContent = 'Lượt tiếp theo ➜';
-    document.getElementById('next-row').className = 'next-row on';
+    sfx('wrong'); vibrate([120, 50, 120]);
+    fb.className = 'feedback on bad';
+    fb.innerHTML = '❌ SAI RỒI! Bạn chọn <b>' + q.a[orig] + '</b> — Đúng là <b>' + q.a[q.c] + '</b>. Người ' + (G.cur + 1) + ' mất nước đi này nhé!';
+    G.phase = 'anim';
+    renderAll();
+    setTimeout(() => endTurn(), 2100);
+    return;
   }
+  sfx('correct'); vibrate(50);
+  G.moves = legalMoves(G.cur, G.dice);
+  if (!G.moves.length) {
+    fb.className = 'feedback on ok';
+    fb.innerHTML = '✅ ĐÚNG! Nhưng tiếc quá — <b>không có ngựa nào đi được</b> nước ' + G.dice + ' này. Chuyển lượt nhé!';
+    G.phase = 'anim';
+    renderAll();
+    setTimeout(() => endTurn(), 2100);
+    return;
+  }
+  fb.className = 'feedback on ok';
+  fb.innerHTML = '✅ ĐÚNG RỒI! Giờ hãy <b>chạm vào con ngựa đang nhấp nháy</b> (hoặc bấm nút bên dưới) để đi <b>' + G.dice + ' ô</b>.';
+  G.phase = 'move';
+  renderMoves();
+  renderAll();
 }
 
-function moveHorse(pl, steps){
-  let done = 0;
-  const stepIv = setInterval(() => {
-    pl.pos++; done++;
-    sfx('tick'); renderTokens(); renderHUD();
-    if(done >= steps){
-      clearInterval(stepIv);
-      if(pl.pos >= TRACK){ winGame(pl); return; }
-      if(G.dice === 6 && G.extraChain < 2){
-        G.extraChain++;
-        G.phase = 'next'; G.nextAction = 'extra';
-        const fb = document.getElementById('feedback');
-        fb.textContent += ' 🎲 Gieo được 6 và trả lời đúng — ' + pl.def.name + ' được GIEO THÊM lần nữa!';
-        document.getElementById('btn-next').textContent = '🎲 GIEO THÊM NỮA';
-        document.getElementById('next-row').className = 'next-row on';
+/* ============ LUAT DI CHUYEN ============ */
+function enemyCountAt(pi, abs, excludePi){
+  let n = 0;
+  G.players.forEach((p, pj) => {
+    if (pj === pi) return;
+    p.horses.forEach(pos => { if (pos >= 0 && pos <= 51 && absOf(p.color, pos) === abs) n++; });
+  });
+  return n;
+}
+function legalMoves(pi, d){
+  const p = G.players[pi], res = [];
+  p.horses.forEach((pos, hi) => {
+    if (pos === 57) return;
+    if (pos === -1) {
+      if ((d === 1 || d === 6) && enemyCountAt(pi, COLORS[p.color].off) < 2) res.push({ hi: hi, from: -1, to: 0 });
+      return;
+    }
+    const np = pos + d;
+    if (np > 57) return;
+    // Cot nha: khong nhay qua ngua cua minh dang dung truoc trong cot
+    for (let q = Math.max(pos + 1, 52); q < np; q++)
+      if (p.horses.some(h => h === q)) return;
+    // O dich co 2 ngua doi thu chong quan -> khong vao duoc
+    if (np <= 51 && enemyCountAt(pi, absOf(p.color, np)) >= 2) return;
+    res.push({ hi: hi, from: pos, to: np });
+  });
+  return res;
+}
+function renderMoves(){
+  const host = document.getElementById('moves');
+  const p = pl();
+  host.innerHTML = G.moves.map(m =>
+    '<button class="move-btn" data-hi="' + m.hi + '" style="background:' + COLORS[p.color].grad + '">' +
+    (m.from === -1 ? '🚪 Xuất quân — Ngựa ' + (m.hi + 1) : '🐴 Ngựa ' + (m.hi + 1) + ' — đi ' + G.dice + ' ô') + '</button>').join('');
+  host.classList.add('on');
+  host.querySelectorAll('.move-btn').forEach(b =>
+    b.addEventListener('click', () => chooseMove(parseInt(b.dataset.hi, 10))));
+}
+function chooseMove(hi){
+  if (G.phase !== 'move') return;
+  const mv = G.moves.find(m => m.hi === hi);
+  if (!mv) return;
+  G.phase = 'anim'; G.moves = [];
+  document.getElementById('moves').classList.remove('on');
+  document.getElementById('q-card').classList.remove('on');
+  renderAll();
+  const p = pl();
+  if (mv.from === -1) {
+    p.horses[hi] = 0;
+    sfx('fanfare');
+    renderAll();
+    setMsg('🚪 Người ' + (G.cur + 1) + ' xuất quân Ngựa ' + (hi + 1) + ' ra ô Xuất phát!');
+    setTimeout(() => resolveLanding(hi), 450);
+    return;
+  }
+  let cur = mv.from;
+  const step = () => {
+    cur++;
+    p.horses[hi] = cur;
+    tone(500 + cur * 8, 500 + cur * 8, 0.05, 0, 'triangle', 0.08);
+    renderTokens(); renderHUD();
+    if (cur < mv.to) setTimeout(step, 195);
+    else setTimeout(() => resolveLanding(hi), 260);
+  };
+  setTimeout(step, 120);
+}
+function resolveLanding(hi){
+  const pi = G.cur, p = pl(), pos = p.horses[hi];
+  G.lastKick = '';
+  if (pos <= 51) {
+    const abs = absOf(p.color, pos);
+    const victims = [];
+    G.players.forEach((op, pj) => {
+      if (pj === pi) return;
+      op.horses.forEach((opos, ohi) => {
+        if (opos >= 0 && opos <= 51 && absOf(op.color, opos) === abs) victims.push([pj, ohi]);
+      });
+    });
+    if (victims.length === 1) {
+      const vj = victims[0][0], vh = victims[0][1], victim = G.players[vj];
+      if (abs === COLORS[victim.color].off) {
+        setMsg('🛡️ Ngựa của Người ' + (vj + 1) + ' đang đứng ở <b>ô Xuất phát an toàn</b> của họ — không đá được!');
       } else {
-        G.phase = 'next'; G.nextAction = 'next';
-        document.getElementById('btn-next').textContent = 'Lượt tiếp theo ➜';
-        document.getElementById('next-row').className = 'next-row on';
+        victim.horses[vh] = -1;
+        G.lastKick = 'kick';
+        tone(320, 80, 0.3, 0, 'square', 0.2); vibrate([70, 40, 70]);
+        setMsg('💥 ĐÁ NGỰA! Ngựa ' + (vh + 1) + ' của Người ' + (vj + 1) + ' bị đá bay về chuồng!');
       }
     }
-  }, 270);
+  }
+  renderAll();
+  if (p.horses.every(h => h === 57)) { gameOver(pi); return; }
+  if (pos === 57) setMsg('⭐ Tuyệt vời! Ngựa ' + (hi + 1) + ' của Người ' + (pi + 1) + ' đã LÊN CHUỒNG! (' + finishedCount(pi) + '/4)');
+  if (G.dice === 6 && G.extraUsed < 2) {
+    G.extraUsed++;
+    G.phase = 'roll';
+    if (!G.lastKick) setMsg('⭐ Gieo được 6 — Người ' + (pi + 1) + ' được <b>gieo thêm lần nữa</b>! (lần thêm ' + G.extraUsed + '/2)');
+    renderAll();
+    return;
+  }
+  endTurn();
+}
+function endTurn(){
+  document.getElementById('q-card').classList.remove('on');
+  document.getElementById('moves').classList.remove('on');
+  G.moves = [];
+  G.cur = (G.cur + 1) % G.players.length;
+  G.extraUsed = 0; G.phase = 'roll';
+  const p = pl();
+  setMsg('Đến lượt Người ' + (G.cur + 1) + ' · ' + COLORS[p.color].name + ' — bấm gieo xúc xắc nhé!');
+  renderAll();
+  document.querySelector('.board-wrap').scrollIntoView({ behavior: 'smooth', block: 'center' });
 }
 
-document.getElementById('btn-next').addEventListener('click', () => {
-  if(!G || G.phase !== 'next') return;
+/* ============ KET QUA ============ */
+function gameOver(pi){
+  G.phase = 'over'; G.winner = pi;
+  const col = COLORS[G.players[pi].color];
+  const order = G.players.map((p, i) => i).sort((a, b) =>
+    finishedCount(b) - finishedCount(a) || progressSum(b) - progressSum(a));
+  const medals = ['🥇', '🥈', '🥉', '🎖️'];
+  document.getElementById('result-title').innerHTML = '🏆 NGƯỜI ' + (pi + 1) + ' · ' + col.name + ' THẮNG!';
+  document.getElementById('result-sub').textContent = 'Người ' + (pi + 1) + ' đã đưa cả 4 ngựa lên chuồng đầu tiên. Cả nhà đua lại một ván nữa nhé!';
+  document.getElementById('ranking').innerHTML = order.map((pj, rank) => {
+    const p = G.players[pj], c = COLORS[p.color];
+    return '<div class="rank-row' + (rank === 0 ? ' first' : '') + '">' +
+      '<span class="rank-medal">' + medals[rank] + '</span>' +
+      '<span class="hud-dot" style="background:' + c.grad + '">🐴</span>' +
+      '<span class="rank-name" style="color:' + c.dark + '">Người ' + (pj + 1) + ' · ' + c.name + '</span>' +
+      '<span class="rank-detail">🏁 Lên chuồng: ' + finishedCount(pj) + '/4<br>Tiến độ: ' + progressSum(pj) + ' ô</span></div>';
+  }).join('');
+  show('scr-result');
+  sfx('win'); vibrate([80, 40, 80, 40, 150]);
+  fireworks(12);
+  renderHUD();
+}
+
+/* ============ SU KIEN ============ */
+document.querySelectorAll('.pcount').forEach(b => b.addEventListener('click', () => {
+  document.querySelectorAll('.pcount').forEach(x => x.classList.remove('sel'));
+  b.classList.add('sel');
+  G.nPlayers = parseInt(b.dataset.n, 10);
   sfx('click');
-  document.getElementById('q-card').className = 'q-card';
-  if(G.nextAction === 'next'){
-    G.cur = (G.cur + 1) % G.players.length;
-    G.extraChain = 0;
-  }
-  G.phase = 'roll';
-  renderAll();
-  document.getElementById('dice-face').textContent = '🎲';
-  document.getElementById('dice-title').textContent = G.players[G.cur].def.name + ' gieo nhé!' + (G.nextAction === 'extra' ? ' (lượt phụ)' : '');
-  const rb = document.getElementById('btn-roll');
-  rb.disabled = false; rb.textContent = '🎲 GIEO XÚC XẮC';
-  scrollTo({top:0, behavior:'smooth'});
+}));
+document.getElementById('btn-start').addEventListener('click', () => { sfx('fanfare'); startGame(); });
+document.getElementById('btn-roll').addEventListener('click', rollDice);
+document.getElementById('btn-quit').addEventListener('click', () => { sfx('click'); G.started = false; G.phase = 'idle'; show('scr-home'); });
+document.getElementById('btn-home2').addEventListener('click', () => { sfx('click'); G.started = false; G.phase = 'idle'; show('scr-home'); });
+document.getElementById('btn-again').addEventListener('click', () => { sfx('fanfare'); startGame(); });
+document.getElementById('btn-help').addEventListener('click', () => { sfx('click'); document.getElementById('help-overlay').classList.add('on'); });
+document.getElementById('btn-close-help').addEventListener('click', () => { sfx('click'); document.getElementById('help-overlay').classList.remove('on'); });
+document.getElementById('help-overlay').addEventListener('click', e => {
+  if (e.target.id === 'help-overlay') e.target.classList.remove('on');
 });
 
-function winGame(pl){
-  G.phase = 'done'; G.winner = pl.idx;
-  pl.pos = TRACK;
-  renderTokens(); renderHUD();
-  const others = G.players.filter(p => p.idx !== pl.idx).sort((a, b) => b.pos - a.pos);
-  const ranked = [pl].concat(others);
-  document.getElementById('result-title').textContent = pl.def.name + ' THẮNG! 🎉';
-  document.getElementById('result-title').style.color = pl.def.color;
-  document.getElementById('result-sub').textContent = 'Ngựa của ' + pl.def.name + ' đã phi đủ ' + TRACK + ' ô về đích đầu tiên. Cả nhà vỗ tay nào! 👏';
-  const rv = document.getElementById('ranking'); rv.innerHTML = '';
-  const medals = ['🥇','🥈','🥉','4️⃣'];
-  ranked.forEach((p, i) => {
-    const row = document.createElement('div');
-    row.className = 'rank-row' + (i === 0 ? ' first' : '');
-    row.innerHTML = '<span class="rk">' + medals[i] + '</span><span class="hud-dot" style="background:' + p.def.color + '">🐴</span><span>' + p.def.name + (i === 0 ? ' — VỀ ĐÍCH!' : '') + '</span><span class="pts">' + Math.min(p.pos, TRACK) + '/' + TRACK + ' ô</span>';
-    rv.appendChild(row);
-  });
-  show('scr-result');
-  sfx('win'); vibrate([80,40,80,40,150]); fireworks(10);
-}
+/* ============ KHOI TAO ============ */
+renderRules(document.getElementById('rules-home'));
+renderRules(document.getElementById('rules-help'));
+buildBoard();
 
+/* ============ HOOK TEST ============ */
 window.__CN = {
-  get state(){ return G; },
-  setPos(playerIdx, pos){
-    if(!G || !G.players[playerIdx]) return;
-    G.players[playerIdx].pos = pos;
-    renderTokens(); renderHUD();
-  }
+  state: G,
+  setDice: function (n) { G.forced = n; },
+  place: function (pi, hi, p) {
+    if (!G.players[pi]) return;
+    G.players[pi].horses[hi] = p;
+    renderAll();
+  },
+  answerMode: 'manual'
 };
 </script>
 </body>
