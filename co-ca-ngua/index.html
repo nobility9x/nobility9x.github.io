@@ -402,7 +402,7 @@ const RULES = [
  ['🏁','<b>Bàn cờ & quân:</b> 4 người chơi 4 màu — <b>ĐỎ, XANH DƯƠNG, XANH LÁ, VÀNG</b>. Mỗi người có <b>4 con ngựa</b> ở trong chuồng (khu góc màu của mình). Đường đua chung có <b>52 ô</b>, chạy <b>ngược chiều kim đồng hồ</b>.'],
  ['🚪','<b>Xuất quân:</b> muốn đưa ngựa từ chuồng ra ô <b>Xuất phát</b> (ô màu ⭐ của mình) phải gieo được <b>1 hoặc 6</b>. Đứng ở ô Xuất phát thì <b>an toàn</b>, không ai đá được.'],
  ['⭐','<b>Gieo được 6</b> thì được <b>gieo thêm 1 lần nữa</b> (tối đa 2 lần gieo thêm liên tiếp).'],
- ['❓','<b>Trả lời câu hỏi:</b> gieo xúc xắc xong phải <b>trả lời ĐÚNG 1 câu hỏi</b> mới được đi nước đó. Trả lời sai thì <b>mất nước đi</b> (gieo 6 mà trả lời sai cũng không được gieo thêm).'],
+ ['❓','<b>Trả lời câu hỏi:</b> gieo xúc xắc xong phải <b>trả lời ĐÚNG 1 câu hỏi</b> mới được đi nước đó. Trả lời sai thì <b>mất nước đi</b> (gieo 6 mà trả lời sai cũng không được gieo thêm). Nếu gieo xong mà <b>không có ngựa nào đi được</b> thì không cần trả lời — máy <b>tự chuyển lượt</b> luôn.'],
  ['👆','<b>Chọn ngựa:</b> trả lời đúng xong, các ngựa đi được sẽ <b>sáng lên nhấp nháy</b> — hãy <b>chạm vào con ngựa</b> muốn đi (hoặc bấm nút chọn ngựa). Ngựa đi đúng số ô bằng số xúc xắc.'],
  ['💥','<b>Đá ngựa:</b> ngựa của bạn dừng đúng ô đang có <b>1 ngựa đối thủ</b> đứng một mình → ngựa đối thủ bị <b>đá về chuồng</b>! Hai ngựa cùng màu đứng chung một ô gọi là <b>chồng quân</b> — không bị đá, và ngựa khác cũng không vào đá được ô đó.'],
  ['🏠','<b>Về chuồng:</b> đi hết 1 vòng đường đua, ngựa rẽ vào <b>cột nhà</b> màu của mình gồm <b>6 ô</b> tiến về tâm. Trong cột nhà phải gieo <b>đúng số</b> mới tiến được và <b>không được nhảy qua</b> ngựa của mình đang đứng trước. Lên tới ô 6 là <b>LÊN CHUỒNG</b> — ở đây an toàn tuyệt đối!'],
@@ -554,6 +554,7 @@ function phaseHint(){
   if (G.phase === 'roll') return 'Bấm GIEO XÚC XẮC nhé!';
   if (G.phase === 'question') return 'Trả lời đúng câu hỏi để được đi ' + G.dice + ' ô!';
   if (G.phase === 'move') return 'Đúng rồi! Chạm vào ngựa đang nhấp nháy (hoặc bấm nút) để đi ' + G.dice + ' ô.';
+  if (G.phase === 'skip') return 'Gieo ' + G.dice + ' mà chưa có ngựa nào đi được — đang chuyển lượt…';
   if (G.phase === 'anim') return 'Ngựa đang phi… 🐴💨';
   return '';
 }
@@ -604,6 +605,17 @@ function rollDice(){
       clearInterval(iv);
       face.textContent = FACES[G.dice - 1];
       sfx('click');
+      G.moves = legalMoves(G.cur, G.dice);
+      if (!G.moves.length) {
+        // Gieo xong ma khong co nuoc di hop le -> khong hoi nua, bao roi tu chuyen luot
+        const nx = (G.cur + 1) % G.players.length;
+        G.phase = 'skip';
+        tone(300, 170, 0.35, 0, 'sine', 0.16);
+        setMsg('<span style="display:block;background:#fef3c7;border:2px solid #f59e0b;border-radius:12px;padding:9px 11px">🎲 Gieo được <b>' + G.dice + '</b> — chưa có ngựa nào đi được, chuyển lượt cho <b>Người ' + (nx + 1) + '</b> nhé!</span>');
+        renderAll();
+        setTimeout(() => { if (G.phase === 'skip') endTurn(); }, 1600);
+        return;
+      }
       setMsg('🎲 Gieo được <b>' + G.dice + '</b>! Trả lời đúng câu hỏi để đi ' + G.dice + ' ô nhé.');
       drawQuestion();
     }
