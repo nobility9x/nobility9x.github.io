@@ -1,0 +1,1225 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cờ Vua — Bé Học Vui</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Be+Vietnam+Pro:wght@500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  body{font-family:'Be Vietnam Pro',sans-serif;background:#fef9ec;background-image:radial-gradient(#fde68a 1.6px,transparent 1.7px),radial-gradient(#bae6fd 1.6px,transparent 1.7px);background-size:34px 34px,34px 34px;background-position:0 0,17px 17px;color:#1e293b;min-height:100vh}
+  .wrap{max-width:560px;margin:0 auto;padding:14px 14px 30px}
+  h1,h2,h3,.baloo{font-family:'Baloo 2',cursive}
+  .topbar{display:flex;align-items:center;gap:8px;margin-bottom:12px}
+  .pill{display:inline-flex;align-items:center;gap:6px;text-decoration:none;font-weight:800;font-size:14.5px;color:#065f46;background:#fff;border:2.2px solid #34d399;border-radius:999px;padding:8px 15px;box-shadow:0 3px 0 #34d399;cursor:pointer}
+  .pill.rules{color:#7c2d12;border-color:#fb923c;box-shadow:0 3px 0 #fb923c;margin-left:auto}
+  .hero{background:linear-gradient(135deg,#4338ca,#7c3aed 55%,#c026d3);border-radius:24px;padding:24px 20px 20px;color:#fff;text-align:center;box-shadow:0 8px 0 rgba(67,56,202,.35),0 18px 30px rgba(76,29,149,.25);position:relative;overflow:hidden}
+  .hero .big{font-size:76px;line-height:1;display:block;filter:drop-shadow(0 6px 8px rgba(0,0,0,.35));animation:floaty 3.2s ease-in-out infinite}
+  @keyframes floaty{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+  .hero h1{font-size:42px;letter-spacing:.5px;text-shadow:0 3px 0 rgba(0,0,0,.18)}
+  .hero p{font-weight:700;font-size:15.5px;opacity:.95;margin-top:2px}
+  .card{background:#fff;border:2.5px solid #e7e5e4;border-radius:20px;box-shadow:0 5px 0 #e7e5e4,0 12px 22px rgba(30,27,75,.08);padding:16px;margin-top:14px}
+  .card h2{font-size:20px;color:#92400e;margin-bottom:10px}
+  .opts{display:grid;gap:10px}
+  .opts.two{grid-template-columns:1fr 1fr}
+  .opt{border:2.5px solid #e7e5e4;border-radius:16px;padding:12px 13px;background:#fffdf5;cursor:pointer;text-align:left}
+  .opt .t{font-family:'Baloo 2',cursive;font-weight:800;font-size:17.5px;color:#1e293b;display:block}
+  .opt .d{font-size:13.5px;font-weight:600;color:#57534e;line-height:1.45;display:block;margin-top:2px}
+  .opt.sel{border-color:#f59e0b;background:#fffbeb;box-shadow:0 4px 0 #f59e0b}
+  .opt.sel-blue{border-color:#3b82f6;background:#eff6ff;box-shadow:0 4px 0 #3b82f6}
+  .opt.sel-green{border-color:#22c55e;background:#f0fdf4;box-shadow:0 4px 0 #22c55e}
+  .opt.dim{opacity:.45;pointer-events:none}
+  .btn{display:block;width:100%;text-align:center;text-decoration:none;font-family:'Baloo 2',cursive;font-weight:800;font-size:22px;color:#fff;background:linear-gradient(135deg,#f97316,#f59e0b);border:2.5px solid #ea580c;border-radius:18px;padding:15px;margin-top:16px;box-shadow:0 6px 0 #c2410c;cursor:pointer}
+  .btn:active{transform:translateY(3px);box-shadow:0 3px 0 #c2410c}
+  .rules-short{font-size:14.5px;font-weight:600;line-height:1.65;color:#44403c}
+  .rules-short b{color:#b45309}
+  /* ===== Màn bàn cờ ===== */
+  .player{display:flex;align-items:center;gap:10px;background:#fff;border:2.5px solid #e7e5e4;border-radius:16px;box-shadow:0 4px 0 #e7e5e4;padding:9px 12px;margin-top:10px;transition:background .2s,border-color .2s}
+  .avatar{width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:24px;flex:none}
+  .avatar.black{background:#1f2937;color:#f8fafc}
+  .avatar.white{background:#f8fafc;border:2.2px solid #94a3b8;color:#0f172a}
+  .pname{font-family:'Baloo 2',cursive;font-weight:800;font-size:16.5px;display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+  .tray{font-size:16px;letter-spacing:1px;color:#78716c;min-height:20px}
+  .clock{margin-left:auto;font-family:'Baloo 2',cursive;font-weight:800;font-size:16.5px;background:#1e293b;color:#fde68a;border-radius:10px;padding:5px 10px;flex:none}
+  .player.turn-on{border:3px solid #16a34a;background:#f0fdf4;box-shadow:0 0 0 4px rgba(22,163,74,.16),0 6px 20px rgba(22,163,74,.35)}
+  .player.turn-on .clock{background:#14532d;color:#fef08a;box-shadow:0 0 0 2px rgba(22,163,74,.45)}
+  .checktag{display:none;background:#dc2626;color:#fff;font-family:'Baloo 2',cursive;font-weight:800;font-size:12.5px;border-radius:999px;padding:2px 9px;letter-spacing:.4px}
+  .player.incheck .checktag{display:inline-block;animation:blinkSoft .5s ease-in-out 3}
+  @keyframes blinkSoft{0%,100%{opacity:1}50%{opacity:.35}}
+  .board-frame{margin-top:12px;background:linear-gradient(135deg,#92400e,#b45309);padding:10px;border-radius:18px;box-shadow:0 8px 0 rgba(120,53,15,.4),0 16px 28px rgba(120,53,15,.25)}
+  .board{display:grid;grid-template-columns:repeat(8,1fr);border-radius:8px;overflow:hidden}
+  .sq{position:relative;aspect-ratio:1/1;display:flex;align-items:center;justify-content:center;cursor:pointer;user-select:none}
+  .sq.light{background:#f0d9b5}.sq.dark{background:#b58863}
+  .sq.lastmove{background:#f6e27a !important}
+  .sq .coord{position:absolute;font-size:9.5px;font-weight:800;opacity:.75;pointer-events:none}
+  .sq .coord.rank{top:2px;left:3px}
+  .sq .coord.file{bottom:1px;right:3px}
+  .sq.light .coord{color:#b58863}.sq.dark .coord{color:#f0d9b5}
+  .sq .coord.file-top{top:1px;left:0;right:0;text-align:center;opacity:.55}
+  .sq .coord.rank-r{top:50%;right:3px;transform:translateY(-50%);opacity:.55}
+  .piece{position:relative;z-index:2;width:88%;height:88%;display:flex;align-items:center;justify-content:center;pointer-events:none}
+  .piece svg{width:100%;height:100%;display:block}
+  .flipx{transform:scaleX(-1)}
+  .player.top180{transform:rotate(180deg)}
+  .pc-ic{width:19px;height:19px;display:inline-block;vertical-align:-4px}
+  .avatar svg{width:27px;height:27px;display:block}
+  .hero .big svg{width:94px;height:94px;display:inline-block}
+  .sq.selected{box-shadow:inset 0 0 0 4px #22c55e,inset 0 0 0 7px rgba(34,197,94,.35)}
+  .sq.hint{box-shadow:inset 0 0 0 4px #f59e0b,inset 0 0 0 8px rgba(245,158,11,.4)}
+  .sq.kingcheck{box-shadow:inset 0 0 0 3px rgba(220,38,38,.9),inset 0 0 22px 6px rgba(220,38,38,.75)}
+  .dot{position:absolute;width:30%;height:30%;border-radius:50%;background:rgba(22,163,74,.45);z-index:1;pointer-events:none}
+  .capring{position:absolute;inset:3px;border:4px solid rgba(220,38,38,.75);border-radius:50%;z-index:1;pointer-events:none}
+  .actions{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-top:14px}
+  .act{font-family:'Baloo 2',cursive;font-weight:800;font-size:15.5px;color:#1e293b;background:#fff;border:2.2px solid #cbd5e1;border-radius:14px;padding:10px 2px;box-shadow:0 4px 0 #cbd5e1;cursor:pointer;text-align:center}
+  .act:active{transform:translateY(3px);box-shadow:0 1px 0 #cbd5e1}
+  .moves{columns:2;column-gap:26px;font-size:15px;font-weight:700;color:#44403c;line-height:1.9}
+  .moves .n{color:#b45309;font-weight:800}
+  .moves .cur{background:#fef3c7;border-radius:6px;padding:1px 5px}
+  .screen{display:none}
+  .screen.on{display:block}
+  /* ===== Lớp phủ chung ===== */
+  .ovl{position:fixed;inset:0;background:rgba(30,27,75,.55);display:none;align-items:flex-start;justify-content:center;overflow-y:auto;z-index:50;padding:18px 12px 30px}
+  .ovl.on{display:flex}
+  .ovl-card{background:#fef9ec;border-radius:22px;border:2.5px solid #f59e0b;box-shadow:0 8px 0 rgba(180,83,9,.5),0 22px 40px rgba(0,0,0,.35);max-width:520px;width:100%;padding:20px 18px;margin:auto 0}
+  .ovl-card h2{font-size:24px;color:#92400e;text-align:center;margin-bottom:8px}
+  .ovl-card .sub{text-align:center;font-weight:700;color:#57534e;font-size:15px;margin-bottom:12px}
+  .xbtn{display:block;margin:14px auto 0;font-family:'Baloo 2',cursive;font-weight:800;font-size:17px;color:#fff;background:linear-gradient(135deg,#f97316,#f59e0b);border:2.2px solid #ea580c;border-radius:999px;padding:10px 26px;box-shadow:0 4px 0 #c2410c;cursor:pointer}
+  .xbtn:active{transform:translateY(2px);box-shadow:0 2px 0 #c2410c}
+  .xbtn.gray{background:#fff;color:#44403c;border-color:#cbd5e1;box-shadow:0 4px 0 #cbd5e1}
+  .rule-row{display:flex;gap:12px;align-items:flex-start;background:#fff;border:2px solid #fde68a;border-radius:14px;padding:10px 12px;margin-top:9px}
+  .rule-row .ic{width:46px;height:46px;flex:none}
+  .rule-row .ic svg{width:100%;height:100%}
+  .rule-row p{font-size:14.5px;font-weight:600;line-height:1.5;color:#44403c}
+  .rule-row p b{color:#92400e}
+  /* Quiz */
+  .quiz-q{font-family:'Baloo 2',cursive;font-weight:800;font-size:20px;color:#1e293b;text-align:center;line-height:1.45;margin:6px 0 14px}
+  .answers{display:grid;gap:10px}
+  .ans{font-family:'Be Vietnam Pro',sans-serif;font-weight:700;font-size:16.5px;color:#1e293b;background:#fff;border:2.2px solid #93c5fd;border-radius:14px;padding:12px;cursor:pointer;text-align:left;box-shadow:0 3px 0 #93c5fd}
+  .ans.ok{border-color:#16a34a;background:#f0fdf4;box-shadow:0 3px 0 #16a34a}
+  .ans.bad{border-color:#dc2626;background:#fef2f2;box-shadow:0 3px 0 #dc2626;animation:blinkSoft .5s ease-in-out 3}
+  .ans:disabled{cursor:default;opacity:.92}
+  .quiz-fb{margin-top:12px;font-weight:800;font-size:15.5px;text-align:center;border-radius:12px;padding:9px;display:none}
+  .quiz-fb.ok{display:block;background:#ecfdf5;border:2px solid #a7f3d0;color:#065f46}
+  .quiz-fb.bad{display:block;background:#fef2f2;border:2px solid #fecaca;color:#991b1b}
+  /* Phong cấp */
+  .promo-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:8px}
+  .promo-btn{background:#fff;border:2.5px solid #f59e0b;border-radius:16px;padding:8px 4px;cursor:pointer;box-shadow:0 4px 0 #f59e0b}
+  .promo-btn:active{transform:translateY(2px);box-shadow:0 2px 0 #f59e0b}
+  .promo-btn svg{width:100%;height:auto;display:block}
+  .promo-btn span{display:block;text-align:center;font-family:'Baloo 2',cursive;font-weight:800;font-size:14px;color:#92400e;margin-top:2px}
+  /* Kết quả */
+  .result-big{font-family:'Baloo 2',cursive;font-weight:800;font-size:34px;text-align:center;color:#1e293b;line-height:1.25}
+  .result-card-win{background:linear-gradient(135deg,#ecfdf5,#d1fae5);border:2.5px solid #16a34a;border-radius:18px;padding:16px;margin-top:6px}
+  .result-card-draw{background:linear-gradient(135deg,#fffbeb,#fef3c7);border:2.5px solid #f59e0b;border-radius:18px;padding:16px;margin-top:6px}
+  .result-btns{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
+  .result-btns .xbtn{margin:0;width:100%}
+  #fx{position:fixed;inset:0;pointer-events:none;display:none;z-index:80}
+</style>
+</head>
+<body>
+<canvas id="fx"></canvas>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><symbol id="pc-wk" viewBox="0 0 45 45"><ellipse cx="22.5" cy="41.6" rx="10.8" ry="1.5" fill="rgba(0,0,0,.18)" stroke="none"/><g fill="#faf7ef" stroke="#141414" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"><path d="M13.2 36.8c0-1.9 4.1-3.1 9.3-3.1s9.3 1.2 9.3 3.1c0 .5-.4.9-1 .9-1.2-1.2-4.4-2-8.3-2s-7.1.8-8.3 2c-.6 0-1-.4-1-.9z"/><path d="M14.4 25.4c-.2 3.4.6 6.4 2.3 8.8l-.6 2.5h12.8l-.6-2.5c1.7-2.4 2.5-5.4 2.3-8.8-2.5-1-5.2-1.5-8.1-1.5-2.9 0-5.6.5-8.1 1.5z"/><path d="M9.8 39.9c0-1.8 1.4-2.9 3.2-3.2h19c1.8.3 3.2 1.4 3.2 3.2 0 .6-.5 1.1-1.2 1.1H11c-.7 0-1.2-.5-1.2-1.1z"/><path d="M13.4 23.6h18.2l-.5 2.5c-2.8-1-5.7-1.5-8.6-1.5s-5.8.5-8.6 1.5z"/><path d="M13.8 23.6c0-5.2 3.9-9.2 8.7-9.2s8.7 4 8.7 9.2l-.4.1c-2.7-.9-5.5-1.4-8.3-1.4s-5.6.5-8.3 1.4z"/><path d="M21.3 4.4h2.4v2.1h2.1v2.4h-2.1v5.7h-2.4V8.9h-2.1V6.5h2.1z"/></g><g fill="none" stroke="#141414" stroke-width="1.2" stroke-linecap="round"><path d="M16.9 20.2c1.1-2.5 3.1-3.9 5.6-3.9s4.5 1.4 5.6 3.9"/><path d="M18.7 21.7c1-1.7 2.3-2.6 3.8-2.6s2.8.9 3.8 2.6"/></g></symbol><symbol id="pc-wq" viewBox="0 0 45 45"><ellipse cx="22.5" cy="41.6" rx="10.8" ry="1.5" fill="rgba(0,0,0,.18)" stroke="none"/><g fill="#faf7ef" stroke="#141414" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"><path d="M13.2 36.8c0-1.9 4.1-3.1 9.3-3.1s9.3 1.2 9.3 3.1c0 .5-.4.9-1 .9-1.2-1.2-4.4-2-8.3-2s-7.1.8-8.3 2c-.6 0-1-.4-1-.9z"/><path d="M13.9 24.6c-.2 3.6.7 6.8 2.5 9.4l-.6 2.9h13.4l-.6-2.9c1.8-2.6 2.7-5.8 2.5-9.4-2.6-1.2-5.5-1.8-8.6-1.8-3.1 0-6 .6-8.6 1.8z"/><path d="M9.8 39.9c0-1.8 1.4-2.9 3.2-3.2h19c1.8.3 3.2 1.4 3.2 3.2 0 .6-.5 1.1-1.2 1.1H11c-.7 0-1.2-.5-1.2-1.1z"/><path d="M12.5 22.6h20l-.5 2.7c-3-1.1-6.2-1.7-9.5-1.7s-6.5.6-9.5 1.7z"/><path d="M12.7 22.6l-1.2-9.2 5.2 3.6 1.8-5.5 2.2 3.9 1.8-2.8 1.8 2.8 2.2-3.9 1.8 5.5 5.2-3.6-1.2 9.2z"/><circle cx="11.5" cy="12.2" r="1.5"/><circle cx="18.5" cy="10.3" r="1.5"/><circle cx="22.5" cy="11.3" r="1.65"/><circle cx="26.5" cy="10.3" r="1.5"/><circle cx="33.5" cy="12.2" r="1.5"/></g><g fill="none" stroke="#141414" stroke-width="1.2" stroke-linecap="round"><path d="M16.8 29.4c1.7 1 3.7 1.5 5.7 1.5s4-.5 5.7-1.5"/></g></symbol><symbol id="pc-wr" viewBox="0 0 45 45"><ellipse cx="22.5" cy="41.6" rx="10.8" ry="1.5" fill="rgba(0,0,0,.18)" stroke="none"/><g fill="#faf7ef" stroke="#141414" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"><path d="M14.9 36.9c.3-1.3.6-2.7.8-4.1l.9-7.6h11.8l.9 7.6c.2 1.4.5 2.8.8 4.1z"/><path d="M13.2 36.8c0-1.9 4.1-3.1 9.3-3.1s9.3 1.2 9.3 3.1c0 .5-.4.9-1 .9-1.2-1.2-4.4-2-8.3-2s-7.1.8-8.3 2c-.6 0-1-.4-1-.9z"/><path d="M9.8 39.9c0-1.8 1.4-2.9 3.2-3.2h19c1.8.3 3.2 1.4 3.2 3.2 0 .6-.5 1.1-1.2 1.1H11c-.7 0-1.2-.5-1.2-1.1z"/><path d="M15.3 25.4v-3c2.1-1.1 4.5-1.7 7.2-1.7s5.1.6 7.2 1.7v3c-2.1 1-4.5 1.6-7.2 1.6s-5.1-.6-7.2-1.6z"/><path d="M14.8 21.5v-8h3.9v3h2.2v-3h3.2v3h2.2v-3h3.9v8z"/></g><g fill="none" stroke="#141414" stroke-width="1.2" stroke-linecap="round"><path d="M16.6 29.8h11.8"/></g></symbol><symbol id="pc-wb" viewBox="0 0 45 45"><ellipse cx="22.5" cy="41.6" rx="10.8" ry="1.5" fill="rgba(0,0,0,.18)" stroke="none"/><g fill="#faf7ef" stroke="#141414" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"><path d="M22.5 10.1c2.9 2.6 5.3 5.9 5.3 9.8 0 2.8-1.3 4.9-2.9 6.4.8.3 1.5.9 2.1 1.7l2.2 3.5c.4.7 0 1.5-.8 1.5H16.5c-.8 0-1.2-.8-.8-1.5l2.2-3.5c.6-.8 1.3-1.4 2.1-1.7-1.6-1.5-2.9-3.6-2.9-6.4 0-3.9 2.4-7.2 5.3-9.8z"/><path d="M15.4 34.9c1.3-1.1 4.1-1.7 7.1-1.7s5.8.6 7.1 1.7l-.5 1.9H15.9z"/><path d="M9.8 39.9c0-1.8 1.4-2.9 3.2-3.2h19c1.8.3 3.2 1.4 3.2 3.2 0 .6-.5 1.1-1.2 1.1H11c-.7 0-1.2-.5-1.2-1.1z"/><circle cx="22.5" cy="8" r="1.9"/></g><g fill="none" stroke="#141414" stroke-width="1.2" stroke-linecap="round"><path d="M19.4 21.8l6.6-5.2"/><path d="M26 16.6l-2.3 3"/></g></symbol><symbol id="pc-wn" viewBox="0 0 45 45"><ellipse cx="22.5" cy="41.6" rx="10.8" ry="1.5" fill="rgba(0,0,0,.18)" stroke="none"/><g fill="#faf7ef" stroke="#141414" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"><path d="M18.6 10.8l1.9-3.3 3.1 2.7c4.2.8 7.6 3.9 9 8.2.7 2.2.6 4.6-.2 6.8l.8 9.3H16.6c.3-2.2 1-3.9 2.3-5.2-1.9-.5-3.7-1.3-5-2.2-1.1-.4-2-1-2.6-1.9l-.4-3.4c1.5-2.1 2.6-3.9 3.7-5.5.8-1.7 1.7-3.4 2.7-5.1z"/></g><g fill="none" stroke="#141414" stroke-width="1.2" stroke-linecap="round"><path d="M28.8 13.9c1.2 1.9 1.9 4 2 6.2"/><path d="M26.2 12.7c1.4 2.1 2.2 4.5 2.3 7"/><path d="M11.4 25.6c1.2.6 2.6 1 4 1.1"/></g><g fill="#141414" stroke="none"><circle cx="20.6" cy="15.9" r="1.05"/><circle cx="12.3" cy="22.9" r=".85"/></g></symbol><symbol id="pc-wp" viewBox="0 0 45 45"><ellipse cx="22.5" cy="41.6" rx="10.8" ry="1.5" fill="rgba(0,0,0,.18)" stroke="none"/><g fill="#faf7ef" stroke="#141414" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"><path d="M14.6 36.9c.4-2.9 1.8-5.2 4-6.8h7.8c2.2 1.6 3.6 3.9 4 6.8z"/><path d="M13.2 36.8c0-1.9 4.1-3.1 9.3-3.1s9.3 1.2 9.3 3.1c0 .5-.4.9-1 .9-1.2-1.2-4.4-2-8.3-2s-7.1.8-8.3 2c-.6 0-1-.4-1-.9z"/><path d="M9.8 39.9c0-1.8 1.4-2.9 3.2-3.2h19c1.8.3 3.2 1.4 3.2 3.2 0 .6-.5 1.1-1.2 1.1H11c-.7 0-1.2-.5-1.2-1.1z"/><path d="M16.8 29.7c0-1.7 2.6-2.8 5.7-2.8s5.7 1.1 5.7 2.8c0 1.6-2.6 2.7-5.7 2.7s-5.7-1.1-5.7-2.7z"/><circle cx="22.5" cy="21.2" r="5.5"/></g></symbol><symbol id="pc-bk" viewBox="0 0 45 45"><ellipse cx="22.5" cy="41.6" rx="10.8" ry="1.5" fill="rgba(0,0,0,.18)" stroke="none"/><g fill="#2b2b31" stroke="#050505" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"><path d="M13.2 36.8c0-1.9 4.1-3.1 9.3-3.1s9.3 1.2 9.3 3.1c0 .5-.4.9-1 .9-1.2-1.2-4.4-2-8.3-2s-7.1.8-8.3 2c-.6 0-1-.4-1-.9z"/><path d="M14.4 25.4c-.2 3.4.6 6.4 2.3 8.8l-.6 2.5h12.8l-.6-2.5c1.7-2.4 2.5-5.4 2.3-8.8-2.5-1-5.2-1.5-8.1-1.5-2.9 0-5.6.5-8.1 1.5z"/><path d="M9.8 39.9c0-1.8 1.4-2.9 3.2-3.2h19c1.8.3 3.2 1.4 3.2 3.2 0 .6-.5 1.1-1.2 1.1H11c-.7 0-1.2-.5-1.2-1.1z"/><path d="M13.4 23.6h18.2l-.5 2.5c-2.8-1-5.7-1.5-8.6-1.5s-5.8.5-8.6 1.5z"/><path d="M13.8 23.6c0-5.2 3.9-9.2 8.7-9.2s8.7 4 8.7 9.2l-.4.1c-2.7-.9-5.5-1.4-8.3-1.4s-5.6.5-8.3 1.4z"/><path d="M21.3 4.4h2.4v2.1h2.1v2.4h-2.1v5.7h-2.4V8.9h-2.1V6.5h2.1z"/></g><g fill="none" stroke="#d8dde5" stroke-width="1.2" stroke-linecap="round"><path d="M16.9 20.2c1.1-2.5 3.1-3.9 5.6-3.9s4.5 1.4 5.6 3.9"/><path d="M18.7 21.7c1-1.7 2.3-2.6 3.8-2.6s2.8.9 3.8 2.6"/></g></symbol><symbol id="pc-bq" viewBox="0 0 45 45"><ellipse cx="22.5" cy="41.6" rx="10.8" ry="1.5" fill="rgba(0,0,0,.18)" stroke="none"/><g fill="#2b2b31" stroke="#050505" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"><path d="M13.2 36.8c0-1.9 4.1-3.1 9.3-3.1s9.3 1.2 9.3 3.1c0 .5-.4.9-1 .9-1.2-1.2-4.4-2-8.3-2s-7.1.8-8.3 2c-.6 0-1-.4-1-.9z"/><path d="M13.9 24.6c-.2 3.6.7 6.8 2.5 9.4l-.6 2.9h13.4l-.6-2.9c1.8-2.6 2.7-5.8 2.5-9.4-2.6-1.2-5.5-1.8-8.6-1.8-3.1 0-6 .6-8.6 1.8z"/><path d="M9.8 39.9c0-1.8 1.4-2.9 3.2-3.2h19c1.8.3 3.2 1.4 3.2 3.2 0 .6-.5 1.1-1.2 1.1H11c-.7 0-1.2-.5-1.2-1.1z"/><path d="M12.5 22.6h20l-.5 2.7c-3-1.1-6.2-1.7-9.5-1.7s-6.5.6-9.5 1.7z"/><path d="M12.7 22.6l-1.2-9.2 5.2 3.6 1.8-5.5 2.2 3.9 1.8-2.8 1.8 2.8 2.2-3.9 1.8 5.5 5.2-3.6-1.2 9.2z"/><circle cx="11.5" cy="12.2" r="1.5"/><circle cx="18.5" cy="10.3" r="1.5"/><circle cx="22.5" cy="11.3" r="1.65"/><circle cx="26.5" cy="10.3" r="1.5"/><circle cx="33.5" cy="12.2" r="1.5"/></g><g fill="none" stroke="#d8dde5" stroke-width="1.2" stroke-linecap="round"><path d="M16.8 29.4c1.7 1 3.7 1.5 5.7 1.5s4-.5 5.7-1.5"/></g></symbol><symbol id="pc-br" viewBox="0 0 45 45"><ellipse cx="22.5" cy="41.6" rx="10.8" ry="1.5" fill="rgba(0,0,0,.18)" stroke="none"/><g fill="#2b2b31" stroke="#050505" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"><path d="M14.9 36.9c.3-1.3.6-2.7.8-4.1l.9-7.6h11.8l.9 7.6c.2 1.4.5 2.8.8 4.1z"/><path d="M13.2 36.8c0-1.9 4.1-3.1 9.3-3.1s9.3 1.2 9.3 3.1c0 .5-.4.9-1 .9-1.2-1.2-4.4-2-8.3-2s-7.1.8-8.3 2c-.6 0-1-.4-1-.9z"/><path d="M9.8 39.9c0-1.8 1.4-2.9 3.2-3.2h19c1.8.3 3.2 1.4 3.2 3.2 0 .6-.5 1.1-1.2 1.1H11c-.7 0-1.2-.5-1.2-1.1z"/><path d="M15.3 25.4v-3c2.1-1.1 4.5-1.7 7.2-1.7s5.1.6 7.2 1.7v3c-2.1 1-4.5 1.6-7.2 1.6s-5.1-.6-7.2-1.6z"/><path d="M14.8 21.5v-8h3.9v3h2.2v-3h3.2v3h2.2v-3h3.9v8z"/></g><g fill="none" stroke="#d8dde5" stroke-width="1.2" stroke-linecap="round"><path d="M16.6 29.8h11.8"/></g></symbol><symbol id="pc-bb" viewBox="0 0 45 45"><ellipse cx="22.5" cy="41.6" rx="10.8" ry="1.5" fill="rgba(0,0,0,.18)" stroke="none"/><g fill="#2b2b31" stroke="#050505" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"><path d="M22.5 10.1c2.9 2.6 5.3 5.9 5.3 9.8 0 2.8-1.3 4.9-2.9 6.4.8.3 1.5.9 2.1 1.7l2.2 3.5c.4.7 0 1.5-.8 1.5H16.5c-.8 0-1.2-.8-.8-1.5l2.2-3.5c.6-.8 1.3-1.4 2.1-1.7-1.6-1.5-2.9-3.6-2.9-6.4 0-3.9 2.4-7.2 5.3-9.8z"/><path d="M15.4 34.9c1.3-1.1 4.1-1.7 7.1-1.7s5.8.6 7.1 1.7l-.5 1.9H15.9z"/><path d="M9.8 39.9c0-1.8 1.4-2.9 3.2-3.2h19c1.8.3 3.2 1.4 3.2 3.2 0 .6-.5 1.1-1.2 1.1H11c-.7 0-1.2-.5-1.2-1.1z"/><circle cx="22.5" cy="8" r="1.9"/></g><g fill="none" stroke="#d8dde5" stroke-width="1.2" stroke-linecap="round"><path d="M19.4 21.8l6.6-5.2"/><path d="M26 16.6l-2.3 3"/></g></symbol><symbol id="pc-bn" viewBox="0 0 45 45"><ellipse cx="22.5" cy="41.6" rx="10.8" ry="1.5" fill="rgba(0,0,0,.18)" stroke="none"/><g fill="#2b2b31" stroke="#050505" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"><path d="M18.6 10.8l1.9-3.3 3.1 2.7c4.2.8 7.6 3.9 9 8.2.7 2.2.6 4.6-.2 6.8l.8 9.3H16.6c.3-2.2 1-3.9 2.3-5.2-1.9-.5-3.7-1.3-5-2.2-1.1-.4-2-1-2.6-1.9l-.4-3.4c1.5-2.1 2.6-3.9 3.7-5.5.8-1.7 1.7-3.4 2.7-5.1z"/></g><g fill="none" stroke="#d8dde5" stroke-width="1.2" stroke-linecap="round"><path d="M28.8 13.9c1.2 1.9 1.9 4 2 6.2"/><path d="M26.2 12.7c1.4 2.1 2.2 4.5 2.3 7"/><path d="M11.4 25.6c1.2.6 2.6 1 4 1.1"/></g><g fill="#d8dde5" stroke="none"><circle cx="20.6" cy="15.9" r="1.05"/><circle cx="12.3" cy="22.9" r=".85"/></g></symbol><symbol id="pc-bp" viewBox="0 0 45 45"><ellipse cx="22.5" cy="41.6" rx="10.8" ry="1.5" fill="rgba(0,0,0,.18)" stroke="none"/><g fill="#2b2b31" stroke="#050505" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"><path d="M14.6 36.9c.4-2.9 1.8-5.2 4-6.8h7.8c2.2 1.6 3.6 3.9 4 6.8z"/><path d="M13.2 36.8c0-1.9 4.1-3.1 9.3-3.1s9.3 1.2 9.3 3.1c0 .5-.4.9-1 .9-1.2-1.2-4.4-2-8.3-2s-7.1.8-8.3 2c-.6 0-1-.4-1-.9z"/><path d="M9.8 39.9c0-1.8 1.4-2.9 3.2-3.2h19c1.8.3 3.2 1.4 3.2 3.2 0 .6-.5 1.1-1.2 1.1H11c-.7 0-1.2-.5-1.2-1.1z"/><path d="M16.8 29.7c0-1.7 2.6-2.8 5.7-2.8s5.7 1.1 5.7 2.8c0 1.6-2.6 2.7-5.7 2.7s-5.7-1.1-5.7-2.7z"/><circle cx="22.5" cy="21.2" r="5.5"/></g></symbol></defs></svg>
+<div class="wrap">
+
+  <!-- ============ MÀN 1: TRANG CHỦ / CHỌN CHẾ ĐỘ ============ -->
+  <section class="screen on" id="scr-home">
+    <div class="topbar"><a class="pill" href="../">🏠 Bé Học Vui</a></div>
+
+    <div class="hero">
+      <span class="big"><svg viewBox="0 0 45 45" aria-hidden="true"><use href="#pc-wn"></use></svg></span>
+      <h1>Cờ Vua</h1>
+      <p>Trò chơi trí tuệ cho 2 người chơi — hoặc đấu với máy!</p>
+    </div>
+
+    <div class="card">
+      <h2>🎮 Chọn cách chơi</h2>
+      <div class="opts" id="optMode">
+        <div class="opt sel" data-v="normal">
+          <span class="t">♟️ Chơi thường</span>
+          <span class="d">Đi quân như cờ vua thật, không câu hỏi.</span>
+        </div>
+        <div class="opt" data-v="quiz">
+          <span class="t">❓ Trả lời để đi</span>
+          <span class="d">Muốn đi một nước phải trả lời đúng 1 câu hỏi. Sai là mất lượt!</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>👥 Đối thủ</h2>
+      <div class="opts" id="optOpp">
+        <div class="opt sel-blue" data-v="2p">
+          <span class="t">🧑‍🤝‍🧑 2 người cùng máy</span>
+          <span class="d">Hai bạn thay nhau đi trên cùng một máy.</span>
+        </div>
+        <div class="opts two">
+          <div class="opt" data-v="easy">
+            <span class="t">🤖 Chơi với máy — Dễ</span>
+            <span class="d">Máy đi nhẹ nhàng cho bé làm quen.</span>
+          </div>
+          <div class="opt" data-v="hard">
+            <span class="t">🤖 Chơi với máy — Khó</span>
+            <span class="d">Máy suy nghĩ kỹ, thử thách thật sự!</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>🎨 Chọn quân</h2>
+      <div class="opts two" id="optColor">
+        <div class="opt sel-green" data-v="w">
+          <span class="t">⬜ Em cầm Trắng</span>
+          <span class="d">Quân Trắng được đi trước.</span>
+        </div>
+        <div class="opt" data-v="b">
+          <span class="t">⬛ Em cầm Đen</span>
+          <span class="d">Quân Đen đi sau, phòng thủ chắc!</span>
+        </div>
+      </div>
+      <button class="btn" id="btnStart">▶ VÀO BÀN CỜ</button>
+    </div>
+
+    <div class="card">
+      <h2>📖 Luật chơi thu gọn</h2>
+      <p class="rules-short">
+        👑 <b>Vua</b> bị chiếu hết là thua — hãy bảo vệ Vua của mình nhé!<br>
+        ⚔️ <b>Ăn quân</b> bạn bằng cách đi đúng luật của từng quân.<br>
+        👸 <b>Phong Hậu:</b> Tốt đi tới hàng cuối cùng sẽ biến thành Hậu thật mạnh!<br>
+        🤝 Hòa nhau khi không bên nào chiếu hết được Vua.
+      </p>
+    </div>
+  </section>
+
+  <!-- ============ MÀN 2: BÀN CỜ ============ -->
+  <section class="screen" id="scr-game">
+    <div class="topbar">
+      <a class="pill" href="../">🏠 Bé Học Vui</a>
+      <a class="pill rules" href="#" id="btnRules">📖 Luật chơi</a>
+    </div>
+
+    <div id="barTop"></div>
+
+    <div class="board-frame"><div class="board" id="board"></div></div>
+
+    <div id="barBottom"></div>
+
+    <div class="actions">
+      <button class="act" id="btnUndo">↩️ Đi lại</button>
+      <button class="act" id="btnHint">💡 Gợi ý</button>
+      <button class="act" id="btnFlip">🔄 Lật bàn</button>
+      <button class="act" id="btnResign">🏳️ Xin thua</button>
+    </div>
+
+    <div class="card">
+      <h2>📜 Các nước đã đi</h2>
+      <div class="moves" id="moveList"></div>
+    </div>
+  </section>
+</div>
+
+<!-- ============ LỚP PHỦ LUẬT CHƠI ============ -->
+<div class="ovl" id="rulesOverlay">
+  <div class="ovl-card">
+    <h2>📖 Luật chơi Cờ Vua</h2>
+    <p class="sub">Mỗi quân đi một kiểu riêng. Chạm vào quân để xem các ô đi được nhé!</p>
+    <div id="rulesBody"></div>
+    <button class="xbtn" id="btnRulesClose">✔️ Đã hiểu, chơi tiếp</button>
+  </div>
+</div>
+
+<!-- ============ LỚP PHỦ CÂU HỎI ============ -->
+<div class="ovl" id="quizOverlay">
+  <div class="ovl-card">
+    <h2>❓ Trả lời để đi quân!</h2>
+    <p class="sub" id="quizMoveLabel"></p>
+    <div class="quiz-q" id="quizQ"></div>
+    <div class="answers" id="answers"></div>
+    <div class="quiz-fb" id="quizFb"></div>
+  </div>
+</div>
+
+<!-- ============ HỘP THOẠI PHONG CẤP ============ -->
+<div class="ovl" id="promoOverlay">
+  <div class="ovl-card">
+    <h2>🎉 Tốt tới cuối bàn!</h2>
+    <p class="sub">Chọn quân để Tốt biến thành:</p>
+    <div class="promo-grid" id="promoGrid"></div>
+  </div>
+</div>
+
+<!-- ============ XÁC NHẬN XIN THUA ============ -->
+<div class="ovl" id="confirmOverlay">
+  <div class="ovl-card">
+    <h2>🏳️ Xin thua ván này?</h2>
+    <p class="sub" id="confirmText"></p>
+    <div class="result-btns">
+      <button class="xbtn" id="btnResignYes">Đúng, xin thua</button>
+      <button class="xbtn gray" id="btnResignNo">Chơi tiếp</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MÀN KẾT QUẢ ============ -->
+<div class="ovl" id="resultOverlay">
+  <div class="ovl-card">
+    <h2 id="resultEmoji">🏆</h2>
+    <div id="resultBox">
+      <div class="result-big" id="resultTitle"></div>
+      <p class="sub" id="resultReason" style="margin-top:6px"></p>
+    </div>
+    <div class="result-btns">
+      <button class="xbtn" id="btnAgain">🔁 Ván mới</button>
+      <button class="xbtn gray" id="btnResultHome">🏠 Về màn đầu</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const BANKS = {
+toan: [
+ {q:'36 + 48 = ?', a:['72','84','86','94'], c:1},
+ {q:'95 − 37 = ?', a:['52','62','58','48'], c:2},
+ {q:'7 × 8 = ?', a:['54','48','64','56'], c:3},
+ {q:'63 : 9 = ?', a:['7','6','8','9'], c:0},
+ {q:'1 giờ bằng bao nhiêu phút?', a:['100 phút','90 phút','60 phút','30 phút'], c:2},
+ {q:'Số liền sau của 299 là số nào?', a:['298','300','301','290'], c:1},
+ {q:'120 + 230 = ?', a:['340','360','330','350'], c:3},
+ {q:'Hình chữ nhật có mấy góc vuông?', a:['2 góc','3 góc','4 góc','6 góc'], c:2},
+ {q:'1 000 − 250 = ?', a:['750','650','850','700'], c:0},
+ {q:'Nửa của 18 là bao nhiêu?', a:['8','10','9','6'], c:2},
+ {q:'45 : 5 = ?', a:['8','9','7','6'], c:1},
+ {q:'2 kg bằng bao nhiêu gam?', a:['200 g','20 000 g','2 000 g','200 000 g'], c:2},
+ {q:'Chu vi hình vuông có cạnh 5 cm là bao nhiêu?', a:['25 cm','15 cm','10 cm','20 cm'], c:3},
+ {q:'14 + 28 = ?', a:['42','32','52','41'], c:0},
+ {q:'9 × 6 = ?', a:['48','56','54','45'], c:2},
+ {q:'Một tá bút chì có bao nhiêu chiếc? (1 tá = 12)', a:['10 chiếc','12 chiếc','20 chiếc','24 chiếc'], c:1}
+],
+tiengviet: [
+ {q:'Từ trái nghĩa với “cao” là từ nào?', a:['dài','rộng','thấp','sâu'], c:2},
+ {q:'“Lá lành đùm lá rách” là câu gì?', a:['Ca dao','Thành ngữ','Tục ngữ','Câu đố'], c:2},
+ {q:'Từ “chạy” trong câu “Bé chạy nhanh” là loại từ nào?', a:['Danh từ','Động từ','Tính từ','Đại từ'], c:1},
+ {q:'Danh từ trong câu “Con mèo đang ngủ” là từ nào?', a:['đang','ngủ','đang ngủ','Con mèo'], c:3},
+ {q:'Cuối câu hỏi thường dùng dấu câu nào?', a:['Dấu chấm','Dấu chấm hỏi','Dấu chấm than','Dấu phẩy'], c:1},
+ {q:'Từ trái nghĩa với “nóng” là từ nào?', a:['ấm','mát','lạnh','rát'], c:2},
+ {q:'Từ nào viết đúng chính tả?', a:['sạch xẽ','xạch sẽ','sạch sẻ','sạch sẽ'], c:3},
+ {q:'Trong câu “Bạn Hoa học giỏi”, bộ phận trả lời cho câu hỏi “Ai?” là phần nào?', a:['Bạn Hoa','học giỏi','học','giỏi'], c:0},
+ {q:'Từ đồng nghĩa với “to” là từ nào?', a:['bé','lớn','nhỏ','xinh'], c:1},
+ {q:'Câu “Ăn quả nhớ kẻ trồng cây” khuyên chúng ta điều gì?', a:['Thích ăn quả','Trồng nhiều cây','Lòng biết ơn','Chăm tưới cây'], c:2},
+ {q:'Từ “xanh biếc” là tính từ chỉ điều gì?', a:['Màu sắc','Kích thước','Hình dáng','Số lượng'], c:0},
+ {q:'Câu kể thường kết thúc bằng dấu câu nào?', a:['Dấu chấm hỏi','Dấu chấm','Dấu hai chấm','Dấu chấm than'], c:1},
+ {q:'Từ “nhưng” trong câu “Trời mưa nhưng bé vẫn đi học” là loại từ nào?', a:['Danh từ','Tính từ','Động từ','Từ nối'], c:3},
+ {q:'“Chị em như thể tay chân” là câu gì?', a:['Tục ngữ','Câu đố','Đồng dao','Truyện cười'], c:0},
+ {q:'Từ nào là động từ?', a:['quyển vở','đẹp','bơi','nhanh nhẹn'], c:2},
+ {q:'Mặt Trời mọc ở hướng nào?', a:['Hướng Tây','Hướng Bắc','Hướng Đông','Hướng Nam'], c:2}
+],
+tienganh: [
+ {q:'“Hello” trong tiếng Việt nghĩa là gì?', a:['Tạm biệt','Xin chào','Cảm ơn','Xin lỗi'], c:1},
+ {q:'“Cat” là con gì?', a:['Con chó','Con chim','Con cá','Con mèo'], c:3},
+ {q:'Số 7 trong tiếng Anh là từ nào?', a:['Six','Seven','Eight','Five'], c:1},
+ {q:'Màu đỏ trong tiếng Anh là từ nào?', a:['Blue','Green','Red','Yellow'], c:2},
+ {q:'Điền từ đúng: “I ___ a student.”', a:['is','are','am','be'], c:2},
+ {q:'Từ trái nghĩa với “big” là từ nào?', a:['Small','Tall','Long','Fat'], c:0},
+ {q:'“Thank you” nghĩa là gì?', a:['Xin lỗi','Tạm biệt','Không sao','Cảm ơn'], c:3},
+ {q:'“Dog” là con gì?', a:['Con mèo','Con chó','Con thỏ','Con gà'], c:1},
+ {q:'“Apple” là quả gì?', a:['Quả cam','Quả chuối','Quả táo','Quả nho'], c:2},
+ {q:'Điền từ đúng: “He ___ happy.”', a:['am','are','is','be'], c:2},
+ {q:'Màu xanh lá cây trong tiếng Anh là từ nào?', a:['Green','Pink','Black','White'], c:0},
+ {q:'“Book” là gì?', a:['Cây bút','Quyển sách','Cái bàn','Cái ghế'], c:1},
+ {q:'Số nhiều của “toy” là từ nào?', a:['Toyes','Toys','Toies','Toyss'], c:1},
+ {q:'“Good morning” nghĩa là gì?', a:['Chào buổi tối','Chúc ngủ ngon','Chào buổi sáng','Tạm biệt'], c:2},
+ {q:'“Bird” là con gì?', a:['Con chim','Con cá','Con bướm','Con ong'], c:0},
+ {q:'Số “ten” là số mấy?', a:['Số 8','Số 9','Số 10','Số 12'], c:2}
+]};
+BANKS.tonghop = BANKS.toan.concat(BANKS.tiengviet, BANKS.tienganh);
+
+/* ============ AM THANH WebAudio (chuan Be Hoc Vui) ============ */
+let AC = null;
+function ac(){ if(!AC){ try{ AC = new (window.AudioContext||window.webkitAudioContext)(); }catch(e){} } if(AC && AC.state==='suspended') AC.resume(); return AC; }
+function tone(f0, f1, dur, delay, type, vol){
+  const ctx = ac(); if(!ctx) return;
+  const t = ctx.currentTime + (delay||0);
+  const o = ctx.createOscillator(), g = ctx.createGain();
+  o.type = type||'sine'; o.frequency.setValueAtTime(f0, t);
+  o.frequency.exponentialRampToValueAtTime(Math.max(f1,1), t + dur);
+  g.gain.setValueAtTime(0.0001, t);
+  g.gain.exponentialRampToValueAtTime(vol||0.22, t + 0.015);
+  g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+  o.connect(g); g.connect(ctx.destination); o.start(t); o.stop(t + dur + 0.05);
+}
+function sfx(name){
+  if(name==='click') tone(620, 520, 0.06, 0, 'triangle', 0.15);
+  if(name==='tick') tone(1250, 1100, 0.03, 0, 'square', 0.05);
+  if(name==='correct'){ tone(680, 880, 0.12, 0); tone(960, 1150, 0.14, 0.12); }
+  if(name==='wrong'){ tone(180, 110, 0.35, 0, 'sine', 0.26); }
+  if(name==='win'){ [523,659,784,1046].forEach((f,i)=>tone(f, f, 0.22, i*0.15)); }
+  if(name==='lose'){ [280,200,150].forEach((f,i)=>tone(f, f*0.94, 0.26, i*0.25)); }
+  if(name==='fanfare'){ [523,659,784].forEach((f,i)=>tone(f, f, 0.18, i*0.12)); }
+}
+function vibrate(p){ if(navigator.vibrate) try{ navigator.vibrate(p); }catch(e){} }
+
+/* ============ PHAO HOA (chuan) ============ */
+const fx = document.getElementById('fx'), fxCtx = fx.getContext('2d');
+let fxParts = [], fxRunning = false;
+const FX_COLORS = ['#fda4af','#fcd34d','#86efac','#93c5fd','#c4b5fd','#f9a8d4'];
+function fxResize(){ fx.width = innerWidth; fx.height = innerHeight; }
+addEventListener('resize', fxResize); fxResize();
+function burst(x, y){
+  for(let i=0;i<38;i++){
+    const a = Math.random()*Math.PI*2, sp = 1.6 + Math.random()*4.6;
+    fxParts.push({x:x, y:y, vx:Math.cos(a)*sp, vy:Math.sin(a)*sp - 1.2, life:1, decay:0.008 + Math.random()*0.012,
+      color:FX_COLORS[(Math.random()*FX_COLORS.length)|0], r:2 + Math.random()*2.4});
+  }
+}
+function fxLoop(){
+  fxCtx.clearRect(0, 0, fx.width, fx.height);
+  fxParts = fxParts.filter(p => p.life > 0);
+  for(const p of fxParts){
+    p.x += p.vx; p.y += p.vy; p.vy += 0.1; p.life -= p.decay;
+    fxCtx.globalAlpha = Math.max(p.life, 0);
+    fxCtx.fillStyle = p.color;
+    fxCtx.beginPath(); fxCtx.arc(p.x, p.y, p.r, 0, Math.PI*2); fxCtx.fill();
+  }
+  fxCtx.globalAlpha = 1;
+  if(fxParts.length){ requestAnimationFrame(fxLoop); }
+  else { fxRunning = false; fx.style.display = 'none'; }
+}
+function fireworks(nBursts){
+  fx.style.display = 'block';
+  let n = 0;
+  const iv = setInterval(() => {
+    burst(innerWidth*(0.15 + Math.random()*0.7), innerHeight*(0.12 + Math.random()*0.3));
+    if(!fxRunning){ fxRunning = true; requestAnimationFrame(fxLoop); }
+    if(++n >= (nBursts||10)) clearInterval(iv);
+  }, 320);
+}
+
+</script>
+<script>
+/* ================================================================
+   ENGINE CỜ VUA — board[64], idx 0 = a1 ... 63 = h8
+   Quân: chữ hoa = Trắng (K Q R B N P), chữ thường = Đen
+================================================================ */
+const FILES = 'abcdefgh';
+const START_FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
+const VAL = { p:100, n:320, b:320, r:500, q:900, k:0 };
+function sqName(i){ return FILES[i & 7] + ((i >> 3) + 1); }
+function sqIdx(n){ return (n.charCodeAt(0) - 97) + (n.charCodeAt(1) - 49) * 8; }
+function colorOf(p){ return p === p.toUpperCase() ? 'w' : 'b'; }
+function opp(c){ return c === 'w' ? 'b' : 'w'; }
+
+function parseFEN(fen){
+  const parts = fen.trim().split(/\s+/);
+  const rows = parts[0].split('/');
+  const board = new Array(64).fill(null);
+  for(let r = 0; r < 8; r++){
+    let f = 0;
+    for(const ch of rows[r]){
+      if(/\d/.test(ch)) f += +ch;
+      else { board[(7 - r) * 8 + f] = ch; f++; }
+    }
+  }
+  const cast = parts[2] || '-';
+  return {
+    board, turn: parts[1] || 'w',
+    castling: { K: cast.includes('K'), Q: cast.includes('Q'), k: cast.includes('k'), q: cast.includes('q') },
+    ep: parts[3] && parts[3] !== '-' ? sqIdx(parts[3]) : -1,
+    half: parseInt(parts[4] || '0', 10), full: parseInt(parts[5] || '1', 10)
+  };
+}
+function toFEN(st){
+  let out = '';
+  for(let r = 7; r >= 0; r--){
+    let empty = 0;
+    for(let f = 0; f < 8; f++){
+      const p = st.board[r * 8 + f];
+      if(!p){ empty++; continue; }
+      if(empty){ out += empty; empty = 0; }
+      out += p;
+    }
+    if(empty) out += empty;
+    if(r) out += '/';
+  }
+  let c = '';
+  if(st.castling.K) c += 'K'; if(st.castling.Q) c += 'Q';
+  if(st.castling.k) c += 'k'; if(st.castling.q) c += 'q';
+  return out + ' ' + st.turn + ' ' + (c || '-') + ' ' + (st.ep >= 0 ? sqName(st.ep) : '-') + ' ' + st.half + ' ' + st.full;
+}
+function posKey(st){
+  return toFEN(st).split(' ').slice(0, 4).join(' ');
+}
+function kingSq(board, color){
+  const k = color === 'w' ? 'K' : 'k';
+  for(let i = 0; i < 64; i++) if(board[i] === k) return i;
+  return -1;
+}
+function isAttacked(board, sq, by){
+  const f = sq & 7, r = sq >> 3;
+  // Tốt tấn công
+  const pr = by === 'w' ? r - 1 : r + 1;
+  if(pr >= 0 && pr < 8){
+    for(const df of [-1, 1]){
+      const pf = f + df;
+      if(pf >= 0 && pf < 8 && board[pr * 8 + pf] === (by === 'w' ? 'P' : 'p')) return true;
+    }
+  }
+  // Mã
+  for(const [df, dr] of [[1,2],[2,1],[-1,2],[-2,1],[1,-2],[2,-1],[-1,-2],[-2,-1]]){
+    const nf = f + df, nr = r + dr;
+    if(nf >= 0 && nf < 8 && nr >= 0 && nr < 8 && board[nr * 8 + nf] === (by === 'w' ? 'N' : 'n')) return true;
+  }
+  // Vua
+  for(let df = -1; df <= 1; df++) for(let dr = -1; dr <= 1; dr++){
+    if(!df && !dr) continue;
+    const nf = f + df, nr = r + dr;
+    if(nf >= 0 && nf < 8 && nr >= 0 && nr < 8 && board[nr * 8 + nf] === (by === 'w' ? 'K' : 'k')) return true;
+  }
+  // Quân trượt
+  const rays = [
+    { d: [[1,0],[-1,0],[0,1],[0,-1]], t: by === 'w' ? 'RQ' : 'rq' },
+    { d: [[1,1],[1,-1],[-1,1],[-1,-1]], t: by === 'w' ? 'BQ' : 'bq' }
+  ];
+  for(const ray of rays){
+    for(const [df, dr] of ray.d){
+      let nf = f + df, nr = r + dr;
+      while(nf >= 0 && nf < 8 && nr >= 0 && nr < 8){
+        const p = board[nr * 8 + nf];
+        if(p){ if(ray.t.includes(p)) return true; break; }
+        nf += df; nr += dr;
+      }
+    }
+  }
+  return false;
+}
+function inCheck(st, color){ return isAttacked(st.board, kingSq(st.board, color), opp(color)); }
+
+function pseudoMoves(st, color){
+  const B = st.board, moves = [];
+  const dir = color === 'w' ? 1 : -1;
+  const startRank = color === 'w' ? 1 : 6;
+  const promoRank = color === 'w' ? 7 : 0;
+  for(let i = 0; i < 64; i++){
+    const p = B[i];
+    if(!p || colorOf(p) !== color) continue;
+    const t = p.toLowerCase(), f = i & 7, r = i >> 3;
+    const push = (to, opt) => moves.push(Object.assign({ from: i, to, piece: p, captured: B[to] || null }, opt || {}));
+    if(t === 'p'){
+      const one = i + dir * 8;
+      if(one >= 0 && one < 64 && !B[one]){
+        if((one >> 3) === promoRank){ for(const pr of ['q','r','b','n']) push(one, { promo: color === 'w' ? pr.toUpperCase() : pr }); }
+        else push(one);
+        const two = i + dir * 16;
+        if(r === startRank && !B[two]) push(two, { dbl: true });
+      }
+      for(const df of [-1, 1]){
+        const nf = f + df, nr = r + dir;
+        if(nf < 0 || nf > 7 || nr < 0 || nr > 7) continue;
+        const to = nr * 8 + nf;
+        if(B[to] && colorOf(B[to]) !== color){
+          if(nr === promoRank){ for(const pr of ['q','r','b','n']) push(to, { promo: color === 'w' ? pr.toUpperCase() : pr }); }
+          else push(to);
+        } else if(to === st.ep){
+          push(to, { epCapture: true, captured: color === 'w' ? 'p' : 'P' });
+        }
+      }
+    } else if(t === 'n' || t === 'k'){
+      const ds = t === 'n' ? [[1,2],[2,1],[-1,2],[-2,1],[1,-2],[2,-1],[-1,-2],[-2,-1]]
+                           : [[1,0],[-1,0],[0,1],[0,-1],[1,1],[1,-1],[-1,1],[-1,-1]];
+      for(const [df, dr] of ds){
+        const nf = f + df, nr = r + dr;
+        if(nf < 0 || nf > 7 || nr < 0 || nr > 7) continue;
+        const to = nr * 8 + nf;
+        if(!B[to] || colorOf(B[to]) !== color) push(to);
+      }
+      if(t === 'k'){
+        // Nhập thành
+        const home = color === 'w' ? 0 : 56;
+        const enemy = opp(color);
+        const rights = color === 'w' ? ['K','Q'] : ['k','q'];
+        if(B[home + 4] === p && !isAttacked(B, home + 4, enemy)){
+          if(st.castling[rights[0]] && B[home + 7] === (color === 'w' ? 'R' : 'r') &&
+             !B[home + 5] && !B[home + 6] &&
+             !isAttacked(B, home + 5, enemy) && !isAttacked(B, home + 6, enemy))
+            moves.push({ from: i, to: home + 6, piece: p, captured: null, castle: rights[0] });
+          if(st.castling[rights[1]] && B[home] === (color === 'w' ? 'R' : 'r') &&
+             !B[home + 1] && !B[home + 2] && !B[home + 3] &&
+             !isAttacked(B, home + 3, enemy) && !isAttacked(B, home + 2, enemy))
+            moves.push({ from: i, to: home + 2, piece: p, captured: null, castle: rights[1] });
+        }
+      }
+    } else {
+      const ds = [];
+      if(t === 'b' || t === 'q') ds.push([1,1],[1,-1],[-1,1],[-1,-1]);
+      if(t === 'r' || t === 'q') ds.push([1,0],[-1,0],[0,1],[0,-1]);
+      for(const [df, dr] of ds){
+        let nf = f + df, nr = r + dr;
+        while(nf >= 0 && nf < 8 && nr >= 0 && nr < 8){
+          const to = nr * 8 + nf;
+          if(!B[to]) push(to);
+          else { if(colorOf(B[to]) !== color) push(to); break; }
+          nf += df; nr += dr;
+        }
+      }
+    }
+  }
+  return moves;
+}
+function applyMoveSt(st, m){
+  const board = st.board.slice();
+  const castling = Object.assign({}, st.castling);
+  const color = st.turn;
+  board[m.from] = null;
+  if(m.epCapture) board[m.to + (color === 'w' ? -8 : 8)] = null;
+  board[m.to] = m.promo ? m.promo : m.piece;
+  if(m.castle){
+    const home = color === 'w' ? 0 : 56;
+    if(m.castle === 'K' || m.castle === 'k'){ board[home + 5] = board[home + 7]; board[home + 7] = null; }
+    else { board[home + 3] = board[home]; board[home] = null; }
+  }
+  if(m.piece === 'K'){ castling.K = castling.Q = false; }
+  if(m.piece === 'k'){ castling.k = castling.q = false; }
+  if(m.from === 0 || m.to === 0) castling.Q = false;
+  if(m.from === 7 || m.to === 7) castling.K = false;
+  if(m.from === 56 || m.to === 56) castling.q = false;
+  if(m.from === 63 || m.to === 63) castling.k = false;
+  return {
+    board, turn: opp(color), castling,
+    ep: m.dbl ? (m.from + m.to) / 2 : -1,
+    half: (m.piece.toLowerCase() === 'p' || m.captured) ? 0 : st.half + 1,
+    full: st.full + (color === 'b' ? 1 : 0)
+  };
+}
+function legalMovesSt(st, color){
+  color = color || st.turn;
+  const savedTurn = st.turn;
+  const probe = Object.assign({}, st, { turn: color });
+  return pseudoMoves(probe, color).filter(m => {
+    const ns = applyMoveSt(probe, m);
+    return !isAttacked(ns.board, kingSq(ns.board, color), opp(color));
+  }).map(m => m);
+}
+function moveSAN(st, m, legal){
+  if(m.castle) return (m.castle === 'K' || m.castle === 'k') ? 'O-O' : 'O-O-O';
+  const t = m.piece.toLowerCase();
+  let s = '';
+  if(t === 'p'){
+    if(m.captured) s = FILES[m.from & 7] + 'x';
+    s += sqName(m.to);
+    if(m.promo) s += '=' + m.promo.toUpperCase();
+  } else {
+    s = t.toUpperCase().replace('N', 'N');
+    if(t !== 'k'){
+      const others = legal.filter(x => x.piece === m.piece && x.to === m.to && x.from !== m.from);
+      if(others.length){
+        const sameFile = others.some(x => (x.from & 7) === (m.from & 7));
+        const sameRank = others.some(x => (x.from >> 3) === (m.from >> 3));
+        if(!sameFile) s += FILES[m.from & 7];
+        else if(!sameRank) s += ((m.from >> 3) + 1);
+        else s += sqName(m.from);
+      }
+    }
+    if(m.captured) s += 'x';
+    s += sqName(m.to);
+  }
+  return s;
+}
+function insufficientMaterial(board){
+  const rest = [];
+  for(let i = 0; i < 64; i++){
+    const p = board[i];
+    if(p && p.toLowerCase() !== 'k') rest.push(p.toLowerCase());
+  }
+  if(!rest.length) return true;
+  if(rest.length === 1 && (rest[0] === 'b' || rest[0] === 'n')) return true;
+  return false;
+}
+/* ===== Đánh giá + tìm nước cho máy ===== */
+const PST = {
+  p: [0,0,0,0,0,0,0,0, 50,50,50,50,50,50,50,50, 10,10,20,30,30,20,10,10, 5,5,10,25,25,10,5,5, 0,0,0,20,20,0,0,0, 5,-5,-10,0,0,-10,-5,5, 5,10,10,-20,-20,10,10,5, 0,0,0,0,0,0,0,0],
+  n: [-50,-40,-30,-30,-30,-30,-40,-50, -40,-20,0,0,0,0,-20,-40, -30,0,10,15,15,10,0,-30, -30,5,15,20,20,15,5,-30, -30,0,15,20,20,15,0,-30, -30,5,10,15,15,10,5,-30, -40,-20,0,5,5,0,-20,-40, -50,-40,-30,-30,-30,-30,-40,-50],
+  b: [-20,-10,-10,-10,-10,-10,-10,-20, -10,0,0,0,0,0,0,-10, -10,0,5,10,10,5,0,-10, -10,5,5,10,10,5,5,-10, -10,0,10,10,10,10,0,-10, -10,10,10,10,10,10,10,-10, -10,5,0,0,0,0,5,-10, -20,-10,-10,-10,-10,-10,-10,-20],
+  r: [0,0,0,0,0,0,0,0, 5,10,10,10,10,10,10,5, -5,0,0,0,0,0,0,-5, -5,0,0,0,0,0,0,-5, -5,0,0,0,0,0,0,-5, -5,0,0,0,0,0,0,-5, -5,0,0,0,0,0,0,-5, 0,0,0,5,5,0,0,0],
+  q: [-20,-10,-10,-5,-5,-10,-10,-20, -10,0,0,0,0,0,0,-10, -10,0,5,5,5,5,0,-10, -5,0,5,5,5,5,0,-5, 0,0,5,5,5,5,0,-5, -10,5,5,5,5,5,0,-10, -10,0,5,0,0,0,0,-10, -20,-10,-10,-5,-5,-10,-10,-20],
+  k: [-30,-40,-40,-50,-50,-40,-40,-30, -30,-40,-40,-50,-50,-40,-40,-30, -30,-40,-40,-50,-50,-40,-40,-30, -30,-40,-40,-50,-50,-40,-40,-30, -20,-30,-30,-40,-40,-30,-30,-20, -10,-20,-20,-20,-20,-20,-20,-10, 20,20,0,0,0,0,20,20, 20,30,10,0,0,10,30,20]
+};
+function evaluate(st){
+  let score = 0;
+  for(let i = 0; i < 64; i++){
+    const p = st.board[i];
+    if(!p) continue;
+    const t = p.toLowerCase(), r = i >> 3, f = i & 7;
+    const pstIdx = (colorOf(p) === 'w' ? (7 - r) * 8 + f : r * 8 + f);
+    const v = VAL[t] + (PST[t] ? PST[t][pstIdx] : 0);
+    score += colorOf(p) === 'w' ? v : -v;
+  }
+  return score; // theo góc Trắng
+}
+function orderMoves(moves){
+  for(const m of moves) m._s = (m.captured ? 10 * VAL[m.captured.toLowerCase()] - VAL[m.piece.toLowerCase()] / 10 : 0) + (m.promo ? 900 : 0);
+  moves.sort((a, b) => b._s - a._s);
+}
+function alphaBeta(st, depth, alpha, beta){
+  const moves = legalMovesSt(st);
+  if(!moves.length){
+    if(inCheck(st, st.turn)) return st.turn === 'w' ? -100000 - depth : 100000 + depth;
+    return 0;
+  }
+  if(depth === 0 || st.half >= 100 || insufficientMaterial(st.board)) return evaluate(st);
+  orderMoves(moves);
+  if(st.turn === 'w'){
+    let best = -Infinity;
+    for(const m of moves){
+      best = Math.max(best, alphaBeta(applyMoveSt(st, m), depth - 1, alpha, beta));
+      alpha = Math.max(alpha, best);
+      if(alpha >= beta) break;
+    }
+    return best;
+  }
+  let best = Infinity;
+  for(const m of moves){
+    best = Math.min(best, alphaBeta(applyMoveSt(st, m), depth - 1, alpha, beta));
+    beta = Math.min(beta, best);
+    if(alpha >= beta) break;
+  }
+  return best;
+}
+function bestMove(st, depth){
+  const moves = legalMovesSt(st);
+  if(!moves.length) return null;
+  orderMoves(moves);
+  let best = null, bestScore = st.turn === 'w' ? -Infinity : Infinity;
+  let alpha = -Infinity, beta = Infinity;
+  for(const m of moves){
+    const sc = alphaBeta(applyMoveSt(st, m), depth - 1, alpha, beta);
+    if(st.turn === 'w'){ if(sc > bestScore){ bestScore = sc; best = m; } alpha = Math.max(alpha, sc); }
+    else { if(sc < bestScore){ bestScore = sc; best = m; } beta = Math.min(beta, sc); }
+  }
+  return best;
+}
+function easyMove(st){
+  const moves = legalMovesSt(st);
+  if(!moves.length) return null;
+  if(Math.random() < 0.22) return moves[(Math.random() * moves.length) | 0];
+  const sign = st.turn === 'w' ? 1 : -1;
+  const scored = moves.map(m => {
+    const ns = applyMoveSt(st, m);
+    let sc = sign * evaluate(ns) + Math.random() * 30;
+    if(m.captured) sc += VAL[m.captured.toLowerCase()] * 0.5;
+    return { m, sc };
+  }).sort((a, b) => b.sc - a.sc);
+  const top = scored.slice(0, Math.min(3, scored.length));
+  return top[(Math.random() * top.length) | 0].m;
+}
+</script>
+<script>
+/* ================================================================
+   GIAO DIỆN + LUỒNG CHƠI
+================================================================ */
+const $ = id => document.getElementById(id);
+const settings = { mode: 'normal', opp: '2p', color: 'w' };
+let S = null;              // state engine hiện tại
+let flipped = false;
+let sel = -1, selMoves = [];
+let lastMove = null;
+let capByW = [], capByB = [];   // quân Trắng ăn được / quân Đen ăn được (kiểu quân của nạn nhân)
+let snapshots = [], sansList = [], repMap = {};
+let clockW = 600, clockB = 600, clockTimer = null, lastTick = 0;
+let cpuTimer = null, pendingQuiz = null, busy = false;
+let gameActive = false;
+
+const isCPU = () => settings.opp !== '2p';
+const cpuColor = () => settings.color === 'w' ? 'b' : 'w';
+const isHumanTurn = () => !isCPU() || S.turn !== cpuColor();
+
+function pieceHTML(p){
+  const id = 'pc-' + (colorOf(p) === 'w' ? 'w' : 'b') + p.toLowerCase();
+  return '<svg' + (colorOf(p) === 'b' ? ' class="flipx"' : '') + ' viewBox="0 0 45 45" aria-hidden="true"><use href="#' + id + '"></use></svg>';
+}
+function barData(color){
+  if(isCPU()){
+    return color === settings.color
+      ? { name: '🧒 Em · ' + (color === 'w' ? 'TRẮNG' : 'ĐEN'), av: color }
+      : { name: '🤖 Máy · ' + (color === 'w' ? 'TRẮNG' : 'ĐEN'), av: color };
+  }
+  return color === 'w' ? { name: 'Người 1 · TRẮNG', av: 'w' } : { name: 'Người 2 · ĐEN', av: 'b' };
+}
+function fmtClock(sec){
+  sec = Math.max(0, Math.ceil(sec));
+  return String((sec / 60) | 0).padStart(2, '0') + ':' + String(sec % 60).padStart(2, '0');
+}
+function renderBar(el, color){
+  const d = barData(color);
+  const caps = color === 'w' ? capByW : capByB;
+  const victimColor = opp(color);
+  let tray = '';
+  for(const t of caps) tray += '<svg class="pc-ic" viewBox="0 0 45 45" aria-hidden="true"><use href="#pc-' + victimColor + t + '"></use></svg> ';
+  const clk = color === 'w' ? clockW : clockB;
+  el.className = 'player' + (settings.opp === '2p' && el === $('barTop') ? ' top180' : '')
+    + (gameActive && !S.over && S.turn === color ? ' turn-on' : '')
+    + (gameActive && !S.over && S.turn === color && inCheck(S, color) ? ' incheck' : '');
+  el.innerHTML =
+    '<div class="avatar ' + (d.av === 'w' ? 'white' : 'black') + '"><svg' + (d.av === 'b' ? ' class="flipx"' : '') + ' viewBox="0 0 45 45" aria-hidden="true"><use href="#pc-' + d.av + 'p"></use></svg></div>' +
+    '<div><div class="pname">' + d.name + ' <span class="checktag">⚠️ CHIẾU!</span></div>' +
+    '<div class="tray">Đã ăn: ' + (tray || '<span style="font-size:13px">chưa ăn quân nào</span>') + '</div></div>' +
+    '<div class="clock">⏱ ' + fmtClock(clk) + '</div>';
+}
+function renderBars(){
+  const topColor = flipped ? 'w' : 'b';
+  renderBar($('barTop'), topColor);
+  renderBar($('barBottom'), opp(topColor));
+}
+function renderBoard(){
+  const boardEl = $('board');
+  boardEl.innerHTML = '';
+  const checkedKing = (gameActive && !S.over && inCheck(S, S.turn)) ? kingSq(S.board, S.turn) : -1;
+  for(let dr = 0; dr < 8; dr++){
+    for(let df = 0; df < 8; df++){
+      const rank = flipped ? dr : 7 - dr;
+      const file = flipped ? 7 - df : df;
+      const i = rank * 8 + file;
+      const d = document.createElement('div');
+      d.className = 'sq ' + (((rank + file) % 2 === 1) ? 'light' : 'dark');
+      d.dataset.sq = sqName(i);
+      if(lastMove && (i === lastMove.from || i === lastMove.to)) d.classList.add('lastmove');
+      if(i === sel) d.classList.add('selected');
+      if(window.__hintSq && (i === window.__hintSq.from || i === window.__hintSq.to)) d.classList.add('hint');
+      if(i === checkedKing) d.classList.add('kingcheck');
+      if(df === 0) d.innerHTML += '<span class="coord rank">' + (rank + 1) + '</span>';
+      if(dr === 7) d.innerHTML += '<span class="coord file">' + FILES[file] + '</span>';
+      if(dr === 0) d.innerHTML += '<span class="coord file-top">' + FILES[7 - file] + '</span>';
+      if(df === 7) d.innerHTML += '<span class="coord rank-r">' + (9 - (rank + 1)) + '</span>';
+      const tm = selMoves.find(m => m.to === i);
+      if(tm) d.innerHTML += tm.captured || tm.epCapture ? '<span class="capring"></span>' : '<span class="dot"></span>';
+      const p = S.board[i];
+      if(p){
+        const span = document.createElement('span');
+        span.className = 'piece';
+        span.innerHTML = pieceHTML(p);
+        d.appendChild(span);
+      }
+      d.addEventListener('click', () => onSquare(i));
+      boardEl.appendChild(d);
+    }
+  }
+  renderBars();
+  renderMoveList();
+}
+function renderMoveList(){
+  const el = $('moveList');
+  if(!sansList.length){ el.innerHTML = '<div style="color:#a8a29e">Chưa có nước đi nào — Trắng đi trước nhé!</div>'; return; }
+  let html = '';
+  for(let i = 0; i < sansList.length; i += 2){
+    const n = i / 2 + 1;
+    const w = sansList[i], b = sansList[i + 1];
+    const wCur = i === sansList.length - 1, bCur = i + 1 === sansList.length - 1;
+    html += '<div><span class="n">' + n + '.</span> ' + (wCur ? '<span class="cur">' + w + '</span>' : w) +
+            (b ? ' &nbsp;' + (bCur ? '<span class="cur">' + b + '</span>' : b) : '') + '</div>';
+  }
+  el.innerHTML = html;
+}
+function render(){ if(S) renderBoard(); }
+
+/* ===== Đồng hồ ===== */
+function startClock(){
+  stopClock();
+  lastTick = Date.now();
+  clockTimer = setInterval(() => {
+    if(!gameActive || !S || S.over){ return; }
+    const now = Date.now(), dt = (now - lastTick) / 1000;
+    lastTick = now;
+    if(S.turn === 'w') clockW -= dt; else clockB -= dt;
+    if(clockW <= 0 || clockB <= 0){
+      const loser = clockW <= 0 ? 'w' : 'b';
+      if(loser === 'w') clockW = 0; else clockB = 0;
+      endGame(opp(loser), '⏰ Hết giờ! Bên ' + (loser === 'w' ? 'Trắng' : 'Đen') + ' hết thời gian nên thua.');
+      renderBars();
+      return;
+    }
+    renderBars();
+  }, 200);
+}
+function stopClock(){ if(clockTimer){ clearInterval(clockTimer); clockTimer = null; } }
+
+/* ===== Bắt đầu / kết thúc ván ===== */
+function newGameState(fen){
+  S = parseFEN(fen || START_FEN);
+  S.over = false; S.result = null; S.resultReason = '';
+  capByW = []; capByB = [];
+  snapshots = []; sansList = [];
+  repMap = {}; repMap[posKey(S)] = 1;
+  sel = -1; selMoves = []; lastMove = null;
+  clockW = 600; clockB = 600;
+  pendingQuiz = null; busy = false;
+  gameActive = true;
+}
+function startGame(){
+  newGameState();
+  flipped = isCPU() && settings.color === 'b';
+  enterPlay();
+  $('scr-home').classList.remove('on');
+  $('scr-game').classList.add('on');
+  $('resultOverlay').classList.remove('on');
+  render();
+  startClock();
+  maybeCPU();
+}
+function endGame(winner, reason){
+  if(S.over) return;
+  S.over = true; S.result = winner; S.resultReason = reason;
+  stopClock();
+  if(cpuTimer){ clearTimeout(cpuTimer); cpuTimer = null; }
+  renderBars();
+  const isDraw = !winner;
+  $('resultEmoji').textContent = isDraw ? '🤝' : '🏆';
+  $('resultBox').className = isDraw ? 'result-card-draw' : 'result-card-win';
+  let title;
+  if(isDraw) title = 'HÒA RỒI!';
+  else if(isCPU()) title = winner === settings.color ? '🎉 EM THẮNG RỒI!' : 'Máy thắng ván này!';
+  else title = winner === 'w' ? 'TRẮNG THẮNG! 🎉' : 'ĐEN THẮNG! 🎉';
+  $('resultTitle').textContent = title;
+  $('resultReason').textContent = reason;
+  setTimeout(() => {
+    $('resultOverlay').classList.add('on');
+    if(!isDraw){ fireworks(10); sfx('win'); vibrate([80, 40, 80, 40, 150]); }
+    else sfx('fanfare');
+  }, 650);
+}
+function checkEndAfterMove(){
+  const legal = legalMovesSt(S);
+  if(!legal.length){
+    if(inCheck(S, S.turn)){
+      endGame(opp(S.turn), '👑 Chiếu hết! ' + (S.turn === 'w' ? 'Trắng' : 'Đen') + ' không còn đường chạy.');
+    } else {
+      endGame(null, '🤝 Hết nước đi (stalemate) — không bên nào đi được nữa, hòa nhé!');
+    }
+    return true;
+  }
+  if(insufficientMaterial(S.board)){ endGame(null, '🤝 Không đủ quân để chiếu hết nữa — hòa!'); return true; }
+  if(repMap[posKey(S)] >= 3){ endGame(null, '🤝 Thế cờ lặp lại 3 lần — hòa!'); return true; }
+  if(S.half >= 100){ endGame(null, '🤝 50 nước không ăn quân, không đi Tốt — hòa!'); return true; }
+  return false;
+}
+
+/* ===== Thực hiện nước đi ===== */
+function doMove(m, legal){
+  legal = legal || legalMovesSt(S);
+  const san = moveSAN(S, m, legal);
+  snapshots.push({
+    fen: toFEN(S), capW: capByW.slice(), capB: capByB.slice(),
+    sans: sansList.slice(), lastMove: lastMove ? Object.assign({}, lastMove) : null
+  });
+  const mover = S.turn;
+  S = Object.assign(applyMoveSt(S, m), { over: false, result: null, resultReason: '' });
+  if(m.captured){
+    const victim = m.captured.toLowerCase();
+    if(mover === 'w') capByW.push(victim); else capByB.push(victim);
+  }
+  const suffix = inCheck(S, S.turn) ? (legalMovesSt(S).length ? '+' : '#') : '';
+  sansList.push(san + suffix);
+  lastMove = { from: m.from, to: m.to };
+  sel = -1; selMoves = [];
+  const key = posKey(S);
+  repMap[key] = (repMap[key] || 0) + 1;
+  if(m.captured) sfx('fanfare'); else sfx('click');
+  render();
+  if(!checkEndAfterMove()) maybeCPU();
+}
+function maybeCPU(){
+  if(!isCPU() || !S || S.over || S.turn !== cpuColor()) return;
+  busy = true;
+  cpuTimer = setTimeout(() => {
+    busy = false;
+    if(!S || S.over) return;
+    const m = settings.opp === 'hard' ? bestMove(S, 3) : easyMove(S);
+    if(m) doMove(m);
+  }, 600 + Math.random() * 600);
+}
+
+/* ===== Chọn quân / đi quân qua chạm ===== */
+function onSquare(i){
+  if(!gameActive || !S || S.over || busy || pendingQuiz) return;
+  if(!isHumanTurn()) return;
+  ac();
+  const target = selMoves.find(m => m.to === i);
+  if(sel >= 0 && target){
+    const sameDest = selMoves.filter(m => m.to === i);
+    if(sameDest.length > 1 && sameDest[0].promo){
+      openPromo(S.turn, promo => {
+        const m = sameDest.find(x => x.promo === promo);
+        if(m) tryHumanMove(m);
+      });
+      return;
+    }
+    tryHumanMove(target);
+    return;
+  }
+  const p = S.board[i];
+  if(p && colorOf(p) === S.turn){
+    if(sel === i){ sel = -1; selMoves = []; }
+    else {
+      sel = i;
+      selMoves = legalMovesSt(S).filter(m => m.from === i);
+      sfx('click');
+    }
+  } else { sel = -1; selMoves = []; }
+  renderBoard();
+}
+function tryHumanMove(m){
+  sel = -1; selMoves = [];
+  if(settings.mode === 'quiz'){
+    pendingQuiz = { move: m };
+    renderBoard();
+    openQuiz(m);
+  } else {
+    doMove(m);
+  }
+}
+
+/* ===== Chế độ câu hỏi ===== */
+let quizState = null;
+function openQuiz(m){
+  const bank = BANKS.tonghop;
+  const q = bank[(Math.random() * bank.length) | 0];
+  const order = q.a.map((_, i) => i).sort(() => Math.random() - 0.5);
+  quizState = { q, answered: false };
+  window.__curQ = q;
+  $('quizMoveLabel').textContent = 'Đi ' + sqName(m.from) + ' → ' + sqName(m.to) + ' — trả lời đúng mới được đi nước này!';
+  $('quizQ').textContent = q.q;
+  $('quizFb').className = 'quiz-fb'; $('quizFb').textContent = '';
+  const box = $('answers');
+  box.innerHTML = '';
+  const letters = ['A', 'B', 'C', 'D'];
+  order.forEach((orig, idx) => {
+    const b = document.createElement('button');
+    b.className = 'ans'; b.dataset.orig = orig;
+    b.textContent = letters[idx] + '. ' + q.a[orig];
+    b.addEventListener('click', () => answerQuiz(b, orig));
+    box.appendChild(b);
+  });
+  $('quizOverlay').classList.add('on');
+}
+function answerQuiz(btn, orig){
+  if(!quizState || quizState.answered) return;
+  quizState.answered = true;
+  const q = quizState.q;
+  const right = orig === q.c;
+  const all = $('answers').querySelectorAll('.ans');
+  all.forEach(b => { b.disabled = true; if(+b.dataset.orig === q.c) b.classList.add('ok'); });
+  const fb = $('quizFb');
+  const pending = pendingQuiz;
+  pendingQuiz = null;
+  if(right){
+    btn.classList.add('ok');
+    fb.className = 'quiz-fb ok';
+    fb.textContent = '✅ ĐÚNG! Quân của em được đi rồi!';
+    sfx('correct');
+    setTimeout(() => {
+      $('quizOverlay').classList.remove('on');
+      quizState = null;
+      if(pending && !S.over) doMove(pending.move);
+    }, 900);
+  } else {
+    btn.classList.add('bad');
+    fb.className = 'quiz-fb bad';
+    fb.textContent = '❌ SAI! Đáp án đúng là "' + q.a[q.c] + '" — nước đi bị hủy, mất lượt rồi!';
+    sfx('wrong'); vibrate([120, 60, 120]);
+    setTimeout(() => {
+      $('quizOverlay').classList.remove('on');
+      quizState = null;
+      if(!S.over) passTurn();
+    }, 1600);
+  }
+}
+function passTurn(){
+  S = Object.assign({}, S, { turn: opp(S.turn), ep: -1 });
+  sel = -1; selMoves = [];
+  render();
+  maybeCPU();
+}
+
+/* ===== Phong cấp ===== */
+function openPromo(color, cb){
+  const grid = $('promoGrid');
+  grid.innerHTML = '';
+  const names = { q: 'Hậu', r: 'Xe', b: 'Tượng', n: 'Mã' };
+  for(const t of ['q', 'r', 'b', 'n']){
+    const piece = color === 'w' ? t.toUpperCase() : t;
+    const b = document.createElement('button');
+    b.className = 'promo-btn'; b.dataset.promo = piece;
+    b.innerHTML = pieceHTML(piece) + '<span>' + names[t] + '</span>';
+    b.addEventListener('click', () => { $('promoOverlay').classList.remove('on'); cb(piece); });
+    grid.appendChild(b);
+  }
+  $('promoOverlay').classList.add('on');
+}
+
+/* ===== Các nút hành động ===== */
+$('btnUndo').addEventListener('click', () => {
+  if(!gameActive || !S || busy || pendingQuiz) return;
+  if($('resultOverlay').classList.contains('on')) $('resultOverlay').classList.remove('on');
+  let n = isCPU() ? 2 : 1;
+  while(n-- > 0 && snapshots.length){
+    const snap = snapshots.pop();
+    const key = posKey(S);
+    if(repMap[key]) repMap[key]--;
+    S = Object.assign(parseFEN(snap.fen), { over: false, result: null, resultReason: '' });
+    capByW = snap.capW; capByB = snap.capB;
+    sansList = snap.sans; lastMove = snap.lastMove;
+  }
+  sel = -1; selMoves = [];
+  if(cpuTimer){ clearTimeout(cpuTimer); cpuTimer = null; busy = false; }
+  sfx('click');
+  render();
+});
+$('btnHint').addEventListener('click', () => {
+  if(!gameActive || !S || S.over || busy || pendingQuiz || !isHumanTurn()) return;
+  const m = bestMove(S, 3);
+  if(!m) return;
+  window.__hintSq = { from: m.from, to: m.to };
+  renderBoard();
+  setTimeout(() => { window.__hintSq = null; renderBoard(); }, 2000);
+});
+$('btnFlip').addEventListener('click', () => {
+  if(!gameActive || !S) return;
+  flipped = !flipped;
+  sfx('click');
+  render();
+});
+$('btnResign').addEventListener('click', () => {
+  if(!gameActive || !S || S.over) return;
+  const loser = isCPU() ? settings.color : S.turn;
+  $('confirmText').textContent = 'Bên ' + (loser === 'w' ? 'Trắng' : 'Đen') + ' sẽ thua ván này. Em chắc chắn chứ?';
+  $('confirmOverlay').classList.add('on');
+  $('btnResignYes').onclick = () => {
+    $('confirmOverlay').classList.remove('on');
+    endGame(opp(loser), '🏳️ Bên ' + (loser === 'w' ? 'Trắng' : 'Đen') + ' đã xin thua.');
+  };
+});
+$('btnResignNo').addEventListener('click', () => $('confirmOverlay').classList.remove('on'));
+$('btnAgain').addEventListener('click', () => { $('resultOverlay').classList.remove('on'); startGame(); });
+$('btnResultHome').addEventListener('click', () => { $('resultOverlay').classList.remove('on'); exitToHome(); });
+
+/* ===== Luật chơi (lớp phủ) ===== */
+const RULES = [
+  ['wk', 'bk', '<b>Vua 👑:</b> đi 1 ô theo mọi hướng. Phải luôn giữ Vua an toàn — Vua bị ăn là thua nên cờ chỉ tính "chiếu" thôi nhé!'],
+  ['wq', 'bq', '<b>Hậu 👸:</b> quân mạnh nhất! Đi thẳng và đi chéo bao nhiêu ô cũng được.'],
+  ['wr', 'br', '<b>Xe 🏰:</b> đi thẳng ngang hoặc dọc bao nhiêu ô cũng được.'],
+  ['wb', 'bb', '<b>Tượng 🐘:</b> đi chéo bao nhiêu ô cũng được, luôn ở trên ô cùng màu.'],
+  ['wn', 'bn', '<b>Mã 🐴:</b> đi hình chữ L (2 ô rồi rẽ 1 ô) và là quân duy nhất NHẢY qua đầu quân khác được.'],
+  ['wp', 'bp', '<b>Tốt 🧒:</b> đi thẳng về phía trước 1 ô (nước đầu tiên được đi 2 ô), ăn quân theo đường chéo 1 ô.'],
+  [null, null, '<b>Nhập thành 🏯:</b> khi Vua và Xe chưa từng di chuyển, các ô giữa trống và Vua không bị chiếu ở ô đi qua — Vua đi 2 ô về phía Xe, Xe nhảy qua đứng cạnh Vua.'],
+  [null, null, '<b>Bắt Tốt qua đường ⚡:</b> nếu Tốt bạn vừa đi 2 ô và dừng cạnh Tốt mình, mình được ăn nó như thể nó chỉ đi 1 ô — chỉ ngay nước đi sau đó thôi!'],
+  [null, null, '<b>Phong cấp 🎉:</b> Tốt đi tới hàng cuối cùng sẽ biến thành Hậu, Xe, Tượng hoặc Mã tùy em chọn.'],
+  [null, null, '<b>Chiếu & hết cờ ✅:</b> Vua bị tấn công gọi là bị CHIẾU — phải chạy Vua, che chắn hoặc ăn quân chiếu. Không còn cách nào thì là CHIẾU HẾT và thua. Hết nước đi mà không bị chiếu thì HÒA.']
+];
+(function buildRules(){
+  const body = $('rulesBody');
+  for(const [w, b, txt] of RULES){
+    const row = document.createElement('div');
+    row.className = 'rule-row';
+    row.innerHTML = (w ? '<div class="ic"><svg viewBox="0 0 45 45" aria-hidden="true"><use href="#pc-' + w + '"></use></svg></div>' : '') + '<p>' + txt + '</p>';
+    body.appendChild(row);
+  }
+})();
+$('btnRules').addEventListener('click', e => { e.preventDefault(); $('rulesOverlay').classList.add('on'); });
+$('btnRulesClose').addEventListener('click', () => $('rulesOverlay').classList.remove('on'));
+
+/* ===== Chọn thiết lập ở màn đầu ===== */
+function bindOpts(id, key, cls){
+  const box = $(id);
+  box.addEventListener('click', e => {
+    const opt = e.target.closest('.opt');
+    if(!opt || opt.classList.contains('dim')) return;
+    settings[key] = opt.dataset.v;
+    box.querySelectorAll('.opt').forEach(o => o.classList.remove('sel', 'sel-blue', 'sel-green'));
+    opt.classList.add(cls);
+    if(id === 'optOpp') $('optColor').style.opacity = settings.opp === '2p' ? '.45' : '1';
+    sfx('click');
+  });
+}
+bindOpts('optMode', 'mode', 'sel');
+bindOpts('optOpp', 'opp', 'sel-blue');
+bindOpts('optColor', 'color', 'sel-green');
+$('optColor').style.opacity = '.45';
+$('btnStart').addEventListener('click', () => { ac(); sfx('fanfare'); startGame(); });
+
+/* ===== Điều hướng phân lớp ===== */
+let navLayer = 'start';
+history.pushState({ g: 'start' }, '');
+function enterPlay(){ if(navLayer !== 'play'){ history.pushState({ g: 'play' }, ''); navLayer = 'play'; } }
+function exitToHome(){
+  stopClock();
+  if(cpuTimer){ clearTimeout(cpuTimer); cpuTimer = null; }
+  busy = false; pendingQuiz = null; gameActive = false;
+  $('quizOverlay').classList.remove('on');
+  $('promoOverlay').classList.remove('on');
+  $('confirmOverlay').classList.remove('on');
+  $('resultOverlay').classList.remove('on');
+  $('rulesOverlay').classList.remove('on');
+  $('scr-game').classList.remove('on');
+  $('scr-home').classList.add('on');
+  navLayer = 'start';
+}
+window.addEventListener('popstate', () => {
+  if(navLayer === 'play') exitToHome();
+  else location.href = '../#games';
+});
+
+/* ===== HOOK TEST ===== */
+window.__CV = {
+  get state(){
+    return {
+      fen: S ? toFEN(S) : null,
+      board: S ? S.board.slice() : null,
+      turn: S ? S.turn : null,
+      mode: settings.mode,
+      vsCPU: isCPU(),
+      level: settings.opp,
+      color: settings.color,
+      flipped,
+      history: sansList.slice(),
+      over: S ? !!S.over : false,
+      result: S ? S.result : null,
+      resultReason: S ? S.resultReason : '',
+      clocks: { w: clockW, b: clockB },
+      curQ: window.__curQ || null
+    };
+  },
+  setFEN(fen){
+    $('resultOverlay').classList.remove('on');
+    $('quizOverlay').classList.remove('on');
+    $('promoOverlay').classList.remove('on');
+    newGameState(fen);
+    if(!$('scr-game').classList.contains('on')){
+      enterPlay();
+      $('scr-home').classList.remove('on');
+      $('scr-game').classList.add('on');
+      flipped = isCPU() && settings.color === 'b';
+    }
+    render();
+    startClock();
+    checkEndAfterMove();
+    renderBars();
+    return true;
+  },
+  move(a, b, promo){
+    if(!S || S.over) return false;
+    let from, to, pr = promo;
+    if(a && a.length >= 4){ from = sqIdx(a.slice(0, 2)); to = sqIdx(a.slice(2, 4)); if(a.length >= 5) pr = a[4]; }
+    else { from = sqIdx(a); to = sqIdx(b); }
+    const legal = legalMovesSt(S);
+    let m = legal.find(x => x.from === from && x.to === to && (!x.promo || (pr ? x.promo.toLowerCase() === String(pr).toLowerCase() : x.promo.toLowerCase() === 'q')));
+    if(!m) return false;
+    if(cpuTimer){ clearTimeout(cpuTimer); cpuTimer = null; busy = false; }
+    doMove(m, legal);
+    return true;
+  },
+  legalMoves(){
+    if(!S) return [];
+    return legalMovesSt(S).map(m => sqName(m.from) + sqName(m.to) + (m.promo ? m.promo.toLowerCase() : ''));
+  }
+};
+</script>
+</body>
+</html>
