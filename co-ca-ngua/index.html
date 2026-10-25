@@ -340,30 +340,56 @@ let numPlayers = 2;
 let G = null;
 function shuffle(arr){ const a = arr.slice(); for(let i=a.length-1;i>0;i--){ const j = (Math.random()*(i+1))|0; [a[i],a[j]]=[a[j],a[i]]; } return a; }
 
-/* --- Ban co SVG: vong 24 o, tam la DICH, 4 goc la chuong --- */
-const BC = 200, BR = 150, CELL_R = 21;
-function cellXY(i){ const a = (-90 + i*15) * Math.PI/180; return [BC + BR*Math.cos(a), BC + BR*Math.sin(a)]; }
-const BASE_XY = [[46,46],[354,46],[46,354],[354,354]];
+/* --- Ban co SVG: ban VUONG dung kieu co ca ngua / Ludo that ---
+   Duong dua = vong 24 o VUONG chay quanh ban sat trong vien, danh so 1-24 theo
+   chieu kim dong ho. 4 chuong la o vuong mau o 4 goc ban (do TL, xanh duong TR,
+   xanh la BR, tim BL). O xuat phat 1/7/13/19 mang mau 4 nguoi choi, cach nhau 6 o,
+   sat chuong tuong ung. Tam ban la o DICH 4 tam giac mau + vong tron vang.
+   Chi la vi tri VE: nguoi choi i dung o o (i*6 + pos) tren vong; pos giu nguyen
+   nghia (0 = trong chuong, 1-24 = so buoc da di, du 24 = ve dich o tam). */
+const CENTERS = [32, 88, 144, 200, 256, 312, 368];
+const CELL_CENTERS = [];
+for(let k=0;k<7;k++) CELL_CENTERS.push([CENTERS[k], 32]);   // hang tren: o 1-7
+for(let k=1;k<6;k++) CELL_CENTERS.push([368, CENTERS[k]]);   // cot phai: o 8-12
+CELL_CENTERS.push([368, 368]);                               // o 13 (goc duoi-phai)
+for(let k=5;k>=0;k--) CELL_CENTERS.push([CENTERS[k], 368]);  // hang duoi: o 14-19
+for(let k=5;k>=1;k--) CELL_CENTERS.push([32, CENTERS[k]]);   // cot trai: o 20-24
+const YARD_RECT = [[60,60],[248,60],[248,248],[60,248]];
+const YARD_XY = [[106,106],[294,106],[294,294],[106,294]];
+const START_CELLS = [0, 6, 12, 18];
+function trackIdx(pl){ return (pl.idx * 6 + pl.pos - 1) % TRACK; }
 function buildBoard(){
   let s = '<svg id="board-svg" viewBox="0 0 400 400" aria-label="Bàn cờ cá ngựa">';
-  s += '<circle cx="200" cy="200" r="188" fill="#fef9ec" stroke="#f59e0b" stroke-width="3.5"/>';
-  s += '<circle cx="200" cy="200" r="150" fill="none" stroke="#fde68a" stroke-width="42" opacity="0.45"/>';
-  for(let i=0;i<24;i++){
-    const [x,y] = cellXY(i);
-    const fill = i === 0 ? '#bbf7d0' : (i % 2 ? '#ffffff' : '#fef3c7');
-    s += '<circle cx="'+x.toFixed(1)+'" cy="'+y.toFixed(1)+'" r="'+CELL_R+'" fill="'+fill+'" stroke="#d97706" stroke-width="1.6"/>';
-    s += '<text x="'+x.toFixed(1)+'" y="'+(y+1).toFixed(1)+'" text-anchor="middle" dominant-baseline="middle" font-family="Baloo 2, sans-serif" font-weight="800" font-size="13" fill="#92400e">'+(i+1)+'</text>';
-  }
-  // o dich o tam
-  s += '<circle cx="200" cy="200" r="37" fill="#f59e0b" stroke="#fff" stroke-width="3.5"/>';
-  s += '<text x="200" y="193" text-anchor="middle" font-size="24">🏆</text>';
-  s += '<text x="200" y="217" text-anchor="middle" font-family="Baloo 2, sans-serif" font-weight="800" font-size="13.5" fill="#fff">ĐÍCH</text>';
-  // chuong 4 goc
+  s += '<rect x="3" y="3" width="394" height="394" rx="22" fill="#fffdf5" stroke="#b45309" stroke-width="4"/>';
+  s += '<rect x="58" y="58" width="284" height="284" rx="14" fill="#fef9ec"/>';
+  // chuong 4 goc: o vuong mau + vong tron trang chua ngua khi o pos 0
   for(let p=0;p<4;p++){
-    const [x,y] = BASE_XY[p];
+    const d = PLAYER_DEFS[p], xr = YARD_RECT[p][0], yr = YARD_RECT[p][1];
     const active = p < G.players.length;
-    s += '<circle cx="'+x+'" cy="'+y+'" r="27" fill="'+PLAYER_DEFS[p].soft+'" stroke="'+PLAYER_DEFS[p].color+'" stroke-width="2.6" stroke-dasharray="6 4" opacity="'+(active?1:0.28)+'"/>';
-    s += '<text x="'+x+'" y="'+(y-24)+'" text-anchor="middle" font-family="Baloo 2, sans-serif" font-weight="800" font-size="10.5" fill="'+PLAYER_DEFS[p].color+'" opacity="'+(active?1:0.3)+'">CHUỒNG</text>';
+    s += '<g class="yard" opacity="' + (active ? 1 : 0.25) + '">';
+    s += '<rect x="' + xr + '" y="' + yr + '" width="92" height="92" rx="14" fill="' + d.soft + '" stroke="' + d.color + '" stroke-width="3"/>';
+    s += '<text x="' + (xr + 46) + '" y="' + (yr + 16) + '" text-anchor="middle" font-family="Baloo 2, sans-serif" font-weight="800" font-size="10.5" fill="' + d.color + '">CHUỒNG</text>';
+    s += '<circle cx="' + YARD_XY[p][0] + '" cy="' + YARD_XY[p][1] + '" r="25" fill="#ffffff" stroke="' + d.color + '" stroke-width="2.4"/>';
+    s += '</g>';
+  }
+  // o dich o tam: vuong chia 4 tam giac 4 mau kieu Ludo + vong tron vang chua cup
+  s += '<g>';
+  s += '<polygon points="200,200 158,158 242,158" fill="#ef4444" opacity="0.8"/>';
+  s += '<polygon points="200,200 242,158 242,242" fill="#2563eb" opacity="0.8"/>';
+  s += '<polygon points="200,200 242,242 158,242" fill="#16a34a" opacity="0.8"/>';
+  s += '<polygon points="200,200 158,242 158,158" fill="#7c3aed" opacity="0.8"/>';
+  s += '<rect x="158" y="158" width="84" height="84" rx="10" fill="none" stroke="#d97706" stroke-width="2"/>';
+  s += '<circle cx="200" cy="200" r="23" fill="#f59e0b" stroke="#ffffff" stroke-width="3"/>';
+  s += '<text x="200" y="198" text-anchor="middle" font-size="16">🏆</text>';
+  s += '<text x="200" y="215" text-anchor="middle" font-family="Baloo 2, sans-serif" font-weight="800" font-size="10" fill="#ffffff">ĐÍCH</text>';
+  s += '</g>';
+  // duong dua: 24 o vuong danh so 1-24, o xuat phat to mau nguoi choi
+  for(let i=0;i<24;i++){
+    const x = CELL_CENTERS[i][0], y = CELL_CENTERS[i][1];
+    const si = START_CELLS.indexOf(i);
+    const fill = si >= 0 ? PLAYER_DEFS[si].color : (i % 2 ? '#ffffff' : '#fef3c7');
+    s += '<rect class="cell" x="' + (x - 26) + '" y="' + (y - 26) + '" width="52" height="52" rx="9" fill="' + fill + '" stroke="#d97706" stroke-width="1.8"/>';
+    s += '<text x="' + x + '" y="' + (y + 1) + '" text-anchor="middle" dominant-baseline="middle" font-family="Baloo 2, sans-serif" font-weight="800" font-size="15" fill="' + (si >= 0 ? '#ffffff' : '#92400e') + '">' + (i + 1) + '</text>';
   }
   s += '<g id="tokens"></g></svg>';
   document.getElementById('board-host').innerHTML = s;
@@ -371,23 +397,23 @@ function buildBoard(){
   G.players.forEach((pl, i) => {
     const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
     g.setAttribute('class', 'token'); g.id = 'tok' + i;
-    g.innerHTML = '<circle r="14.5" fill="' + pl.def.color + '" stroke="#fff" stroke-width="2.6"/>' +
-      '<text text-anchor="middle" dominant-baseline="middle" font-size="15" y="1">🐴</text>';
+    g.innerHTML = '<circle r="16.5" fill="' + pl.def.color + '" stroke="#fff" stroke-width="2.6"/>' +
+      '<text text-anchor="middle" dominant-baseline="middle" font-size="16.5" y="1">🐴</text>';
     tg.appendChild(g);
   });
   renderTokens();
 }
 function tokenXY(pl){
-  if(pl.pos <= 0) return BASE_XY[pl.idx];
+  if(pl.pos <= 0) return YARD_XY[pl.idx];
   if(pl.pos >= TRACK) return [200, 200];
-  return cellXY(pl.pos - 1);
+  return CELL_CENTERS[trackIdx(pl)];
 }
 function renderTokens(){
   if(!G) return;
   // dem so ngua trung o de lech nhe tranh de nhau
   const counts = {};
   G.players.forEach(pl => {
-    const k = pl.pos <= 0 ? 'base' + pl.idx : (pl.pos >= TRACK ? 'fin' : 'c' + pl.pos);
+    const k = pl.pos <= 0 ? 'base' + pl.idx : (pl.pos >= TRACK ? 'fin' : 'c' + trackIdx(pl));
     pl._slot = counts[k] || 0; counts[k] = (counts[k] || 0) + 1;
   });
   const offs = [[0,0],[-11,-11],[11,-11],[-11,11],[11,11]];
