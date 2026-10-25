@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Lật Mảnh Ghép — Trò chơi trả lời đúng để mở hình bí mật</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Be+Vietnam+Pro:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+:root{--ink:#1e293b}
+html,body{min-height:100%}
+body{
+  font-family:'Be Vietnam Pro',system-ui,sans-serif;color:var(--ink);
+  background:
+    radial-gradient(circle at 12% 18%, rgba(13,148,136,.13) 3px, transparent 3.5px) 0 0/46px 46px,
+    radial-gradient(circle at 78% 64%, rgba(245,158,11,.16) 3px, transparent 3.5px) 23px 23px/46px 46px,
+    linear-gradient(180deg,#fff7e6,#ffedd5);
+  padding:0 0 34px;
+}
+.wrap{max-width:560px;margin:0 auto;padding:0 14px}
+.screen{display:none}
+.screen.on{display:block;animation:fadeIn .3s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.hero{
+  margin:14px 0 16px;padding:22px 16px 20px;text-align:center;color:#fff;border-radius:26px;
+  background:linear-gradient(135deg,#0f766e 0%,#0d9488 40%,#7c3aed 115%);
+  box-shadow:0 10px 26px rgba(13,148,136,.35);border:3px solid rgba(255,255,255,.35);
+}
+.hero h1{font-family:'Baloo 2','Be Vietnam Pro',sans-serif;font-size:34px;font-weight:800;line-height:1.12;text-shadow:0 3px 0 rgba(0,0,0,.18)}
+.hero p{margin-top:6px;font-size:15px;font-weight:600;opacity:.96}
+.hero .pz-emoji{display:inline-block;font-size:42px;animation:floaty 3s ease-in-out infinite}
+@keyframes floaty{0%,100%{transform:translateY(0) rotate(-5deg)}50%{transform:translateY(-7px) rotate(5deg)}}
+.card{background:#fff;border-radius:22px;border:2.5px solid #99f6e4;box-shadow:0 6px 0 #5eead4,0 14px 24px rgba(13,148,136,.13);padding:18px 16px;margin-bottom:16px}
+.card h2{font-family:'Baloo 2','Be Vietnam Pro',sans-serif;font-size:21px;font-weight:800;margin-bottom:10px;color:#115e59}
+.chips{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.chip{
+  font-family:'Baloo 2','Be Vietnam Pro',sans-serif;font-size:18px;font-weight:800;color:#fff;
+  border:2.2px solid rgba(0,0,0,.14);border-radius:16px;padding:13px 8px;cursor:pointer;
+  box-shadow:0 4px 0 rgba(0,0,0,.22);transition:transform .08s, box-shadow .08s, outline .08s;outline:3px solid transparent;
+}
+.chip:active{transform:translateY(3px);box-shadow:0 1px 0 rgba(0,0,0,.22)}
+.chip.sel{outline:3px solid #f59e0b;transform:scale(1.03)}
+.chip small{display:block;font-family:'Be Vietnam Pro',sans-serif;font-size:12px;font-weight:600;opacity:.9;margin-top:2px}
+.c-toan{background:linear-gradient(135deg,#2563eb,#06b6d4)}
+.c-tv{background:linear-gradient(135deg,#db2777,#f59e0b)}
+.c-ta{background:linear-gradient(135deg,#7c3aed,#2563eb)}
+.c-th{background:linear-gradient(135deg,#16a34a,#0891b2)}
+.btn{
+  display:block;width:100%;font-family:'Baloo 2','Be Vietnam Pro',sans-serif;font-weight:800;cursor:pointer;
+  border:2.2px solid rgba(0,0,0,.15);border-radius:18px;color:#fff;text-align:center;
+  box-shadow:0 5px 0 rgba(0,0,0,.25);transition:transform .08s, box-shadow .08s;padding:15px 12px;font-size:21px;
+}
+.btn:active{transform:translateY(4px);box-shadow:0 1px 0 rgba(0,0,0,.25)}
+.btn-big{background:linear-gradient(135deg,#f97316,#f59e0b);font-size:24px;padding:17px 12px}
+.btn-blue{background:linear-gradient(135deg,#2563eb,#06b6d4)}
+.btn-green{background:linear-gradient(135deg,#16a34a,#22c55e)}
+.btn-violet{background:linear-gradient(135deg,#7c3aed,#db2777)}
+.howto{font-size:14.5px;line-height:1.65;font-weight:600;color:#57534e}
+.howto b{color:#b45309}
+.topbar{display:flex;gap:8px;align-items:center;margin:14px 0 12px}
+.pill{font-family:'Baloo 2','Be Vietnam Pro',sans-serif;font-weight:800;font-size:16px;border-radius:999px;padding:8px 14px;color:#fff;box-shadow:0 3px 0 rgba(0,0,0,.2);border:2px solid rgba(255,255,255,.5);white-space:nowrap}
+.pill-score{background:linear-gradient(135deg,#f59e0b,#f97316)}
+.pill-round{background:linear-gradient(135deg,#0d9488,#7c3aed)}
+.home-btn{font-family:'Baloo 2','Be Vietnam Pro',sans-serif;font-weight:800;font-size:15px;background:#fff;color:#115e59;border:2.2px solid #99f6e4;border-radius:999px;padding:8px 13px;cursor:pointer;box-shadow:0 3px 0 #99f6e4}
+.home-btn:active{transform:translateY(2px);box-shadow:0 1px 0 #99f6e4}
+.spacer{flex:1}
+.board{
+  position:relative;border-radius:20px;overflow:hidden;background:#e0f2fe;
+  border:3.5px solid #fff;box-shadow:0 8px 0 rgba(13,148,136,.35),0 16px 28px rgba(15,118,110,.25);
+  aspect-ratio:2/1;margin-top:2px;
+}
+.board .art{position:absolute;inset:0}
+.board .art svg{width:100%;height:100%;display:block}
+.tiles{position:absolute;inset:0;display:grid;grid-template-columns:repeat(4,1fr);grid-template-rows:repeat(2,1fr);gap:3px;padding:3px}
+.tile{
+  display:flex;align-items:center;justify-content:center;border-radius:9px;color:#fff;
+  font-family:'Baloo 2','Be Vietnam Pro',sans-serif;font-size:27px;font-weight:800;
+  text-shadow:0 2px 0 rgba(0,0,0,.25);box-shadow:inset 0 0 0 2px rgba(255,255,255,.35);
+  transition:transform .55s ease, opacity .55s ease;
+}
+.tile.open{transform:rotateY(88deg) scale(.45);opacity:0;pointer-events:none}
+.t0{background:linear-gradient(150deg,#ef4444,#f97316)}
+.t1{background:linear-gradient(150deg,#8b5cf6,#6366f1)}
+.t2{background:linear-gradient(150deg,#06b6d4,#2563eb)}
+.t3{background:linear-gradient(150deg,#f59e0b,#ef4444)}
+.t4{background:linear-gradient(150deg,#10b981,#059669)}
+.t5{background:linear-gradient(150deg,#ec4899,#8b5cf6)}
+.t6{background:linear-gradient(150deg,#3b82f6,#06b6d4)}
+.t7{background:linear-gradient(150deg,#84cc16,#0d9488)}
+.hint-line{text-align:center;font-size:15.5px;font-weight:700;color:#78716c;margin:11px 4px 0;font-style:italic}
+.opened-line{text-align:center;font-family:'Baloo 2','Be Vietnam Pro',sans-serif;font-weight:800;font-size:16.5px;color:#0f766e;margin-top:5px}
+.q-card{display:none;background:#fff;border-radius:22px;border:2.5px solid #99f6e4;box-shadow:0 6px 0 #5eead4,0 14px 24px rgba(13,148,136,.13);padding:18px 16px;margin-top:14px}
+.q-card.on{display:block;animation:fadeIn .3s ease}
+.q-top{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.q-pill{display:inline-block;font-family:'Baloo 2','Be Vietnam Pro',sans-serif;font-weight:800;font-size:14.5px;color:#fff;background:linear-gradient(135deg,#0d9488,#7c3aed);border-radius:999px;padding:5px 13px}
+.q-text{font-size:21px;font-weight:800;line-height:1.45;margin-bottom:14px}
+.answers{display:grid;gap:10px}
+.ans{display:flex;align-items:center;gap:11px;text-align:left;width:100%;cursor:pointer;background:#f8fafc;border:2.2px solid #e2e8f0;border-radius:16px;padding:11px 12px;font-family:'Be Vietnam Pro',sans-serif;font-size:17.5px;font-weight:700;color:var(--ink);transition:transform .08s, background .15s, border-color .15s, box-shadow .15s}
+.ans:active{transform:scale(.985)}
+.ans .badge{flex:0 0 auto;width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Baloo 2','Be Vietnam Pro',sans-serif;font-size:19px;font-weight:800;color:#fff;background:linear-gradient(135deg,#0d9488,#2563eb);box-shadow:0 3px 0 rgba(0,0,0,.2)}
+.ans.correct{border-color:#16a34a;background:#f0fdf4;box-shadow:0 0 0 4px rgba(22,163,74,.14)}
+.ans.correct .badge{background:linear-gradient(135deg,#16a34a,#22c55e)}
+.ans.wrong{border-color:#dc2626;background:#fef2f2;animation:blinkSoft .5s ease 3}
+.ans.wrong .badge{background:linear-gradient(135deg,#dc2626,#ef4444)}
+.ans.locked{pointer-events:none}
+@keyframes blinkSoft{0%,100%{opacity:1}50%{opacity:.45}}
+.feedback{display:none;border-radius:16px;padding:12px 14px;font-size:16.5px;font-weight:700;line-height:1.5;margin-top:13px;border:2px solid}
+.feedback.ok{display:block;background:#ecfdf5;border-color:#a7f3d0;color:#065f46}
+.feedback.bad{display:block;background:#fef2f2;border-color:#fecaca;color:#991b1b}
+.next-row{display:none;margin-top:13px}
+.next-row.on{display:block}
+.result-score{font-family:'Baloo 2','Be Vietnam Pro',sans-serif;font-size:52px;font-weight:800;text-align:center;line-height:1.05}
+.result-card{border-radius:22px;border:3px solid;padding:20px 16px;text-align:center;margin-bottom:16px}
+.result-card.pass{background:linear-gradient(135deg,#ecfdf5,#d1fae5);border-color:#16a34a}
+.result-card.fail{background:linear-gradient(135deg,#fef2f2,#fee2e2);border-color:#dc2626}
+.result-title{font-family:'Baloo 2','Be Vietnam Pro',sans-serif;font-size:27px;font-weight:800;margin-bottom:6px}
+.result-sub{font-size:16px;font-weight:700;line-height:1.55}
+.result-pic-name{text-align:center;font-family:'Baloo 2','Be Vietnam Pro',sans-serif;font-weight:800;font-size:19px;color:#115e59;margin-top:10px}
+.review-row{display:flex;gap:10px;align-items:flex-start;background:#fff;border:2px solid #e7e5e4;border-radius:14px;padding:10px 12px;margin-bottom:8px;font-size:14.5px;font-weight:600;line-height:1.5}
+.review-row .st{flex:0 0 auto;font-size:19px}
+.review-row .pts{margin-left:auto;flex:0 0 auto;font-family:'Baloo 2','Be Vietnam Pro',sans-serif;font-weight:800;color:#b45309}
+.btn-row{display:grid;gap:10px;margin-top:12px}
+#fx{position:fixed;inset:0;pointer-events:none;z-index:99;display:none}
+.foot{text-align:center;font-size:13px;font-weight:600;color:#a8a29e;margin-top:8px}
+@media (max-width:380px){.hero h1{font-size:29px}.q-text{font-size:19px}.ans{font-size:16px}.tile{font-size:22px}}
+</style>
+</head>
+<body>
+<canvas id="fx"></canvas>
+<div class="wrap">
+
+  <section class="screen on" id="scr-home">
+    <div class="hero">
+      <span class="pz-emoji">🧩</span>
+      <h1>LẬT MẢNH<br>GHÉP</h1>
+      <p>Một bức hình bí mật đang bị 8 mảnh ghép che kín.<br>Trả lời đúng để lật mở từng mảnh và đoán xem đó là hình gì!</p>
+    </div>
+    <div class="card">
+      <h2>🎯 Chọn bộ câu hỏi</h2>
+      <div class="chips" id="bank-chips">
+        <button class="chip c-th sel" data-bank="tonghop">🌈 TỔNG HỢP<small>Trộn cả 3 môn</small></button>
+        <button class="chip c-toan" data-bank="toan">➕ TOÁN<small>16 câu</small></button>
+        <button class="chip c-tv" data-bank="tiengviet">📖 TIẾNG VIỆT<small>16 câu</small></button>
+        <button class="chip c-ta" data-bank="tienganh">🔤 TIẾNG ANH<small>16 câu</small></button>
+      </div>
+      <div style="height:14px"></div>
+      <button class="btn btn-big" id="btn-start">▶ BẮT ĐẦU LẬT GHÉP</button>
+      <p class="howto" style="margin-top:12px">Mỗi ván có <b>8 câu hỏi</b> — trả lời <b>đúng được 10 điểm</b> và lật mở 1 mảnh ghép, trả lời sai mảnh vẫn bị che. Hết 8 câu, <b>đoán đúng tên bức hình được +20 điểm</b>. Tổng tối đa <b>100 điểm</b>, đạt từ <b>90 điểm</b> là <b>XUẤT SẮC</b> 🎉</p>
+    </div>
+    <p class="foot">Dựng lại từ mẫu game PowerPoint “Lật mảnh ghép” và “Vượt chướng ngại vật”</p>
+  </section>
+
+  <section class="screen" id="scr-game">
+    <div class="topbar">
+      <button class="home-btn" data-home>🏠 Trang chủ</button>
+      <div class="spacer"></div>
+      <span class="pill pill-round" id="round-pill">Câu 1/8</span>
+      <span class="pill pill-score" id="score-pill">⭐ 0 điểm</span>
+    </div>
+    <div class="board">
+      <div class="art" id="art"></div>
+      <div class="tiles" id="tiles"></div>
+    </div>
+    <p class="hint-line" id="hint-line"></p>
+    <div class="opened-line" id="opened-line">Đã mở 0/8 mảnh</div>
+    <div class="q-card" id="q-card">
+      <div class="q-top"><span class="q-pill" id="q-pill">Câu 1</span></div>
+      <div class="q-text" id="q-text"></div>
+      <div class="answers" id="answers"></div>
+      <div class="feedback" id="feedback"></div>
+      <div class="next-row" id="next-row"><button class="btn btn-green" id="btn-next">CÂU TIẾP ➜</button></div>
+    </div>
+    <div class="q-card" id="guess-card">
+      <div class="q-top"><span class="q-pill">🖼️ ĐOÁN HÌNH</span></div>
+      <div class="q-text">Bức hình bí mật là gì nào?</div>
+      <div class="answers" id="guess-answers"></div>
+      <div class="feedback" id="guess-feedback"></div>
+      <div class="next-row" id="guess-next-row"><button class="btn btn-violet" id="btn-finish">XEM KẾT QUẢ 🏁</button></div>
+    </div>
+  </section>
+
+  <section class="screen" id="scr-result">
+    <div style="height:14px"></div>
+    <div class="result-card" id="result-card">
+      <div class="result-score" id="result-score">0</div>
+      <div class="result-title" id="result-title"></div>
+      <div class="result-sub" id="result-sub"></div>
+    </div>
+    <div class="card">
+      <h2>🖼️ Bức hình đầy đủ</h2>
+      <div class="board">
+        <div class="art" id="result-art"></div>
+      </div>
+      <div class="result-pic-name" id="result-pic-name"></div>
+    </div>
+    <div class="card">
+      <h2>📋 Xem lại ván vừa chơi</h2>
+      <div id="review"></div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-big" id="btn-again">🔁 CHƠI LẠI</button>
+      <button class="btn btn-blue" data-home>🏠 VỀ TRANG CHỦ — ĐỔI MÔN</button>
+    </div>
+  </section>
+
+</div>
+<script>
+'use strict';
+const BANKS = {
+toan: [
+ {q:'36 + 48 = ?', a:['72','84','86','94'], c:1},
+ {q:'95 − 37 = ?', a:['52','62','58','48'], c:2},
+ {q:'7 × 8 = ?', a:['54','48','64','56'], c:3},
+ {q:'63 : 9 = ?', a:['7','6','8','9'], c:0},
+ {q:'1 giờ bằng bao nhiêu phút?', a:['100 phút','90 phút','60 phút','30 phút'], c:2},
+ {q:'Số liền sau của 299 là số nào?', a:['298','300','301','290'], c:1},
+ {q:'120 + 230 = ?', a:['340','360','330','350'], c:3},
+ {q:'Hình chữ nhật có mấy góc vuông?', a:['2 góc','3 góc','4 góc','6 góc'], c:2},
+ {q:'1 000 − 250 = ?', a:['750','650','850','700'], c:0},
+ {q:'Nửa của 18 là bao nhiêu?', a:['8','10','9','6'], c:2},
+ {q:'45 : 5 = ?', a:['8','9','7','6'], c:1},
+ {q:'2 kg bằng bao nhiêu gam?', a:['200 g','20 000 g','2 000 g','200 000 g'], c:2},
+ {q:'Chu vi hình vuông có cạnh 5 cm là bao nhiêu?', a:['25 cm','15 cm','10 cm','20 cm'], c:3},
+ {q:'14 + 28 = ?', a:['42','32','52','41'], c:0},
+ {q:'9 × 6 = ?', a:['48','56','54','45'], c:2},
+ {q:'Một tá bút chì có bao nhiêu chiếc? (1 tá = 12)', a:['10 chiếc','12 chiếc','20 chiếc','24 chiếc'], c:1}
+],
+tiengviet: [
+ {q:'Từ trái nghĩa với “cao” là từ nào?', a:['dài','rộng','thấp','sâu'], c:2},
+ {q:'“Lá lành đùm lá rách” là câu gì?', a:['Ca dao','Thành ngữ','Tục ngữ','Câu đố'], c:2},
+ {q:'Từ “chạy” trong câu “Bé chạy nhanh” là loại từ nào?', a:['Danh từ','Động từ','Tính từ','Đại từ'], c:1},
+ {q:'Danh từ trong câu “Con mèo đang ngủ” là từ nào?', a:['đang','ngủ','đang ngủ','Con mèo'], c:3},
+ {q:'Cuối câu hỏi thường dùng dấu câu nào?', a:['Dấu chấm','Dấu chấm hỏi','Dấu chấm than','Dấu phẩy'], c:1},
+ {q:'Từ trái nghĩa với “nóng” là từ nào?', a:['ấm','mát','lạnh','rát'], c:2},
+ {q:'Từ nào viết đúng chính tả?', a:['sạch xẽ','xạch sẽ','sạch sẻ','sạch sẽ'], c:3},
+ {q:'Trong câu “Bạn Hoa học giỏi”, bộ phận trả lời cho câu hỏi “Ai?” là phần nào?', a:['Bạn Hoa','học giỏi','học','giỏi'], c:0},
+ {q:'Từ đồng nghĩa với “to” là từ nào?', a:['bé','lớn','nhỏ','xinh'], c:1},
+ {q:'Câu “Ăn quả nhớ kẻ trồng cây” khuyên chúng ta điều gì?', a:['Thích ăn quả','Trồng nhiều cây','Lòng biết ơn','Chăm tưới cây'], c:2},
+ {q:'Từ “xanh biếc” là tính từ chỉ điều gì?', a:['Màu sắc','Kích thước','Hình dáng','Số lượng'], c:0},
+ {q:'Câu kể thường kết thúc bằng dấu câu nào?', a:['Dấu chấm hỏi','Dấu chấm','Dấu hai chấm','Dấu chấm than'], c:1},
+ {q:'Từ “nhưng” trong câu “Trời mưa nhưng bé vẫn đi học” là loại từ nào?', a:['Danh từ','Tính từ','Động từ','Từ nối'], c:3},
+ {q:'“Chị em như thể tay chân” là câu gì?', a:['Tục ngữ','Câu đố','Đồng dao','Truyện cười'], c:0},
+ {q:'Từ nào là động từ?', a:['quyển vở','đẹp','bơi','nhanh nhẹn'], c:2},
+ {q:'Mặt Trời mọc ở hướng nào?', a:['Hướng Tây','Hướng Bắc','Hướng Đông','Hướng Nam'], c:2}
+],
+tienganh: [
+ {q:'“Hello” trong tiếng Việt nghĩa là gì?', a:['Tạm biệt','Xin chào','Cảm ơn','Xin lỗi'], c:1},
+ {q:'“Cat” là con gì?', a:['Con chó','Con chim','Con cá','Con mèo'], c:3},
+ {q:'Số 7 trong tiếng Anh là từ nào?', a:['Six','Seven','Eight','Five'], c:1},
+ {q:'Màu đỏ trong tiếng Anh là từ nào?', a:['Blue','Green','Red','Yellow'], c:2},
+ {q:'Điền từ đúng: “I ___ a student.”', a:['is','are','am','be'], c:2},
+ {q:'Từ trái nghĩa với “big” là từ nào?', a:['Small','Tall','Long','Fat'], c:0},
+ {q:'“Thank you” nghĩa là gì?', a:['Xin lỗi','Tạm biệt','Không sao','Cảm ơn'], c:3},
+ {q:'“Dog” là con gì?', a:['Con mèo','Con chó','Con thỏ','Con gà'], c:1},
+ {q:'“Apple” là quả gì?', a:['Quả cam','Quả chuối','Quả táo','Quả nho'], c:2},
+ {q:'Điền từ đúng: “He ___ happy.”', a:['am','are','is','be'], c:2},
+ {q:'Màu xanh lá cây trong tiếng Anh là từ nào?', a:['Green','Pink','Black','White'], c:0},
+ {q:'“Book” là gì?', a:['Cây bút','Quyển sách','Cái bàn','Cái ghế'], c:1},
+ {q:'Số nhiều của “toy” là từ nào?', a:['Toyes','Toys','Toies','Toyss'], c:1},
+ {q:'“Good morning” nghĩa là gì?', a:['Chào buổi tối','Chúc ngủ ngon','Chào buổi sáng','Tạm biệt'], c:2},
+ {q:'“Bird” là con gì?', a:['Con chim','Con cá','Con bướm','Con ong'], c:0},
+ {q:'Số “ten” là số mấy?', a:['Số 8','Số 9','Số 10','Số 12'], c:2}
+]};
+BANKS.tonghop = BANKS.toan.concat(BANKS.tiengviet, BANKS.tienganh);
+
+/* ============ AM THANH WebAudio (chuan Be Hoc Vui) ============ */
+let AC = null;
+function ac(){ if(!AC){ try{ AC = new (window.AudioContext||window.webkitAudioContext)(); }catch(e){} } if(AC && AC.state==='suspended') AC.resume(); return AC; }
+function tone(f0, f1, dur, delay, type, vol){
+  const ctx = ac(); if(!ctx) return;
+  const t = ctx.currentTime + (delay||0);
+  const o = ctx.createOscillator(), g = ctx.createGain();
+  o.type = type||'sine'; o.frequency.setValueAtTime(f0, t);
+  o.frequency.exponentialRampToValueAtTime(Math.max(f1,1), t + dur);
+  g.gain.setValueAtTime(0.0001, t);
+  g.gain.exponentialRampToValueAtTime(vol||0.22, t + 0.015);
+  g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+  o.connect(g); g.connect(ctx.destination); o.start(t); o.stop(t + dur + 0.05);
+}
+function sfx(name){
+  if(name==='click') tone(620, 520, 0.06, 0, 'triangle', 0.15);
+  if(name==='tick') tone(1250, 1100, 0.03, 0, 'square', 0.05);
+  if(name==='correct'){ tone(680, 880, 0.12, 0); tone(960, 1150, 0.14, 0.12); }
+  if(name==='wrong'){ tone(180, 110, 0.35, 0, 'sine', 0.26); }
+  if(name==='win'){ [523,659,784,1046].forEach((f,i)=>tone(f, f, 0.22, i*0.15)); }
+  if(name==='lose'){ [280,200,150].forEach((f,i)=>tone(f, f*0.94, 0.26, i*0.25)); }
+  if(name==='fanfare'){ [523,659,784].forEach((f,i)=>tone(f, f, 0.18, i*0.12)); }
+}
+function vibrate(p){ if(navigator.vibrate) try{ navigator.vibrate(p); }catch(e){} }
+
+/* ============ PHAO HOA (chuan) ============ */
+const fx = document.getElementById('fx'), fxCtx = fx.getContext('2d');
+let fxParts = [], fxRunning = false;
+const FX_COLORS = ['#fda4af','#fcd34d','#86efac','#93c5fd','#c4b5fd','#f9a8d4'];
+function fxResize(){ fx.width = innerWidth; fx.height = innerHeight; }
+addEventListener('resize', fxResize); fxResize();
+function burst(x, y){
+  for(let i=0;i<38;i++){
+    const a = Math.random()*Math.PI*2, sp = 1.6 + Math.random()*4.6;
+    fxParts.push({x:x, y:y, vx:Math.cos(a)*sp, vy:Math.sin(a)*sp - 1.2, life:1, decay:0.008 + Math.random()*0.012,
+      color:FX_COLORS[(Math.random()*FX_COLORS.length)|0], r:2 + Math.random()*2.4});
+  }
+}
+function fxLoop(){
+  fxCtx.clearRect(0, 0, fx.width, fx.height);
+  fxParts = fxParts.filter(p => p.life > 0);
+  for(const p of fxParts){
+    p.x += p.vx; p.y += p.vy; p.vy += 0.1; p.life -= p.decay;
+    fxCtx.globalAlpha = Math.max(p.life, 0);
+    fxCtx.fillStyle = p.color;
+    fxCtx.beginPath(); fxCtx.arc(p.x, p.y, p.r, 0, Math.PI*2); fxCtx.fill();
+  }
+  fxCtx.globalAlpha = 1;
+  if(fxParts.length){ requestAnimationFrame(fxLoop); }
+  else { fxRunning = false; fx.style.display = 'none'; }
+}
+function fireworks(nBursts){
+  fx.style.display = 'block';
+  let n = 0;
+  const iv = setInterval(() => {
+    burst(innerWidth*(0.15 + Math.random()*0.7), innerHeight*(0.12 + Math.random()*0.3));
+    if(!fxRunning){ fxRunning = true; requestAnimationFrame(fxLoop); }
+    if(++n >= (nBursts||10)) clearInterval(iv);
+  }, 320);
+}
+
+
+/* ============ 3 BUC HINH BI MAT (SVG noi tuyen) ============ */
+const PICTURES = [
+{ name:'Rùa biển dưới đáy biển',
+  hint:'một người bạn sống dưới biển sâu',
+  wrongs:['Chú cá heo tinh nghịch','Vườn hoa mùa xuân'],
+  svg:'<svg viewBox="0 0 400 200" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">'
+  + '<rect width="400" height="200" fill="#0284c7"/>'
+  + '<rect y="150" width="400" height="50" fill="#0ea5e9"/>'
+  + '<path d="M0 168 Q60 156 120 168 T240 168 T400 168 V200 H0 Z" fill="#e7c07a"/>'
+  + '<path d="M30 200 Q36 150 26 118" stroke="#16a34a" stroke-width="7" fill="none" stroke-linecap="round"/>'
+  + '<path d="M52 200 Q60 158 50 132" stroke="#22c55e" stroke-width="6" fill="none" stroke-linecap="round"/>'
+  + '<path d="M352 200 Q346 152 358 120" stroke="#16a34a" stroke-width="7" fill="none" stroke-linecap="round"/>'
+  + '<circle cx="70" cy="52" r="6" fill="#bae6fd" opacity=".8"/><circle cx="92" cy="34" r="4.5" fill="#bae6fd" opacity=".8"/><circle cx="330" cy="46" r="5" fill="#bae6fd" opacity=".8"/><circle cx="312" cy="66" r="3.6" fill="#bae6fd" opacity=".8"/>'
+  + '<path d="M300 62 q10 -8 20 0 q-10 6 -20 0Z" fill="#fb923c"/><path d="M320 62 l10 -6 v12 Z" fill="#f97316"/><circle cx="307" cy="60" r="1.8" fill="#fff"/>'
+  + '<path d="M52 96 q9 -7 18 0 q-9 6 -18 0Z" fill="#facc15"/><path d="M70 96 l9 -5 v10 Z" fill="#eab308"/>'
+  + '<g>'
+  + '<ellipse cx="152" cy="86" rx="27" ry="17" fill="#4ade80" transform="rotate(-32 152 86)"/>'
+  + '<ellipse cx="238" cy="128" rx="27" ry="16" fill="#4ade80" transform="rotate(28 238 128)"/>'
+  + '<ellipse cx="246" cy="76" rx="24" ry="14" fill="#4ade80" transform="rotate(38 246 76)"/>'
+  + '<ellipse cx="160" cy="136" rx="24" ry="14" fill="#4ade80" transform="rotate(-24 160 136)"/>'
+  + '<path d="M262 106 l26 8 -24 10 Z" fill="#4ade80"/>'
+  + '<ellipse cx="205" cy="104" rx="62" ry="44" fill="#22c55e"/>'
+  + '<ellipse cx="205" cy="100" rx="48" ry="34" fill="#16a34a"/>'
+  + '<circle cx="186" cy="90" r="9" fill="#15803d"/><circle cx="222" cy="88" r="10" fill="#15803d"/><circle cx="204" cy="112" r="9" fill="#15803d"/><circle cx="178" cy="112" r="7" fill="#15803d"/><circle cx="230" cy="110" r="7" fill="#15803d"/>'
+  + '<circle cx="278" cy="102" r="19" fill="#4ade80"/>'
+  + '<circle cx="284" cy="97" r="3.4" fill="#14532d"/>'
+  + '<circle cx="277" cy="94" r="6" fill="#86efac" opacity=".65"/>'
+  + '</g>'
+  + '<path d="M96 178 l5 10 11 1 -8 7 2 11 -10 -5 -9 5 2 -11 -8 -7 11 -1 Z" fill="#f97316"/>'
+  + '</svg>' },
+{ name:'Vườn hoa mùa xuân',
+  hint:'nơi ong bướm bay lượn giữa hương thơm',
+  wrongs:['Công viên cây xanh','Tàu vũ trụ giữa các vì sao'],
+  svg:'<svg viewBox="0 0 400 200" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">'
+  + '<rect width="400" height="200" fill="#7dd3fc"/>'
+  + '<circle cx="338" cy="38" r="24" fill="#fde047"/>'
+  + '<g stroke="#facc15" stroke-width="4" stroke-linecap="round"><path d="M338 4 v10"/><path d="M338 62 v10"/><path d="M304 38 h10"/><path d="M362 38 h10"/><path d="M314 14 l7 7"/><path d="M355 55 l7 7"/><path d="M362 14 l-7 7"/><path d="M321 55 l-7 7"/></g>'
+  + '<g fill="#ffffff"><ellipse cx="74" cy="38" rx="30" ry="13"/><ellipse cx="102" cy="30" rx="22" ry="11"/><ellipse cx="196" cy="24" rx="24" ry="10"/><ellipse cx="218" cy="18" rx="16" ry="8"/></g>'
+  + '<path d="M0 138 Q100 124 200 136 T400 134 V200 H0 Z" fill="#4ade80"/>'
+  + '<path d="M0 158 Q110 146 220 156 T400 154 V200 H0 Z" fill="#22c55e"/>'
+  + '<g stroke="#15803d" stroke-width="3.4" stroke-linecap="round"><path d="M60 196 V158"/><path d="M120 198 V166"/><path d="M182 196 V156"/><path d="M246 198 V168"/><path d="M308 196 V160"/><path d="M352 198 V170"/></g>'
+  + '<g><circle cx="60" cy="146" r="8" fill="#f472b6"/><circle cx="49" cy="154" r="8" fill="#f9a8d4"/><circle cx="71" cy="154" r="8" fill="#f9a8d4"/><circle cx="54" cy="164" r="8" fill="#f472b6"/><circle cx="66" cy="164" r="8" fill="#f472b6"/><circle cx="60" cy="156" r="6" fill="#fde047"/></g>'
+  + '<g><circle cx="182" cy="144" r="8" fill="#ef4444"/><circle cx="171" cy="152" r="8" fill="#fca5a5"/><circle cx="193" cy="152" r="8" fill="#fca5a5"/><circle cx="176" cy="162" r="8" fill="#ef4444"/><circle cx="188" cy="162" r="8" fill="#ef4444"/><circle cx="182" cy="154" r="6" fill="#fff7ed"/></g>'
+  + '<g><circle cx="308" cy="148" r="8" fill="#a78bfa"/><circle cx="297" cy="156" r="8" fill="#c4b5fd"/><circle cx="319" cy="156" r="8" fill="#c4b5fd"/><circle cx="302" cy="166" r="8" fill="#a78bfa"/><circle cx="314" cy="166" r="8" fill="#a78bfa"/><circle cx="308" cy="158" r="6" fill="#fde047"/></g>'
+  + '<g><path d="M120 152 q-4 8 0 14 q4 -6 0 -14Z" fill="#f43f5e"/><path d="M120 152 q-10 -2 -13 6 q8 3 13 -6Z" fill="#fb7185"/><path d="M120 152 q10 -2 13 6 q-8 3 -13 -6Z" fill="#fb7185"/></g>'
+  + '<g><path d="M246 154 q-4 8 0 14 q4 -6 0 -14Z" fill="#f59e0b"/><path d="M246 154 q-10 -2 -13 6 q8 3 13 -6Z" fill="#fbbf24"/><path d="M246 154 q10 -2 13 6 q-8 3 -13 -6Z" fill="#fbbf24"/></g>'
+  + '<g><path d="M352 156 q-4 8 0 14 q4 -6 0 -14Z" fill="#ec4899"/><path d="M352 156 q-10 -2 -13 6 q8 3 13 -6Z" fill="#f9a8d4"/><path d="M352 156 q10 -2 13 6 q-8 3 -13 -6Z" fill="#f9a8d4"/></g>'
+  + '<g><ellipse cx="140" cy="86" rx="11" ry="7" fill="#f97316" transform="rotate(-24 140 86)"/><ellipse cx="140" cy="98" rx="11" ry="7" fill="#fb923c" transform="rotate(24 140 98)"/><rect x="137" y="88" width="5" height="9" rx="2.5" fill="#7c2d12"/></g>'
+  + '<g><ellipse cx="272" cy="70" rx="9" ry="6" fill="#7c3aed" transform="rotate(-24 272 70)"/><ellipse cx="272" cy="80" rx="9" ry="6" fill="#a78bfa" transform="rotate(24 272 80)"/><rect x="270" y="72" width="4" height="7" rx="2" fill="#312e81"/></g>'
+  + '</svg>' },
+{ name:'Tàu vũ trụ giữa các vì sao',
+  hint:'bay cao thật cao, ra ngoài bầu trời',
+  wrongs:['Máy bay trên bầu trời','Rùa biển dưới đáy biển'],
+  svg:'<svg viewBox="0 0 400 200" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">'
+  + '<rect width="400" height="200" fill="#1e1b4b"/>'
+  + '<g fill="#ffffff"><circle cx="30" cy="26" r="2.2"/><circle cx="82" cy="58" r="1.7"/><circle cx="140" cy="18" r="2"/><circle cx="238" cy="30" r="1.8"/><circle cx="330" cy="66" r="2.1"/><circle cx="372" cy="20" r="1.7"/><circle cx="52" cy="118" r="1.8"/><circle cx="112" cy="88" r="1.5"/><circle cx="306" cy="118" r="1.6"/><circle cx="366" cy="140" r="2"/><circle cx="196" cy="66" r="1.5"/><circle cx="24" cy="168" r="1.7"/></g>'
+  + '<g fill="#fde68a"><path d="M96 30 l2.6 6.4 6.4 2.6 -6.4 2.6 -2.6 6.4 -2.6 -6.4 -6.4 -2.6 6.4 -2.6Z"/><path d="M318 96 l2.2 5.4 5.4 2.2 -5.4 2.2 -2.2 5.4 -2.2 -5.4 -5.4 -2.2 5.4 -2.2Z"/><path d="M352 156 l2 5 5 2 -5 2 -2 5 -2 -5 -5 -2 5 -2Z"/></g>'
+  + '<path d="M352 22 a21 21 0 1 0 14 36 a16.5 16.5 0 1 1 -14 -36Z" fill="#fde68a"/>'
+  + '<circle cx="70" cy="164" r="30" fill="#fb923c"/>'
+  + '<circle cx="58" cy="154" r="6" fill="#ea580c" opacity=".55"/><circle cx="82" cy="176" r="4.4" fill="#ea580c" opacity=".55"/>'
+  + '<ellipse cx="70" cy="166" rx="47" ry="11" fill="none" stroke="#facc15" stroke-width="4.5" transform="rotate(-14 70 166)"/>'
+  + '<g>'
+  + '<path d="M196 158 q-16 14 -8 30 q6 -10 12 -12Z" fill="#f97316"/>'
+  + '<path d="M204 160 q-8 12 -3 24 q5 -8 9 -10Z" fill="#facc15"/>'
+  + '<path d="M168 128 q-20 10 -24 30 q16 -2 26 -12Z" fill="#dc2626"/>'
+  + '<path d="M232 128 q20 10 24 30 q-16 -2 -26 -12Z" fill="#dc2626"/>'
+  + '<path d="M200 26 q27 24 27 66 q0 34 -12 52 h-30 q-12 -18 -12 -52 q0 -42 27 -66Z" fill="#f8fafc"/>'
+  + '<path d="M200 26 q14 12 20 30 h-40 q6 -18 20 -30Z" fill="#ef4444"/>'
+  + '<rect x="173" y="128" width="54" height="16" rx="8" fill="#ef4444"/>'
+  + '<circle cx="200" cy="88" r="14" fill="#38bdf8" stroke="#94a3b8" stroke-width="4"/>'
+  + '<circle cx="195" cy="83" r="4.5" fill="#e0f2fe"/>'
+  + '</g>'
+  + '</svg>' }
+];
+
+/* ============ DIEU HUONG MAN HINH ============ */
+function show(id){
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('on'));
+  document.getElementById(id).classList.add('on');
+  scrollTo({top:0, behavior:'smooth'});
+}
+document.querySelectorAll('[data-home]').forEach(b => b.addEventListener('click', () => { sfx('click'); show('scr-home'); }));
+
+/* ============ LOGIC LAT MANH GHEP ============ */
+const TOTAL_Q = 8, PTS_Q = 10, PTS_GUESS = 20, PASS = 90;
+let bankKey = 'tonghop';
+let G = null;
+document.getElementById('bank-chips').addEventListener('click', e => {
+  const b = e.target.closest('.chip'); if(!b) return;
+  document.querySelectorAll('#bank-chips .chip').forEach(c => c.classList.remove('sel'));
+  b.classList.add('sel'); bankKey = b.dataset.bank; sfx('click');
+});
+function shuffle(arr){ const a = arr.slice(); for(let i=a.length-1;i>0;i--){ const j = (Math.random()*(i+1))|0; [a[i],a[j]]=[a[j],a[i]]; } return a; }
+function newGame(){
+  const picIdx = (Math.random()*PICTURES.length)|0;
+  const qs = shuffle(BANKS[bankKey]).slice(0, TOTAL_Q).map(o => ({q:o.q, a:o.a.slice(), c:o.c, picked:-1}));
+  G = {pic:picIdx, qs:qs, tileOrder:shuffle([0,1,2,3,4,5,6,7]), opened:[false,false,false,false,false,false,false,false],
+       cur:0, score:0, correct:0, openedCount:0, phase:'question', guessPicked:-1, guessCorrect:false};
+  document.getElementById('art').innerHTML = PICTURES[picIdx].svg;
+  const th = document.getElementById('tiles'); th.innerHTML = '';
+  for(let i=0;i<8;i++){
+    const d = document.createElement('div');
+    d.className = 'tile t' + i; d.id = 'tile-' + i; d.textContent = i + 1;
+    th.appendChild(d);
+  }
+  document.getElementById('hint-line').textContent = '💡 Gợi ý: ' + PICTURES[picIdx].hint;
+  document.getElementById('guess-card').className = 'q-card';
+  updateHUD(); updateOpened();
+  show('scr-game');
+  showQuestion();
+}
+function updateHUD(){
+  document.getElementById('round-pill').textContent = 'Câu ' + Math.min(G.cur + 1, TOTAL_Q) + '/' + TOTAL_Q;
+  document.getElementById('score-pill').textContent = '⭐ ' + G.score + ' điểm';
+}
+function updateOpened(){
+  document.getElementById('opened-line').textContent = 'Đã mở ' + G.openedCount + '/8 mảnh';
+}
+document.getElementById('btn-start').addEventListener('click', () => { ac(); sfx('fanfare'); newGame(); });
+document.getElementById('btn-again').addEventListener('click', () => { sfx('click'); newGame(); });
+function showQuestion(){
+  const q = G.qs[G.cur], tile = G.tileOrder[G.cur];
+  G.phase = 'question';
+  updateHUD();
+  document.getElementById('q-pill').textContent = 'Câu ' + (G.cur + 1) + ' · Mảnh số ' + (tile + 1);
+  document.getElementById('q-text').textContent = q.q;
+  const host = document.getElementById('answers'); host.innerHTML = '';
+  document.getElementById('feedback').className = 'feedback';
+  document.getElementById('next-row').className = 'next-row';
+  const order = shuffle([0,1,2,3]);
+  const letters = ['A','B','C','D'];
+  order.forEach((origIdx, pos) => {
+    const b = document.createElement('button');
+    b.className = 'ans'; b.dataset.orig = origIdx;
+    b.innerHTML = '<span class="badge">' + letters[pos] + '</span><span></span>';
+    b.lastElementChild.textContent = q.a[origIdx];
+    b.addEventListener('click', () => answer(b, origIdx));
+    host.appendChild(b);
+  });
+  document.getElementById('q-card').className = 'q-card on';
+}
+function answer(btn, origIdx){
+  if(!G || G.phase !== 'question') return;
+  G.phase = 'answered';
+  const q = G.qs[G.cur], tile = G.tileOrder[G.cur];
+  q.picked = origIdx;
+  const letters = ['A','B','C','D'];
+  const btns = Array.from(document.querySelectorAll('#answers .ans'));
+  btns.forEach(b => {
+    b.classList.add('locked');
+    if(parseInt(b.dataset.orig, 10) === q.c) b.classList.add('correct');
+  });
+  const fb = document.getElementById('feedback');
+  if(origIdx === q.c){
+    G.correct++; G.score += PTS_Q;
+    G.opened[tile] = true; G.openedCount++;
+    document.getElementById('tile-' + tile).classList.add('open');
+    fb.className = 'feedback ok';
+    fb.textContent = '✅ ĐÚNG! +10 điểm — mảnh số ' + (tile + 1) + ' mở ra rồi! Đáp án ' + letters[btns.indexOf(btn)] + ' — ' + q.a[q.c];
+    sfx('correct'); vibrate(40);
+  } else {
+    btn.classList.add('wrong');
+    const rightBtn = btns.find(b => parseInt(b.dataset.orig, 10) === q.c);
+    fb.className = 'feedback bad';
+    fb.textContent = '❌ SAI! Bạn chọn ' + letters[btns.indexOf(btn)] + ' — Đúng là ' + letters[btns.indexOf(rightBtn)] + ' — ' + q.a[q.c] + '. Mảnh số ' + (tile + 1) + ' vẫn bị che.';
+    sfx('wrong'); vibrate(150);
+  }
+  updateHUD(); updateOpened();
+  document.getElementById('btn-next').textContent = (G.cur + 1 >= TOTAL_Q) ? 'ĐOÁN HÌNH ➜' : 'CÂU TIẾP ➜';
+  document.getElementById('next-row').className = 'next-row on';
+}
+document.getElementById('btn-next').addEventListener('click', () => {
+  if(!G || G.phase !== 'answered') return;
+  sfx('click');
+  G.cur++;
+  if(G.cur >= TOTAL_Q){ showGuess(); return; }
+  document.getElementById('q-card').className = 'q-card';
+  void document.getElementById('q-card').offsetWidth;
+  showQuestion();
+  scrollTo({top:0, behavior:'smooth'});
+});
+function showGuess(){
+  G.phase = 'guess';
+  document.getElementById('q-card').className = 'q-card';
+  const pic = PICTURES[G.pic];
+  const opts = shuffle([pic.name].concat(pic.wrongs));
+  const host = document.getElementById('guess-answers'); host.innerHTML = '';
+  document.getElementById('guess-feedback').className = 'feedback';
+  document.getElementById('guess-next-row').className = 'next-row';
+  const letters = ['A','B','C'];
+  opts.forEach((name, pos) => {
+    const b = document.createElement('button');
+    b.className = 'ans'; b.dataset.name = name;
+    b.innerHTML = '<span class="badge">' + letters[pos] + '</span><span></span>';
+    b.lastElementChild.textContent = name;
+    b.addEventListener('click', () => answerGuess(b, name));
+    host.appendChild(b);
+  });
+  document.getElementById('guess-card').className = 'q-card on';
+  document.getElementById('guess-card').scrollIntoView({behavior:'smooth', block:'center'});
+  sfx('fanfare');
+}
+function answerGuess(btn, name){
+  if(!G || G.phase !== 'guess') return;
+  G.phase = 'guessDone';
+  const pic = PICTURES[G.pic];
+  G.guessPicked = name;
+  const btns = Array.from(document.querySelectorAll('#guess-answers .ans'));
+  btns.forEach(b => {
+    b.classList.add('locked');
+    if(b.dataset.name === pic.name) b.classList.add('correct');
+  });
+  const fb = document.getElementById('guess-feedback');
+  if(name === pic.name){
+    G.guessCorrect = true; G.score += PTS_GUESS;
+    fb.className = 'feedback ok';
+    fb.textContent = '✅ CHÍNH XÁC! +20 điểm — Đây đúng là: ' + pic.name + '!';
+    sfx('correct'); vibrate([60,40,60]);
+  } else {
+    btn.classList.add('wrong');
+    fb.className = 'feedback bad';
+    fb.textContent = '❌ SAI! Bạn chọn “' + name + '” — Đúng là “' + pic.name + '”.';
+    sfx('wrong'); vibrate(150);
+  }
+  updateHUD();
+  document.getElementById('guess-next-row').className = 'next-row on';
+}
+document.getElementById('btn-finish').addEventListener('click', () => {
+  if(!G || G.phase !== 'guessDone') return;
+  sfx('click'); finishGame();
+});
+function finishGame(){
+  G.phase = 'done';
+  const pic = PICTURES[G.pic];
+  const pass = G.score >= PASS;
+  const card = document.getElementById('result-card');
+  card.className = 'result-card ' + (pass ? 'pass' : 'fail');
+  document.getElementById('result-score').textContent = G.score + '/100 điểm';
+  document.getElementById('result-score').style.color = pass ? '#16a34a' : '#dc2626';
+  document.getElementById('result-title').textContent = pass ? '🎉 XUẤT SẮC!' : '💪 SUÝT NỮA THÔI!';
+  document.getElementById('result-sub').innerHTML = pass
+    ? 'Con trả lời đúng ' + G.correct + '/8 câu, mở ' + G.openedCount + '/8 mảnh và đoán ' + (G.guessCorrect ? 'đúng' : 'sai') + ' bức hình. Quá giỏi!'
+    : 'Con trả lời đúng ' + G.correct + '/8 câu, mở ' + G.openedCount + '/8 mảnh và đoán ' + (G.guessCorrect ? 'đúng' : 'sai') + ' bức hình. Còn thiếu ' + (PASS - G.score) + ' điểm nữa là chạm mốc XUẤT SẮC (90 điểm). Chơi lại gỡ nhé!';
+  document.getElementById('result-art').innerHTML = pic.svg;
+  document.getElementById('result-pic-name').textContent = '🖼️ ' + pic.name;
+  const rv = document.getElementById('review'); rv.innerHTML = '';
+  G.qs.forEach((q, i) => {
+    const row = document.createElement('div'); row.className = 'review-row';
+    const ok = q.picked === q.c, tile = G.tileOrder[i];
+    let txt = q.q + ' — Đúng: ' + q.a[q.c];
+    if(!ok) txt += ' · Bạn chọn: ' + (q.picked >= 0 ? q.a[q.picked] : '—');
+    row.innerHTML = '<span class="st">' + (ok ? '✅' : '❌') + '</span><span></span><span class="pts"></span>';
+    row.children[1].textContent = 'Câu ' + (i + 1) + ' (mảnh ' + (tile + 1) + '): ' + txt;
+    row.children[2].textContent = ok ? '+10đ' : '0đ';
+    rv.appendChild(row);
+  });
+  const grow = document.createElement('div'); grow.className = 'review-row';
+  grow.innerHTML = '<span class="st">' + (G.guessCorrect ? '✅' : '❌') + '</span><span></span><span class="pts"></span>';
+  grow.children[1].textContent = 'Đoán hình: ' + (G.guessPicked || '—') + ' — Đúng: ' + pic.name;
+  grow.children[2].textContent = G.guessCorrect ? '+20đ' : '0đ';
+  rv.appendChild(grow);
+  show('scr-result');
+  if(pass){ sfx('win'); vibrate([80,40,80,40,150]); fireworks(10); }
+  else { sfx('lose'); vibrate([200,80,200]); }
+}
+window.__LM = { get G(){ return G; }, get PICTURES(){ return PICTURES; } };
+
+</script>
+</body>
+</html>

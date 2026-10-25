@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Chiếc Nón Kỳ Diệu — Quay nón đoán chữ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Be+Vietnam+Pro:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+:root{--ink:#1e293b}
+html,body{min-height:100%}
+body{
+  font-family:'Be Vietnam Pro',system-ui,sans-serif;color:var(--ink);
+  background:
+    radial-gradient(circle at 12% 18%, rgba(124,58,237,.13) 3px, transparent 3.5px) 0 0/46px 46px,
+    radial-gradient(circle at 78% 64%, rgba(245,158,11,.16) 3px, transparent 3.5px) 23px 23px/46px 46px,
+    linear-gradient(180deg,#fff7e6,#ffedd5);
+  padding:0 0 34px;
+}
+.wrap{max-width:560px;margin:0 auto;padding:0 14px}
+.screen{display:none}
+.screen.on{display:block;animation:fadeIn .3s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.hero{
+  margin:14px 0 16px;padding:22px 16px 20px;text-align:center;color:#fff;border-radius:26px;
+  background:linear-gradient(135deg,#7c3aed 0%,#db2777 58%,#f59e0b 120%);
+  box-shadow:0 10px 26px rgba(124,58,237,.35);border:3px solid rgba(255,255,255,.35);
+}
+.hero h1{font-family:'Baloo 2','Be Vietnam Pro',sans-serif;font-size:34px;font-weight:800;line-height:1.12;text-shadow:0 3px 0 rgba(0,0,0,.18)}
+.hero p{margin-top:6px;font-size:15px;font-weight:600;opacity:.96}
+.hero .hat-emoji{display:inline-block;font-size:42px;animation:floaty 3s ease-in-out infinite}
+@keyframes floaty{0%,100%{transform:translateY(0) rotate(-5deg)}50%{transform:translateY(-7px) rotate(5deg)}}
+.card{background:#fff;border-radius:22px;border:2.5px solid #ddd6fe;box-shadow:0 6px 0 #c4b5fd,0 14px 24px rgba(124,58,237,.13);padding:18px 16px;margin-bottom:16px}
+.card h2{font-family:'Baloo 2','Be Vietnam Pro',sans-serif;font-size:21px;font-weight:800;margin-bottom:10px;color:#5b21b6}
+.btn{display:block;width:100%;font-family:'Baloo 2','Be Vietnam Pro',sans-serif;font-weight:800;cursor:pointer;border:2.2px solid rgba(0,0,0,.15);border-radius:18px;color:#fff;text-align:center;box-shadow:0 5px 0 rgba(0,0,0,.25);transition:transform .08s, box-shadow .08s;padding:15px 12px;font-size:21px}
+.btn:active{transform:translateY(4px);box-shadow:0 1px 0 rgba(0,0,0,.25)}
+.btn-big{background:linear-gradient(135deg,#f97316,#f59e0b);font-size:24px;padding:17px 12px}
+.btn-blue{background:linear-gradient(135deg,#2563eb,#06b6d4)}
+.btn-green{background:linear-gradient(135deg,#16a34a,#22c55e)}
+.btn-violet{background:linear-gradient(135deg,#7c3aed,#db2777)}
+.btn:disabled{opacity:.55;pointer-events:none}
+.howto{font-size:14.5px;line-height:1.65;font-weight:600;color:#57534e}
+.howto b{color:#b45309}
+.topbar{display:flex;gap:8px;align-items:center;margin:14px 0 12px}
+.pill{font-family:'Baloo 2','Be Vietnam Pro',sans-serif;font-weight:800;font-size:16px;border-radius:999px;padding:8px 14px;color:#fff;box-shadow:0 3px 0 rgba(0,0,0,.2);border:2px solid rgba(255,255,255,.5);white-space:nowrap}
+.pill-score{background:linear-gradient(135deg,#f59e0b,#f97316)}
+.pill-hearts{background:linear-gradient(135deg,#e11d48,#db2777);letter-spacing:1.5px}
+.home-btn{font-family:'Baloo 2','Be Vietnam Pro',sans-serif;font-weight:800;font-size:15px;background:#fff;color:#5b21b6;border:2.2px solid #ddd6fe;border-radius:999px;padding:8px 13px;cursor:pointer;box-shadow:0 3px 0 #ddd6fe}
+.home-btn:active{transform:translateY(2px);box-shadow:0 1px 0 #ddd6fe}
+.spacer{flex:1}
+.hint-card{background:linear-gradient(135deg,#fef3c7,#fde68a);border:2.5px solid #f59e0b;border-radius:18px;padding:11px 14px;font-size:16.5px;font-weight:700;color:#92400e;box-shadow:0 4px 0 #d97706;margin-bottom:13px;line-height:1.5}
+.board{background:#fff;border-radius:22px;border:2.5px solid #bfdbfe;box-shadow:0 6px 0 #93c5fd,0 14px 24px rgba(37,99,235,.13);padding:18px 10px 16px;margin-bottom:6px}
+.board-words{display:flex;flex-wrap:wrap;gap:14px 20px;justify-content:center;align-items:center}
+.word{display:flex;gap:5px}
+.cell{
+  width:35px;height:44px;border-radius:9px;display:flex;align-items:center;justify-content:center;
+  font-family:'Baloo 2','Be Vietnam Pro',sans-serif;font-size:22px;font-weight:800;color:#1e3a8a;
+  background:linear-gradient(180deg,#eff6ff,#dbeafe);border:2.2px solid #93c5fd;border-bottom:5px solid #2563eb;
+}
+.cell.open{background:linear-gradient(180deg,#f0fdf4,#bbf7d0);border-color:#4ade80;border-bottom-color:#16a34a;color:#14532d;animation:pop .35s ease}
+.cell.miss-final{background:linear-gradient(180deg,#fef2f2,#fecaca);border-color:#f87171;border-bottom-color:#dc2626;color:#7f1d1d}
+@keyframes pop{0%{transform:scale(.6)}60%{transform:scale(1.13)}100%{transform:scale(1)}}
+.wheel-zone{position:relative;width:min(72vw,300px);margin:8px auto 2px}
+.wheel-svg{width:100%;height:auto;display:block;filter:drop-shadow(0 10px 18px rgba(124,58,237,.32))}
+.pointer{position:absolute;left:50%;top:-8px;transform:translateX(-50%);z-index:5;width:0;height:0;border-left:16px solid transparent;border-right:16px solid transparent;border-top:26px solid #dc2626;filter:drop-shadow(0 3px 2px rgba(0,0,0,.3))}
+.hub-btn{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:6;width:84px;height:84px;border-radius:50%;border:3.5px solid #fff;cursor:pointer;color:#fff;font-family:'Baloo 2','Be Vietnam Pro',sans-serif;font-size:21px;font-weight:800;background:radial-gradient(circle at 32% 30%,#a78bfa,#7c3aed 68%,#5b21b6);box-shadow:0 5px 0 #4c1d95,0 10px 18px rgba(0,0,0,.3);text-shadow:0 2px 0 rgba(0,0,0,.25)}
+.hub-btn:active{transform:translate(-50%,-50%) translateY(3px);box-shadow:0 2px 0 #4c1d95}
+.hub-btn:disabled{filter:grayscale(.4);opacity:.7;pointer-events:none}
+.stake-banner{display:none;text-align:center;margin:12px auto 4px;max-width:460px;font-family:'Baloo 2','Be Vietnam Pro',sans-serif;font-weight:800;font-size:20px;color:#5b21b6;background:linear-gradient(135deg,#ede9fe,#ddd6fe);border:2.5px solid #8b5cf6;border-radius:18px;padding:12px 14px;box-shadow:0 5px 0 #7c3aed;animation:pop .35s ease;line-height:1.45}
+.stake-banner.on{display:block}
+.stake-banner.bad{color:#991b1b;background:linear-gradient(135deg,#fef2f2,#fee2e2);border-color:#f87171;box-shadow:0 5px 0 #dc2626}
+.stake-banner.good{color:#065f46;background:linear-gradient(135deg,#ecfdf5,#a7f3d0);border-color:#34d399;box-shadow:0 5px 0 #059669}
+.keys-label{text-align:center;font-family:'Baloo 2','Be Vietnam Pro',sans-serif;font-weight:800;font-size:17px;color:#5b21b6;margin:14px 0 8px}
+.keyboard{display:grid;grid-template-columns:repeat(6,1fr);gap:8px}
+.key{
+  font-family:'Baloo 2','Be Vietnam Pro',sans-serif;font-size:20px;font-weight:800;color:#fff;cursor:pointer;
+  background:linear-gradient(135deg,#6366f1,#2563eb);border:2.2px solid rgba(0,0,0,.14);border-radius:14px;
+  padding:11px 0 9px;box-shadow:0 4px 0 rgba(0,0,0,.22);transition:transform .08s, box-shadow .08s;
+}
+.key:active{transform:translateY(3px);box-shadow:0 1px 0 rgba(0,0,0,.22)}
+.key small{display:block;font-family:'Be Vietnam Pro',sans-serif;font-size:9.5px;font-weight:700;opacity:.85;letter-spacing:.2px}
+.key.hit{background:linear-gradient(135deg,#16a34a,#22c55e);pointer-events:none}
+.key.miss{background:linear-gradient(135deg,#9ca3af,#6b7280);opacity:.55;pointer-events:none}
+.key:disabled{opacity:.45;pointer-events:none}
+.key.hit:disabled,.key.miss:disabled{opacity:1}
+.solve-row{margin-top:14px}
+.solve-panel{display:none;background:#fff;border:2.5px solid #ddd6fe;border-radius:18px;padding:14px;margin-top:12px;box-shadow:0 5px 0 #c4b5fd}
+.solve-panel.on{display:block;animation:fadeIn .25s ease}
+.solve-panel label{font-family:'Baloo 2','Be Vietnam Pro',sans-serif;font-weight:800;font-size:16.5px;color:#5b21b6;display:block;margin-bottom:8px}
+.solve-flex{display:flex;gap:9px}
+.solve-flex input{
+  flex:1;min-width:0;border:2.2px solid #c4b5fd;border-radius:14px;padding:12px 13px;
+  font-family:'Be Vietnam Pro',sans-serif;font-size:18px;font-weight:700;color:var(--ink);background:#f5f3ff;text-transform:uppercase;
+}
+.solve-flex input:focus{outline:3px solid #a78bfa}
+.solve-flex .btn{width:auto;padding:12px 18px;font-size:18px}
+.result-score{font-family:'Baloo 2','Be Vietnam Pro',sans-serif;font-size:52px;font-weight:800;text-align:center;line-height:1.05}
+.result-card{border-radius:22px;border:3px solid;padding:20px 16px;text-align:center;margin-bottom:16px}
+.result-card.pass{background:linear-gradient(135deg,#ecfdf5,#d1fae5);border-color:#16a34a}
+.result-card.fail{background:linear-gradient(135deg,#fef2f2,#fee2e2);border-color:#dc2626}
+.result-title{font-family:'Baloo 2','Be Vietnam Pro',sans-serif;font-size:27px;font-weight:800;margin-bottom:6px}
+.result-sub{font-size:16px;font-weight:700;line-height:1.6}
+.result-phrase{font-family:'Baloo 2','Be Vietnam Pro',sans-serif;font-size:23px;font-weight:800;letter-spacing:1px;margin:8px 0 2px;color:#1e3a8a}
+.btn-row{display:grid;gap:10px;margin-top:12px}
+#fx{position:fixed;inset:0;pointer-events:none;z-index:99;display:none}
+.foot{text-align:center;font-size:13px;font-weight:600;color:#a8a29e;margin-top:8px}
+@media (max-width:380px){
+  .hero h1{font-size:29px}
+  .cell{width:31px;height:40px;font-size:20px}
+  .key{font-size:18px}
+  .stake-banner{font-size:18px}
+}
+</style>
+</head>
+<body>
+<canvas id="fx"></canvas>
+<div class="wrap">
+
+  <section class="screen on" id="scr-home">
+    <div class="hero">
+      <span class="hat-emoji">🎩</span>
+      <h1>CHIẾC NÓN<br>KỲ DIỆU</h1>
+      <p>Quay chiếc nón, đoán từng chữ cái<br>để mở cụm từ bí mật!</p>
+    </div>
+    <div class="card">
+      <h2>🪄 Cách chơi</h2>
+      <p class="howto">
+        Mỗi ván có một <b>cụm từ bí mật</b> và một <b>gợi ý</b>. Bấm <b>QUAY</b> ở giữa vòng để nhận điểm cho lượt này,
+        rồi bấm <b>một chữ cái</b> trên bàn phím: đoán đúng thì mỗi chữ mở ra được nhân với điểm vòng quay
+        (ô <b>⭐ MAY MẮN</b> được gấp đôi!), đoán sai mất một trái tim ❤️. Hết <b>5 trái tim</b> là thua ván.<br>
+        Tự tin rồi thì bấm <b>ĐOÁN CẢ CỤM</b>: đúng được thưởng <b>100 điểm</b>, sai bị trừ <b>50 điểm</b> và mất một trái tim.
+      </p>
+      <div style="height:14px"></div>
+      <button class="btn btn-big" id="btn-start">▶ BẮT ĐẦU CHƠI</button>
+    </div>
+    <p class="foot">Dựng lại từ mẫu game PowerPoint “Chiếc nón kỳ diệu”</p>
+  </section>
+
+  <section class="screen" id="scr-game">
+    <div class="topbar">
+      <button class="home-btn" data-home>🏠 Trang chủ</button>
+      <div class="spacer"></div>
+      <span class="pill pill-hearts" id="hearts-pill">♥♥♥♥♥</span>
+      <span class="pill pill-score" id="score-pill">⭐ 0 điểm</span>
+    </div>
+    <div class="hint-card" id="hint-card">💡 Gợi ý: <span id="hint-text"></span></div>
+    <div class="board"><div class="board-words" id="board"></div></div>
+    <div class="wheel-zone">
+      <div class="pointer"></div>
+      <div id="wheel-host"></div>
+      <button class="hub-btn" id="btn-spin">QUAY</button>
+    </div>
+    <div class="stake-banner" id="stake-banner"></div>
+    <div class="keys-label" id="keys-label">🎡 Bấm QUAY để bắt đầu lượt!</div>
+    <div class="keyboard" id="keyboard"></div>
+    <div class="solve-row"><button class="btn btn-violet" id="btn-solve-open">🔤 ĐOÁN CẢ CỤM</button></div>
+    <div class="solve-panel" id="solve-panel">
+      <label for="solve-input">Nhập cả cụm từ (không cần gõ dấu cũng được):</label>
+      <div class="solve-flex">
+        <input id="solve-input" type="text" autocomplete="off" placeholder="Ví dụ: CON MÈO">
+        <button class="btn btn-green" id="btn-solve-go">ĐOÁN</button>
+      </div>
+      <div style="height:9px"></div>
+      <button class="btn btn-blue" id="btn-solve-cancel" style="font-size:16px;padding:10px">↩ Thôi, đoán chữ tiếp</button>
+    </div>
+  </section>
+
+  <section class="screen" id="scr-result">
+    <div style="height:14px"></div>
+    <div class="result-card" id="result-card">
+      <div class="result-score" id="result-score">0</div>
+      <div class="result-title" id="result-title"></div>
+      <div class="result-phrase" id="result-phrase"></div>
+      <div class="result-sub" id="result-sub"></div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-big" id="btn-again">🔁 CHƠI VÁN MỚI</button>
+      <button class="btn btn-blue" data-home>🏠 VỀ TRANG CHỦ</button>
+    </div>
+  </section>
+
+</div>
+<script>
+'use strict';
+/* ============ AM THANH WebAudio (chuan Be Hoc Vui) ============ */
+let AC = null;
+function ac(){ if(!AC){ try{ AC = new (window.AudioContext||window.webkitAudioContext)(); }catch(e){} } if(AC && AC.state==='suspended') AC.resume(); return AC; }
+function tone(f0, f1, dur, delay, type, vol){
+  const ctx = ac(); if(!ctx) return;
+  const t = ctx.currentTime + (delay||0);
+  const o = ctx.createOscillator(), g = ctx.createGain();
+  o.type = type||'sine'; o.frequency.setValueAtTime(f0, t);
+  o.frequency.exponentialRampToValueAtTime(Math.max(f1,1), t + dur);
+  g.gain.setValueAtTime(0.0001, t);
+  g.gain.exponentialRampToValueAtTime(vol||0.22, t + 0.015);
+  g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+  o.connect(g); g.connect(ctx.destination); o.start(t); o.stop(t + dur + 0.05);
+}
+function sfx(name){
+  if(name==='click') tone(620, 520, 0.06, 0, 'triangle', 0.15);
+  if(name==='tick') tone(1250, 1100, 0.03, 0, 'square', 0.05);
+  if(name==='correct'){ tone(680, 880, 0.12, 0); tone(960, 1150, 0.14, 0.12); }
+  if(name==='wrong'){ tone(180, 110, 0.35, 0, 'sine', 0.26); }
+  if(name==='win'){ [523,659,784,1046].forEach((f,i)=>tone(f, f, 0.22, i*0.15)); }
+  if(name==='lose'){ [280,200,150].forEach((f,i)=>tone(f, f*0.94, 0.26, i*0.25)); }
+  if(name==='fanfare'){ [523,659,784].forEach((f,i)=>tone(f, f, 0.18, i*0.12)); }
+}
+function vibrate(p){ if(navigator.vibrate) try{ navigator.vibrate(p); }catch(e){} }
+
+/* ============ PHAO HOA (chuan) ============ */
+const fx = document.getElementById('fx'), fxCtx = fx.getContext('2d');
+let fxParts = [], fxRunning = false;
+const FX_COLORS = ['#fda4af','#fcd34d','#86efac','#93c5fd','#c4b5fd','#f9a8d4'];
+function fxResize(){ fx.width = innerWidth; fx.height = innerHeight; }
+addEventListener('resize', fxResize); fxResize();
+function burst(x, y){
+  for(let i=0;i<38;i++){
+    const a = Math.random()*Math.PI*2, sp = 1.6 + Math.random()*4.6;
+    fxParts.push({x:x, y:y, vx:Math.cos(a)*sp, vy:Math.sin(a)*sp - 1.2, life:1, decay:0.008 + Math.random()*0.012,
+      color:FX_COLORS[(Math.random()*FX_COLORS.length)|0], r:2 + Math.random()*2.4});
+  }
+}
+function fxLoop(){
+  fxCtx.clearRect(0, 0, fx.width, fx.height);
+  fxParts = fxParts.filter(p => p.life > 0);
+  for(const p of fxParts){
+    p.x += p.vx; p.y += p.vy; p.vy += 0.1; p.life -= p.decay;
+    fxCtx.globalAlpha = Math.max(p.life, 0);
+    fxCtx.fillStyle = p.color;
+    fxCtx.beginPath(); fxCtx.arc(p.x, p.y, p.r, 0, Math.PI*2); fxCtx.fill();
+  }
+  fxCtx.globalAlpha = 1;
+  if(fxParts.length){ requestAnimationFrame(fxLoop); }
+  else { fxRunning = false; fx.style.display = 'none'; }
+}
+function fireworks(nBursts){
+  fx.style.display = 'block';
+  let n = 0;
+  const iv = setInterval(() => {
+    burst(innerWidth*(0.15 + Math.random()*0.7), innerHeight*(0.12 + Math.random()*0.3));
+    if(!fxRunning){ fxRunning = true; requestAnimationFrame(fxLoop); }
+    if(++n >= (nBursts||10)) clearInterval(iv);
+  }, 320);
+}
+
+
+/* ============ XAY VONG QUAY SVG ============ */
+const PALETTE = ['#ef4444','#f59e0b','#10b981','#3b82f6','#8b5cf6','#ec4899','#06b6d4','#f97316','#84cc16','#6366f1'];
+function polar(cx, cy, r, angDeg){ const a = angDeg*Math.PI/180; return [cx + r*Math.sin(a), cy - r*Math.cos(a)]; }
+function buildWheelSVG(segs, fontSize){
+  const S = 340, C = S/2, R = 158, seg = 360/segs.length;
+  let s = '<svg class="wheel-svg" viewBox="0 0 '+S+' '+S+'" aria-label="Vòng quay">';
+  s += '<circle cx="'+C+'" cy="'+C+'" r="'+(R+7)+'" fill="#fff" stroke="#f59e0b" stroke-width="4"/>';
+  s += '<g class="wheel-rotor">';
+  segs.forEach((sg, i) => {
+    const a0 = i*seg, a1 = a0 + seg, mid = a0 + seg/2;
+    const p0 = polar(C, C, R, a0), p1 = polar(C, C, R, a1);
+    const large = seg > 180 ? 1 : 0;
+    s += '<path d="M'+C+','+C+' L'+p0[0].toFixed(1)+','+p0[1].toFixed(1)+' A'+R+','+R+' 0 '+large+' 1 '+p1[0].toFixed(1)+','+p1[1].toFixed(1)+' Z" fill="'+sg.color+'" stroke="#fff" stroke-width="2.5"/>';
+    const tp = polar(C, C, R*0.68, mid);
+    const fs = sg.fontSize || fontSize || 21;
+    s += '<text x="'+tp[0].toFixed(1)+'" y="'+tp[1].toFixed(1)+'" transform="rotate('+mid+' '+tp[0].toFixed(1)+' '+tp[1].toFixed(1)+')" text-anchor="middle" dominant-baseline="middle" font-family="Baloo 2, sans-serif" font-weight="800" font-size="'+fs+'" fill="#fff" style="paint-order:stroke" stroke="rgba(0,0,0,.28)" stroke-width="3">'+sg.label+'</text>';
+  });
+  s += '</g></svg>';
+  return s;
+}
+
+/* ============ ENGINE QUAY ============ */
+function spinWheel(host, segs, onDone){
+  const rotor = host.querySelector('.wheel-rotor');
+  if(!rotor) return;
+  const target = (Math.random()*segs.length)|0;
+  const seg = 360/segs.length, center = target*seg + seg/2;
+  const cur = parseFloat(host.dataset.rot || '0');
+  const want = -center;
+  let delta = ((want - cur) % 360 + 360) % 360;
+  const total = cur + 360*6 + delta;
+  host.dataset.rot = total;
+  rotor.style.transition = 'none';
+  rotor.style.transform = 'rotate('+cur+'deg)';
+  rotor.style.transformOrigin = '50% 50%';
+  void rotor.getBoundingClientRect();
+  rotor.style.transition = 'transform 4.8s cubic-bezier(.12,.8,.08,1)';
+  rotor.style.transform = 'rotate('+total+'deg)';
+  let lastTickSeg = -1, done = false;
+  const t0 = performance.now();
+  (function watch(now){
+    if(done) return;
+    const p = Math.min((now - t0)/4800, 1);
+    const ease = 1 - Math.pow(1 - p, 3);
+    const ang = cur + (total - cur)*ease;
+    const idx = Math.floor(((ang % 360) + 360) % 360 / seg);
+    if(idx !== lastTickSeg){ lastTickSeg = idx; sfx('tick'); }
+    if(p < 1) requestAnimationFrame(watch);
+  })(t0);
+  setTimeout(() => { if(!done){ done = true; onDone(target); } }, 4950);
+}
+
+
+/* ============ VONG QUAY (10 o nhu Vong Quay May Man) ============ */
+const SEGS = [
+  {label:'80', v:80, color:'#ef4444'},
+  {label:'10', v:10, color:'#f59e0b'},
+  {label:'50', v:50, color:'#10b981'},
+  {label:'30', v:30, color:'#3b82f6'},
+  {label:'70', v:70, color:'#8b5cf6'},
+  {label:'MẤT LƯỢT', v:0, kind:'skip', color:'#64748b', fontSize:13.5},
+  {label:'20', v:20, color:'#ec4899'},
+  {label:'60', v:60, color:'#06b6d4'},
+  {label:'40', v:40, color:'#f97316'},
+  {label:'MAY MẮN', v:30, kind:'lucky', color:'#eab308', fontSize:15.5}
+];
+
+/* ============ NGAN HANG CUM TU ============ */
+const PHRASES = [
+  {t:'CON MÈO', h:'Bạn nhỏ bốn chân hay kêu meo meo'},
+  {t:'CÁI BÀN', h:'Đồ vật có mặt phẳng để học bài, ăn cơm'},
+  {t:'HỒ GƯƠM', h:'Hồ nổi tiếng ở giữa lòng Hà Nội'},
+  {t:'BÁNH MÌ', h:'Món ăn sáng quen thuộc, vỏ giòn ruột mềm'},
+  {t:'HOA HỒNG', h:'Loài hoa có gai, thường tặng người thương'},
+  {t:'MẶT TRỜI', h:'Ngôi sao cho ta ánh sáng và hơi ấm'},
+  {t:'CẦU VỒNG', h:'Hiện tượng 7 màu cong trên trời sau mưa'},
+  {t:'CON THỎ', h:'Bạn nhỏ tai dài, thích ăn cà rốt'},
+  {t:'QUẢ CAM', h:'Trái cây tròn, màu cam, nhiều nước'},
+  {t:'CÁI KÉO', h:'Dụng cụ để cắt giấy, cắt vải'},
+  {t:'CON VOI', h:'Con vật to lớn có cái vòi dài'},
+  {t:'ĐÈN LỒNG', h:'Đồ chơi sáng rực mỗi dịp Trung thu'},
+  {t:'CON BƯỚM', h:'Côn trùng có cánh nhiều màu sặc sỡ'},
+  {t:'QUẢ TÁO', h:'Trái cây giòn ngọt, đỏ hoặc xanh'},
+  {t:'SÂN TRƯỜNG', h:'Nơi học sinh tập trung chào cờ'},
+  {t:'CON CÁ', h:'Bạn nhỏ sống dưới nước, bơi bằng vây'}
+];
+
+/* ============ HO CHU TIENG VIET ============ */
+const FAMS = {
+  'A':'aáàảãạăắằẳẵặâấầẩẫậ',
+  'E':'eéèẻẽẹêếềểễệ',
+  'I':'iíìỉĩị',
+  'O':'oóòỏõọôốồổỗộơớờởỡợ',
+  'U':'uúùủũụưứừửữự',
+  'Y':'yýỳỷỹỵ',
+  'D':'d',
+  'Đ':'đ',
+  'B':'b','C':'c','G':'g','H':'h','K':'k','L':'l','M':'m','N':'n','P':'p','Q':'q','R':'r','S':'s','T':'t','V':'v','X':'x'
+};
+const FAM_ORDER = ['A','E','I','O','U','Y','D','Đ','B','C','G','H','K','L','M','N','P','Q','R','S','T','V','X'];
+const FAM_SUB = {'A':'a ă â','E':'e ê','I':'i','O':'o ô ơ','U':'u ư','Y':'y'};
+const CHAR2FAM = {};
+Object.keys(FAMS).forEach(k => { for(const ch of FAMS[k]) CHAR2FAM[ch] = k; });
+function normText(s){
+  let out = '';
+  for(const ch of s){
+    if(ch === ' ') continue;
+    const low = ch.toLowerCase();
+    const fam = CHAR2FAM[low];
+    if(fam) out += (fam === 'Đ' ? 'd' : fam.toLowerCase());
+    else out += low;
+  }
+  return out;
+}
+
+/* ============ DIEU HUONG MAN HINH ============ */
+function show(id){
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('on'));
+  document.getElementById(id).classList.add('on');
+  scrollTo({top:0, behavior:'smooth'});
+}
+document.querySelectorAll('[data-home]').forEach(b => b.addEventListener('click', () => { sfx('click'); show('scr-home'); }));
+
+/* ============ LOGIC GAME ============ */
+let G = null, lastPhraseIdx = -1;
+function shuffle(arr){ const a = arr.slice(); for(let i=a.length-1;i>0;i--){ const j = (Math.random()*(i+1))|0; [a[i],a[j]]=[a[j],a[i]]; } return a; }
+function newGame(){
+  let idx;
+  do { idx = (Math.random()*PHRASES.length)|0; } while(PHRASES.length > 1 && idx === lastPhraseIdx);
+  lastPhraseIdx = idx;
+  const p = PHRASES[idx];
+  G = {
+    phrase: p.t, hint: p.h, score: 0, wrong: 0, phase: 'spin',
+    stake: 0, mult: 1, revealed: new Set(), guessed: new Set(), famResult: {},
+    openedCount: 0, wonBySolve: false
+  };
+  document.getElementById('hint-text').textContent = p.h;
+  document.getElementById('wheel-host').innerHTML = buildWheelSVG(SEGS);
+  document.getElementById('wheel-host').dataset.rot = '0';
+  document.getElementById('btn-spin').disabled = false;
+  document.getElementById('btn-solve-open').disabled = false;
+  document.getElementById('solve-panel').className = 'solve-panel';
+  document.getElementById('solve-input').value = '';
+  setBanner('', '');
+  document.getElementById('keys-label').textContent = '🎡 Bấm QUAY để bắt đầu lượt!';
+  renderBoard(); renderKeys(); updateHUD();
+  show('scr-game');
+}
+function totalLetters(){ return G.phrase.replace(/ /g, '').length; }
+function updateHUD(){
+  document.getElementById('score-pill').textContent = '⭐ ' + G.score + ' điểm';
+  document.getElementById('hearts-pill').textContent = '♥'.repeat(5 - G.wrong) + '♡'.repeat(G.wrong);
+}
+function setBanner(html, cls){
+  const b = document.getElementById('stake-banner');
+  b.innerHTML = html;
+  b.className = 'stake-banner' + (html ? ' on' : '') + (cls ? ' ' + cls : '');
+}
+function renderBoard(finalReveal){
+  const host = document.getElementById('board'); host.innerHTML = '';
+  G.phrase.split(' ').forEach(word => {
+    const w = document.createElement('div'); w.className = 'word';
+    for(const ch of word){
+      const c = document.createElement('span');
+      const open = G.revealed.has(ch);
+      c.className = 'cell' + (open ? ' open' : '') + (finalReveal && !open ? ' miss-final' : '');
+      c.textContent = (open || finalReveal) ? ch : '';
+      w.appendChild(c);
+    }
+    host.appendChild(w);
+  });
+}
+function renderKeys(){
+  const host = document.getElementById('keyboard'); host.innerHTML = '';
+  FAM_ORDER.forEach(fam => {
+    const b = document.createElement('button');
+    b.className = 'key'; b.dataset.fam = fam;
+    b.innerHTML = fam + (FAM_SUB[fam] ? '<small>' + FAM_SUB[fam] + '</small>' : '<small>&nbsp;</small>');
+    if(G.guessed.has(fam)){
+      b.classList.add(G.famResult[fam] ? 'hit' : 'miss');
+      b.disabled = true;
+    } else {
+      b.disabled = (G.phase !== 'guess');
+    }
+    b.addEventListener('click', () => guessLetter(fam));
+    host.appendChild(b);
+  });
+}
+document.getElementById('btn-start').addEventListener('click', () => { ac(); sfx('fanfare'); newGame(); });
+document.getElementById('btn-again').addEventListener('click', () => { sfx('click'); newGame(); });
+document.getElementById('btn-spin').addEventListener('click', () => {
+  if(!G || G.phase !== 'spin') return;
+  G.phase = 'spinning';
+  document.getElementById('btn-spin').disabled = true;
+  document.getElementById('btn-solve-open').disabled = true;
+  document.getElementById('solve-panel').className = 'solve-panel';
+  setBanner('', '');
+  renderKeys();
+  spinWheel(document.getElementById('wheel-host'), SEGS, onSpinDone);
+});
+function onSpinDone(idx){
+  const sg = SEGS[idx];
+  if(sg.kind === 'skip'){
+    G.phase = 'spin'; G.stake = 0; G.mult = 1;
+    setBanner('💨 Ô MẤT LƯỢT! Lượt này không được đoán, bấm QUAY lại nhé.', 'bad');
+    document.getElementById('keys-label').textContent = '🎡 Bấm QUAY để quay lại!';
+    sfx('wrong'); vibrate(120);
+  } else if(sg.kind === 'lucky'){
+    G.stake = sg.v; G.mult = 2; G.phase = 'guess';
+    setBanner('⭐ Ô MAY MẮN! Câu này đáng ' + sg.v + ' điểm — đoán đúng được <b>GẤP ĐÔI</b> điểm!', 'good');
+    document.getElementById('keys-label').textContent = '👇 Chọn một chữ cái để đoán (điểm × 2):';
+    sfx('fanfare'); vibrate([60,40,60]);
+  } else {
+    G.stake = sg.v; G.mult = 1; G.phase = 'guess';
+    setBanner('🎯 Ô ' + sg.v + ' điểm! Mỗi chữ đoán đúng được ' + sg.v + ' điểm.', '');
+    document.getElementById('keys-label').textContent = '👇 Chọn một chữ cái để đoán:';
+    sfx('fanfare');
+  }
+  document.getElementById('btn-spin').disabled = (G.phase !== 'spin');
+  document.getElementById('btn-solve-open').disabled = false;
+  renderKeys();
+}
+function guessLetter(fam){
+  if(!G || G.phase !== 'guess' || G.guessed.has(fam)) return;
+  G.guessed.add(fam);
+  const members = FAMS[fam];
+  const hits = [];
+  for(const ch of G.phrase){
+    if(ch === ' ') continue;
+    if(members.includes(ch.toLowerCase()) && !G.revealed.has(ch)) hits.push(ch);
+  }
+  if(hits.length){
+    hits.forEach(ch => G.revealed.add(ch));
+    G.openedCount += hits.length;
+    G.famResult[fam] = true;
+    const gain = G.stake * hits.length * G.mult;
+    G.score += gain;
+    setBanner('✅ Có ' + hits.length + ' chữ “' + fam + '”! +' + gain + ' điểm' + (G.mult === 2 ? ' (đã gấp đôi ⭐)' : '') + '.', 'good');
+    sfx('correct'); vibrate(40);
+    renderBoard();
+    if(G.openedCount >= totalLetters()){ endGame(true); return; }
+  } else {
+    G.famResult[fam] = false;
+    G.wrong++;
+    setBanner('❌ Không có chữ “' + fam + '” nào trong cụm từ! Mất một trái tim.', 'bad');
+    sfx('wrong'); vibrate(150);
+    if(G.wrong >= 5){ renderKeys(); updateHUD(); endGame(false); return; }
+  }
+  G.phase = 'spin';
+  document.getElementById('keys-label').textContent = '🎡 Bấm QUAY để đoán tiếp!';
+  document.getElementById('btn-spin').disabled = false;
+  renderKeys(); updateHUD();
+}
+document.getElementById('btn-solve-open').addEventListener('click', () => {
+  if(!G || (G.phase !== 'spin' && G.phase !== 'guess')) return;
+  sfx('click');
+  document.getElementById('solve-panel').className = 'solve-panel on';
+  document.getElementById('solve-input').focus();
+});
+document.getElementById('btn-solve-cancel').addEventListener('click', () => {
+  sfx('click');
+  document.getElementById('solve-panel').className = 'solve-panel';
+});
+function trySolve(){
+  if(!G || G.phase === 'done') return;
+  const val = document.getElementById('solve-input').value.trim();
+  if(!val) return;
+  document.getElementById('solve-panel').className = 'solve-panel';
+  if(normText(val) === normText(G.phrase)){
+    for(const ch of G.phrase){ if(ch !== ' ') G.revealed.add(ch); }
+    G.openedCount = totalLetters();
+    G.score += 100;
+    G.wonBySolve = true;
+    renderBoard(); updateHUD();
+    setBanner('🎉 ĐOÁN CẢ CỤM CHÍNH XÁC! Thưởng +100 điểm!', 'good');
+    sfx('correct'); vibrate([60,40,60]);
+    endGame(true);
+  } else {
+    G.score = Math.max(0, G.score - 50);
+    G.wrong++;
+    setBanner('❌ Chưa đúng cụm từ! Bị trừ 50 điểm và mất một trái tim.', 'bad');
+    sfx('wrong'); vibrate(150);
+    updateHUD();
+    if(G.wrong >= 5){ endGame(false); return; }
+    if(G.phase === 'guess'){
+      G.phase = 'spin';
+      document.getElementById('keys-label').textContent = '🎡 Bấm QUAY để đoán tiếp!';
+      document.getElementById('btn-spin').disabled = false;
+      renderKeys();
+    }
+  }
+}
+document.getElementById('btn-solve-go').addEventListener('click', trySolve);
+document.getElementById('solve-input').addEventListener('keydown', e => { if(e.key === 'Enter') trySolve(); });
+function endGame(won){
+  G.phase = 'done';
+  document.getElementById('btn-spin').disabled = true;
+  document.getElementById('btn-solve-open').disabled = true;
+  renderKeys();
+  if(!won) renderBoard(true);
+  updateHUD();
+  setTimeout(() => {
+    const card = document.getElementById('result-card');
+    card.className = 'result-card ' + (won ? 'pass' : 'fail');
+    document.getElementById('result-score').textContent = G.score + ' điểm';
+    document.getElementById('result-score').style.color = won ? '#16a34a' : '#dc2626';
+    document.getElementById('result-title').textContent = won ? '🎉 ĐOÁN ĐÚNG RỒI!' : '💪 HẾT TRÁI TIM RỒI!';
+    document.getElementById('result-phrase').textContent = G.phrase;
+    document.getElementById('result-sub').innerHTML = won
+      ? (G.wonBySolve
+          ? 'Con đoán đúng cả cụm từ và nhận thưởng 100 điểm! Đoán sai ' + G.wrong + ' lần. Quá xuất sắc!'
+          : 'Con đã mở hết ' + G.openedCount + ' chữ cái của cụm từ! Đoán sai ' + G.wrong + ' lần. Giỏi lắm!')
+      : 'Cụm từ đúng là cụm ở trên. Con đã mở được ' + G.openedCount + '/' + totalLetters() + ' chữ. Chơi ván mới thử lại nhé!';
+    show('scr-result');
+    if(won){ sfx('win'); vibrate([80,40,80,40,150]); fireworks(10); }
+    else { sfx('lose'); vibrate([200,80,200]); }
+  }, won ? 1100 : 1400);
+}
+window.__CNDD = { get state(){ return G; }, norm: normText };
+
+</script>
+</body>
+</html>
