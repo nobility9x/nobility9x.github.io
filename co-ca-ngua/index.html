@@ -49,6 +49,9 @@ body{
 .btn-blue{background:linear-gradient(135deg,#2563eb,#06b6d4)}
 .btn:disabled{opacity:.55;pointer-events:none}
 .chips{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:14px}
+.chips-modes{grid-template-columns:1fr 1fr;margin-bottom:0}
+.chip.mode{font-size:17px;line-height:1.25;padding:13px 10px}
+.chip.mode small{font-size:12.5px;line-height:1.45}
 .chip{
   font-family:'Baloo 2','Be Vietnam Pro',sans-serif;font-size:19px;font-weight:800;color:#fff;
   border:2.2px solid rgba(0,0,0,.14);border-radius:16px;padding:13px 8px;cursor:pointer;
@@ -207,6 +210,13 @@ body{
     <div class="card">
       <h2>📖 Hướng dẫn chơi — đọc trước khi vào nhé!</h2>
       <div class="rules" id="rules-home"></div>
+    </div>
+    <div class="card">
+      <h2>🎮 Chọn cách chơi</h2>
+      <div class="chips chips-modes" id="modes">
+        <button class="chip mode sel" data-mode="quiz" style="background:linear-gradient(135deg,#7c3aed,#db2777)">❓ TRẢ LỜI ĐỂ CHƠI<small>Gieo xong, trả lời đúng 1 câu hỏi mới được đi. Vừa chơi vừa học!</small></button>
+        <button class="chip mode" data-mode="free" style="background:linear-gradient(135deg,#0ea5e9,#2563eb)">🎲 KHÔNG CẦN TRẢ LỜI<small>Gieo là đi luôn, không có câu hỏi. Chơi nhanh như cờ thật.</small></button>
+      </div>
     </div>
     <div class="card">
       <h2>👨‍👩‍👧 Chọn số người chơi (cùng một máy)</h2>
@@ -408,7 +418,7 @@ const RULES = [
  ['🏁','<b>Bàn cờ & quân:</b> 4 người chơi 4 màu — <b>ĐỎ, XANH DƯƠNG, XANH LÁ, VÀNG</b>. Mỗi người có <b>4 con ngựa</b> ở trong chuồng (khu góc màu của mình). Đường đua chung có <b>52 ô</b>, chạy <b>ngược chiều kim đồng hồ</b>.'],
  ['🚪','<b>Xuất quân:</b> muốn đưa ngựa từ chuồng ra ô <b>Xuất phát</b> (ô màu ⭐ của mình) phải gieo được <b>1 hoặc 6</b>. Đứng ở ô Xuất phát thì <b>an toàn</b>, không ai đá được.'],
  ['⭐','<b>Gieo được 6</b> thì được <b>gieo thêm 1 lần nữa</b> (tối đa 2 lần gieo thêm liên tiếp).'],
- ['❓','<b>Trả lời câu hỏi:</b> gieo xúc xắc xong phải <b>trả lời ĐÚNG 1 câu hỏi</b> mới được đi nước đó. Trả lời sai thì <b>mất nước đi</b> (gieo 6 mà trả lời sai cũng không được gieo thêm). Nếu gieo xong mà <b>không có ngựa nào đi được</b> thì không cần trả lời — máy <b>tự chuyển lượt</b> luôn.'],
+ ['❓','<b>Trả lời câu hỏi:</b> gieo xúc xắc xong phải <b>trả lời ĐÚNG 1 câu hỏi</b> mới được đi nước đó. Trả lời sai thì <b>mất nước đi</b> (gieo 6 mà trả lời sai cũng không được gieo thêm). Nếu gieo xong mà <b>không có ngựa nào đi được</b> thì không cần trả lời — máy <b>tự chuyển lượt</b> luôn. <i>(Chỉ khi chọn chế độ ❓ Trả lời để chơi.)</i>'],
  ['👆','<b>Chọn ngựa:</b> trả lời đúng xong, các ngựa đi được sẽ <b>sáng lên nhấp nháy</b> — hãy <b>chạm vào con ngựa</b> muốn đi (hoặc bấm nút chọn ngựa). Ngựa đi đúng số ô bằng số xúc xắc.'],
  ['💥','<b>Đá ngựa:</b> ngựa của bạn dừng đúng ô đang có <b>1 ngựa đối thủ</b> đứng một mình → ngựa đối thủ bị <b>đá về chuồng</b>! Hai ngựa cùng màu đứng chung một ô gọi là <b>chồng quân</b> — không bị đá, và ngựa khác cũng không vào đá được ô đó.'],
  ['🏠','<b>Về chuồng:</b> đi hết 1 vòng đường đua, ngựa rẽ vào <b>cột nhà</b> màu của mình gồm <b>6 ô</b> tiến về tâm. Trong cột nhà phải gieo <b>đúng số</b> mới tiến được và <b>không được nhảy qua</b> ngựa của mình đang đứng trước. Lên tới ô 6 là <b>LÊN CHUỒNG</b> — ở đây an toàn tuyệt đối!'],
@@ -433,7 +443,7 @@ const LETTERS = ['A','B','C','D'];
 
 /* ============ TRANG THAI ============ */
 const G = {
-  nPlayers: 2, cur: 0, phase: 'idle', // roll | question | move | anim | over
+  nPlayers: 2, mode: 'quiz', cur: 0, phase: 'idle', // roll | question | move | anim | over
   dice: 0, extraUsed: 0, forced: null,
   players: [], deck: [], deckPos: 0, curQ: null, qOrder: [],
   moves: [], winner: null, started: false, lastKick: ''
@@ -559,7 +569,7 @@ function renderHUD(){
 function phaseHint(){
   if (G.phase === 'roll') return 'Bấm GIEO XÚC XẮC nhé!';
   if (G.phase === 'question') return 'Trả lời đúng câu hỏi để được đi ' + G.dice + ' ô!';
-  if (G.phase === 'move') return 'Đúng rồi! Chạm vào ngựa đang nhấp nháy (hoặc bấm nút) để đi ' + G.dice + ' ô.';
+  if (G.phase === 'move') return (G.mode === 'free' ? '' : 'Đúng rồi! ') + 'Chạm vào ngựa đang nhấp nháy (hoặc bấm nút) để đi ' + G.dice + ' ô.';
   if (G.phase === 'skip') return 'Gieo ' + G.dice + ' mà chưa có ngựa nào đi được — đang chuyển lượt…';
   if (G.phase === 'anim') return 'Ngựa đang phi… 🐴💨';
   return '';
@@ -620,6 +630,14 @@ function rollDice(){
         setMsg('<span style="display:block;background:#fef3c7;border:2px solid #f59e0b;border-radius:12px;padding:9px 11px">🎲 Gieo được <b>' + G.dice + '</b> — chưa có ngựa nào đi được, chuyển lượt cho <b>Người ' + (nx + 1) + '</b> nhé!</span>');
         renderAll();
         setTimeout(() => { if (G.phase === 'skip') endTurn(); }, 1600);
+        return;
+      }
+      if (G.mode === 'free') {
+        // Che do khong can tra loi: co nuoc di thi vao thang buoc chon ngua, bo han phan cau hoi
+        setMsg('🎲 Gieo được <b>' + G.dice + '</b>! Chạm vào ngựa đang nhấp nháy (hoặc bấm nút) để đi ' + G.dice + ' ô nhé.');
+        G.phase = 'move';
+        renderMoves();
+        renderAll();
         return;
       }
       setMsg('🎲 Gieo được <b>' + G.dice + '</b>! Trả lời đúng câu hỏi để đi ' + G.dice + ' ô nhé.');
@@ -822,6 +840,12 @@ document.querySelectorAll('.pcount').forEach(b => b.addEventListener('click', ()
   document.querySelectorAll('.pcount').forEach(x => x.classList.remove('sel'));
   b.classList.add('sel');
   G.nPlayers = parseInt(b.dataset.n, 10);
+  sfx('click');
+}));
+document.querySelectorAll('#modes .chip').forEach(b => b.addEventListener('click', () => {
+  document.querySelectorAll('#modes .chip').forEach(x => x.classList.remove('sel'));
+  b.classList.add('sel');
+  G.mode = b.dataset.mode;
   sfx('click');
 }));
 document.getElementById('btn-start').addEventListener('click', () => { sfx('fanfare'); startGame(); });
