@@ -47,81 +47,81 @@ html,body{width:100%;height:100%;height:100dvh;overflow:hidden;background:#000;c
 #rotWrap{position:fixed;inset:0;width:100vw;height:100dvh;overflow:hidden;background:#000}
 #stage{position:absolute;left:50%;top:50%;display:flex;flex-direction:column;background:#07090d;transform:translate(-50%,-50%) rotate(0deg);box-shadow:0 0 0 2px #2a3040,0 0 70px rgba(0,0,0,.95)}
 /* ===== THANH TRÊN: tài nguyên bằng BIỂU TƯỢNG (không nhãn chữ) ===== */
-#topbar{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:4px 8px;background:linear-gradient(180deg,#262b36,#12151c);border-bottom:2px solid #3d4454;min-height:44px;z-index:8}
+#topbar{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:0 8px;background:linear-gradient(180deg,#262b36,#12151c);border-bottom:2px solid #3d4454;min-height:30px;z-index:8}
 .tb-left{display:flex;align-items:center;gap:8px;min-width:0}
-.logo{font-weight:900;letter-spacing:.5px;color:#7dd7ff;font-size:14px;text-shadow:0 0 8px #0369a1;white-space:nowrap}
-.chip{display:flex;align-items:center;gap:5px;background:#05070c;border:1px solid #39404f;border-radius:5px;padding:3px 8px;font-weight:700;font-size:12px;color:#b9c7da;white-space:nowrap}
+.logo{font-weight:900;letter-spacing:.5px;color:#7dd7ff;font-size:13px;text-shadow:0 0 8px #0369a1;white-space:nowrap}
+.chip{display:flex;align-items:center;gap:5px;background:#05070c;border:1px solid #39404f;border-radius:5px;padding:2px 7px;font-weight:700;font-size:11px;color:#b9c7da;white-space:nowrap}
 .tb-right{display:flex;align-items:center;gap:6px}
 .res{display:flex;align-items:center;gap:6px;background:#05070c;border:1px solid #39404f;border-radius:5px;padding:3px 9px;font-weight:800;font-size:15px;min-height:34px}
 .res svg{width:19px;height:19px;flex:none}
 .res.min{color:#8fe3ff}.res.gas{color:#8dff9a}.res.sup{color:#ffd76a}
 .res.alert{animation:resAlert .5s ease-in-out 4}
 @keyframes resAlert{0%,100%{border-color:#39404f}50%{border-color:#ef4444;box-shadow:0 0 10px #ef4444}}
-.iconBtn{width:40px;height:40px;flex:none;display:flex;align-items:center;justify-content:center;background:linear-gradient(180deg,#2b303c,#171a21);border:2px solid #454e61;border-radius:6px;cursor:pointer;color:#dfe9f5;padding:0}
-.iconBtn svg{width:21px;height:21px}
+.iconBtn{width:28px;height:28px;flex:none;display:flex;align-items:center;justify-content:center;background:linear-gradient(180deg,#2b303c,#171a21);border:2px solid #454e61;border-radius:6px;cursor:pointer;color:#dfe9f5;padding:0}
+.iconBtn svg{width:17px;height:17px}
 .iconBtn:active{transform:translateY(1px)}
 /* ===== KHUNG NHÌN BẢN ĐỒ ===== */
 #view{position:relative;flex:1;min-height:0;min-width:0;background:#05060a}
 #game{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none;cursor:crosshair}
 #zoomBtns{position:absolute;bottom:8px;right:8px;display:flex;flex-direction:column;gap:6px;z-index:6}
-#zoomBtns button{width:44px;height:44px;background:rgba(10,14,22,.85);border:2px solid #454e61;color:#fff;border-radius:8px;font-size:22px;font-weight:900;cursor:pointer;line-height:1}
-#msg{position:absolute;top:8px;left:8px;background:rgba(5,7,12,.88);border:2px solid #b45309;color:#fde68a;border-radius:8px;padding:7px 11px;font-weight:700;font-size:13px;display:none;z-index:6;max-width:62%}
+#zoomBtns button{width:36px;height:36px;background:rgba(10,14,22,.85);border:2px solid #454e61;color:#fff;border-radius:8px;font-size:19px;font-weight:900;cursor:pointer;line-height:1;opacity:.75}
+#msg{position:absolute;top:8px;left:8px;background:rgba(5,7,12,.88);border:2px solid #b45309;color:#fde68a;border-radius:8px;padding:4px 10px;font-weight:700;font-size:12px;display:none;z-index:6;max-width:62%}
 /* Dòng giá lệnh: dải mảnh nổi ở đáy-trái khung nhìn bản đồ */
-#cmdCost{position:absolute;left:8px;bottom:8px;z-index:7;display:flex;align-items:center;gap:12px;min-height:22px;background:rgba(5,7,12,.88);border:1px solid #39404f;border-radius:5px;padding:3px 9px;font-size:12.5px;font-weight:700;color:#cfe3f5;overflow:hidden;white-space:nowrap;pointer-events:none}
+#cmdCost{position:absolute;left:8px;bottom:8px;z-index:7;display:flex;align-items:center;gap:12px;min-height:18px;background:rgba(5,7,12,.88);border:1px solid #39404f;border-radius:5px;padding:2px 8px;font-size:11.5px;font-weight:700;color:#cfe3f5;overflow:hidden;white-space:nowrap;pointer-events:none}
 #cmdCost:empty{display:none}
 /* ===== CONSOLE NGANG Ở ĐÁY KHUNG (kiểu StarCraft): minimap | thông tin + nâng cấp | MENU | lưới lệnh 3x3 ===== */
-#console{flex:none;height:158px;display:flex;flex-direction:row;gap:8px;padding:7px 8px;background:linear-gradient(180deg,#232833,#0c0e13 30%,#141821);border-top:3px solid #3d4454;box-shadow:inset 0 2px 0 #59637a;align-items:stretch}
-#mmWrap{flex:none;width:172px;display:flex;flex-direction:column;background:#05070c;border:2px solid #39404f;border-radius:4px;overflow:hidden;position:relative}
-#infoCol{flex:1;min-width:0;display:flex;flex-direction:column;gap:6px}
-#upgPanel{display:flex;background:#05070c;border:2px solid #39404f;border-radius:4px;padding:5px 8px;flex-direction:row;flex-wrap:wrap;gap:5px 16px;align-items:center;width:100%;flex:none}
-#menuBlock{display:flex;background:#05070c;border:2px solid #39404f;border-radius:4px;padding:6px;flex-direction:column;align-items:center;justify-content:center;gap:2px;cursor:pointer;width:86px;flex:none}
-#menuBlock img{max-width:92%;max-height:88px}
-#menuBlock .menuLbl{font-size:11px;font-weight:900;letter-spacing:3px;color:#e8c15a}
-.upgRow{display:flex;align-items:center;gap:5px;flex:1 1 0;min-width:0;font-size:11.5px;font-weight:800;color:#d7e5f5}
-.upgRow svg{width:18px;height:18px;flex:none}
+#console{flex:none;height:100px;display:flex;flex-direction:row;gap:6px;padding:1px 6px;background:linear-gradient(180deg,#232833,#0c0e13 30%,#141821);border-top:2px solid #3d4454;box-shadow:inset 0 2px 0 #59637a;align-items:stretch}
+#mmWrap{flex:none;width:104px;height:80px;align-self:center;display:flex;flex-direction:column;background:#05070c;border:2px solid #39404f;border-radius:4px;overflow:hidden;position:relative}
+#infoCol{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
+#upgPanel{display:flex;background:#05070c;border:2px solid #39404f;border-radius:4px;padding:2px 6px;flex-direction:row;flex-wrap:wrap;gap:2px 12px;align-items:center;width:100%;flex:none}
+#menuBlock{display:flex;background:#05070c;border:2px solid #39404f;border-radius:4px;padding:3px;flex-direction:column;align-items:center;justify-content:center;gap:2px;cursor:pointer;width:56px;flex:none}
+#menuBlock img{width:40px;height:40px;object-fit:contain}
+#menuBlock .menuLbl{font-size:9px;font-weight:900;letter-spacing:2px;color:#e8c15a}
+.upgRow{display:flex;align-items:center;gap:5px;flex:1 1 0;min-width:0;font-size:11px;font-weight:800;color:#d7e5f5}
+.upgRow svg{width:14px;height:14px;flex:none}
 .upgRow .uName{white-space:nowrap}
 .upgRow .pips{color:#22d3ee;letter-spacing:1px;font-size:11px}
 .upgRow .pips .off{color:#2c3a4d}
-.upgRow button{margin-left:auto;background:linear-gradient(180deg,#2b303c,#171a21);border:2px solid #4a5468;border-radius:5px;color:#e8c15a;font-weight:900;font-size:10.5px;padding:4px 7px;min-height:32px;cursor:pointer}
+.upgRow button{margin-left:auto;background:linear-gradient(180deg,#2b303c,#171a21);border:2px solid #4a5468;border-radius:5px;color:#e8c15a;font-weight:900;font-size:10px;padding:0 6px;height:20px;min-height:20px;min-width:34px;cursor:pointer}
 .upgRow button:disabled{opacity:.35;cursor:not-allowed}
-.upgStat{font-size:10.5px;color:#8dff9a;font-weight:700;white-space:nowrap;flex:1 1 100%}
+.upgStat{font-size:10px;color:#8dff9a;font-weight:700;white-space:nowrap;flex:1 1 100%}
 /* Cụm tài nguyên ở góc PHẢI-TRÊN của bản đồ (như bản gốc): icon + số, không nhãn chữ */
 #resCluster{display:flex;flex-direction:row;gap:5px;position:absolute;right:8px;top:8px;z-index:15}
-#resCluster .res{min-height:31px;font-size:13px;padding:2px 8px;background:rgba(5,7,12,.88);justify-content:flex-start}
-#resCluster .res svg{width:16px;height:16px}
+#resCluster .res{min-height:0;font-size:12px;padding:3px 8px;gap:5px;background:rgba(5,7,12,.88);justify-content:flex-start}
+#resCluster .res svg{width:14px;height:14px}
 #mmWrap.alert{border-color:#ef4444;box-shadow:0 0 14px rgba(239,68,68,.8)}
 #minimap{width:100%;height:100%;display:block;touch-action:none;cursor:pointer}
-#infoPanel{flex:1;width:100%;min-height:0;background:#05070c;border:2px solid #39404f;border-radius:4px;padding:6px;overflow:hidden;display:flex;gap:8px;align-items:stretch}
+#infoPanel{flex:1;width:100%;min-height:0;background:#05070c;border:2px solid #39404f;border-radius:4px;padding:3px 5px;overflow:hidden;display:flex;gap:6px;align-items:stretch}
 #cmdWrap{flex:none;display:flex;flex-direction:column;justify-content:center;gap:6px}
-#cmdGrid{display:grid;grid-template-columns:repeat(3,48px);grid-template-rows:repeat(3,44px);gap:5px;flex:none}
-.cmdBtn{position:relative;background:linear-gradient(180deg,#2b303c,#14171f);border:2px solid #4a5468;border-radius:6px;min-width:44px;min-height:44px;display:flex;align-items:center;justify-content:center;cursor:pointer;padding:2px;color:#e8c15a}
-.cmdBtn svg{width:30px;height:30px;pointer-events:none}
+#cmdGrid{display:grid;grid-template-columns:repeat(3,30px);grid-template-rows:repeat(3,30px);gap:2px;flex:none}
+.cmdBtn{position:relative;background:linear-gradient(180deg,#2b303c,#14171f);border:2px solid #4a5468;border-radius:6px;min-width:0;min-height:0;display:flex;align-items:center;justify-content:center;cursor:pointer;padding:2px;color:#e8c15a}
+.cmdBtn svg{width:20px;height:20px;pointer-events:none}
 .cmdBtn img{max-width:88%;max-height:88%;pointer-events:none;filter:drop-shadow(0 2px 2px rgba(0,0,0,.6))}
 .cmdBtn:disabled{opacity:.32;cursor:not-allowed}
 .cmdBtn.active{border-color:#22d3ee;box-shadow:0 0 10px rgba(34,211,238,.55)}
-.cmdBtn .lvl{position:absolute;right:3px;bottom:1px;font-size:11px;font-weight:900;color:#7dd7ff;text-shadow:0 1px 2px #000;pointer-events:none}
+.cmdBtn .lvl{position:absolute;right:2px;bottom:0;font-size:9px;font-weight:900;color:#7dd7ff;text-shadow:0 1px 2px #000;pointer-events:none}
 .cmdBtn:active:not(:disabled){transform:translateY(1px)}
 #cmdCost svg{width:15px;height:15px;vertical-align:-3px}
 #cmdCost .cm{color:#8fe3ff}#cmdCost .cg{color:#8dff9a}#cmdCost .cs{color:#ffd76a}
 /* --- khung thông tin ở giữa console --- */
-.portraitBox{flex:none;width:68px;height:68px;align-self:center;background:#0a0f16;border:2px solid #6b5a2a;border-radius:4px;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.portraitBox{flex:none;width:54px;height:54px;max-height:100%;align-self:center;background:#0a0f16;border:2px solid #6b5a2a;border-radius:4px;display:flex;align-items:center;justify-content:center;overflow:hidden}
 .portraitBox img{max-width:94%;max-height:94%}
-.portraitBox svg{width:52px;height:52px}
-.infoMain{flex:1;min-width:0;display:flex;flex-direction:column;justify-content:center;gap:5px}
-.infoName{font-weight:900;font-size:13px;color:#f3d27a;letter-spacing:.3px;line-height:1.25}
-.infoSub{font-size:12px;color:#9fb4cc}
+.portraitBox svg{width:40px;height:40px}
+.infoMain{flex:1;min-width:0;display:flex;flex-direction:column;justify-content:center;gap:3px}
+.infoName{font-weight:900;font-size:12px;color:#f3d27a;letter-spacing:.3px;line-height:1.25}
+.infoSub{font-size:11px;color:#9fb4cc}
 .hpSegs{display:flex;gap:2px;width:100%;max-width:340px}
-.hpSegs i{flex:1;height:11px;background:#14202c;border:1px solid #000}
+.hpSegs i{flex:1;height:8px;background:#14202c;border:1px solid #000}
 .hpSegs i.on-g{background:#22c55e}.hpSegs i.on-y{background:#eab308}.hpSegs i.on-r{background:#ef4444}
-.hpNums{font-size:12.5px;font-weight:700;color:#a7f3c9}
-.queueRow{display:flex;gap:5px;align-items:center;flex-wrap:wrap}
-.qSlot{width:34px;height:34px;background:#0a0f16;border:1px solid #39404f;border-radius:4px;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center}
+.hpNums{font-size:11px;font-weight:700;color:#a7f3c9}
+.queueRow{display:flex;gap:4px;align-items:center;flex-wrap:wrap}
+.qSlot{width:26px;height:26px;background:#0a0f16;border:1px solid #39404f;border-radius:4px;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center}
 .qSlot img{max-width:92%;max-height:92%}
 .qSlot .bar{position:absolute;left:0;bottom:0;height:4px;background:#22d3ee}
-.selGrid{display:grid;grid-template-columns:repeat(4,30px);gap:4px;align-content:center}
+.selGrid{display:grid;grid-template-columns:repeat(12,30px);gap:3px;align-content:center}
 .selCell{width:30px;height:30px;background:#0a0f16;border:2px solid #22c55e;border-radius:4px;display:flex;align-items:center;justify-content:center;overflow:hidden}
 .selCell img{max-width:94%;max-height:94%}
-.infoHint{font-size:12.5px;color:#8fa6bf;line-height:1.5}
+.infoHint{font-size:11.5px;color:#8fa6bf;line-height:1.4}
 /* ===== Overlay đầu / cuối game ===== */
 .overlay{position:absolute;inset:0;background:rgba(3,5,10,.88);display:flex;align-items:center;justify-content:center;z-index:40;padding:12px;overflow-y:auto}
 .overlay.hidden{display:none}
@@ -186,7 +186,7 @@ html,body{width:100%;height:100%;height:100dvh;overflow:hidden;background:#000;c
     </div>
 </div>
 <div id="console">
-    <div id="mmWrap"><canvas id="minimap" width="212" height="132"></canvas></div>
+    <div id="mmWrap"><canvas id="minimap" width="208" height="160"></canvas></div>
     <div id="infoCol">
       <div id="infoPanel"><div class="infoHint">Chưa chọn gì.<br>Chạm vào quân / nhà của mình để xem thông tin tại đây — giống bảng điều khiển của chỉ huy.</div></div>
       <div id="upgPanel"></div>
@@ -395,7 +395,7 @@ function jingle(win){
 
 /* ============ TRẠNG THÁI & SƯƠNG MÙ ============ */
 var S = null;
-var Z_MIN = 0.45, Z_MAX = 2.2;
+var Z_MIN = 0.35, Z_MAX = 2.2;
 var cam = {x:0, y:WORLD_H-620, z:1};
 var FOG_CELL = 40, FOG_COLS = Math.ceil(WORLD_W/FOG_CELL), FOG_ROWS = Math.ceil(WORLD_H/FOG_CELL);
 var fog = new Uint8Array(FOG_COLS*FOG_ROWS);       /* 0 chưa khám phá · 1 đã thấy · 2 đang thấy */
@@ -484,6 +484,20 @@ function zoomAt(sx, sy, nz){
   clampCam();
 }
 function setZoom(z){ zoomAt((canvas.width||960)/2, (canvas.height||620)/2, z); return cam.z; }
+/* Khung nhìn đầu trận: thu nhỏ vừa đủ để thấy TRỌN căn cứ nhà — Trung Tâm + hàng khoáng + mạch khí —
+   camera đặt ở trung điểm cụm căn cứ thay vì chỉ bám Trung Tâm (console đã gọn, khung nhìn vẫn hẹp nên phải zoom-out sẵn). */
+function frameHome(){
+  var pb = MAPS[chosenMap].bases.player, pts = [[pb[0], pb[1]]], i;
+  for(i=0;i<S.nodes.length;i++){ var n = S.nodes[i]; if(dist(n.x, n.y, pb[0], pb[1]) < 720) pts.push([n.x, n.y]); }
+  var x0=1e9, y0=1e9, x1=-1e9, y1=-1e9;
+  pts.forEach(function(p){ x0=Math.min(x0,p[0]); y0=Math.min(y0,p[1]); x1=Math.max(x1,p[0]); y1=Math.max(y1,p[1]); });
+  var pad = 70, bw = (x1-x0) + pad*2, bh = (y1-y0) + pad*2;
+  var vw = canvas.width || 960, vh = canvas.height || 620;
+  cam.z = clamp(Math.min(vw/Math.max(1,bw), vh/Math.max(1,bh)), Z_MIN, 1);
+  cam.x = (x0+x1)/2 - (vw/cam.z)/2;
+  cam.y = (y0+y1)/2 - (vh/cam.z)/2;
+  clampCam();
+}
 var keys = {}, mouse = {x:-99,y:-99,inside:false};
 var placing = null;            /* {type} */
 var pendingOrder = null;       /* 'move' | 'attack' | 'harvest' */
@@ -539,7 +553,7 @@ function resetGame(){
     minNodes.forEach(function(n){ var d = dist(u.x, u.y, n.x, n.y); if(d < bd){ bd = d; best = n; } });
     if(best) orderHarvest(u.id, best.id);
   });
-  cam.x = clamp(pb[0]-450, 0, WORLD_W); cam.y = clamp(pb[1]-380, 0, WORLD_H); cam.z = 1;
+  frameHome();
   placing = null; pendingOrder = null; cmdPage = 'main'; panelSig = '';
   recalcSupply(); updateFog(); buildTerrain();
   document.getElementById('endOverlay').classList.add('hidden');
@@ -1002,6 +1016,7 @@ function toggleFullscreen(){ if(isFullscreen()) exitFullscreen(); else enterFull
 
 function startGame(){
   if(!S) resetGame();
+  frameHome(); /* lúc bấm BẮT ĐẦU canvas đã có kích thước thật — đóng khung căn cứ nhà chuẩn nhất tại đây */
   S.started = true; S.paused = false;
   document.getElementById('startOverlay').classList.add('hidden');
   setPauseIcon();
@@ -1102,10 +1117,9 @@ function renderPanel(force){
       '<div class="infoSub">Chạm lên bản đồ để đặt nhà. Chạm chuột phải / Esc để hủy.' + (placing.type==='refinery' ? '<br>Trạm Lọc Khí phải đặt ngay trên mạch khí xanh lá.' : '') + '</div></div>';
   } else if(b && b.faction==='player'){
     var h = portraitHTML(BSPECS[b.type].spr) + '<div class="infoMain">' +
-      '<div class="infoName">' + BSPECS[b.type].name + '</div>' + segBarHTML(b.hp, b.maxHp, 18) +
-      '<div class="hpNums">' + Math.ceil(b.hp) + ' / ' + b.maxHp + '</div>';
+      '<div class="infoName">' + BSPECS[b.type].name + ' <span class="hpNums">' + Math.ceil(b.hp) + ' / ' + b.maxHp + '</span></div>' + segBarHTML(b.hp, b.maxHp, 18);
     if(b.constructing) h += '<div class="infoSub">Đang xây: ' + Math.round(b.progress*100) + '%</div>';
-    if(b.research) h += '<div class="infoSub">Đang nghiên cứu ' + (b.research.kind==='weapon' ? 'Vũ Khí' : 'Giáp') + ' cấp ' + (S.upgrades[b.research.kind]+1) + ': ' + Math.round(b.research.t/b.research.total*100) + '%</div>';
+    /* tiến độ nghiên cứu chỉ hiện ở khung Nâng cấp (upgStat) — không lặp lại ở đây để panel gầy không bị tràn */
     if(b.queue.length){
       h += '<div class="queueRow">' + b.queue.map(function(q,i){
         var pct = i===0 ? Math.round(q.t/q.total*100) : 0;
@@ -1117,8 +1131,8 @@ function renderPanel(force){
   } else if(sel.length===1){
     var u = sel[0], sp = SPECS[u.type];
     var sub = 'Sát thương: ' + Math.round(unitDamage(u.type) * 10)/10 + (u.type==='worker' && u.carrying>0 ? ' • Đang mang ' + u.carrying + ' ' + (u.carryType==='gas' ? 'khí' : 'khoáng') : '');
-    info.innerHTML = portraitHTML(sp.spr) + '<div class="infoMain"><div class="infoName">' + sp.name + '</div>' +
-      segBarHTML(u.hp, u.maxHp, 14) + '<div class="hpNums">' + Math.ceil(u.hp) + ' / ' + u.maxHp + '</div>' +
+    info.innerHTML = portraitHTML(sp.spr) + '<div class="infoMain"><div class="infoName">' + sp.name + ' <span class="hpNums">' + Math.ceil(u.hp) + ' / ' + u.maxHp + '</span></div>' +
+      segBarHTML(u.hp, u.maxHp, 14) +
       '<div class="infoSub">' + sub + '</div></div>';
   } else if(sel.length>1){
     var cells = sel.map(function(x){
