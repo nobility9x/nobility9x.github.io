@@ -67,6 +67,9 @@ body{
 .pill-wrong{background:linear-gradient(135deg,#64748b,#94a3b8)}
 .home-btn{font-family:'Baloo 2','Be Vietnam Pro',sans-serif;font-weight:800;font-size:15px;background:#fff;color:#5b21b6;border:2.2px solid #ddd6fe;border-radius:999px;padding:8px 13px;cursor:pointer;box-shadow:0 3px 0 #ddd6fe}
 .home-btn:active{transform:translateY(2px);box-shadow:0 1px 0 #ddd6fe}
+.bhv-bar{display:flex;align-items:center;margin:12px 0 -4px}
+.bhv-btn{display:inline-flex;align-items:center;gap:6px;font-family:'Baloo 2','Be Vietnam Pro',sans-serif;font-weight:800;font-size:15px;color:#fff;text-decoration:none;background:linear-gradient(135deg,#16a34a,#22c55e);border:2.2px solid rgba(255,255,255,.55);border-radius:999px;padding:8px 14px;box-shadow:0 3px 0 rgba(0,0,0,.22)}
+.bhv-btn:active{transform:translateY(2px);box-shadow:0 1px 0 rgba(0,0,0,.22)}
 .spacer{flex:1}
 .grid-card{background:#fff;border-radius:22px;border:2.5px solid #ddd6fe;box-shadow:0 6px 0 #c4b5fd,0 14px 24px rgba(124,58,237,.13);padding:16px 10px 12px;margin-bottom:14px;overflow-x:auto}
 .xrow{display:flex;align-items:center;gap:6px;padding:5px 6px;border-radius:14px;border:2.5px solid transparent;cursor:pointer;width:max-content;min-width:100%}
@@ -124,6 +127,7 @@ body{
 <body>
 <canvas id="fx"></canvas>
 <div class="wrap">
+  <div class="bhv-bar"><a class="bhv-btn" href="../">🏠 Bé Học Vui</a></div>
 
   <section class="screen on" id="scr-home">
     <div class="hero">
@@ -281,6 +285,15 @@ function show(id){
 }
 document.querySelectorAll('[data-home]').forEach(b => b.addEventListener('click', () => { sfx('click'); show('scr-home'); }));
 
+/* ============ LOP BACK PHAN LOP (chuan dung chung cac tro Be Hoc Vui) ============ */
+const BHV_HOME = '../';
+const BHV_GAMES = '../#games';
+let layer = 'start';
+history.pushState({g:'start'}, '');
+function enterPlay(){ if(layer !== 'play'){ history.pushState({g:'play'}, ''); layer = 'play'; } }
+function showStart(){ show('scr-home'); layer = 'start'; }
+window.addEventListener('popstate', () => { if(layer === 'play'){ showStart(); } else { location.href = BHV_GAMES; } });
+
 /* ============ TRANG THAI GAME ============ */
 let G = null;
 function renderSetList(){
@@ -297,6 +310,7 @@ function renderSetList(){
   });
 }
 function startSet(idx){
+  enterPlay();
   const st = SETS[idx];
   const maxKey = Math.max.apply(null, st.rows.map(r => r.k));
   G = { setIdx: idx, score: 0, wrong: 0, sel: 0, done: false,

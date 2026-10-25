@@ -77,6 +77,13 @@ body{
   border:2.2px solid #c7d2fe;border-radius:999px;padding:8px 13px;cursor:pointer;box-shadow:0 3px 0 #c7d2fe;
 }
 .home-btn:active{transform:translateY(2px);box-shadow:0 1px 0 #c7d2fe}
+.bhv-bar{display:flex;margin:12px 0 0}
+.bhv-btn{
+  font-family:'Baloo 2','Be Vietnam Pro',sans-serif;font-weight:800;font-size:15.5px;text-decoration:none;color:#fff;
+  background:linear-gradient(135deg,#db2777,#f59e0b);border:2.2px solid rgba(0,0,0,.14);border-radius:999px;
+  padding:9px 16px;box-shadow:0 4px 0 rgba(0,0,0,.22);
+}
+.bhv-btn:active{transform:translateY(3px);box-shadow:0 1px 0 rgba(0,0,0,.22)}
 .spacer{flex:1}
 .wheel-zone{position:relative;width:min(80vw,330px);margin:6px auto 4px}
 .wheel-svg{width:100%;height:auto;display:block;filter:drop-shadow(0 10px 18px rgba(67,56,202,.35))}
@@ -161,6 +168,7 @@ textarea:focus{outline:3px solid #a5b4fc}
 <body>
 <canvas id="fx"></canvas>
 <div class="wrap">
+  <div class="bhv-bar"><a class="bhv-btn" href="../">🏠 Bé Học Vui</a></div>
 
   <!-- MAN HINH CHINH -->
   <section class="screen on" id="scr-home">
@@ -451,7 +459,15 @@ function show(id){
   document.getElementById(id).classList.add('on');
   scrollTo({top:0, behavior:'smooth'});
 }
-document.querySelectorAll('[data-home]').forEach(b => b.addEventListener('click', () => { sfx('click'); show('scr-home'); }));
+/* ==== LOP DIEU HUONG VE BE HOC VUI (Back phan lop) ==== */
+const BHV_HOME = '../';
+const BHV_GAMES = '../#games';
+let layer = 'start';
+history.pushState({g:'start'}, '');
+function enterPlay(){ if(layer !== 'play'){ history.pushState({g:'play'}, ''); layer = 'play'; } }
+function showStart(){ show('scr-home'); layer = 'start'; }
+window.addEventListener('popstate', () => { if(layer === 'play'){ showStart(); } else { location.href = BHV_GAMES; } });
+document.querySelectorAll('[data-home]').forEach(b => b.addEventListener('click', () => { sfx('click'); showStart(); }));
 
 /* ============ CHE DO GHI DIEM ============ */
 const SEGS = [
@@ -476,6 +492,7 @@ document.getElementById('bank-chips').addEventListener('click', e => {
 });
 function shuffle(arr){ const a = arr.slice(); for(let i=a.length-1;i>0;i--){ const j = (Math.random()*(i+1))|0; [a[i],a[j]]=[a[j],a[i]]; } return a; }
 function newGame(){
+  enterPlay();
   const qs = shuffle(BANKS[bankKey]).slice(0, TOTAL_ROUNDS).map(o => ({q:o.q, a:o.a.slice(), c:o.c, stake:0, picked:-1, skipped:false}));
   G = {round:0, score:0, earned:0, denom:0, correct:0, qs:qs, phase:'spin'};
   document.getElementById('wheel-host').innerHTML = buildWheelSVG(SEGS);
@@ -637,7 +654,7 @@ function finishGame(){
 
 /* ============ CHE DO QUAY TEN ============ */
 let nameList = [], lastWinner = -1, nameSpinning = false;
-document.getElementById('btn-names-open').addEventListener('click', () => { sfx('click'); show('scr-names'); });
+document.getElementById('btn-names-open').addEventListener('click', () => { sfx('click'); enterPlay(); show('scr-names'); });
 document.getElementById('btn-names-build').addEventListener('click', () => {
   const raw = document.getElementById('names-input').value.split('\n').map(s => s.trim()).filter(Boolean);
   const uniq = Array.from(new Set(raw)).slice(0, 24);

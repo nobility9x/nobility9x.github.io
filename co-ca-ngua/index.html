@@ -185,11 +185,17 @@ body{
 .help-box{background:#fff7e6;border-radius:24px;border:3px solid #f59e0b;max-width:560px;width:100%;padding:20px 16px;box-shadow:0 16px 40px rgba(0,0,0,.35)}
 .help-box h2{font-family:'Baloo 2','Be Vietnam Pro',sans-serif;font-size:23px;font-weight:800;color:#92400e;margin-bottom:12px;text-align:center}
 #fx{position:fixed;inset:0;pointer-events:none;display:none;z-index:90}
+
+/* ===== NUT VE TRANG CHU BE HOC VUI (CHUAN CHUNG) ===== */
+.bhv-nav{display:flex;justify-content:flex-end;padding-top:12px}
+.bhv-home-btn{font-family:'Baloo 2','Be Vietnam Pro',sans-serif;font-weight:800;font-size:15px;background:#fff;color:#b45309;border:2.2px solid #fbbf24;border-radius:999px;padding:8px 14px;box-shadow:0 3px 0 #fbbf24;text-decoration:none;white-space:nowrap}
+.bhv-home-btn:active{transform:translateY(2px);box-shadow:0 1px 0 #fbbf24}
 </style>
 </head>
 <body>
 <canvas id="fx"></canvas>
 <div class="wrap">
+  <div class="bhv-nav"><a class="bhv-home-btn" href="../">🏠 Bé Học Vui</a></div>
 
   <!-- ===== MAN HUONG DAN + CHON NGUOI ===== -->
   <section class="screen on" id="scr-home">
@@ -846,5 +852,29 @@ window.__CN = {
   answerMode: 'manual'
 };
 </script>
+
+<script>
+'use strict';
+/* ===== MAY TRANG THAI BACK PHAN LOP (CHUAN CHUNG BE HOC VUI) ===== */
+const BHV_HOME = '../';
+const BHV_GAMES = '../#games';
+let layer = 'start';
+history.pushState({g:'start'}, '');
+function enterPlay(){
+  if(layer !== 'play'){ history.pushState({g:'play'}, ''); }
+  layer = 'play';
+}
+function showStart(){
+  layer = 'start';
+  G.started = false; G.phase = 'idle'; show('scr-home');
+}
+window.addEventListener('popstate', function(){
+  if(layer === 'play'){ showStart(); }
+  else { location.href = BHV_GAMES; }
+});
+startGame = (function(orig){ return function(){ enterPlay(); return orig.apply(null, arguments); }; })(startGame);
+['btn-quit','btn-home2'].forEach(id => { const b = document.getElementById(id); if(b) b.addEventListener('click', () => { layer = 'start'; }); });
+</script>
+
 </body>
 </html>

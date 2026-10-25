@@ -64,6 +64,9 @@ body{
 .pill-round{background:linear-gradient(135deg,#be185d,#db2777)}
 .home-btn{font-family:'Baloo 2','Be Vietnam Pro',sans-serif;font-weight:800;font-size:15px;background:#fff;color:#9d174d;border:2.2px solid #fbcfe8;border-radius:999px;padding:8px 13px;cursor:pointer;box-shadow:0 3px 0 #fbcfe8}
 .home-btn:active{transform:translateY(2px);box-shadow:0 1px 0 #fbcfe8}
+.bhv-bar{display:flex;margin:12px 0 0}
+.bhv-btn{font-family:'Baloo 2','Be Vietnam Pro',sans-serif;font-weight:800;font-size:15.5px;text-decoration:none;color:#fff;background:linear-gradient(135deg,#db2777,#f59e0b);border:2.2px solid rgba(0,0,0,.14);border-radius:999px;padding:9px 16px;box-shadow:0 4px 0 rgba(0,0,0,.22)}
+.bhv-btn:active{transform:translateY(3px);box-shadow:0 1px 0 rgba(0,0,0,.22)}
 .spacer{flex:1}
 .boxes{display:grid;grid-template-columns:repeat(3,1fr);gap:11px;margin:6px 0 4px}
 .gift{
@@ -137,6 +140,7 @@ body{
 <body>
 <canvas id="fx"></canvas>
 <div class="wrap">
+  <div class="bhv-bar"><a class="bhv-btn" href="../">🏠 Bé Học Vui</a></div>
 
   <section class="screen on" id="scr-home">
     <div class="hero">
@@ -326,7 +330,15 @@ function show(id){
   document.getElementById(id).classList.add('on');
   scrollTo({top:0, behavior:'smooth'});
 }
-document.querySelectorAll('[data-home]').forEach(b => b.addEventListener('click', () => { stopTimer(); sfx('click'); show('scr-home'); }));
+/* ==== LOP DIEU HUONG VE BE HOC VUI (Back phan lop) ==== */
+const BHV_HOME = '../';
+const BHV_GAMES = '../#games';
+let layer = 'start';
+history.pushState({g:'start'}, '');
+function enterPlay(){ if(layer !== 'play'){ history.pushState({g:'play'}, ''); layer = 'play'; } }
+function showStart(){ stopTimer(); show('scr-home'); layer = 'start'; }
+window.addEventListener('popstate', () => { if(layer === 'play'){ showStart(); } else { location.href = BHV_GAMES; } });
+document.querySelectorAll('[data-home]').forEach(b => b.addEventListener('click', () => { sfx('click'); showStart(); }));
 
 /* ============ LOGIC HOP QUA ============ */
 const BOX_POINTS = [20,30,40,50,60,70,80,90,100];
@@ -340,6 +352,7 @@ document.getElementById('bank-chips').addEventListener('click', e => {
 });
 function shuffle(arr){ const a = arr.slice(); for(let i=a.length-1;i>0;i--){ const j = (Math.random()*(i+1))|0; [a[i],a[j]]=[a[j],a[i]]; } return a; }
 function newGame(){
+  enterPlay();
   stopTimer();
   const qs = shuffle(BANKS[bankKey]).slice(0, 9).map(o => ({q:o.q, a:o.a.slice(), c:o.c, picked:-1, stake:0}));
   const pts = shuffle(BOX_POINTS);

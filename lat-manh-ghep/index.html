@@ -65,6 +65,9 @@ body{
 .pill-round{background:linear-gradient(135deg,#0d9488,#7c3aed)}
 .home-btn{font-family:'Baloo 2','Be Vietnam Pro',sans-serif;font-weight:800;font-size:15px;background:#fff;color:#115e59;border:2.2px solid #99f6e4;border-radius:999px;padding:8px 13px;cursor:pointer;box-shadow:0 3px 0 #99f6e4}
 .home-btn:active{transform:translateY(2px);box-shadow:0 1px 0 #99f6e4}
+.bhv-bar{display:flex;align-items:center;margin:12px 0 0}
+.bhv-home{font-family:'Baloo 2','Be Vietnam Pro',sans-serif;font-weight:800;font-size:15px;background:#fff;color:#115e59;border:2.2px solid #99f6e4;border-radius:999px;padding:8px 14px;cursor:pointer;box-shadow:0 3px 0 #99f6e4;text-decoration:none}
+.bhv-home:active{transform:translateY(2px);box-shadow:0 1px 0 #99f6e4}
 .spacer{flex:1}
 .board{
   position:relative;border-radius:20px;overflow:hidden;background:#e0f2fe;
@@ -130,6 +133,7 @@ body{
 <body>
 <canvas id="fx"></canvas>
 <div class="wrap">
+<div class="bhv-bar"><a class="bhv-home" href="../">🏠 Bé Học Vui</a></div>
 
   <section class="screen on" id="scr-home">
     <div class="hero">
@@ -410,6 +414,20 @@ function show(id){
 }
 document.querySelectorAll('[data-home]').forEach(b => b.addEventListener('click', () => { sfx('click'); show('scr-home'); }));
 
+/* ============ NUT VE BE HOC VUI + BACK PHAN LOP ============ */
+const BHV_HOME = '../';
+const BHV_GAMES = '../#games';
+let layer = 'start';
+history.pushState({g:'start'}, '');
+function enterPlay(){
+  if(layer !== 'play'){ history.pushState({g:'play'}, ''); layer = 'play'; }
+}
+function showStart(){ show('scr-home'); layer = 'start'; }
+window.addEventListener('popstate', () => {
+  if(layer === 'play'){ showStart(); }
+  else { location.href = BHV_GAMES; }
+});
+
 /* ============ LOGIC LAT MANH GHEP ============ */
 const TOTAL_Q = 8, PTS_Q = 10, PTS_GUESS = 20, PASS = 90;
 let bankKey = 'tonghop';
@@ -421,6 +439,7 @@ document.getElementById('bank-chips').addEventListener('click', e => {
 });
 function shuffle(arr){ const a = arr.slice(); for(let i=a.length-1;i>0;i--){ const j = (Math.random()*(i+1))|0; [a[i],a[j]]=[a[j],a[i]]; } return a; }
 function newGame(){
+  enterPlay();
   const picIdx = (Math.random()*PICTURES.length)|0;
   const qs = shuffle(BANKS[bankKey]).slice(0, TOTAL_Q).map(o => ({q:o.q, a:o.a.slice(), c:o.c, picked:-1}));
   G = {pic:picIdx, qs:qs, tileOrder:shuffle([0,1,2,3,4,5,6,7]), opened:[false,false,false,false,false,false,false,false],

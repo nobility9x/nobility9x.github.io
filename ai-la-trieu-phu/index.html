@@ -48,6 +48,9 @@ body{
 .pill-money{background:linear-gradient(135deg,#d97706,#f59e0b)}
 .home-btn{font-family:'Baloo 2','Be Vietnam Pro',sans-serif;font-weight:800;font-size:15px;background:#fff;color:#4c1d95;border:2.2px solid #ddd6fe;border-radius:999px;padding:8px 13px;cursor:pointer;box-shadow:0 3px 0 #ddd6fe}
 .home-btn:active{transform:translateY(2px);box-shadow:0 1px 0 #ddd6fe}
+.bhv-bar{display:flex;align-items:center;margin:12px 0 -4px}
+.bhv-btn{display:inline-flex;align-items:center;gap:6px;font-family:'Baloo 2','Be Vietnam Pro',sans-serif;font-weight:800;font-size:15px;color:#fff;text-decoration:none;background:linear-gradient(135deg,#16a34a,#22c55e);border:2.2px solid rgba(255,255,255,.55);border-radius:999px;padding:8px 14px;box-shadow:0 3px 0 rgba(0,0,0,.22)}
+.bhv-btn:active{transform:translateY(2px);box-shadow:0 1px 0 rgba(0,0,0,.22)}
 .spacer{flex:1}
 /* Thang tien cuon ngang */
 .ladder{display:flex;gap:6px;overflow-x:auto;padding:4px 2px 10px;scrollbar-width:none}
@@ -115,6 +118,7 @@ body{
 <body>
 <canvas id="fx"></canvas>
 <div class="wrap">
+  <div class="bhv-bar"><a class="bhv-btn" href="../">🏠 Bé Học Vui</a></div>
 
   <section class="screen on" id="scr-home">
     <div class="hero">
@@ -303,6 +307,15 @@ function show(id){
 }
 document.querySelectorAll('[data-home]').forEach(b => b.addEventListener('click', () => { sfx('click'); show('scr-home'); }));
 
+/* ============ LOP BACK PHAN LOP (chuan dung chung cac tro Be Hoc Vui) ============ */
+const BHV_HOME = '../';
+const BHV_GAMES = '../#games';
+let layer = 'start';
+history.pushState({g:'start'}, '');
+function enterPlay(){ if(layer !== 'play'){ history.pushState({g:'play'}, ''); layer = 'play'; } }
+function showStart(){ show('scr-home'); layer = 'start'; }
+window.addEventListener('popstate', () => { if(layer === 'play'){ showStart(); } else { location.href = BHV_GAMES; } });
+
 /* ============ LOGIC TRIEU PHU ============ */
 const LADDER = [200,400,600,1000,2000,3000,6000,10000,14000,22000,30000,40000,60000,85000,150000];
 const SAFE = {5:2000, 10:22000};
@@ -311,6 +324,7 @@ function shuffle(arr){ const a = arr.slice(); for(let i=a.length-1;i>0;i--){ con
 function fmtChip(v){ return v.toLocaleString('vi-VN'); }
 function fmtMoney(thousand){ return (thousand*1000).toLocaleString('vi-VN') + '₫'; }
 function newGame(){
+  enterPlay();
   G = { level:1, passed:0, phase:'question', cur:null,
         pool: shuffle(BANKS.tonghop.map((_, i) => i)),
         life:{ f5050:false, swap:false, aud:false }, history:[] };

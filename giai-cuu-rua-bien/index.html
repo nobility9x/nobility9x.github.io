@@ -52,6 +52,9 @@ body{
 .pill-round{background:linear-gradient(135deg,#0d9488,#0284c7)}
 .home-btn{font-family:'Baloo 2','Be Vietnam Pro',sans-serif;font-weight:800;font-size:15px;background:#fff;color:#0f766e;border:2.2px solid #99f6e4;border-radius:999px;padding:8px 13px;cursor:pointer;box-shadow:0 3px 0 #99f6e4}
 .home-btn:active{transform:translateY(2px);box-shadow:0 1px 0 #99f6e4}
+.bhv-bar{display:flex;align-items:center;margin:12px 0 0}
+.bhv-home{font-family:'Baloo 2','Be Vietnam Pro',sans-serif;font-weight:800;font-size:15px;background:#fff;color:#0f766e;border:2.2px solid #99f6e4;border-radius:999px;padding:8px 14px;cursor:pointer;box-shadow:0 3px 0 #99f6e4;text-decoration:none}
+.bhv-home:active{transform:translateY(2px);box-shadow:0 1px 0 #99f6e4}
 .spacer{flex:1}
 .turtle-track{position:relative;height:34px;border-radius:999px;background:linear-gradient(90deg,#fef3c7,#bae6fd 60%,#38bdf8);border:2.5px solid #7dd3fc;margin:4px 0 12px;overflow:visible}
 .turtle-track .turtle{position:absolute;top:50%;left:0;transform:translate(-10%,-50%);font-size:27px;transition:left .6s ease;filter:drop-shadow(0 2px 2px rgba(0,0,0,.25))}
@@ -126,6 +129,7 @@ body{
 <body>
 <canvas id="fx"></canvas>
 <div class="wrap">
+<div class="bhv-bar"><a class="bhv-home" href="../">🏠 Bé Học Vui</a></div>
 
   <section class="screen on" id="scr-home">
     <div class="hero">
@@ -324,6 +328,20 @@ function show(id){
 }
 document.querySelectorAll('[data-home]').forEach(b => b.addEventListener('click', () => { sfx('click'); show('scr-home'); }));
 
+/* ============ NUT VE BE HOC VUI + BACK PHAN LOP ============ */
+const BHV_HOME = '../';
+const BHV_GAMES = '../#games';
+let layer = 'start';
+history.pushState({g:'start'}, '');
+function enterPlay(){
+  if(layer !== 'play'){ history.pushState({g:'play'}, ''); layer = 'play'; }
+}
+function showStart(){ show('scr-home'); layer = 'start'; }
+window.addEventListener('popstate', () => {
+  if(layer === 'play'){ showStart(); }
+  else { location.href = BHV_GAMES; }
+});
+
 /* ============ LOGIC BANG DIEM RUA BIEN ============ */
 const COLS = [
   {key:'toan',     name:'Toán',       icon:'➕', cls:'toan', bank:() => BANKS.toan},
@@ -335,6 +353,7 @@ const ROW_POINTS = [10, 20, 30, 40];
 let G = null;
 function shuffle(arr){ const a = arr.slice(); for(let i=a.length-1;i>0;i--){ const j = (Math.random()*(i+1))|0; [a[i],a[j]]=[a[j],a[i]]; } return a; }
 function newGame(){
+  enterPlay();
   const colQs = COLS.map(col => shuffle(col.bank()).slice(0, 4));
   const cells = [];
   ROW_POINTS.forEach((pts, r) => {

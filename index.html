@@ -4453,6 +4453,7 @@ const SPELL_RIME_WORDS = {"an":["bàn","nhãn","sản","bản","gian","an","ph�
   window.addEventListener('popstate',event=>{const previousView=event.state?.[browserViewKey];if(previousView&&$('#view-'+previousView)){viewScrollPositions[activeViewName]=window.scrollY;renderView(previousView)}});
   $$('[data-view]').forEach(b=>b.addEventListener('click',()=>navigate(b.dataset.view)));
   $$('[data-go]').forEach(b=>b.addEventListener('click',()=>navigate(b.dataset.go)));
+  if(location.hash==='#games')navigate('games');
   const numberGrid=$('#number-grid'),letterGrid=$('#letter-grid'),spellingPanel=$('#spelling-learning-panel'),spellingGrid=$('#spelling-lesson-grid'),spellingFilter=$('#spelling-learning-filter'),detail=$('#learn-detail');let currentKind='numbers',currentSpeech='',spellingSpeech='';
   function markLearned(id){if(!store.learned.includes(id)){store.learned.push(id);save()}}
   function showDetail(symbol,title,desc,spoken,id){currentSpeech=spoken;detail.innerHTML=`<div class="detail-info"><div class="detail-symbol">${symbol}</div><div><h3>${title}</h3><p>${desc}</p></div></div><button class="audio-btn" aria-label="Đọc thành tiếng" title="Nghe phát âm">🔊</button>`;$('.audio-btn',detail).addEventListener('click',()=>say(spoken));markLearned(id)}

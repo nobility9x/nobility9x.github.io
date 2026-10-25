@@ -137,11 +137,17 @@ body{
 #fx{position:fixed;inset:0;pointer-events:none;z-index:99;display:none}
 .foot{text-align:center;font-size:13px;font-weight:600;color:#a8a29e;margin-top:8px}
 @media (max-width:380px){.hero h1{font-size:29px}.q-text{font-size:19px}.ans{font-size:16px}.stage .char{font-size:78px}.prog-cell{font-size:14px}.skin-card .sk-name{font-size:14px}}
+
+/* ===== NUT VE TRANG CHU BE HOC VUI (CHUAN CHUNG) ===== */
+.bhv-nav{display:flex;justify-content:flex-end;padding-top:12px}
+.bhv-home-btn{font-family:'Baloo 2','Be Vietnam Pro',sans-serif;font-weight:800;font-size:15px;background:#fff;color:#b45309;border:2.2px solid #fbbf24;border-radius:999px;padding:8px 14px;box-shadow:0 3px 0 #fbbf24;text-decoration:none;white-space:nowrap}
+.bhv-home-btn:active{transform:translateY(2px);box-shadow:0 1px 0 #fbbf24}
 </style>
 </head>
 <body>
 <canvas id="fx"></canvas>
 <div class="wrap">
+  <div class="bhv-nav"><a class="bhv-home-btn" href="../">🏠 Bé Học Vui</a></div>
 
   <section class="screen on" id="scr-home">
     <div class="hero">
@@ -551,5 +557,30 @@ function finishGame(){
 window.__TT = { get G(){ return G; }, get skinKey(){ return skinKey; }, SKINS: SKINS };
 
 </script>
+
+<script>
+'use strict';
+/* ===== MAY TRANG THAI BACK PHAN LOP (CHUAN CHUNG BE HOC VUI) ===== */
+const BHV_HOME = '../';
+const BHV_GAMES = '../#games';
+let layer = 'start';
+history.pushState({g:'start'}, '');
+function enterPlay(){
+  if(layer !== 'play'){ history.pushState({g:'play'}, ''); }
+  layer = 'play';
+}
+function showStart(){
+  layer = 'start';
+  show('scr-home');
+}
+window.addEventListener('popstate', function(){
+  if(layer === 'play'){ showStart(); }
+  else { location.href = BHV_GAMES; }
+});
+newGame = (function(orig){ return function(){ enterPlay(); return orig.apply(null, arguments); }; })(newGame);
+document.querySelectorAll('[data-home]').forEach(b => b.addEventListener('click', () => { layer = 'start'; }));
+document.getElementById('btn-skins').addEventListener('click', () => { layer = 'start'; });
+</script>
+
 </body>
 </html>
