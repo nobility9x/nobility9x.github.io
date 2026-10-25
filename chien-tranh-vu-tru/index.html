@@ -27,6 +27,10 @@
     orderMove(unitIds, x, y), orderHarvest(unitId, nodeId), spawnEnemy(type,x,y)
     damage(targetId, amount) : gây sát thương lên unit/building theo id (test)
     setEnemyCCHP(hp), endGame(result)
+    cam        : {x, y, z} — camera trực tiếp (z = hệ số zoom, 0.45–2.2)
+    setZoom(z) : đặt zoom quanh tâm màn hình -> trả về z thực tế
+    getZoom()  : -> cam.z hiện tại
+    zoomAt(sx, sy, z) : zoom giữ nguyên điểm thế giới dưới điểm màn hình (sx, sy)
   }
 -->
 <style>
@@ -46,6 +50,9 @@ body{display:flex;flex-direction:column}
 #wrap{position:relative;flex:1;min-width:0;background:#05060f}
 #game{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none;cursor:crosshair}
 #minimap{position:absolute;top:8px;right:8px;width:160px;height:120px;border:2px solid #38bdf8;border-radius:8px;background:#0a0a24;touch-action:none;cursor:pointer;z-index:5}
+#zoomBtns{position:absolute;top:136px;right:8px;display:flex;flex-direction:column;gap:6px;z-index:6}
+#zoomBtns button{width:44px;height:44px;background:#164e9e;border:2px solid #38bdf8;color:#fff;border-radius:10px;font-size:22px;font-weight:900;cursor:pointer;box-shadow:0 3px 0 #0b2f66;line-height:1}
+#zoomBtns button:active{transform:translateY(2px);box-shadow:0 1px 0 #0b2f66}
 #msg{position:absolute;top:8px;left:8px;background:rgba(6,10,35,.85);border:2px solid #f59e0b;color:#fde68a;border-radius:10px;padding:7px 11px;font-weight:700;font-size:13px;display:none;z-index:6;max-width:70%}
 #panel{width:248px;flex:none;background:linear-gradient(180deg,#101238,#0a0d2c);border-left:3px solid #22d3ee;padding:10px;overflow-y:auto}
 #panel h3{color:#7df9ff;font-size:14px;margin-bottom:6px}
@@ -69,6 +76,7 @@ body{display:flex;flex-direction:column}
  #cmds button{flex:1 1 30%;min-height:46px}
  #help{display:none}
  #minimap{width:112px;height:84px}
+ #zoomBtns{top:100px}
  #hud .logo{font-size:12px}
  .res{font-size:12px;padding:3px 7px}
 }
@@ -88,6 +96,7 @@ body{display:flex;flex-direction:column}
   <div id="wrap">
     <canvas id="game"></canvas>
     <canvas id="minimap" width="192" height="144"></canvas>
+    <div id="zoomBtns"><button id="btnZoomIn" type="button" aria-label="Phóng to">+</button><button id="btnZoomOut" type="button" aria-label="Thu nhỏ">−</button></div>
     <div id="msg"></div>
     <div class="overlay" id="startOverlay">
       <div class="card">
@@ -95,7 +104,8 @@ body{display:flex;flex-direction:column}
         <p class="center"><b>Bản demo — game chiến thuật thời gian thực</b></p>
         <p>• <b>Chọn quân:</b> click hoặc kéo khung. <b>Click chuột phải / chạm lại:</b> ra lệnh di chuyển, khai thác, tấn công.</p>
         <p>• <b>Robot Thợ:</b> chọn thợ rồi click vào tinh thể xanh để tự khai thác khoáng, click mạch khí xanh lá để hút khí.</p>
-        <p>• <b>Xây Doanh Trại</b> để luyện Lính Bắn Tia và Xe Tăng Plasma. <b>Di chuyển bản đồ:</b> WASD / phím mũi tên / di chuột ra mép / kéo minimap.</p>
+        <p>• <b>Cảm ứng:</b> chụm / mở <b>2 ngón</b> để zoom, kéo <b>2 ngón</b> để di chuyển bản đồ; <b>chạm 1 ngón</b> = chọn quân / chỉ điểm di chuyển; <b>kéo 1 ngón</b> = khoanh vùng chọn quân.</p>
+        <p>• <b>Chuột:</b> lăn chuột để zoom, giữ chuột phải kéo để di chuyển bản đồ. <b>Xây Doanh Trại</b> để luyện Lính Bắn Tia và Xe Tăng Plasma. <b>Di chuyển bản đồ:</b> WASD / phím mũi tên / di chuột ra mép / kéo minimap.</p>
         <p>• <b>Thắng:</b> phá Trung Tâm Chỉ Huy của địch (góc phải-trên). <b>Thua:</b> mất Trung Tâm Chỉ Huy của mình. Địch sẽ tấn công theo từng đợt ngày càng đông!</p>
         <button id="btnStart" type="button">BẮT ĐẦU</button>
       </div>
@@ -118,7 +128,8 @@ body{display:flex;flex-direction:column}
       2. Cho thợ khai thác khoáng + khí.<br>
       3. Chọn thợ → Xây Doanh Trại → luyện lính, xe tăng.<br>
       4. Chọn quân → nút Tấn Công → click vào căn cứ địch.<br>
-      Phím: WASD/mũi tên = lia bản đồ, Esc = hủy lệnh đặt nhà, P = tạm dừng.
+      Phím: WASD/mũi tên = lia bản đồ, Esc = hủy lệnh đặt nhà, P = tạm dừng.<br>
+      Zoom: chụm/mở 2 ngón, lăn chuột, phím +/− hoặc nút +/− trên bản đồ. Kéo 2 ngón / giữ chuột phải kéo = di chuyển bản đồ.
     </div>
   </div>
 </div>
@@ -168,7 +179,20 @@ function beep(freq, dur, type){
 
 /* ============ TRẠNG THÁI ============ */
 var S = null;
-var cam = {x:0, y:WORLD_H-620};
+var Z_MIN = 0.45, Z_MAX = 2.2;
+var cam = {x:0, y:WORLD_H-620, z:1};
+function clampCam(){
+  cam.x = clamp(cam.x, 0, Math.max(0, WORLD_W - viewW()));
+  cam.y = clamp(cam.y, 0, Math.max(0, WORLD_H - viewH()));
+}
+function zoomAt(sx, sy, nz){
+  nz = clamp(nz, Z_MIN, Z_MAX);
+  var wx = sx / cam.z + cam.x, wy = sy / cam.z + cam.y;   // điểm thế giới dưới điểm neo (màn hình)
+  cam.z = nz;
+  cam.x = wx - sx / nz; cam.y = wy - sy / nz;
+  clampCam();
+}
+function setZoom(z){ zoomAt((canvas.width||960)/2, (canvas.height||620)/2, z); return cam.z; }
 var keys = {}, mouse = {x:-99,y:-99,inside:false};
 var placing = null;           // {type}
 var pendingAttack = false;
@@ -208,7 +232,7 @@ function resetGame(){
   minP.concat(minM).forEach(function(p){ addNode('mineral',p[0],p[1],500); });
   minE.forEach(function(p){ addNode('mineral',p[0],p[1],500); });
   addNode('gas',170,930,400); addNode('gas',1780,520,400); addNode('gas',1010,620,400);
-  cam.x = 0; cam.y = WORLD_H - 700;
+  cam.x = 0; cam.y = WORLD_H - 700; cam.z = 1;
   placing = null; pendingAttack = false; panelSig = '';
   recalcSupply();
   document.getElementById('endOverlay').classList.add('hidden');
@@ -481,14 +505,14 @@ function tick(dt){
   tickProjectiles(dt);
   tickBuildings(dt);
   tickSeparation();
-  /* Camera: phím + lề màn hình */
-  var spd = 520*dt, vw = viewW(), vh = viewH();
+  /* Camera: phím + lề màn hình (tốc độ tính theo màn hình -> chia zoom để cảm giác không đổi) */
+  var spd = 520*dt/cam.z;
   if(keys['w']||keys['arrowup']) cam.y -= spd;
   if(keys['s']||keys['arrowdown']) cam.y += spd;
   if(keys['a']||keys['arrowleft']) cam.x -= spd;
   if(keys['d']||keys['arrowright']) cam.x += spd;
-  if(mouse.inside){ if(mouse.x<14) cam.x-=spd; if(mouse.x>vw-14) cam.x+=spd; if(mouse.y<14) cam.y-=spd; if(mouse.y>vh-14) cam.y+=spd; }
-  cam.x = clamp(cam.x, 0, Math.max(0, WORLD_W-vw)); cam.y = clamp(cam.y, 0, Math.max(0, WORLD_H-vh));
+  if(mouse.inside){ if(mouse.x<14) cam.x-=spd; if(mouse.x>canvas.width-14) cam.x+=spd; if(mouse.y<14) cam.y-=spd; if(mouse.y>canvas.height-14) cam.y+=spd; }
+  clampCam();
   recalcSupply();
   updateHUD();
 }
@@ -569,19 +593,20 @@ try{ ctx = canvas.getContext('2d'); }catch(e){}
 if(!ctx) ctx = dummyCtx();
 try{ mmCtx = mmCanvas.getContext('2d'); }catch(e){}
 if(!mmCtx) mmCtx = dummyCtx();
-function viewW(){ return canvas.width || 960; }
-function viewH(){ return canvas.height || 620; }
+function viewW(){ return (canvas.width || 960) / cam.z; }
+function viewH(){ return (canvas.height || 620) / cam.z; }
 function resize(){
   var wrap = document.getElementById('wrap');
   var w = wrap.clientWidth || window.innerWidth || 960, h = wrap.clientHeight || 500;
   if(w>0) canvas.width = w; if(h>0) canvas.height = h;
+  clampCam();
 }
 window.addEventListener('resize', resize);
 
 function drawWorld(){
   var vw = viewW(), vh = viewH();
-  ctx.fillStyle = '#0d0d2b'; ctx.fillRect(0,0,vw,vh);
-  ctx.save(); ctx.translate(-cam.x, -cam.y);
+  ctx.fillStyle = '#0d0d2b'; ctx.fillRect(0,0,canvas.width,canvas.height);
+  ctx.save(); ctx.scale(cam.z, cam.z); ctx.translate(-cam.x, -cam.y);
   /* nền hành tinh */
   ctx.fillStyle = '#141436'; ctx.fillRect(cam.x, cam.y, vw, vh);
   ctx.strokeStyle = 'rgba(80,90,200,0.13)'; ctx.lineWidth = 1; ctx.beginPath();
@@ -619,7 +644,7 @@ function drawWorld(){
   });
   /* ghost đặt nhà */
   if(placing && mouse.inside){
-    var wx = mouse.x+cam.x, wy = mouse.y+cam.y, hs = BSPECS[placing.type].size/2;
+    var wx = mouse.x/cam.z+cam.x, wy = mouse.y/cam.z+cam.y, hs = BSPECS[placing.type].size/2;
     ctx.fillStyle = placementOK(placing.type,wx,wy) ? 'rgba(74,222,128,.35)' : 'rgba(248,113,113,.35)';
     ctx.strokeStyle = '#fff'; ctx.lineWidth=2;
     ctx.fillRect(wx-hs,wy-hs,hs*2,hs*2); ctx.strokeRect(wx-hs,wy-hs,hs*2,hs*2);
@@ -687,8 +712,8 @@ function drawMinimap(){
 function render(){ if(!S) return; drawWorld(); drawMinimap(); renderPanel(false); }
 
 /* ============ ĐIỀU KHIỂN ============ */
-var dragBox = null, rightDrag = null, mmDrag = false, touchPan = null, lastTap = null;
-function toWorld(cx, cy){ var r = canvas.getBoundingClientRect(); return { x: cx - r.left + cam.x, y: cy - r.top + cam.y, sx: cx - r.left, sy: cy - r.top }; }
+var dragBox = null, rightDrag = null, mmDrag = false, pinch = null, gestureBlocked = false, lastTap = null;
+function toWorld(cx, cy){ var r = canvas.getBoundingClientRect(); var sx = cx - r.left, sy = cy - r.top; return { x: sx/cam.z + cam.x, y: sy/cam.z + cam.y, sx: sx, sy: sy }; }
 function pickOwn(wx, wy){
   var i, u, b;
   for(i=0;i<S.units.length;i++){ u=S.units[i]; if(u.faction==='player' && dist(wx,wy,u.x,u.y)<20) return {unit:u}; }
@@ -713,15 +738,24 @@ function doLeftAction(wx, wy){
 }
 canvas.addEventListener('mousedown', function(ev){
   var p = toWorld(ev.clientX, ev.clientY); mouse.x=p.sx; mouse.y=p.sy; mouse.inside=true;
-  if(ev.button===2){ rightDrag = {x:p.x, y:p.y, sx:p.sx, sy:p.sy, moved:false}; return; }
-  if(ev.button===0) dragBox = {active:true, x0:p.x, y0:p.y, x1:p.x, y1:p.y, sx:p.sx, sy:p.sy, moved:false};
+  if(ev.button===2){ rightDrag = {x:p.x, y:p.y, sx:p.sx, sy:p.sy, sx0:p.sx, sy0:p.sy, moved:false}; return; }
+  if(ev.button===0) dragBox = {active:true, x0:p.x, y0:p.y, x1:p.x, y1:p.y, sx:p.sx, sy:p.sy, sx0:p.sx, sy0:p.sy, sx1:p.sx, sy1:p.sy, moved:false};
 });
 canvas.addEventListener('mousemove', function(ev){
   var p = toWorld(ev.clientX, ev.clientY); mouse.x=p.sx; mouse.y=p.sy; mouse.inside=true;
-  if(rightDrag){ var dx=p.sx-rightDrag.sx, dy=p.sy-rightDrag.sy; if(Math.abs(p.x-rightDrag.x)+Math.abs(p.y-rightDrag.y)>8) rightDrag.moved=true;
-    if(rightDrag.moved){ cam.x=clamp(cam.x-dx,0,Math.max(0,WORLD_W-viewW())); cam.y=clamp(cam.y-dy,0,Math.max(0,WORLD_H-viewH())); rightDrag.sx=p.sx; rightDrag.sy=p.sy; } return; }
-  if(dragBox && dragBox.active){ dragBox.x1=p.x; dragBox.y1=p.y; if(Math.abs(p.x-dragBox.x0)+Math.abs(p.y-dragBox.y0)>10) dragBox.moved=true; }
+  if(rightDrag){ var dx=p.sx-rightDrag.sx, dy=p.sy-rightDrag.sy; if(Math.abs(p.sx-rightDrag.sx0)+Math.abs(p.sy-rightDrag.sy0)>8) rightDrag.moved=true;
+    if(rightDrag.moved){ cam.x -= dx/cam.z; cam.y -= dy/cam.z; clampCam(); rightDrag.sx=p.sx; rightDrag.sy=p.sy; } return; }
+  if(dragBox && dragBox.active){ dragBox.x1=p.x; dragBox.y1=p.y; dragBox.sx1=p.sx; dragBox.sy1=p.sy; if(Math.abs(p.sx-dragBox.sx0)+Math.abs(p.sy-dragBox.sy0)>10) dragBox.moved=true; }
 });
+/* lăn chuột: zoom quanh con trỏ (điểm thế giới dưới con trỏ đứng yên) */
+canvas.addEventListener('wheel', function(ev){
+  ev.preventDefault();
+  var r = canvas.getBoundingClientRect(), sx = ev.clientX - r.left, sy = ev.clientY - r.top;
+  mouse.x = sx; mouse.y = sy; mouse.inside = true;
+  var f = Math.exp(-(ev.deltaY||0) * 0.0016);
+  if(!isFinite(f) || f<=0) return;
+  zoomAt(sx, sy, cam.z * f);
+}, {passive:false});
 canvas.addEventListener('mouseup', function(ev){
   var p = toWorld(ev.clientX, ev.clientY);
   if(ev.button===2 && rightDrag){ if(!rightDrag.moved && S.selectedIds.length && !placing) orderUnitsTo(S.selectedIds.slice(), p.x, p.y); if(placing && !rightDrag.moved) placing=null; rightDrag=null; renderPanel(true); return; }
@@ -736,26 +770,45 @@ canvas.addEventListener('mouseup', function(ev){
 });
 canvas.addEventListener('mouseleave', function(){ mouse.inside=false; dragBox=null; rightDrag=null; });
 canvas.addEventListener('contextmenu', function(ev){ ev.preventDefault(); });
-/* cảm ứng */
+/* cảm ứng — 1 ngón: chạm = chọn/lệnh, kéo = khoanh vùng chọn quân.
+   2 ngón: chụm/mở = zoom + kéo = di chuyển bản đồ (chung 1 cử chỉ). */
+function touchPt(t){ var r = canvas.getBoundingClientRect(); return { sx: t.clientX - r.left, sy: t.clientY - r.top }; }
 canvas.addEventListener('touchstart', function(ev){
   ev.preventDefault();
-  if(ev.touches.length===2){ touchPan = {x:(ev.touches[0].clientX+ev.touches[1].clientX)/2, y:(ev.touches[0].clientY+ev.touches[1].clientY)/2}; dragBox=null; return; }
+  if(ev.touches.length===2){
+    var a=touchPt(ev.touches[0]), b=touchPt(ev.touches[1]);
+    pinch = { mx:(a.sx+b.sx)/2, my:(a.sy+b.sy)/2, d:Math.max(10, dist(a.sx,a.sy,b.sx,b.sy)) };
+    gestureBlocked = true; dragBox = null; return;   // hủy khung chọn đang dở, không phát lệnh
+  }
+  if(ev.touches.length!==1 || gestureBlocked) return;
   var t=ev.touches[0], p=toWorld(t.clientX,t.clientY);
-  dragBox={active:true,x0:p.x,y0:p.y,x1:p.x,y1:p.y,moved:false,sx:p.sx,sy:p.sy};
+  dragBox={active:true,x0:p.x,y0:p.y,x1:p.x,y1:p.y,moved:false,sx:p.sx,sy:p.sy,sx0:p.sx,sy0:p.sy,sx1:p.sx,sy1:p.sy};
 }, {passive:false});
 canvas.addEventListener('touchmove', function(ev){
   ev.preventDefault();
-  if(ev.touches.length===2 && touchPan){
-    var mx=(ev.touches[0].clientX+ev.touches[1].clientX)/2, my=(ev.touches[0].clientY+ev.touches[1].clientY)/2;
-    cam.x=clamp(cam.x-(mx-touchPan.x),0,Math.max(0,WORLD_W-viewW())); cam.y=clamp(cam.y-(my-touchPan.y),0,Math.max(0,WORLD_H-viewH()));
-    touchPan={x:mx,y:my}; return;
+  if(ev.touches.length===2 && pinch){
+    var a=touchPt(ev.touches[0]), b=touchPt(ev.touches[1]);
+    var mx=(a.sx+b.sx)/2, my=(a.sy+b.sy)/2, d=Math.max(10, dist(a.sx,a.sy,b.sx,b.sy));
+    /* điểm thế giới nằm dưới điểm giữa 2 ngón ở khung trước phải nằm dưới điểm giữa mới:
+       vừa zoom quanh điểm neo, vừa pan theo độ dời của điểm giữa */
+    var wx = pinch.mx/cam.z + cam.x, wy = pinch.my/cam.z + cam.y;
+    var nz = clamp(cam.z * d/pinch.d, Z_MIN, Z_MAX);
+    cam.z = nz; cam.x = wx - mx/nz; cam.y = wy - my/nz; clampCam();
+    pinch = { mx:mx, my:my, d:d }; return;
   }
+  if(ev.touches.length!==1 || gestureBlocked) return;
   var t=ev.touches[0], p=toWorld(t.clientX,t.clientY);
-  if(dragBox){ dragBox.x1=p.x; dragBox.y1=p.y; if(Math.abs(p.x-dragBox.x0)+Math.abs(p.y-dragBox.y0)>14) dragBox.moved=true; }
+  if(dragBox){ dragBox.x1=p.x; dragBox.y1=p.y; dragBox.sx1=p.sx; dragBox.sy1=p.sy; if(Math.abs(p.sx-dragBox.sx0)+Math.abs(p.sy-dragBox.sy0)>14) dragBox.moved=true; }
 }, {passive:false});
-canvas.addEventListener('touchend', function(ev){
+function endTouch(ev){
   ev.preventDefault();
-  touchPan=null;
+  /* Cử chỉ 2 ngón đã dùng: ngón còn lại nhấc lên KHÔNG được biến thành chạm/lệnh,
+     chỉ khi nhấc hết ngón mới mở khóa cử chỉ. */
+  if(gestureBlocked){
+    if(!ev.touches || ev.touches.length===0) gestureBlocked = false;
+    pinch = null; dragBox = null; return;
+  }
+  pinch = null;
   if(dragBox){
     if(dragBox.moved){
       var x1=Math.min(dragBox.x0,dragBox.x1), x2=Math.max(dragBox.x0,dragBox.x1), y1=Math.min(dragBox.y0,dragBox.y1), y2=Math.max(dragBox.y0,dragBox.y1);
@@ -764,13 +817,16 @@ canvas.addEventListener('touchend', function(ev){
     } else doLeftAction(dragBox.x0, dragBox.y0);
     dragBox=null;
   }
-}, {passive:false});
+}
+canvas.addEventListener('touchend', endTouch, {passive:false});
+canvas.addEventListener('touchcancel', endTouch, {passive:false});
 /* minimap */
 function mmGo(ev){
   var r = mmCanvas.getBoundingClientRect();
   var cx = (ev.clientX!==undefined? ev.clientX : ev.touches[0].clientX) - r.left, cy = (ev.clientY!==undefined? ev.clientY : ev.touches[0].clientY) - r.top;
-  cam.x = clamp(cx/r.width*WORLD_W - viewW()/2, 0, Math.max(0,WORLD_W-viewW()));
-  cam.y = clamp(cy/r.height*WORLD_H - viewH()/2, 0, Math.max(0,WORLD_H-viewH()));
+  cam.x = cx/r.width*WORLD_W - viewW()/2;
+  cam.y = cy/r.height*WORLD_H - viewH()/2;
+  clampCam();
 }
 mmCanvas.addEventListener('mousedown', function(ev){ mmDrag=true; mmGo(ev); });
 window.addEventListener('mousemove', function(ev){ if(mmDrag) mmGo(ev); });
@@ -783,6 +839,8 @@ window.addEventListener('keydown', function(ev){
   var k = (ev.key||'').toLowerCase(); keys[k]=true;
   if(k==='escape'){ placing=null; pendingAttack=false; renderPanel(true); }
   if(k==='p') togglePause();
+  if(k==='+'||k==='=') setZoom(cam.z*1.2);
+  if(k==='-'||k==='_') setZoom(cam.z/1.2);
   if(['arrowup','arrowdown','arrowleft','arrowright',' '].indexOf(k)>=0) ev.preventDefault();
 });
 window.addEventListener('keyup', function(ev){ keys[(ev.key||'').toLowerCase()]=false; });
@@ -792,6 +850,8 @@ function togglePause(){
   document.getElementById('btnPause').textContent = S.paused ? 'Chơi Tiếp' : 'Tạm Dừng';
 }
 document.getElementById('btnPause').addEventListener('click', togglePause);
+document.getElementById('btnZoomIn').addEventListener('click', function(){ setZoom(cam.z*1.25); });
+document.getElementById('btnZoomOut').addEventListener('click', function(){ setZoom(cam.z/1.25); });
 document.getElementById('btnStart').addEventListener('click', startGame);
 document.getElementById('btnRestart').addEventListener('click', function(){ resetGame(); startGame(); });
 
@@ -830,7 +890,10 @@ window.__RTS__ = {
   setEnemyCCHP: function(hp){ var c=enemyCC(); if(c) c.hp=hp; },
   endGame: endGame,
   select: function(ids){ S.selectedIds = ids.slice(); renderPanel(true); },
-  cam: cam
+  cam: cam,
+  setZoom: setZoom,
+  getZoom: function(){ return cam.z; },
+  zoomAt: function(sx, sy, z){ zoomAt(sx, sy, z); return cam.z; }
 };
 </script>
 </body>
