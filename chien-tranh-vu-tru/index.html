@@ -272,6 +272,10 @@ html,body{width:100%;height:100%;height:100dvh;overflow:hidden;background:#000;c
 .bookPages{overflow-y:auto;flex:1;padding-right:4px}
 .bookPage{display:none}
 .bookPage.sel{display:block}
+#bookMapGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:8px}
+#bookMapGrid figure{margin:0;background:rgba(5,8,13,.55);border:1px solid #39404f;border-radius:6px;padding:4px}
+#bookMapGrid canvas{width:100%;height:auto;display:block;border-radius:3px;background:#14161c}
+#bookMapGrid figcaption{font-size:10px;font-weight:700;color:#c6d8ea;text-align:center;margin-top:3px;letter-spacing:.02em}
 .dictTabs{display:flex;gap:6px;margin:2px 0 8px}
 .dictTabs button{margin:0;min-height:28px;padding:2px 12px;font-size:12px;background:#0d1624;border:2px solid #33445e;color:#b9cfe6;border-radius:999px;box-shadow:none}
 .dictTabs button.sel{border-color:#e8c15a;color:#f3d27a;background:#231a05}
@@ -510,41 +514,29 @@ html,body{width:100%;height:100%;height:100dvh;overflow:hidden;background:#000;c
 #startCard #mapBar .mbCaret{position:static;transform:none;font-size:13px;color:#9fc3e8;font-weight:900}
 #startCard #mapBar[aria-expanded="true"] .mbCaret{transform:rotate(180deg)}
 #startCard #mapBar .hidden{display:none} /* span giữ dữ liệu cho test/JS — không hiển thị (file không có luật .hidden toàn cục) */
-/* — KHUNG GHI CHÚ: xem trước KIỂU bản đồ thật + mô tả — */
-#startCard .mapNote{margin:0;padding:5px 8px;border:1px solid #05070a;border-radius:5px;background:linear-gradient(180deg,#1a2231,#10151f);box-shadow:inset 0 1px 0 rgba(190,210,235,.16)}
-#startCard .mapNote canvas{border:1px solid rgba(190,215,240,.18)}
-#startCard .mapNoteTxt{font-size:10.5px;line-height:1.32;color:#b8cadd}
-/* — PANEL XỔ CỠ/LOẠI — */
+/* — PANEL XỔ CỠ/LOẠI (v7: danh sách TÊN dọc kiểu dropdown, chỉ tên — không mô tả) — */
 #startCard #mapPanel{margin:0}
-#startCard .mapPick{gap:6px}
-#startCard .mapCard{padding:5px 8px;border:1px solid #05070a;border-radius:5px;background:linear-gradient(180deg,#252e40,#151b27);box-shadow:inset 0 1px 0 rgba(190,210,235,.2)}
-#startCard .mapCard .mn{font-family:var(--hd);font-size:11.5px;letter-spacing:.05em}
-#startCard .mapCard .ms{font-size:9.5px;line-height:1.28;color:#93a8bf}
+#startCard #mapPanel .pickLbl{margin:2px 0 6px}
+#startCard #mapPanel .mapPick{flex-direction:column;gap:5px}
+#startCard #mapPanel .mapCard{display:flex;align-items:center;justify-content:space-between;min-height:36px;padding:7px 12px;text-align:left;border:1px solid #05070a;border-radius:5px;background:linear-gradient(180deg,#252e40,#151b27);box-shadow:inset 0 1px 0 rgba(190,210,235,.2)}
+#startCard .mapCard .mn{font-family:var(--hd);font-size:12.5px;letter-spacing:.05em;margin-top:0}
 #startCard .mapCard.sel{border-color:var(--acc, #2dd4bf);box-shadow:inset 0 1px 0 rgba(220,240,255,.35),0 0 8px var(--acc, rgba(45,212,191,.4))}
-/* v5.2: bỏ kẹp chữ của bản cũ (nowrap/line-clamp) — panel đã có chỗ, mô tả kiểu bản đồ phải đọc trọn */
-#startCard #mapPanel .mapCard .ms{white-space:normal;overflow:visible;text-overflow:clip}
-#startCard #mapPanel #mapPick .mapCard .ms{white-space:normal;overflow:visible;text-overflow:clip}
-#startCard #mapPanel #typePick .mapCard .ms{display:block;-webkit-line-clamp:unset}
-/* — HÀNG ĐỐI THỦ MÁY 1/2/3 — */
+#startCard #mapPanel .mapCard.sel::after{content:'✓';font-weight:900;font-size:13px;color:var(--acc, #2dd4bf)}
+/* — HÀNG ĐỐI THỦ MÁY 1/2/3 (v7: nhãn + 3 chip tộc tích hợp ngay trong hàng) — */
 #startCard #aiRows{display:flex;flex-direction:column;gap:5px;margin-top:2px}
-#startCard .aiRowHead{width:100%;display:flex;align-items:center;gap:8px;margin:0;padding:6px 10px;cursor:pointer;text-align:left;
-  border:1px solid #05070a;border-radius:5px;color:#dbe7f5;min-height:0;font-size:12px;
+#startCard .aiRow{display:flex;align-items:center;gap:8px;padding:5px 8px;
+  border:1px solid #05070a;border-radius:5px;color:#dbe7f5;
   background:linear-gradient(180deg,#2a3347,#171e2b 60%,#11161f);
   box-shadow:inset 0 1px 0 rgba(190,210,235,.26), inset 0 -6px 9px rgba(0,0,0,.35)}
-#startCard .aiRowName{font-family:var(--hd);font-size:12px;letter-spacing:.12em;color:#e6f0fa}
-#startCard .aiRowVal{margin-left:auto;font-size:11px;font-weight:700;color:#8fa6ba;letter-spacing:.03em}
-#startCard .aiRow.set .aiRowVal{color:#fff}
-#startCard .aiRowCaret{font-size:11px;color:#9fc3e8;font-weight:900}
-#startCard .aiRow.open .aiRowCaret{transform:rotate(180deg)}
+#startCard .aiRowName{font-family:var(--hd);font-size:12px;letter-spacing:.12em;color:#e6f0fa;flex:none}
 #startCard .aiRow.locked{opacity:.36;filter:grayscale(.7)}
-#startCard .aiRow.locked .aiRowHead{cursor:not-allowed}
-#startCard .aiRowOpts{display:none;gap:5px;padding:5px 1px 1px}
-#startCard .aiRow.open .aiRowOpts{display:flex}
-#startCard .aiOpt{flex:1;margin:0;padding:5px 4px;min-height:0;font-size:10.5px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;
+#startCard .aiRow.locked .aiChip{cursor:not-allowed}
+#startCard .aiRow.rand{border-style:dashed}
+#startCard .aiChips{flex:1;display:flex;gap:5px;align-self:stretch;min-width:0}
+#startCard .aiChip{flex:1;margin:0;padding:5px 4px;min-height:32px;font-size:10.5px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;
   color:#c9d8ea;border:1px solid #05070a;border-radius:5px;cursor:pointer;
   background:linear-gradient(180deg,#232c3e,#141a26);box-shadow:inset 0 1px 0 rgba(190,210,235,.2)}
-#startCard .aiOpt.sel{border-color:var(--acc, #2dd4bf);color:#fff;box-shadow:inset 0 1px 0 rgba(220,240,255,.35),0 0 7px var(--acc, rgba(45,212,191,.4))}
-#startCard .aiOptOff{flex:0 0 52px;color:#7e93a9}
+#startCard .aiChip.sel{border-color:var(--acc, #2dd4bf);color:#fff;box-shadow:inset 0 1px 0 rgba(220,240,255,.35),0 0 7px var(--acc, rgba(45,212,191,.4))}
 #startCard .teamNote{font-size:10px;line-height:1.32;color:#8fa6ba;margin:0}
 /* — RAIL PHẢI: chip độ khó dọc + sách + nút BẮT ĐẦU TRÒN — */
 #startCard #diffPick.diffCol{display:flex;flex-direction:column;gap:5px}
@@ -587,23 +579,18 @@ html,body{width:100%;height:100%;height:100dvh;overflow:hidden;background:#000;c
 #startCard .diffSide #diffPick .diffBtn{flex:1;display:flex;align-items:center;justify-content:center;padding:4px 2px}
 #startCard .rowsCol{flex:1;min-width:0;display:flex}
 #startCard .rowsCol #aiRows{flex:1;margin-top:0}
-#startCard .aiRow{flex:1;display:flex;flex-direction:column;justify-content:center;min-height:0}
-#startCard .aiRow.open{flex:1.55}
+#startCard .aiRow{flex:1;min-height:0}
 #startCard .setupBot{display:flex;align-items:flex-end;gap:10px}
 #startCard .setupBot .teamNote{flex:1;align-self:center;text-align:center;margin:0;padding:0 4px}
 #startCard #btnStart{margin:0}
 #startCard #btnBook{width:144px;flex:none;padding:5px 6px 4px;gap:1px}
 #startCard #btnBook .bookSvg{width:122px;height:auto}
 #startCard #btnBook .bookLbl{font-size:9.5px}
-/* hàng Máy đang xổ chọn tộc -> gập khung ghi chú bản đồ, nhường chiều cao cho hàng (như panel bản đồ) */
-#startCard:has(.aiRow.open) .mapNote{display:none}
 /* v5.3 tinh chỉnh dọc: thu nút quay lại ở đầu thẻ + sách nhỏ đi một nấc để hàng Máy (phần tử chính
    trong bản vẽ) cao thêm ~8px/hàng, hết cảm giác thanh mỏng */
 #startCard #btnBackSplash{min-height:0;height:36px;padding:2px 12px;font-size:16px;line-height:1}
 #startCard #btnBook{width:136px}
 #startCard #btnBook .bookSvg{width:106px}
-#startCard .aiRowHead{padding-top:8px;padding-bottom:8px}
-#startCard .mapNote{padding-top:3px;padding-bottom:3px}
 #startCard .raceCard.raceTab{padding-top:4px;padding-bottom:4px}
 /* panel bản đồ đang xổ -> ẩn cả dải giữa (cột độ khó + hàng Máy) để panel vừa khung */
 #startCard.panelOpen .setupMid{display:none}
@@ -677,25 +664,20 @@ html,body{width:100%;height:100%;height:100dvh;overflow:hidden;background:#000;c
   box-shadow:inset 0 1px 0 rgba(255,238,205,.34), inset 0 -7px 10px rgba(0,0,0,.38), inset 0 -2px 0 rgba(201,168,106,.28)}
 #startCard #mapBar .mbKey{color:#d3af6d}
 #startCard #mapBar .mbCaret{color:#e8c87e}
-#startCard .mapNote{background:linear-gradient(180deg,#243650,#141f31);border-color:#46536e;box-shadow:inset 0 1px 0 rgba(200,225,255,.2)}
-#startCard .mapNote canvas{border-color:rgba(232,200,126,.4)}
-#startCard .mapNoteTxt{color:#c6d8ea}
+
 #startCard .mapCard{background:linear-gradient(180deg,#354763,#1d2a3f);box-shadow:inset 0 1px 0 rgba(205,230,255,.24)}
 #startCard .mapCard .mn{color:#eef6ff}
 #startCard .mapCard .ms{color:#a9bdd4}
-/* — HÀNG MÁY: thép sâu, ánh ấm đáy; hàng đã chốt tộc phát sáng theo tộc khi mở/đã đặt — */
-#startCard .aiRowHead{background:linear-gradient(180deg,#364a66,#203046 60%,#16222f);
+/* — HÀNG MÁY: thép sâu, ánh ấm đáy; hàng đã chốt tộc phát sáng viền theo tộc của chip đang chọn — */
+#startCard .aiRow{background:linear-gradient(180deg,#364a66,#203046 60%,#16222f);
   box-shadow:inset 0 1px 0 rgba(205,230,255,.34), inset 0 -8px 11px rgba(0,0,0,.42), inset 0 -2px 0 rgba(251,191,36,.15)}
-#startCard .aiRowVal{color:#9db2c9}
-#startCard .aiRow.set .aiRowVal{color:#ffe1a8}
-#startCard .aiRowCaret{color:#c8d9ec}
-#startCard .aiRow:has(.aiOpt.sel[data-opt="terran"]) .aiRowHead{border-color:rgba(251,146,60,.65);box-shadow:inset 0 1px 0 rgba(225,242,255,.4), inset 0 -8px 11px rgba(0,0,0,.4), 0 0 9px rgba(251,146,60,.35)}
-#startCard .aiRow:has(.aiOpt.sel[data-opt="zerg"]) .aiRowHead{border-color:rgba(224,101,58,.7);box-shadow:inset 0 1px 0 rgba(255,220,205,.38), inset 0 -8px 11px rgba(0,0,0,.4), 0 0 9px rgba(224,101,58,.4)}
-#startCard .aiRow:has(.aiOpt.sel[data-opt="protoss"]) .aiRowHead{border-color:rgba(232,193,90,.7);box-shadow:inset 0 1px 0 rgba(255,246,215,.4), inset 0 -8px 11px rgba(0,0,0,.4), 0 0 9px rgba(232,193,90,.38)}
-#startCard .aiOpt{background:linear-gradient(180deg,#2c3e58,#182335);box-shadow:inset 0 1px 0 rgba(205,230,255,.26);color:#d3e2f0}
-#startCard .aiOpt.sel[data-opt="terran"]{border-color:#fb923c;color:#fff;box-shadow:inset 0 1px 0 rgba(225,242,255,.4),0 0 8px rgba(251,146,60,.45)}
-#startCard .aiOpt.sel[data-opt="zerg"]{border-color:#e0653a;color:#fff;box-shadow:inset 0 1px 0 rgba(255,220,205,.4),0 0 8px rgba(224,101,58,.5)}
-#startCard .aiOpt.sel[data-opt="protoss"]{border-color:#e8c15a;color:#fff;box-shadow:inset 0 1px 0 rgba(255,246,215,.42),0 0 8px rgba(232,193,90,.45)}
+#startCard .aiRow:has(.aiChip.sel[data-race="terran"]){border-color:rgba(251,146,60,.65);box-shadow:inset 0 1px 0 rgba(225,242,255,.4), inset 0 -8px 11px rgba(0,0,0,.4), 0 0 9px rgba(251,146,60,.35)}
+#startCard .aiRow:has(.aiChip.sel[data-race="zerg"]){border-color:rgba(224,101,58,.7);box-shadow:inset 0 1px 0 rgba(255,220,205,.38), inset 0 -8px 11px rgba(0,0,0,.4), 0 0 9px rgba(224,101,58,.4)}
+#startCard .aiRow:has(.aiChip.sel[data-race="protoss"]){border-color:rgba(232,193,90,.7);box-shadow:inset 0 1px 0 rgba(255,246,215,.4), inset 0 -8px 11px rgba(0,0,0,.4), 0 0 9px rgba(232,193,90,.38)}
+#startCard .aiChip{background:linear-gradient(180deg,#2c3e58,#182335);box-shadow:inset 0 1px 0 rgba(205,230,255,.26);color:#d3e2f0}
+#startCard .aiChip.sel[data-race="terran"]{border-color:#fb923c;color:#fff;box-shadow:inset 0 1px 0 rgba(225,242,255,.4),0 0 8px rgba(251,146,60,.45)}
+#startCard .aiChip.sel[data-race="zerg"]{border-color:#e0653a;color:#fff;box-shadow:inset 0 1px 0 rgba(255,220,205,.4),0 0 8px rgba(224,101,58,.5)}
+#startCard .aiChip.sel[data-race="protoss"]{border-color:#e8c15a;color:#fff;box-shadow:inset 0 1px 0 rgba(255,246,215,.42),0 0 8px rgba(232,193,90,.45)}
 #startCard .teamNote{color:#9db2c9}
 /* — ĐỘ KHÓ: chưa chọn = thép lặng; đã chọn = VÀNG HỔ PHÁCH — */
 #startCard #diffPick .diffBtn{background:linear-gradient(180deg,#2e405a,#1a2637 60%,#121b29);color:#b7c9dc;
@@ -965,18 +947,21 @@ html,body{width:100%;height:100%;height:100dvh;overflow:hidden;background:#000;c
       </div>
       <div class="centerCol">
         <button type="button" id="mapBar" aria-expanded="false">
-          <span class="mbHalf"><span class="mbKey">CỠ</span><b id="mapBarSize">Vừa</b></span>
+          <span class="mbHalf" data-half="size"><span class="mbKey">CỠ</span><b id="mapBarSize">Vừa</b></span>
           <span class="mbSep"></span>
-          <span class="mbHalf"><span class="mbKey">LOẠI</span><b id="mapBarType">Cao Nguyên</b></span>
+          <span class="mbHalf" data-half="type"><span class="mbKey">LOẠI</span><b id="mapBarType">Cao Nguyên</b></span>
           <span class="mbCaret" id="mapBarCaret">▾</span>
           <span id="mapBarTxt" class="hidden">Vừa · Cao Nguyên</span><span id="mapBarName" class="hidden">Bản Đồ Vừa · Cao Nguyên</span>
         </button>
-        <div class="mapNote" id="mapNote"><canvas id="mapNoteCv" width="168" height="48"></canvas><div class="mapNoteTxt" id="mapNoteTxt"></div></div>
         <div id="mapPanel" class="hidden">
-          <div class="pickLbl">CỠ BẢN ĐỒ</div>
-          <div class="mapPick" id="mapPick"></div>
-          <div class="pickLbl">LOẠI BẢN ĐỒ</div>
-          <div class="mapPick" id="typePick"></div>
+          <div id="sizeSection">
+            <div class="pickLbl">CỠ BẢN ĐỒ</div>
+            <div class="mapPick" id="mapPick"></div>
+          </div>
+          <div id="typeSection">
+            <div class="pickLbl">LOẠI BẢN ĐỒ</div>
+            <div class="mapPick" id="typePick"></div>
+          </div>
         </div>
         <div id="aiRows"></div>
         <div class="teamNote" id="teamNote"></div>
@@ -1036,15 +1021,17 @@ html,body{width:100%;height:100%;height:100dvh;overflow:hidden;background:#000;c
         <p>• <b>Quân &amp; khắc chế:</b> Lính (rẻ, đa năng) • Lính Phun Lửa (đốt đàn quái nhỏ, yếu trước quân to) • Xe Tăng (pháo xa, nổ lan, mạnh với quân to) • Robot Chiến Đấu (bắn nhanh, cơ động).</p>
         <p>• <b>Cấp nhà sản xuất (v6):</b> mỗi nhà chứa quân có <b>3 cấp</b> — cấp càng cao càng mở quân mạnh: chọn nhà rồi bấm ô <b>NÂNG NHÀ</b> ở lưới lệnh. Nâng là nâng <b>CHUNG cho mọi nhà cùng loại</b> (kể cả nhà xây sau) và <b>rẻ hơn xây mới</b>; chi tiết xem trang <b>Tiến hoá &amp; Dân số</b>.</p>
         <p>• <b>Không chiến:</b> mỗi tộc có một nhà bay riêng mở ở Nhà Chính Lv3. Quân bay <b>bay qua mọi địa hình</b>; chỉ quân có đạn bay, tháp phòng thủ và quân bay mới đánh được chúng — <b>quân cận chiến và Lính Phun Lửa không với tới</b>. Quân bay đánh được cả mặt đất lẫn trên không.</p>
-        <p>• Các đội máy <b>đánh nhau cả với nhau</b> — mỗi đợt tấn công chọn ngẫu nhiên một đối thủ còn sống, không dồn hết vào bạn. Tộc của từng Máy chốt ở màn chuẩn bị (chạm vào hàng MÁY 1/2/3) hoặc để Ngẫu nhiên; chạm chọn bất kỳ quân/nhà nào để xem thông số trong bảng điều khiển.</p>
+        <p>• Các đội máy <b>đánh nhau cả với nhau</b> — mỗi đợt tấn công chọn ngẫu nhiên một đối thủ còn sống, không dồn hết vào bạn. Tộc của từng Máy chốt ở màn chuẩn bị bằng chip tộc ngay trong hàng MÁY 1/2/3 (không chọn hàng nào thì đấu với 1 Máy tộc ngẫu nhiên); chạm chọn bất kỳ quân/nhà nào để xem thông số trong bảng điều khiển.</p>
         <p>• <b>MÀU ĐỘI:</b> chỉ cần một tộc bị <b>trùng</b> giữa các phe là cả trận bật màu phe — bạn <b>Xanh dương</b> · Máy 1 <b>Đỏ</b> · Máy 2 <b>Cam</b> · Máy 3 <b>Tím</b>: viền sáng màu phe ôm quanh hình quân, đĩa màu dưới chân, thanh máu và chấm bản đồ nhỏ. Mọi phe khác tộc nhau thì giữ diện mạo mặc định.</p>
       </div>
       <div class="bookPage" data-bpage="map">
-        <p>• <b>Ba KIỂU bản đồ — ba diện mạo khác hẳn:</b> <b>Cao Nguyên</b> đất đá ĐỎ ấm, vách nâu đỏ, tảng đá rải rác, căn cứ ôm cao nguyên với chảo thấp giữ mỏ giàu ở giữa. <b>Thung Lũng</b> XANH cỏ/đất — chảo trũng rộng giữa bản đồ nhiều lối qua lại, hai vai cao bọc quanh. <b>Song Đỉnh</b> đá slate TỐI lạnh — hai đỉnh sáng băng đối mặt nhau, khe trũng phát sáng ở giữa là đường tranh chấp. Cỡ chỉ thêm NỘI DUNG (mỏ/khu vực), không phóng to hình: Nhỏ 2240×1680 (2 phe) · Vừa 2880×2160 (tối đa 3 phe) · To 3840×2880 (tối đa 4 phe ở 4 góc, mỗi góc một lãnh thổ trọn vẹn).</p>
+        <p>• <b>Năm KIỂU bản đồ — năm diện mạo khác hẳn:</b> <b>Cao Nguyên</b> đất đá ĐỎ ấm, vách nâu đỏ, tảng đá rải rác, căn cứ ôm cao nguyên với chảo thấp giữ mỏ giàu ở giữa. <b>Thung Lũng</b> XANH cỏ/đất — chảo trũng rộng giữa bản đồ nhiều lối qua lại, hai vai cao bọc quanh. <b>Song Đỉnh</b> đá slate TỐI lạnh — hai đỉnh sáng băng đối mặt nhau, khe trũng phát sáng ở giữa là đường tranh chấp. <b>Băng</b> thế giới tuyết lạnh XANH — tundra xanh xám ở tầng trũng, đồng tuyết ở mặt đất thường, cao nguyên băng sáng chói với vách xanh thẫm, hồ băng thấp giữa bản đồ giữ mỏ giàu. <b>Rừng</b> RỪNG RẬM xanh thẫm — nền rừng sẫm, thung lũng rêu xanh cắt ngang, vai cao phủ tán lá sáng, thảm lá phẳng rải khắp mặt đất (chỉ là hoạ tiết, không che quân cũng không phải mỏ). Cỡ chỉ thêm NỘI DUNG (mỏ/khu vực), không phóng to hình: Nhỏ 2240×1680 (2 phe) · Vừa 2880×2160 (tối đa 3 phe) · To 3840×2880 (tối đa 4 phe ở 4 góc, mỗi góc một lãnh thổ trọn vẹn).</p>
         <p>• <b>Địa hình 3 tầng:</b> <b>cao nguyên</b> sáng nhất (tầng 2) · mặt đất thường (tầng 1) · <b>tầng trũng</b> tối nhất (tầng 0) — ở kiểu nào cũng đọc rõ theo độ sáng. Quân chỉ lên/xuống qua <b>DỐC</b> (dải dốc có ray sáng, mũi tên chevron chỉ lên dốc) — mép tầng còn lại là <b>vách đứng</b> (mép sáng + mặt vách tối) không leo được; không xây nhà trên dốc.</p>
         <p>• <b>Lợi thế cao điểm:</b> đứng trên cao bắn xuống có lợi — quân ở dưới bắn lên <b>trượt 25%</b>; đứng thấp cũng không nhìn thấy xa trên cao nguyên.</p>
         <p>• <b>Bố cục chuẩn ladder:</b> nhà chính nép góc trên tầng cao nhất với <b>một dốc chính hẹp</b>; mỏ tự nhiên ngay dưới dốc (một đạo quân giữ cả hai); trung tâm thấp, rộng, 2–3 lối qua — không bao giờ chỉ một điểm nghẽn. Thời gian địch chạy nhà-nó-tới-nhà-mình ~33–42 giây ở mọi cỡ bản đồ.</p>
         <p>• <b>Thắng:</b> phá hết <b>MỌI nhà chính địch</b> (Trung Tâm / Tổ Quái / Nexus tuỳ tộc — trận 4 phe phải phá cả 3). <b>Thua:</b> mất nhà chính của mình (các phe còn lại đánh tiếp). <b>Đợt địch đầu tiên chỉ đến sau ~2 phút rưỡi</b> — kịp khai thác và dựng quân; các đợt sau cách ~80 giây, đông dần, quân hạng nặng chỉ từ ~phút 9; trước phút 5 quái đánh nhà chỉ 50% sát thương.</p>
+        <p>• <b>Toàn cảnh đủ 15 bản đồ</b> (5 loại × 3 cỡ — ảnh vẽ từ chính dữ liệu sinh bản đồ của game nên khớp 100% bản đồ thật): vùng <b>sáng nhất</b> = tầng 2, <b>tối nhất</b> = tầng trũng; dải <b>vàng</b> = dốc; ô màu lớn = vị trí nhà chính mỗi phe; chấm <b>xanh ngọc</b> = mỏ khoáng, <b>xanh lá</b> = mỏ khí.</p>
+        <div id="bookMapGrid"></div>
       </div>
       <div class="bookPage" data-bpage="evo">
         <p><b>DÂN SỐ LEO THANG</b> — quân càng mạnh càng chiếm nhiều chỗ: thợ luôn <b>1</b>; quân loại 1 = <b>1</b> · loại 2 = <b>2</b> · loại 3 = <b>3</b> · loại nặng nhất mỗi nhà = <b>4</b> (Xe Tăng Hạng Nặng, Pháo Hạm, Chúa Tể Bay, Cỗ Máy Chiến Tranh, Mẫu Hạm…). Zerg: 1 trứng Quái Nhỏ nở 2 con = <b>1</b> (Overlord 0 — nó là nhà dân số bay, mỗi con +8). Trần tối đa <b>300</b>.</p>
@@ -1111,7 +1098,7 @@ var MAXSEL = 12;
 /* Thêm bản đồ mới sau này = thêm 1 mục vào bảng này (extra: [loại, x-theo-tỉ-lệ-rộng, y-theo-tỉ-lệ-cao]) */
 /* elev: [x0,y0,x1,y1,tầng] — 0 = tầng trũng · 1 = mặt đất thường (mặc định) · 2 = cao nguyên.
    ramps: [x0,y0,x1,y1] — ô DỐC: nơi DUY NHẤT quân đi lên/xuống được giữa 2 tầng (mọi mép tầng còn lại là VÁCH đứng). */
-/* ===== BẢN ĐỒ: 3 KÍCH CỠ × 3 KIỂU, sinh bằng BUILDER theo phương pháp ladder =====
+/* ===== BẢN ĐỒ: 3 KÍCH CỠ × 5 KIỂU (v7 thêm Băng + Rừng), sinh bằng BUILDER theo phương pháp ladder =====
    Mỗi kiểu được soạn 1 KHUNG cho người chơi (góc Tây-Nam) rồi NHÂN ĐỐI XỨNG:
    địch 2 đội = xoay 180° quanh tâm; đội 3 = gương ngang. Mọi rect vẫn song song trục.
    Khung chuẩn ladder: căn cứ chính trên CAO NGUYÊN tầng 2 với đúng MỘT dốc hẹp;
@@ -1125,7 +1112,9 @@ var MAP_SIZES = {
 var MAP_TYPES = {
   'caonguyen': { name:'Cao Nguyên', desc:'Đất đá ĐỎ ấm, vách nâu đỏ, đá rải rác. Cao nguyên ôm căn cứ, chảo thấp giữa bản đồ giữ mỏ giàu, pod cao trông xuống hai trục tiến quân.' },
   'thunglung': { name:'Thung Lũng', desc:'Thung lũng XANH cỏ/đất — chảo trũng rộng giữa bản đồ nhiều lối qua lại, hai vai cao bọc quanh. Muốn sang bờ bên kia phải xuống thung rồi leo lên; pod tầng 2 sau lưng căn cứ.' },
-  'songdinh':   { name:'Song Đỉnh', desc:'Đá slate TỐI lạnh — hai đỉnh sáng băng đối mặt nhau, khe trũng phát sáng ở giữa là đường tranh chấp. Mỏ giàu nằm dưới bóng đỉnh.' }
+  'songdinh':   { name:'Song Đỉnh', desc:'Đá slate TỐI lạnh — hai đỉnh sáng băng đối mặt nhau, khe trũng phát sáng ở giữa là đường tranh chấp. Mỏ giàu nằm dưới bóng đỉnh.' },
+  'bang':       { name:'Băng', desc:'Thế giới BĂNG TUYẾT lạnh xanh — tầng trũng là tundra xanh xám, mặt đất thường là đồng tuyết, cao nguyên là băng sáng chói. Căn cứ ôm cao nguyên băng, hồ băng thấp giữa bản đồ giữ mỏ giàu, pod băng trông xuống hai trục tiến quân.' },
+  'rung':       { name:'Rừng', desc:'RỪNG RẬM xanh thẫm — nền rừng sẫm dưới chân, thung lũng rêu xanh cắt ngang giữa bản đồ, vai cao phủ tán lá sáng. Muốn sang bờ bên kia phải xuyên rừng xuống thung rồi leo lên; pod tầng 2 sau lưng căn cứ.' }
 };
 /* ===== TILESET theo KIỂU bản đồ (v5.2): mỗi kiểu một BỘ MÀU + chi tiết mặt đất riêng =====
    Mốc độ sáng (luminance) bắt buộc giữ ở MỌI kiểu để địa hình 3 tầng luôn đọc được:
@@ -1149,7 +1138,23 @@ var TILESETS = {
     l0:[24,27,34], l2:[96,110,128], l2Hi:'rgba(214,236,252,0.17)', l2Edge:'rgba(205,230,250,0.36)',
     lip:'rgba(190,216,236,0.92)', cliffA:'rgba(5,7,12,0.95)', cliffB:'rgba(5,7,12,0.62)', cliffLine:'rgba(0,0,0,0.5)',
     rampHi:'rgba(170,198,222,0.96)', rampLo:'rgba(34,40,52,0.96)', chev:'rgba(240,250,255,0.92)', rail:'rgba(205,230,248,0.92)', railIn:'rgba(8,10,16,0.55)',
-    seam:'rgba(0,0,0,0.5)', seamHi:'rgba(255,255,255,0.055)', scratch:'rgba(0,0,0,' }
+    seam:'rgba(0,0,0,0.5)', seamHi:'rgba(255,255,255,0.055)', scratch:'rgba(0,0,0,' },
+  /* v7: BĂNG — tundra xanh xám (L0) / đồng tuyết (L1) / cao nguyên băng sáng (L2).
+     Bậc sáng giữ lớn (+42/−42) + vách xanh thẫm thật tối để nền sáng KHÔNG nuốt quân/thanh máu. */
+  'bang': { css:'#92a6ba', mm:['#667c96', '#92a6ba', '#bcd0e4'], mmRamp:'#e8c15a', detail:'ice', decor:'frost',
+    g1:[146,166,186], g1Var:8,
+    l0:[102,124,150], l2:[188,208,228], l2Hi:'rgba(255,255,255,0.15)', l2Edge:'rgba(240,250,255,0.34)',
+    lip:'rgba(235,248,255,0.95)', cliffA:'rgba(16,28,46,0.96)', cliffB:'rgba(16,28,46,0.62)', cliffLine:'rgba(4,8,16,0.5)',
+    rampHi:'rgba(216,236,250,0.96)', rampLo:'rgba(94,118,148,0.96)', chev:'rgba(240,250,255,0.94)', rail:'rgba(222,242,252,0.92)', railIn:'rgba(14,24,40,0.55)',
+    seam:'rgba(10,18,30,0.3)', seamHi:'rgba(240,250,255,0.06)', scratch:'rgba(240,250,255,' },
+  /* v7: RỪNG — nền rừng sẫm (L0) / rêu xanh thẫm (L1) / tán lá sáng (L2); tông XANH LỤC lạnh,
+     khác hẳn xanh vàng của Thung Lũng. Cây chỉ là hoạ tiết PHẲNG trên mặt đất (decor canopy). */
+  'rung': { css:'#2c5024', mm:['#162610', '#2c5024', '#567834'], mmRamp:'#d8c25e', detail:'jungle', decor:'canopy',
+    g1:[44,80,36], g1Var:9,
+    l0:[22,38,16], l2:[86,120,52], l2Hi:'rgba(235,255,200,0.13)', l2Edge:'rgba(225,245,185,0.30)',
+    lip:'rgba(170,204,122,0.92)', cliffA:'rgba(7,13,5,0.96)', cliffB:'rgba(7,13,5,0.62)', cliffLine:'rgba(0,0,0,0.46)',
+    rampHi:'rgba(174,162,106,0.96)', rampLo:'rgba(72,60,34,0.96)', chev:'rgba(250,244,210,0.9)', rail:'rgba(222,206,150,0.9)', railIn:'rgba(20,16,6,0.5)',
+    seam:'rgba(6,10,4,0.3)', seamHi:'rgba(230,255,200,0.05)', scratch:null }
 };
 function tilesetOf(mapId){ var m = MAPS[mapId]; return TILESETS[m ? m.typeKey : 'caonguyen'] || TILESETS.caonguyen; }
 function _rotR(W, H, r){ return [W - r[2], H - r[3], W - r[0], H - r[1], r[4]]; }
@@ -1167,8 +1172,8 @@ function buildMapDef(sizeKey, typeKey){
   function mkX(list){ return function(u, v, rich){ list.push({ x: Math.round(u*W), y: Math.round(v*H), rich: !!rich }); }; }
   var Es = mkE(sE), Rs = mkR(sR), Xs = mkX(sX), Ec = mkE(cE), Rc = mkR(cR), Xc = mkX(cX);
   var baseP;
-  if(typeKey === 'thunglung'){
-    /* khung vai tầng 1 + pod tầng 2 sau lưng căn cứ */
+  if(typeKey === 'thunglung' || typeKey === 'rung'){
+    /* khung vai tầng 1 + pod tầng 2 sau lưng căn cứ (v7: RỪNG dùng chung khung thung lũng đã kiểm chứng) */
     baseP = [0.160*W, 0.795*H];
     Es(0.02, 0.845, 0.27, 0.985, 2);           /* pod sau căn cứ */
     Rs(0.10*W + 66, 0.845*H, 132, 150);       /* dốc lên pod */
@@ -1215,6 +1220,30 @@ function buildMapDef(sizeKey, typeKey){
       Ec(0.415, 0.06, 0.585, 0.20, 2);        /* pod bắc trông xuống trục tiến quân */
       Rc(0.50*W, 0.20*H, 132, 150);
       cE.push(_rotR(W, H, cE[cE.length - 1])); /* pod nam = xoay 180 của pod bắc */
+      cR.push((function(r){ return [W - r[2], H - r[3], W - r[0], H - r[1]]; })(cR[cR.length - 1]));
+    } else if(typeKey === 'bang'){
+      /* v7 BĂNG: cùng khung cao nguyên + cùng topo chung với Cao Nguyên (đã kiểm chứng F2/F5/F6),
+         chỉ đổi hình: HỒ BĂNG thấp ở giữa hơi rộng hơn chảo đá, pod băng bắc/nam trông xuống trục. */
+      Xs(0.300, 0.500, false);                /* mỏ ngoài 1: kề natural về phía nhà, 2 cửa vào */
+      Xs(0.365, 0.615, false);                /* natural ngay dưới chân dốc chính */
+      if(sizeKey !== 'nho'){
+        Es(0.02, 0.30, 0.13, 0.44, 2);        /* VỪA+: túi băng phụ sườn tây + dốc riêng */
+        Rs(0.13*W + 66, 0.37*H, 132, 150);
+        Xs(0.185, 0.370, false);              /* mỏ ngoài 2: ngay chân túi băng */
+      }
+      if(sizeKey === 'to'){
+        Xs(0.135, 0.280, false);              /* TO: mỏ ngoài 3 (mỏ sườn) tây-bắc, hở hẳn */
+        Ec(0.34, 0.12, 0.46, 0.25, 2);        /* TO: CHUỖI băng — khối cao phụ nối pod bắc xuống gần hồ */
+        Rc(0.46*W + 66, 0.185*H, 132, 150);
+        cE.push(_rotR(W, H, cE[cE.length - 1])); /* khối chuỗi nam = xoay 180 */
+        cR.push((function(r){ return [W - r[2], H - r[3], W - r[0], H - r[1]]; })(cR[cR.length - 1]));
+      }
+      Ec(0.37, 0.35, 0.63, 0.65, 0);          /* HỒ BĂNG THẤP trung tâm */
+      Rc(0.37*W, 0.50*H, 150, 132); Rc(0.63*W, 0.50*H, 150, 132); /* 2 cửa dốc xuống hồ (Tây/Đông) */
+      Xc(0.500, 0.500, true);                 /* mỏ giàu giữa hồ băng — điểm tranh chấp */
+      Ec(0.425, 0.06, 0.575, 0.20, 2);        /* pod băng bắc trông xuống trục tiến quân */
+      Rc(0.50*W, 0.20*H, 132, 150);
+      cE.push(_rotR(W, H, cE[cE.length - 1])); /* pod băng nam = xoay 180 của pod bắc */
       cR.push((function(r){ return [W - r[2], H - r[3], W - r[0], H - r[1]]; })(cR[cR.length - 1]));
     } else { /* songdinh */
       Xs(0.300, 0.720, false);                /* mỏ ngoài 1: kề hốc giàu/natural, hở về trung tâm */
@@ -2309,7 +2338,7 @@ function resetGame(){
    Số hàng MỞ theo CỠ bản đồ: Nhỏ 1 · Vừa 2 · To 3. Đối thủ của trận = các hàng ĐÃ cấu hình (theo thứ tự hàng);
    KHÔNG hàng nào được cấu hình -> mặc định nhanh: đúng 1 Máy tộc ngẫu nhiên. */
 var aiRows = [null, null, null];
-var openRow = -1; /* hàng đang xổ bộ chọn tộc (chỉ UI) */
+var openRow = -1; /* v7: không còn panel xổ theo hàng — giữ biến cho setupInfo tương thích, luôn -1 */
 function maxAiRows(){ return chosenSize==='to' ? 3 : (MAPS[chosenMap].teams2Only ? 1 : 2); }
 function configuredRows(){ var n = 0, mx = maxAiRows(); for(var i=0;i<3;i++) if(i < mx && aiRows[i]) n++; return n; }
 function syncTeamsFromRows(){ chosenTeams = 1 + Math.max(1, configuredRows()); return chosenTeams; }
@@ -3953,6 +3982,10 @@ function buildTerrain(){
           g.fillStyle = 'rgba(220,240,255,0.10)';
           g.beginPath(); g.ellipse(x + 12 + r()*40, y + 12 + r()*40, 5 + r()*9, 3 + r()*5, r()*3, 0, 6.29); g.fill();
         }
+        if(r() < 0.13){ /* v7: tấm MÒN — mặt tấm sáng loang hoặc vệt ố chạy dọc, phá mặt phẳng đều */
+          if(r() < 0.5){ g.fillStyle = 'rgba(205,226,244,' + (0.04 + r()*0.05).toFixed(3) + ')'; g.fillRect(x + 6 + r()*20, y + 6 + r()*20, 22 + r()*24, 16 + r()*22); }
+          else { g.fillStyle = 'rgba(0,0,0,' + (0.05 + r()*0.07).toFixed(3) + ')'; for(i=0;i<3;i++) g.fillRect(x + 8 + r()*44, y + 4, 2 + r()*3, 30 + r()*26); }
+        }
       } else if(TS.detail === 'rock'){ /* đá đỏ ấm: đốm sỏi hai tông + cụm sỏi nhỏ */
         for(i=0;i<7;i++){
           g.fillStyle = r() < 0.5 ? 'rgba(43,28,17,' + (0.10 + r()*0.16).toFixed(3) + ')' : 'rgba(255,230,190,' + (0.06 + r()*0.12).toFixed(3) + ')';
@@ -3965,10 +3998,52 @@ function buildTerrain(){
             g.fillStyle = 'rgba(255,226,180,0.35)'; g.beginPath(); g.arc(px0 + r()*12, py0 + r()*8 - 1.5, 1 + r()*1.4, 0, 6.29); g.fill();
           }
         }
+        if(r() < 0.20){ /* v7: vệt BỤI ấm loang + mảng đá sẫm — mặt đất hết phẳng một màu */
+          g.fillStyle = 'rgba(255,228,185,' + (0.05 + r()*0.06).toFixed(3) + ')';
+          g.beginPath(); g.ellipse(x + 16 + r()*32, y + 16 + r()*32, 12 + r()*16, 6 + r()*8, r()*3, 0, 6.29); g.fill();
+        }
+        if(r() < 0.12){
+          g.fillStyle = 'rgba(46,30,18,' + (0.10 + r()*0.10).toFixed(3) + ')';
+          g.beginPath(); g.ellipse(x + 14 + r()*36, y + 14 + r()*36, 8 + r()*11, 5 + r()*7, r()*3, 0, 6.29); g.fill();
+        }
+      } else if(TS.detail === 'ice'){ /* v7 BĂNG: đồng tuyết — chấm tuyết/băng hai tông + mảng băng xanh + nứt sương */
+        for(i=0;i<8;i++){
+          g.fillStyle = r() < 0.6 ? 'rgba(255,255,255,' + (0.10 + r()*0.16).toFixed(3) + ')' : 'rgba(96,128,164,' + (0.08 + r()*0.12).toFixed(3) + ')';
+          g.beginPath(); g.arc(x + 4 + r()*56, y + 4 + r()*56, 1 + r()*2.2, 0, 6.29); g.fill();
+        }
+        if(r() < 0.22){
+          g.fillStyle = 'rgba(226,242,252,' + (0.08 + r()*0.08).toFixed(3) + ')';
+          g.beginPath(); g.ellipse(x + 16 + r()*32, y + 16 + r()*32, 10 + r()*14, 5 + r()*7, r()*3, 0, 6.29); g.fill();
+        }
+        if(r() < 0.13){
+          g.strokeStyle = 'rgba(238,248,255,0.34)'; g.lineWidth = 1.1; g.beginPath();
+          var ix0 = x + 8 + r()*36, iy0 = y + 8 + r()*36;
+          g.moveTo(ix0, iy0); g.lineTo(ix0 + 8 + r()*12, iy0 + (r()-0.5)*7); g.lineTo(ix0 + 17 + r()*13, iy0 + (r()-0.5)*9); g.stroke();
+        }
+      } else if(TS.detail === 'jungle'){ /* v7 RỪNG: nền rừng — mảng rêu tối + lá mục hai tông + túm lá thấp */
+        if(r() < 0.34){
+          g.fillStyle = 'rgba(12,24,9,' + (0.16 + r()*0.14).toFixed(3) + ')';
+          g.beginPath(); g.ellipse(x + 14 + r()*36, y + 14 + r()*36, 9 + r()*13, 6 + r()*8, r()*3, 0, 6.29); g.fill();
+        }
+        for(i=0;i<9;i++){
+          g.fillStyle = r() < 0.5 ? 'rgba(10,20,7,' + (0.14 + r()*0.18).toFixed(3) + ')' : 'rgba(148,188,102,' + (0.07 + r()*0.11).toFixed(3) + ')';
+          g.beginPath(); g.arc(x + 4 + r()*56, y + 4 + r()*56, 1.1 + r()*2.1, 0, 6.29); g.fill();
+        }
+        g.lineWidth = 1.3; g.lineCap = 'round';
+        for(i=0;i<5;i++){
+          var jx0 = x + 6 + r()*52, jy0 = y + 8 + r()*50;
+          g.strokeStyle = 'rgba(14,28,10,' + (0.30 + r()*0.25).toFixed(3) + ')';
+          g.beginPath(); g.moveTo(jx0, jy0); g.lineTo(jx0 + (r()*4 - 2), jy0 - 3 - r()*3.5); g.stroke();
+        }
       } else { /* grass: mảng đất tối mềm + túm cỏ ngắn hai tông */
         if(r() < 0.30){
           g.fillStyle = 'rgba(26,40,18,0.20)';
           g.beginPath(); g.ellipse(x + 14 + r()*36, y + 14 + r()*36, 9 + r()*13, 6 + r()*8, r()*3, 0, 6.29); g.fill();
+        }
+        if(r() < 0.16){ /* v7: mảng ĐẤT nâu lộ ra giữa cỏ + vệt cỏ úa — bãi cỏ hết phẳng một tông */
+          g.fillStyle = 'rgba(99,76,44,' + (0.13 + r()*0.10).toFixed(3) + ')';
+          g.beginPath(); g.ellipse(x + 14 + r()*36, y + 14 + r()*36, 7 + r()*10, 4 + r()*6, r()*3, 0, 6.29); g.fill();
+          if(r() < 0.5){ g.fillStyle = 'rgba(196,186,110,' + (0.07 + r()*0.08).toFixed(3) + ')'; g.beginPath(); g.ellipse(x + 12 + r()*40, y + 12 + r()*40, 6 + r()*9, 3 + r()*5, r()*3, 0, 6.29); g.fill(); }
         }
         g.lineWidth = 1.3; g.lineCap = 'round';
         for(i=0;i<6;i++){
@@ -4002,6 +4077,13 @@ function buildTerrain(){
       for(my2 = 30; my2 < WORLD_H + 60; my2 += 92) for(mx2 = 30; mx2 < WORLD_W + 60; mx2 += 92)
         mottle(mx2 + (r()*76 - 38), my2 + (r()*76 - 38), 58 + r()*72, r() < 0.5);
     }
+    /* v7: vệt tông THÔ theo khối 240px cho riêng Slate (fillRect rẻ, hợp chất tấm kim loại);
+       nền tự nhiên KHÔNG thêm lớp loang ở đây — lớp loang thô chung cả 3 tầng nằm sau lớp mặt tầng. */
+    if(TS.detail === 'slate'){
+      for(y=0;y<WORLD_H;y+=240) for(x=0;x<WORLD_W;x+=240){
+        if(r() < 0.34){ g.fillStyle = r() < 0.5 ? 'rgba(210,228,245,0.030)' : 'rgba(0,0,0,0.040)'; g.fillRect(x, y, 240, 240); }
+      }
+    }
     /* ===== PHÂN TẦNG ĐỊA HÌNH: phủ mặt theo tầng + TRANG TRÍ mặt đất theo kiểu + VÁCH + DỐC ===== */
     if(elevGrid){
       var etx, ety;
@@ -4031,15 +4113,37 @@ function buildTerrain(){
             g.strokeStyle = 'rgba(190,240,255,0.20)'; g.lineWidth = 3.2; g.beginPath();
             g.moveTo(vx0, vy0); g.lineTo(vx0 + 10 + r()*14, vy0 + (r()-0.5)*10); g.stroke();
           }
+          if(TS.detail === 'ice'){ /* v7: đáy hồ/tundra — nứt sương trắng + vệt tuyết đọng mềm */
+            if(r() < 0.42){ g.strokeStyle = 'rgba(224,242,255,0.42)'; g.lineWidth = 1.2; g.beginPath();
+              var fx0 = eX + 8 + r()*28, fy0 = eY + 8 + r()*28;
+              g.moveTo(fx0, fy0); g.lineTo(fx0 + 9 + r()*13, fy0 + (r()-0.5)*8); g.lineTo(fx0 + 19 + r()*14, fy0 + (r()-0.5)*10); g.stroke(); }
+            if(r() < 0.30){ g.fillStyle = 'rgba(233,246,255,0.10)'; g.beginPath(); g.ellipse(eX + 14 + r()*32, eY + 14 + r()*32, 8 + r()*11, 4 + r()*6, r()*3, 0, 6.29); g.fill(); }
+          }
+          if(TS.detail === 'jungle'){ /* v7: nền rừng trũng — mảng lá mục sẫm + cỏ sẫm ẩm */
+            g.fillStyle = 'rgba(6,12,4,0.25)';
+            g.beginPath(); g.ellipse(eX + 12 + r()*36, eY + 12 + r()*36, 8 + r()*12, 5 + r()*7, r()*3, 0, 6.29); g.fill();
+            g.strokeStyle = 'rgba(8,18,6,0.55)'; g.lineWidth = 1.3; g.beginPath();
+            for(i=0;i<4;i++){ var jx1 = eX + 6 + r()*48, jy1 = eY + 8 + r()*46; g.moveTo(jx1, jy1); g.lineTo(jx1 + (r()*4-2), jy1 - 3 - r()*3); }
+            g.stroke();
+          }
         } else if(eL0===2){ /* CAO NGUYÊN: mặt riêng SÁNG hơn hẳn + dải bắt sáng ở mép trên + khung mép */
           g.fillStyle = rgbA(TS.l2, 1); g.fillRect(eX, eY, TILE, TILE);
-          g.fillStyle = TS.l2Hi; g.fillRect(eX, eY, TILE, 26);
+          /* v7: dải bắt sáng tầng 2 chuyển thành GRADIENT phai dần xuống 26px (trước là dải phẳng
+             cắt ngang mỗi ô -> sọc ngang rõ trên nền sáng như băng); mép trên vẫn sáng nhất để đọc tầng. */
+          var hiG = g.createLinearGradient(0, eY, 0, eY + 26);
+          hiG.addColorStop(0, TS.l2Hi); hiG.addColorStop(1, TS.l2Hi.replace(/[\d.]+\)$/, '0)'));
+          g.fillStyle = hiG; g.fillRect(eX, eY, TILE, 26);
           if(TS.detail === 'slate'){ g.strokeStyle = TS.l2Edge; g.lineWidth = 1.6; g.strokeRect(eX+3.5, eY+3.5, TILE-7, TILE-7); } /* khung ô tầng 2 chỉ cho tấm kim loại; nền tự nhiên để mặt liền (bậc sáng + dải bắt sáng vẫn giữ để đọc tầng) */
           g.fillStyle = 'rgba(10,10,12,0.18)'; g.fillRect(eX, eY+TILE-4, TILE, 4);
           if(((etx + ety) % 2) === 0){
-            if(TS.detail === 'grass'){ g.strokeStyle = 'rgba(240,255,205,0.30)'; g.lineWidth = 1.3; g.beginPath();
+            if(TS.detail === 'grass' || TS.detail === 'jungle'){ g.strokeStyle = TS.detail === 'jungle' ? 'rgba(214,246,170,0.30)' : 'rgba(240,255,205,0.30)'; g.lineWidth = 1.3; g.beginPath();
               for(i=0;i<4;i++){ var gx2 = eX + 8 + r()*44, gy2 = eY + 10 + r()*42; g.moveTo(gx2, gy2); g.lineTo(gx2 + (r()*4-2), gy2 - 3 - r()*3); }
               g.stroke();
+            } else if(TS.detail === 'ice'){ /* v7: cao nguyên băng — chấm lấp lánh băng + mảnh băng nhỏ sáng */
+              g.fillStyle = 'rgba(244,252,255,0.55)';
+              [[9,9],[TILE-11,9],[9,TILE-11],[TILE-11,TILE-11]].forEach(function(p){ g.fillRect(eX+p[0], eY+p[1], 2.2, 2.2); });
+              if(r() < 0.30){ var sx9 = eX + 16 + r()*28, sy9 = eY + 16 + r()*28;
+                g.fillStyle = 'rgba(205,235,252,0.5)'; g.beginPath(); g.moveTo(sx9, sy9 - 5); g.lineTo(sx9 + 3, sy9 + 3); g.lineTo(sx9 - 3, sy9 + 3); g.closePath(); g.fill(); }
             } else {
               g.fillStyle = TS.detail === 'slate' ? 'rgba(235,248,255,0.32)' : 'rgba(255,240,210,0.35)';
               [[7,7],[TILE-9,7],[7,TILE-9],[TILE-9,TILE-9]].forEach(function(p){ g.fillRect(eX+p[0], eY+p[1], 2.6, 2.6); });
@@ -4066,6 +4170,27 @@ function buildTerrain(){
             for(i=0;i<4;i++){ var fa2 = -0.4 + i*0.5, fl2 = 5 + r()*5; g.moveTo(dcx, dcy); g.lineTo(dcx + Math.sin(fa2)*fl2, dcy - Math.cos(fa2)*fl2); }
             g.stroke();
             if(r() < 0.35){ g.fillStyle = r() < 0.5 ? '#ffd7e8' : '#ffe066'; g.beginPath(); g.arc(dcx + (r()*10-5), dcy - 6 - r()*4, 1.8, 0, 6.29); g.fill(); }
+          } else if(TS.decor === 'frost' && dr < 0.08){ /* v7 BĂNG: cụm mảnh băng trên thảm tuyết PHẲNG (không đổ bóng cứng) */
+            g.fillStyle = 'rgba(231,245,255,0.20)'; g.beginPath(); g.ellipse(dcx, dcy + 3, 10 + r()*7, 4.5 + r()*3, 0, 0, 6.29); g.fill();
+            for(i=0;i<3;i++){
+              var fs2 = 5 + r()*7, fx3 = dcx + (r()*16 - 8), fy3 = dcy + (r()*8 - 4);
+              g.fillStyle = 'rgba(198,232,252,0.88)';
+              g.beginPath(); g.moveTo(fx3, fy3 - fs2); g.lineTo(fx3 + fs2*0.42, fy3 + fs2*0.45); g.lineTo(fx3 - fs2*0.42, fy3 + fs2*0.45); g.closePath(); g.fill();
+              g.fillStyle = 'rgba(240,252,255,0.9)'; g.fillRect(fx3 - 0.7, fy3 - fs2*0.65, 1.4, fs2*0.85);
+            }
+          } else if(TS.decor === 'canopy' && dr < 0.10){ /* v7 RỪNG: thảm TÁN LÁ PHẲNG — cụm vòng lá hai tông + điểm sáng mép trên; không thân cây, không bóng, không che lối đi */
+            for(i=0;i<6;i++){
+              var cr2 = 4.5 + r()*6.5, cx3 = dcx + (r()*22 - 11), cy3 = dcy + (r()*14 - 7);
+              g.fillStyle = i % 2 ? 'rgba(22,42,16,0.50)' : 'rgba(36,62,24,0.44)';
+              g.beginPath(); g.arc(cx3, cy3, cr2, 0, 6.29); g.fill();
+            }
+            g.fillStyle = 'rgba(156,198,104,0.40)';
+            for(i=0;i<4;i++){ g.beginPath(); g.arc(dcx + (r()*20 - 10), dcy - 3 - r()*6, 1.4 + r()*1.4, 0, 6.29); g.fill(); }
+            if(r() < 0.4){ /* dương xỉ nhỏ: quạt lá mảnh sát đất */
+              g.strokeStyle = 'rgba(18,36,12,0.6)'; g.lineWidth = 1.2; g.lineCap = 'round'; g.beginPath();
+              for(i=0;i<5;i++){ var ca3 = -0.6 + i*0.35 + r()*0.15, cl3 = 4.5 + r()*4; g.moveTo(dcx, dcy + 4); g.lineTo(dcx + Math.sin(ca3)*cl3, dcy + 4 - Math.cos(ca3)*cl3); }
+              g.stroke();
+            }
           } else if(TS.decor === 'shard' && dr < 0.06){ /* mảnh băng nhọn sáng */
             var sh2 = 7 + r()*8;
             g.fillStyle = 'rgba(198,230,250,0.85)';
@@ -4080,7 +4205,13 @@ function buildTerrain(){
           }
         }
       }
-      /* VÁCH ĐỨNG — đủ 4 PHÍA, 3 lớp như SC2: (a) MÔI BẮT SÁNG 2.5px ở mép phía đất CAO (màu theo tileset);
+      /* v7: LOANG THÔ phủ cả 3 tầng (sau mặt tầng + trang trí, trước vách/dốc): khối 2×2 ô
+         tông sáng/tối mép tan, alpha tâm ≤0.08 — bãi rộng hết phẳng một màu trong khi bậc sáng
+         giữa các tầng (chênh ≥28 đơn vị) vẫn áp đảo nên đọc tầng không hề đổi. */
+      for(ety=0; ety<eRows; ety+=2) for(etx=0; etx<eCols; etx+=2){
+        if(r() < 0.36) mottle(etx*TILE + 60 + (r()*60 - 30), ety*TILE + 60 + (r()*60 - 30), 80 + r()*65, r() < 0.5);
+      }
+      /* VÁCH ĐỨNG — đủ 4 PHÍA, 3 lớp như SC2: (a) MÔI BẮT SÁNG 3px ở mép phía đất CAO (màu theo tileset);
          (b) MẶT VÁCH 15px (chênh 2 tầng: 22px) tối + sọc đứng mờ, treo từ môi xuống đất thấp;
          (c) BÓNG ĐỔ mềm lên đất thấp ngay ngoài chân vách. Mép kề Ô DỐC thì bỏ qua. */
       for(ety=0; ety<eRows; ety++) for(etx=0; etx<eCols; etx++){
@@ -4098,49 +4229,49 @@ function buildTerrain(){
           var fh = (eL1 - nb.lv) >= 2 ? 22 : 15, grdF, grdS, sf;
           g.fillStyle = TS.lip;
           if(nb.d==='S'){
-            g.fillRect(eX1, eY1+TILE-2.5, TILE, 2.5);
+            g.fillRect(eX1, eY1+TILE-3, TILE, 3);
             grdF = g.createLinearGradient(0, eY1+TILE, 0, eY1+TILE+fh);
-            grdF.addColorStop(0, TS.cliffA); grdF.addColorStop(1, TS.cliffB);
+            grdF.addColorStop(0, TS.cliffA); grdF.addColorStop(0.4, TS.cliffA); grdF.addColorStop(1, TS.cliffB);
             g.fillStyle = grdF; g.fillRect(eX1, eY1+TILE, TILE, fh);
             g.strokeStyle = TS.cliffLine; g.lineWidth = 1.3; g.beginPath();
             for(sf = eX1+6; sf < eX1+TILE; sf += 9){ g.moveTo(sf, eY1+TILE+2); g.lineTo(sf-2, eY1+TILE+fh-2); }
             g.stroke();
-            grdS = g.createLinearGradient(0, eY1+TILE+fh, 0, eY1+TILE+fh+11);
-            grdS.addColorStop(0, 'rgba(0,0,0,0.34)'); grdS.addColorStop(1, 'rgba(0,0,0,0)');
-            g.fillStyle = grdS; g.fillRect(eX1, eY1+TILE+fh, TILE, 11);
+            grdS = g.createLinearGradient(0, eY1+TILE+fh, 0, eY1+TILE+fh+13);
+            grdS.addColorStop(0, 'rgba(0,0,0,0.37)'); grdS.addColorStop(1, 'rgba(0,0,0,0)');
+            g.fillStyle = grdS; g.fillRect(eX1, eY1+TILE+fh, TILE, 13);
           } else if(nb.d==='N'){
-            g.fillRect(eX1, eY1, TILE, 2.5);
+            g.fillRect(eX1, eY1, TILE, 3);
             grdF = g.createLinearGradient(0, eY1, 0, eY1-fh);
-            grdF.addColorStop(0, TS.cliffA); grdF.addColorStop(1, TS.cliffB);
+            grdF.addColorStop(0, TS.cliffA); grdF.addColorStop(0.4, TS.cliffA); grdF.addColorStop(1, TS.cliffB);
             g.fillStyle = grdF; g.fillRect(eX1, eY1-fh, TILE, fh);
             g.strokeStyle = TS.cliffLine; g.lineWidth = 1.3; g.beginPath();
             for(sf = eX1+6; sf < eX1+TILE; sf += 9){ g.moveTo(sf, eY1-2); g.lineTo(sf-2, eY1-fh+2); }
             g.stroke();
-            grdS = g.createLinearGradient(0, eY1-fh, 0, eY1-fh-11);
-            grdS.addColorStop(0, 'rgba(0,0,0,0)'); grdS.addColorStop(1, 'rgba(0,0,0,0.34)');
-            g.fillStyle = grdS; g.fillRect(eX1, eY1-fh-11, TILE, 11);
+            grdS = g.createLinearGradient(0, eY1-fh, 0, eY1-fh-13);
+            grdS.addColorStop(0, 'rgba(0,0,0,0)'); grdS.addColorStop(1, 'rgba(0,0,0,0.37)');
+            g.fillStyle = grdS; g.fillRect(eX1, eY1-fh-13, TILE, 13);
           } else if(nb.d==='E'){
-            g.fillRect(eX1+TILE-2.5, eY1, 2.5, TILE);
+            g.fillRect(eX1+TILE-3, eY1, 3, TILE);
             grdF = g.createLinearGradient(eX1+TILE, 0, eX1+TILE+fh, 0);
-            grdF.addColorStop(0, TS.cliffA); grdF.addColorStop(1, TS.cliffB);
+            grdF.addColorStop(0, TS.cliffA); grdF.addColorStop(0.4, TS.cliffA); grdF.addColorStop(1, TS.cliffB);
             g.fillStyle = grdF; g.fillRect(eX1+TILE, eY1, fh, TILE);
             g.strokeStyle = TS.cliffLine; g.lineWidth = 1.3; g.beginPath();
             for(sf = eY1+6; sf < eY1+TILE; sf += 9){ g.moveTo(eX1+TILE+2, sf); g.lineTo(eX1+TILE+fh-2, sf-2); }
             g.stroke();
-            grdS = g.createLinearGradient(eX1+TILE+fh, 0, eX1+TILE+fh+11, 0);
-            grdS.addColorStop(0, 'rgba(0,0,0,0.34)'); grdS.addColorStop(1, 'rgba(0,0,0,0)');
-            g.fillStyle = grdS; g.fillRect(eX1+TILE+fh, eY1, 11, TILE);
+            grdS = g.createLinearGradient(eX1+TILE+fh, 0, eX1+TILE+fh+13, 0);
+            grdS.addColorStop(0, 'rgba(0,0,0,0.37)'); grdS.addColorStop(1, 'rgba(0,0,0,0)');
+            g.fillStyle = grdS; g.fillRect(eX1+TILE+fh, eY1, 13, TILE);
           } else {
-            g.fillRect(eX1, eY1, 2.5, TILE);
+            g.fillRect(eX1, eY1, 3, TILE);
             grdF = g.createLinearGradient(eX1, 0, eX1-fh, 0);
-            grdF.addColorStop(0, TS.cliffA); grdF.addColorStop(1, TS.cliffB);
+            grdF.addColorStop(0, TS.cliffA); grdF.addColorStop(0.4, TS.cliffA); grdF.addColorStop(1, TS.cliffB);
             g.fillStyle = grdF; g.fillRect(eX1-fh, eY1, fh, TILE);
             g.strokeStyle = TS.cliffLine; g.lineWidth = 1.3; g.beginPath();
             for(sf = eY1+6; sf < eY1+TILE; sf += 9){ g.moveTo(eX1-2, sf); g.lineTo(eX1-fh+2, sf-2); }
             g.stroke();
-            grdS = g.createLinearGradient(eX1-fh, 0, eX1-fh-11, 0);
-            grdS.addColorStop(0, 'rgba(0,0,0,0)'); grdS.addColorStop(1, 'rgba(0,0,0,0.34)');
-            g.fillStyle = grdS; g.fillRect(eX1-fh-11, eY1, 11, TILE);
+            grdS = g.createLinearGradient(eX1-fh, 0, eX1-fh-13, 0);
+            grdS.addColorStop(0, 'rgba(0,0,0,0)'); grdS.addColorStop(1, 'rgba(0,0,0,0.37)');
+            g.fillStyle = grdS; g.fillRect(eX1-fh-13, eY1, 13, TILE);
           }
         }
       }
@@ -5116,7 +5247,7 @@ document.getElementById('btnStart').addEventListener('click', startGame);
 /* SÁCH HƯỚNG DẪN (FIX J): mở từ màn bắt đầu, đóng bằng ✕ hoặc chạm ra ngoài sách */
 (function(){
   var ov = document.getElementById('bookOverlay'); if(!ov) return;
-  document.getElementById('btnBook').addEventListener('click', function(){ buildDict(); ov.classList.remove('hidden'); });
+  document.getElementById('btnBook').addEventListener('click', function(){ buildDict(); buildMapGrid(); ov.classList.remove('hidden'); });
   document.getElementById('btnBookClose').addEventListener('click', function(){ ov.classList.add('hidden'); });
   ov.addEventListener('click', function(e){ if(e.target === ov) ov.classList.add('hidden'); });
   ov.querySelectorAll('.bookTabs button').forEach(function(bn){
@@ -5178,88 +5309,52 @@ function loop(ts){
   if(window.requestAnimationFrame) window.requestAnimationFrame(loop);
 }
 /* ============ CHỌN BẢN ĐỒ / KIỂU ĐẤU (màn hình bắt đầu) ============ */
-function drawMapPreview(cv, mapId, teams){
-  var g = cv.getContext('2d'); if(!g) return;
-  var map = MAPS[mapId], lay = mapLayout(mapId, teams), W = cv.width, H = cv.height;
-  var sx = W/map.w, sy = H/map.h, i;
-  g.fillStyle = tilesetOf(mapId).css; g.fillRect(0,0,W,H);
-  g.strokeStyle = 'rgba(255,255,255,0.05)'; g.lineWidth = 1;
-  for(i=1;i<6;i++){ g.beginPath(); g.moveTo(W*i/6,0); g.lineTo(W*i/6,H); g.stroke(); }
-  for(i=1;i<5;i++){ g.beginPath(); g.moveTo(0,H*i/5); g.lineTo(W,H*i/5); g.stroke(); }
-  lay.bases.forEach(function(bb){
-    if(bb.faction==='player') return;
-    g.fillStyle = 'rgba(' + teamRGB(bb.faction) + ',0.30)';
-    g.beginPath(); g.arc(bb.x*sx, bb.y*sy, 20, 0, 6.29); g.fill();
-  });
-  lay.nodes.forEach(function(nd){
-    g.fillStyle = nd.type==='gas' ? '#4ade80' : '#67e8f9';
-    g.fillRect(nd.x*sx-1.6, nd.y*sy-1.6, nd.type==='gas'?4:3, nd.type==='gas'?4:3);
-  });
-  lay.bases.forEach(function(bb){
-    g.fillStyle = teamColor(bb.faction); g.fillRect(bb.x*sx-5, bb.y*sy-5, 10, 10);
-    g.strokeStyle = '#0b0e13'; g.lineWidth = 1.5; g.strokeRect(bb.x*sx-5, bb.y*sy-5, 10, 10);
-  });
-}
-/* Preview KIỂU bản đồ: vẽ lưới tầng thu nhỏ từ chính map def (tông theo tầng + dốc vàng + căn cứ/mỏ) */
-function drawTypePreview(cv, mapId, teams){
-  var g = cv.getContext('2d'); if(!g) return;
-  var map = MAPS[mapId]; if(!map) return;
-  var W = cv.width, H = cv.height, sx = W/map.w, sy = H/map.h;
-  var cols = 48, rows = 36, cw = W/cols, ch = H/rows, tx, ty, cx, cy, lv;
-  var TS = tilesetOf(mapId), tierCols = TS.mm;
-  for(ty = 0; ty < rows; ty++) for(tx = 0; tx < cols; tx++){
-    cx = (tx + 0.5)*map.w/cols; cy = (ty + 0.5)*map.h/rows; lv = 1;
-    (map.elev || []).forEach(function(r){ if(cx >= r[0] && cx < r[2] && cy >= r[1] && cy < r[3]) lv = r[4]; });
-    g.fillStyle = tierCols[lv]; g.fillRect(tx*cw, ty*ch, cw + 0.5, ch + 0.5);
-  }
-  g.fillStyle = TS.mmRamp;
-  (map.ramps || []).forEach(function(r){ g.fillRect(r[0]*sx, r[1]*sy, Math.max(2, (r[2]-r[0])*sx), Math.max(2, (r[3]-r[1])*sy)); });
-  var lay = mapLayout(mapId, teams);
-  lay.nodes.forEach(function(nd){ g.fillStyle = nd.type==='gas' ? '#4ade80' : '#67e8f9'; g.fillRect(nd.x*sx - 1.3, nd.y*sy - 1.3, 2.6, 2.6); });
-  lay.bases.forEach(function(bb){ g.fillStyle = teamColor(bb.faction); g.fillRect(bb.x*sx - 4, bb.y*sy - 4, 8, 8); g.strokeStyle = '#0b0e13'; g.lineWidth = 1.2; g.strokeRect(bb.x*sx - 4, bb.y*sy - 4, 8, 8); });
-}
-function setMapPanel(open){
+
+
+/* v7: panel xổ RIÊNG theo nửa đã ấn trên thanh bản đồ — ấn CỠ chỉ thấy 3 TÊN cỡ (Nhỏ/Vừa/To),
+   ấn LOẠI chỉ thấy danh sách TÊN 5 loại. Không mô tả/giải thích nào ở màn chọn nữa —
+   thông tin bản đồ nằm hết trong sách hướng dẫn. */
+var mapPanelWhich = null; /* 'size' | 'type' | null (đang đóng) */
+function setMapPanel(open, which){
   var p = document.getElementById('mapPanel'); if(!p) return;
+  if(open) mapPanelWhich = which || mapPanelWhich || 'size';
+  else mapPanelWhich = null;
   p.classList.toggle('hidden', !open);
+  var ss = document.getElementById('sizeSection'); if(ss) ss.style.display = (open && mapPanelWhich === 'size') ? '' : 'none';
+  var ts = document.getElementById('typeSection'); if(ts) ts.style.display = (open && mapPanelWhich === 'type') ? '' : 'none';
   var sc = document.getElementById('startCard'); if(sc) sc.classList.toggle('panelOpen', open);
   var c = document.getElementById('mapBarCaret'); if(c) c.textContent = open ? '▴' : '▾';
   var b = document.getElementById('mapBar'); if(b) b.setAttribute('aria-expanded', open ? 'true' : 'false');
 }
 function closeMapPanel(){ setMapPanel(false); }
-/* ===== v5.2: HÀNG ĐỐI THỦ — dựng 1 lần, đồng bộ trạng thái mỗi lần đổi lựa chọn =====
-   Mỗi hàng: thanh tóm tắt (MÁY n — tộc / Ngẫu nhiên / chưa chọn) bấm vào XỔ bộ chọn tộc cho đúng Máy đó:
-   TERRAN · ZERG · PROTOSS · NGẪU NHIÊN · (TẮT = bỏ cấu hình hàng). Hàng vượt CỠ bản đồ thì KHOÁ mờ, bấm không ăn.
-   Nghĩa của hàng: đối thủ = các hàng đã cấu hình (theo thứ tự); không cấu hình hàng nào -> 1 Máy tộc ngẫu nhiên. */
+/* ===== HÀNG ĐỐI THỦ — dựng 1 lần, đồng bộ trạng thái mỗi lần đổi lựa chọn =====
+   Nghĩa của hàng: đối thủ = các hàng đã cấu hình (theo thứ tự); không cấu hình hàng nào -> 1 Máy tộc ngẫu nhiên.
+   Giá trị 'random' chỉ còn do API nội bộ (setTeams) ghi vào — UI không tạo ra nữa (xem buildAiRows). */
 var ROW_RACES = ['terran','zerg','protoss','random'];
+/* v7: hàng MÁY tích hợp — nhãn MÁY n + 3 chip tộc NGAY TRONG HÀNG (không còn panel xổ,
+   không còn tuỳ chọn Ngẫu nhiên/Tắt). Không ấn chip nào = hàng chưa cấu hình; ấn chip
+   đang chọn lần nữa = bỏ chọn. Cả 3 hàng trống khi Bắt đầu -> đúng 1 Máy tộc ngẫu nhiên. */
 function buildAiRows(){
   var wrap = document.getElementById('aiRows'); if(!wrap || wrap.children.length) return;
   for(var i=0;i<3;i++){
     (function(idx){
       var row = document.createElement('div');
       row.className = 'aiRow'; row.setAttribute('data-row', idx);
-      var head = document.createElement('button');
-      head.type = 'button'; head.className = 'aiRowHead';
-      head.innerHTML = '<span class="aiRowName"></span><span class="aiRowVal"></span><span class="aiRowCaret">▾</span>';
-      head.addEventListener('click', function(){
-        if(idx >= maxAiRows()){ Snd.play('error', 0.5, 60); return; }
-        var op = openRow === idx ? -1 : idx;
-        openRow = op; syncAiRowsUI(); if(op >= 0) Snd.play('ui_click', 0.6, 60);
-      });
-      row.appendChild(head);
-      var opts = document.createElement('div'); opts.className = 'aiRowOpts';
-      ROW_RACES.forEach(function(rk){
+      var nm = document.createElement('span');
+      nm.className = 'aiRowName'; nm.textContent = 'MÁY ' + (idx + 1);
+      row.appendChild(nm);
+      var chips = document.createElement('div'); chips.className = 'aiChips';
+      ['terran', 'zerg', 'protoss'].forEach(function(rk){
         var b = document.createElement('button');
-        b.type = 'button'; b.className = 'aiOpt'; b.setAttribute('data-opt', rk);
-        b.textContent = rk === 'random' ? 'Ngẫu nhiên' : RACES[rk].name.toUpperCase();
-        b.addEventListener('click', function(){ setAiRowChoice(idx, rk, true); });
-        opts.appendChild(b);
+        b.type = 'button'; b.className = 'aiChip'; b.setAttribute('data-race', rk);
+        b.textContent = RACES[rk].name.toUpperCase();
+        b.addEventListener('click', function(){
+          if(idx >= maxAiRows()){ Snd.play('error', 0.5, 60); return; }
+          setAiRowChoice(idx, aiRows[idx] === rk ? null : rk, true);
+        });
+        chips.appendChild(b);
       });
-      var off = document.createElement('button');
-      off.type = 'button'; off.className = 'aiOpt aiOptOff'; off.setAttribute('data-opt', 'off');
-      off.textContent = 'Tắt';
-      off.addEventListener('click', function(){ setAiRowChoice(idx, null, true); });
-      opts.appendChild(off);
-      row.appendChild(opts);
+      row.appendChild(chips);
       wrap.appendChild(row);
     })(i);
   }
@@ -5272,21 +5367,19 @@ function syncAiRowsUI(){
     var idx = parseInt(row.getAttribute('data-row'), 10) || 0;
     var locked = idx >= mx, v = aiRows[idx];
     row.classList.toggle('locked', locked);
-    row.classList.toggle('open', openRow === idx && !locked);
     row.classList.toggle('set', !!v);
-    row.querySelector('.aiRowName').textContent = 'MÁY ' + (idx + 1);
-    row.querySelector('.aiRowVal').textContent = locked ? 'KHOÁ — bản đồ nhỏ hơn' :
-      (!v ? 'Chưa chọn' : (v === 'random' ? 'Ngẫu nhiên' : RACES[v].name.toUpperCase()));
-    row.querySelectorAll('.aiOpt').forEach(function(b){
-      var ov = b.getAttribute('data-opt');
-      b.classList.toggle('sel', ov === 'off' ? !v : ov === v);
+    /* 'random' chỉ còn là trạng thái nội bộ của API đặt số phe (setTeams) — UI không tạo ra nữa;
+       hiển thị bằng viền đứt nét để không nhầm với hàng trống. */
+    row.classList.toggle('rand', v === 'random');
+    row.querySelectorAll('.aiChip').forEach(function(b){
+      b.classList.toggle('sel', b.getAttribute('data-race') === v);
     });
   });
   var tn = document.getElementById('teamNote');
   if(tn){
     tn.textContent = MAPS[chosenMap].teams2Only ?
-      'Bản đồ Nhỏ: chỉ MÁY 1 đấu được. Không chọn hàng nào = 1 Máy ngẫu nhiên.' :
-      (!configuredRows() ? 'Không chọn hàng nào = 1 Máy ngẫu nhiên. Chạm vào hàng để chốt tộc cho Máy đó — trùng tộc với bạn thì cả trận bật MÀU ĐỘI.' :
+      'Bản đồ Nhỏ: chỉ MÁY 1 đấu được. Không chọn hàng nào = 1 Máy tộc ngẫu nhiên.' :
+      (!configuredRows() ? 'Không chọn hàng nào = 1 Máy tộc ngẫu nhiên. Ấn chip tộc ngay trong hàng để chốt tộc cho Máy đó — trùng tộc với bạn thì cả trận bật MÀU ĐỘI.' :
       'Đang đấu ' + configuredRows() + ' Máy. Trùng tộc với bạn thì cả trận bật MÀU ĐỘI.');
     tn.style.display = 'block';
   }
@@ -5297,22 +5390,28 @@ function setAiRowChoice(idx, val, fromUI){
   if(idx >= maxAiRows()){ if(fromUI) Snd.play('error', 0.5, 60); return; }
   aiRows[idx] = val;
   syncTeamsFromRows();
-  if(fromUI){ openRow = -1; Snd.play('ui_click', 0.7, 60); }
+  if(fromUI) Snd.play('ui_click', 0.7, 60);
   resetGame();
 }
 function updateStartPickUI(){
   var wrap = document.getElementById('mapPick'); if(!wrap) return;
   var twrap = document.getElementById('typePick');
   var mbar = document.getElementById('mapBar');
-  if(mbar && !mbar._bound){ mbar._bound = true; mbar.addEventListener('click', function(){ var p = document.getElementById('mapPanel'); setMapPanel(!p || p.classList.contains('hidden')); }); }
+  if(mbar && !mbar._bound){ mbar._bound = true; mbar.addEventListener('click', function(e){
+    var half = e.target && e.target.closest ? e.target.closest('.mbHalf') : null;
+    var which = half ? half.getAttribute('data-half') : 'size';
+    var p = document.getElementById('mapPanel');
+    var isOpen = p && !p.classList.contains('hidden');
+    if(isOpen && mapPanelWhich === which) setMapPanel(false);
+    else setMapPanel(true, which);
+  }); }
   if(!wrap.children.length){
     Object.keys(MAP_SIZES).forEach(function(sk){
       var sz = MAP_SIZES[sk], card = document.createElement('div');
       card.className = 'mapCard'; card.setAttribute('data-size', sk);
-      card.innerHTML = '<div class="mn"></div><div class="ms"></div>';
-      card.querySelector('.mn').textContent = sz.name;
-      card.querySelector('.ms').textContent = sz.note;
-      card.addEventListener('click', function(){ setSizeChoice(sk); });
+      card.innerHTML = '<div class="mn"></div>';
+      card.querySelector('.mn').textContent = sz.name.replace('Bản Đồ ', '');
+      card.addEventListener('click', function(){ setSizeChoice(sk); closeMapPanel(); });
       wrap.appendChild(card);
     });
   }
@@ -5320,9 +5419,8 @@ function updateStartPickUI(){
     Object.keys(MAP_TYPES).forEach(function(tk){
       var tp = MAP_TYPES[tk], card = document.createElement('div');
       card.className = 'mapCard'; card.setAttribute('data-type', tk);
-      card.innerHTML = '<div class="mn"></div><div class="ms"></div>';
+      card.innerHTML = '<div class="mn"></div>';
       card.querySelector('.mn').textContent = tp.name;
-      card.querySelector('.ms').textContent = tp.desc;
       card.addEventListener('click', function(){ setTypeChoice(tk); closeMapPanel(); });
       twrap.appendChild(card);
     });
@@ -5337,8 +5435,6 @@ function updateStartPickUI(){
   var mbn = document.getElementById('mapBarName'); if(mbn) mbn.textContent = MAPS[chosenMap].name;
   var mbs = document.getElementById('mapBarSize'); if(mbs) mbs.textContent = MAP_SIZES[chosenSize].name.replace('Bản Đồ ','');
   var mby = document.getElementById('mapBarType'); if(mby) mby.textContent = MAP_TYPES[chosenType].name;
-  var ncv = document.getElementById('mapNoteCv'); if(ncv) drawMapPreview(ncv, chosenMap, chosenTeams);
-  var ntx = document.getElementById('mapNoteTxt'); if(ntx) ntx.textContent = MAP_SIZES[chosenSize].note + ' ' + MAP_TYPES[chosenType].desc;
   var sc = document.getElementById('startCard'); if(sc) sc.setAttribute('data-acc', chosenRace);
   document.querySelectorAll('.raceCard').forEach(function(card){
     if(!card._bound){ card._bound = true; card.addEventListener('click', function(){ setRaceChoice(card.getAttribute('data-race')); }); }
@@ -5550,6 +5646,43 @@ function dictCardBld(t){
   }
   if(isDef && ATK_LINES[t]) h += '<div class="dictLine"><b>Ra đòn:</b> ' + ATK_LINES[t] + '</div>';
   return h + '</div></div>';
+}
+/* v7: thumbnail bản đồ cho SÁCH — vẽ từ CHÍNH dữ liệu sinh bản đồ (elev/ramps/mapLayout + màu
+   minimap của tileset) nên luôn khớp bản đồ thật và không tốn tài nguyên ảnh. Sinh 1 lần khi mở sách. */
+function drawMapThumb(cv, mapId){
+  var g = cv.getContext('2d'); if(!g) return;
+  var map = MAPS[mapId]; if(!map) return;
+  var W = cv.width, H = cv.height, sx = W/map.w, sy = H/map.h;
+  var cols = 56, rows = 42, cw = W/cols, ch = H/rows, tx, ty;
+  var TS = tilesetOf(mapId), tierCols = TS.mm;
+  for(ty = 0; ty < rows; ty++) for(tx = 0; tx < cols; tx++){
+    var cx = (tx + 0.5)*map.w/cols, cy = (ty + 0.5)*map.h/rows, lv = 1;
+    (map.elev || []).forEach(function(r){ if(cx >= r[0] && cx < r[2] && cy >= r[1] && cy < r[3]) lv = r[4]; });
+    g.fillStyle = tierCols[lv]; g.fillRect(tx*cw, ty*ch, cw + 0.6, ch + 0.6);
+  }
+  g.fillStyle = TS.mmRamp;
+  (map.ramps || []).forEach(function(r){ g.fillRect(r[0]*sx, r[1]*sy, Math.max(2, (r[2]-r[0])*sx), Math.max(2, (r[3]-r[1])*sy)); });
+  var teams = map.sizeKey === 'nho' ? 2 : (map.sizeKey === 'vua' ? 3 : 4);
+  var lay = mapLayout(mapId, teams);
+  lay.nodes.forEach(function(nd){ g.fillStyle = nd.type==='gas' ? '#4ade80' : '#67e8f9'; g.fillRect(nd.x*sx - 1.6, nd.y*sy - 1.6, 3.2, 3.2); });
+  lay.bases.forEach(function(bb){ g.fillStyle = teamColor(bb.faction); g.fillRect(bb.x*sx - 4, bb.y*sy - 4, 8, 8); g.strokeStyle = '#0b0e13'; g.lineWidth = 1.2; g.strokeRect(bb.x*sx - 4, bb.y*sy - 4, 8, 8); });
+}
+function buildMapGrid(){
+  var grid = document.getElementById('bookMapGrid'); if(!grid || grid.children.length) return;
+  Object.keys(MAP_TYPES).forEach(function(tk){
+    Object.keys(MAP_SIZES).forEach(function(sk){
+      var id = sk + '-' + tk; if(!MAPS[id]) return;
+      var fig = document.createElement('figure');
+      fig.setAttribute('data-map', id);
+      var cv = document.createElement('canvas'); cv.width = 168; cv.height = 126;
+      fig.appendChild(cv);
+      var cap = document.createElement('figcaption');
+      cap.textContent = MAP_TYPES[tk].name + ' · ' + MAP_SIZES[sk].name.replace('Bản Đồ ', '');
+      fig.appendChild(cap);
+      grid.appendChild(fig);
+      drawMapThumb(cv, id);
+    });
+  });
 }
 function buildDict(){
   if(dictBuilt) return; dictBuilt = true;
