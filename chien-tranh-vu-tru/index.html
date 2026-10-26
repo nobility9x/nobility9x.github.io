@@ -15,21 +15,21 @@
   {
     state / getState() : trạng thái trực tiếp (plain data):
       { started, paused, over, result:'win'|'lose'|null, time, wave,
-        minerals, gas, supplyUsed, supplyCap, upgrades:{weapon, armor},
+        minerals, gas, supplyUsed, supplyCap, mainLevel, bldLevels:{type:lv}, bldUp:{type:{to,t,total}},
         units:[{id,faction:'player'|'enemy',type,x,y,hp,maxHp,order,carrying,...}],
         buildings:[{id,faction,type:'cc'|'depot'|'barracks'|'factory'|'turret'|'refinery'|'hatchery',
-                    x,y,hp,maxHp,queue:[...],research:{kind,t,total}|null,constructing,progress}],
+                    x,y,hp,maxHp,queue:[...],constructing,progress}],
         nodes:[{id,type:'mineral'|'gas',x,y,amount,buildingId}], projectiles:[...],
         selectedIds:[...] (tối đa 12), selectedBuildingId, stats:{kills,losses,trained} }
     units / buildings / resources(getter) : mảng trực tiếp trong state
     getResources() -> {minerals, gas, supplyUsed, supplyCap}
-    getUpgrades()  -> {weapon, armor}
-    unitDamage(type) -> sát thương hiệu dụng 1 phát của quân người chơi (đã cộng nâng cấp Vũ Khí)
+    unitDamage(type) -> sát thương cơ bản 1 phát của loại quân
     fogInfo() -> {cols, rows, cell, visibleCount, exploredCount, cellAt(wx,wy)->0|1|2}
     sound -> { play(name)->bool, toggleMute()->bool, state()->{muted, played:{name:count}} }
     start() / restart() / addResources(n) / tick(dtSeconds)
-    train(buildingId, unitType) -> bool  ('worker'|'marine'|'firebat'|'tank'|'mech')
-    research(buildingId, 'weapon'|'armor') -> bool
+    train(buildingId, unitType) -> bool  (mở khoá theo CẤP NHÀ SẢN XUẤT — cấp CHUNG theo LOẠI nhà của phe)
+    upgradeBuilding(buildingId) -> bool  (nâng CẤP LOẠI nhà: áp cho mọi nhà cùng loại của phe; nhà chính -> nâng Nhà Chính)
+    bldLevel(buildingId) -> cấp hiện tại của LOẠI nhà đó
     buildAt(type, x, y) -> bool  ('depot'|'barracks'|'factory'|'turret'|'refinery' — refinery tự bám mạch khí gần nhất)
     orderMove / orderAttackMove / orderHarvest(unitId,nodeId) / orderUnitsTo(ids,x,y)
     spawnEnemy(type,x,y) / spawnUnit(faction,type,x,y)  (helper cho test)
@@ -822,7 +822,6 @@ html,body{width:100%;height:100%;height:100dvh;overflow:hidden;background:#000;c
         <div id="statBar"><span>Đợt <span id="resWave">0</span></span><span>·</span><span id="resDiff">Vừa</span></div>
       </div>
       <div id="infoPanel"><div class="infoHint">Chưa chọn gì.<br>Chạm vào quân / nhà của mình để xem thông tin tại đây — giống bảng điều khiển của chỉ huy.</div></div>
-      <div id="upgPanel"></div>
     </div>
     <div id="cmdWrap">
       <div id="cmdGrid"></div>
@@ -928,9 +927,10 @@ html,body{width:100%;height:100%;height:100dvh;overflow:hidden;background:#000;c
       </div>
       <div class="bookPage" data-bpage="unit">
         <p>• <b>Quân &amp; khắc chế:</b> Lính (rẻ, đa năng) • Lính Phun Lửa (đốt đàn quái nhỏ, yếu trước quân to) • Xe Tăng (pháo xa, nổ lan, mạnh với quân to) • Robot Chiến Đấu (bắn nhanh, cơ động).</p>
-        <p>• <b>Nâng cấp:</b> Doanh Trại nghiên cứu <b>Vũ Khí +1→+3</b>, Xưởng Cơ Khí nghiên cứu <b>Giáp +1→+3</b> (giá tăng dần 100/100 → 175/175 → 250/250).</p>
+        <p>• <b>Cấp nhà sản xuất (v6):</b> mỗi nhà chứa quân có <b>3 cấp</b> — cấp càng cao càng mở quân mạnh: chọn nhà rồi bấm ô <b>NÂNG NHÀ</b> ở lưới lệnh. Nâng là nâng <b>CHUNG cho mọi nhà cùng loại</b> (kể cả nhà xây sau) và <b>rẻ hơn xây mới</b>; chi tiết xem trang <b>Tiến hoá &amp; Dân số</b>.</p>
+        <p>• <b>Không chiến:</b> mỗi tộc có một nhà bay riêng mở ở Nhà Chính Lv3. Quân bay <b>bay qua mọi địa hình</b>; chỉ quân có đạn bay, tháp phòng thủ và quân bay mới đánh được chúng — <b>quân cận chiến và Lính Phun Lửa không với tới</b>. Quân bay đánh được cả mặt đất lẫn trên không.</p>
         <p>• Các đội máy <b>đánh nhau cả với nhau</b> — mỗi đợt tấn công chọn ngẫu nhiên một đối thủ còn sống, không dồn hết vào bạn. Tộc của từng Máy chốt ở màn chuẩn bị (chạm vào hàng MÁY 1/2/3) hoặc để Ngẫu nhiên; chạm chọn bất kỳ quân/nhà nào để xem thông số trong bảng điều khiển.</p>
-        <p>• <b>MÀU ĐỘI:</b> chỉ cần một tộc bị <b>trùng</b> giữa các phe là cả trận bật màu phe — bạn <b>Xanh dương</b> · Máy 1 <b>Đỏ</b> · Máy 2 <b>Cam</b> · Máy 3 <b>Tím</b>: đĩa màu dưới chân quân, thanh máu, chấm bản đồ nhỏ và cả sprite đều nhuộm tông màu phe. Mọi phe khác tộc nhau thì giữ diện mạo mặc định.</p>
+        <p>• <b>MÀU ĐỘI:</b> chỉ cần một tộc bị <b>trùng</b> giữa các phe là cả trận bật màu phe — bạn <b>Xanh dương</b> · Máy 1 <b>Đỏ</b> · Máy 2 <b>Cam</b> · Máy 3 <b>Tím</b>: viền sáng màu phe ôm quanh hình quân, đĩa màu dưới chân, thanh máu và chấm bản đồ nhỏ. Mọi phe khác tộc nhau thì giữ diện mạo mặc định.</p>
       </div>
       <div class="bookPage" data-bpage="map">
         <p>• <b>Ba KIỂU bản đồ — ba diện mạo khác hẳn:</b> <b>Cao Nguyên</b> đất đá ĐỎ ấm, vách nâu đỏ, tảng đá rải rác, căn cứ ôm cao nguyên với chảo thấp giữ mỏ giàu ở giữa. <b>Thung Lũng</b> XANH cỏ/đất — chảo trũng rộng giữa bản đồ nhiều lối qua lại, hai vai cao bọc quanh. <b>Song Đỉnh</b> đá slate TỐI lạnh — hai đỉnh sáng băng đối mặt nhau, khe trũng phát sáng ở giữa là đường tranh chấp. Cỡ chỉ thêm NỘI DUNG (mỏ/khu vực), không phóng to hình: Nhỏ 2240×1680 (2 phe) · Vừa 2880×2160 (tối đa 3 phe) · To 3840×2880 (tối đa 4 phe ở 4 góc, mỗi góc một lãnh thổ trọn vẹn).</p>
@@ -940,9 +940,11 @@ html,body{width:100%;height:100%;height:100dvh;overflow:hidden;background:#000;c
         <p>• <b>Thắng:</b> phá hết <b>MỌI nhà chính địch</b> (Trung Tâm / Tổ Quái / Nexus tuỳ tộc — trận 4 phe phải phá cả 3). <b>Thua:</b> mất nhà chính của mình (các phe còn lại đánh tiếp). <b>Đợt địch đầu tiên chỉ đến sau ~2 phút rưỡi</b> — kịp khai thác và dựng quân; các đợt sau cách ~80 giây, đông dần, quân hạng nặng chỉ từ ~phút 9; trước phút 5 quái đánh nhà chỉ 50% sát thương.</p>
       </div>
       <div class="bookPage" data-bpage="evo">
-        <p><b>DÂN SỐ LEO THANG</b> — quân càng mạnh càng chiếm nhiều chỗ: thợ luôn <b>1</b>; Terran: Lính <b>1</b> · Giáp Lửa <b>2</b> · Cơ Giới <b>3</b> · Xe Tăng <b>4</b>. Zerg: 1 trứng Quái Nhỏ nở 2 con = <b>1</b> · Bắn Gai <b>2</b> · Khổng Lồ <b>3</b> (Overlord 0 — nó là nhà dân số bay, mỗi con +8). Protoss: Zealot <b>1</b> · Dragoon <b>2</b> · Archon <b>3</b>. Trần tối đa <b>300</b>.</p>
-        <p><b>NHÀ CHÍNH CÓ 3 CẤP</b> — chọn Nhà Chính rồi bấm ô <b>LÊN CẤP</b> ở lưới lệnh. <b>Lv1</b>: nhà dân số + nhà lính đầu + tháp phòng thủ + trạm khí, luyện được quân loại 1. <b>Lên Lv2</b> (◆200 ●100, 60s): mở Nhà Máy + Giáp Lửa (Terran) · Hang Hydralisk (Zerg) · Lõi Cybernetics + Dragoon (Protoss). <b>Lên Lv3</b> (◆300 ●200, 90s): mở Xe Tăng · Quái Khổng Lồ (cần Hang) · Archon (cần Lõi). Đang nâng cấp thì Nhà Chính <b>không luyện quân</b> được; lệnh chưa mở khoá vẫn hiện nhưng mờ — chạm vào để xem lý do.</p>
-        <p><b>ĐỘ KHÓ OFFLINE</b> — <b>DỄ</b>: đợt đầu ~4:00, sóng thưa và yếu, hợp tập chơi. <b>VỪA</b>: nhịp chuẩn gay cấn (đợt đầu 2:30). <b>KHÓ</b>: đợt đầu ~1:50, sóng đông hơn 40%, địch đánh đau hơn — thử thách để vượt qua.</p>
+        <p><b>DÂN SỐ LEO THANG</b> — quân càng mạnh càng chiếm nhiều chỗ: thợ luôn <b>1</b>; quân loại 1 = <b>1</b> · loại 2 = <b>2</b> · loại 3 = <b>3</b> · loại nặng nhất mỗi nhà = <b>4</b> (Xe Tăng Hạng Nặng, Pháo Hạm, Chúa Tể Bay, Cỗ Máy Chiến Tranh, Mẫu Hạm…). Zerg: 1 trứng Quái Nhỏ nở 2 con = <b>1</b> (Overlord 0 — nó là nhà dân số bay, mỗi con +8). Trần tối đa <b>300</b>.</p>
+        <p><b>NHÀ CHÍNH CÓ 3 CẤP — NÂNG RIÊNG TỪNG NHÀ</b> — chọn Nhà Chính rồi bấm ô <b>LÊN CẤP</b>: Lv2 (◆200 ●100, 60s) mở xây <b>Nhà Tăng</b> (Terran) · <b>Hang Hydralisk</b> (Zerg) · <b>Xưởng Cơ Giới</b> (Protoss); Lv3 (◆300 ●200, 90s) mở xây <b>Nhà Máy Bay</b> · <b>Tổ Bay</b> · <b>Cảng Hàng Không</b>. Cổng mở khoá tính theo nhà chính <b>cấp cao nhất</b> của bạn; nhà đang nâng cấp thì nhà đó tạm không luyện thợ. Tổ Quái vừa là nhà chính vừa là nhà sản xuất: cấp sản xuất của Tổ = cấp nhà chính cao nhất (Lv2 mở Quái Bắn Gai, Lv3 mở Quái Khổng Lồ — vẫn cần Hang).</p>
+        <p><b>CẤP NHÀ SẢN XUẤT — NÂNG CHUNG THEO LOẠI</b> — Doanh Trại · Nhà Tăng · Nhà Máy Bay · Tổ Bay · Cổng Gateway · Xưởng Cơ Giới · Cảng Hàng Không đều có 3 cấp, và cấp là của cả <b>LOẠI</b> nhà: bấm <b>NÂNG NHÀ</b> một lần là <b>mọi nhà cùng loại — hiện có lẫn xây sau — cùng lên cấp</b>. Lv1 luyện quân loại 1 · Lv2 thêm quân loại 2 · Lv3 thêm quân mạnh nhất của nhà đó. Giá nâng <b>rẻ hơn xây mới</b>: lên Lv2 = <b>50%</b> giá xây, lên Lv3 = <b>60%</b>, thời gian cũng ngắn hơn; trong lúc nâng, mọi nhà loại đó <b>tạm dừng sản xuất</b>. Mỗi lần lên cấp, mỗi nhà loại đó được <b>thêm ô chứa</b>: lên Lv2 <b>+2 ô</b>, lên Lv3 <b>+3 ô</b> nữa — hàng đợi mỗi nhà: Lv1 <b>5 ô</b> · Lv2 <b>7 ô</b> · Lv3 <b>10 ô</b> (riêng Tổ Quái: trần Ấu Trùng 3 → 5 → 8). Nhà đạt Lv2+ có <b>viền vàng + chấm cấp</b> trên bản đồ. Phe máy cũng lên cấp nhà theo nhịp trận (~phút 5 Lv2, ~phút 10 Lv3) nên sóng địch về sau có quân mạnh và quân bay.</p>
+        <p><b>KHÔNG CHIẾN</b> — quân bay (Trực Thăng · Phi Cơ · Pháo Hạm · Dơi · Ong Chiến · Chúa Tể Bay · Phi Thuyền · Chiến Hạm Nhỏ · Mẫu Hạm, và Overlord) <b>không bị địa hình chặn</b>, bóng đổ tách khỏi thân theo độ cao. Đánh lên trời được: mọi quân <b>có đạn bay</b> (trừ Lính Phun Lửa chỉ phun mặt đất), <b>tháp phòng thủ</b> (trừ Ổ Sunken chuyên mặt đất) và <b>chính quân bay</b>. <b>Quân cận chiến</b> (Quái Nhỏ, Zealot…) hoàn toàn không với tới quân bay. Quân bay bắn được cả mục tiêu mặt đất lẫn trên không; đạn nổ diện rộng chỉ lan trong cùng tầng bay/đất.</p>
+        <p><b>ĐỘ KHÓ OFFLINE</b> — <b>DỄ</b>: đợt đầu ~4:00, sóng thưa và yếu, quân bay địch không đến trước phút 8. <b>VỪA</b>: nhịp chuẩn gay cấn (đợt đầu 2:30), quân bay từ ~phút 6. <b>KHÓ</b>: đợt đầu ~1:50, sóng đông hơn 40%, địch đánh đau hơn — thử thách để vượt qua.</p>
       </div>
       <div class="bookPage" data-bpage="dict">
         <div class="dictTabs">
@@ -1177,8 +1179,21 @@ function waveCompFor(df, wc){
   return { ling:nL, hyd:nH, ult:nU, count:nL+nH+nU, dps:Math.round(dps*df.dmgMul*10)/10, power:Math.round(dps*df.dmgMul*df.hpMul*10)/10, at:at };
 }
 /* FIX P — tiến hoá: cấp Nhà Chính mở khoá nhà/quân; dân số leo thang theo thứ tự mở khoá (đã đặt trong SPECS.supply) */
-var REQ_MAIN = { firebat:2, tank:3, ultralisk:3, archon:3 };
-var REQ_MAIN_BUILD = { factory:2, cybercore:2, zergden:2 };
+/* FIX v6 — TIẾN HOÁ THEO CẤP NHÀ (bỏ hẳn nghiên cứu Vũ Khí/Giáp):
+   mỗi LOẠI nhà sản xuất có MỘT cấp CHUNG cho cả phe (nâng 1 lần ở bất kỳ nhà nào cùng loại
+   là mọi nhà cùng loại — hiện có lẫn xây sau — đều dùng cấp đó). Quân mở theo cấp của
+   ĐÚNG nhà sản xuất ra nó (UNIT_PROD). Nhà mới mở theo cấp NHÀ CHÍNH (REQ_MAIN_BUILD). */
+var UNIT_PROD = {
+  worker:{b:'cc', lv:1}, marine:{b:'barracks', lv:1}, firebat:{b:'barracks', lv:2}, robot:{b:'barracks', lv:3},
+  mech:{b:'factory', lv:1}, tank:{b:'factory', lv:2}, heavytank:{b:'factory', lv:3},
+  heli:{b:'airfac', lv:1}, jet:{b:'airfac', lv:2}, gunship:{b:'airfac', lv:3},
+  drone:{b:'hatchery', lv:1}, zergling:{b:'hatchery', lv:1}, hydralisk:{b:'hatchery', lv:2}, ultralisk:{b:'hatchery', lv:3}, overlord:{b:'hatchery', lv:1},
+  bat:{b:'spire', lv:1}, wasp:{b:'spire', lv:2}, leviathan:{b:'spire', lv:3},
+  probe:{b:'nexus', lv:1}, zealot:{b:'gateway', lv:1}, dragoon:{b:'gateway', lv:2}, archon:{b:'gateway', lv:3},
+  scoutbot:{b:'cybercore', lv:1}, artillery:{b:'cybercore', lv:2}, colossus:{b:'cybercore', lv:3},
+  scoutship:{b:'stargate', lv:1}, frigate:{b:'stargate', lv:2}, carrier:{b:'stargate', lv:3}
+};
+var REQ_MAIN_BUILD = { factory:2, cybercore:2, zergden:2, airfac:3, spire:3, stargate:3 };
 var MAIN_UP_COSTS = { 1:{m:200, g:100, t:60}, 2:{m:300, g:200, t:90} };
 function mapLayout(mapId, teams){
   var map = MAPS[mapId], out = { bases:[], nodes:[] }, i;
@@ -1228,24 +1243,44 @@ var SPECS = {
   probe:    { name:'Probe',           spr:'probe',    hp:50,  speed:112, dmg:5,  dtype:'normal',    range:26,  sight:150, cd:0.8, supply:1, projSpeed:0,   size:'small',  draw:42 },
   zealot:   { name:'Chiến Binh Zealot', spr:'zealot', hp:100, speed:104, dmg:12, dtype:'normal',    range:27,  sight:190, cd:1.0, supply:1, projSpeed:0,   size:'small',  draw:50 },
   dragoon:  { name:'Kỵ Binh Dragoon', spr:'dragoon',  hp:120, speed:92,  dmg:14, dtype:'explosive', range:135, sight:210, cd:1.1, supply:2, projSpeed:420, size:'medium', draw:56 },
-  archon:   { name:'Archon',          spr:'archon',   hp:60,  speed:88,  dmg:16, dtype:'normal',    range:74,  sight:210, cd:1.2, supply:3, projSpeed:300, size:'large',  draw:66, splash:35, shieldFlat:190 }
+  archon:   { name:'Archon',          spr:'archon',   hp:60,  speed:88,  dmg:16, dtype:'normal',    range:74,  sight:210, cd:1.2, supply:3, projSpeed:300, size:'large',  draw:66, splash:35, shieldFlat:190 },
+  /* ===== FIX v6: quân MỚI — mở theo CẤP NHÀ sản xuất (UNIT_PROD) ===== */
+  robot:    { name:'Robot Song Súng', spr:'robot',    hp:220, speed:62,  dmg:13, dtype:'normal',    range:170, sight:230, cd:0.55,supply:3, projSpeed:560, size:'large',  draw:72 },
+  heavytank:{ name:'Xe Tăng Hạng Nặng', spr:'heavytank', hp:260, speed:48, dmg:30, dtype:'explosive', range:250, sight:260, cd:2.2, supply:4, projSpeed:420, size:'large', draw:78, splash:65 },
+  heli:     { name:'Trực Thăng Trinh Sát', spr:'heli', hp:90, speed:150, dmg:7,  dtype:'normal',    range:130, sight:230, cd:0.5, supply:2, projSpeed:520, size:'medium', draw:56, flying:true },
+  jet:      { name:'Phi Cơ Cường Kích', spr:'jet',    hp:130, speed:138, dmg:12, dtype:'explosive', range:150, sight:230, cd:1.1, supply:3, projSpeed:480, size:'medium', draw:62, flying:true, splash:30 },
+  gunship:  { name:'Pháo Hạm',        spr:'gunship',  hp:240, speed:84,  dmg:22, dtype:'explosive', range:190, sight:240, cd:1.6, supply:4, projSpeed:460, size:'large',  draw:76, flying:true, splash:45 },
+  bat:      { name:'Dơi Trinh Sát',   spr:'bat',      hp:70,  speed:160, dmg:6,  dtype:'normal',    range:110, sight:220, cd:0.55,supply:1, projSpeed:420, size:'small',  draw:48, flying:true },
+  wasp:     { name:'Ong Chiến',       spr:'wasp',     hp:110, speed:120, dmg:11, dtype:'normal',    range:125, sight:210, cd:0.9, supply:2, projSpeed:380, size:'medium', draw:54, flying:true },
+  leviathan:{ name:'Chúa Tể Bay',     spr:'leviathan', hp:320, speed:66, dmg:24, dtype:'explosive', range:170, sight:240, cd:1.4, supply:4, projSpeed:400, size:'large', draw:92, flying:true, splash:30 },
+  scoutbot: { name:'Robot Trinh Sát', spr:'scoutbot', hp:90,  speed:128, dmg:8,  dtype:'normal',    range:140, sight:220, cd:0.6, supply:2, projSpeed:500, size:'medium', draw:52 },
+  artillery:{ name:'Pháo Tự Hành',    spr:'artillery', hp:160, speed:58, dmg:24, dtype:'explosive', range:250, sight:260, cd:2.0, supply:3, projSpeed:430, size:'large', draw:68, splash:55 },
+  colossus: { name:'Cỗ Máy Chiến Tranh', spr:'colossus', hp:300, speed:52, dmg:26, dtype:'normal',  range:185, sight:240, cd:1.5, supply:4, projSpeed:600, size:'large', draw:84 },
+  scoutship:{ name:'Phi Thuyền Trinh Sát', spr:'scoutship', hp:80, speed:155, dmg:7, dtype:'normal', range:125, sight:230, cd:0.55,supply:2, projSpeed:520, size:'medium', draw:52, flying:true },
+  frigate:  { name:'Chiến Hạm Nhỏ',   spr:'frigate',  hp:150, speed:110, dmg:13, dtype:'normal',    range:155, sight:230, cd:1.0, supply:3, projSpeed:500, size:'medium', draw:64, flying:true },
+  carrier:  { name:'Hàng Không Mẫu Hạm', spr:'carrier', hp:300, speed:70, dmg:20, dtype:'normal',  range:200, sight:250, cd:1.3, supply:4, projSpeed:480, size:'large', draw:88, flying:true, splash:25 }
 };
+/* firebat: súng phun lửa chỉ đốt MẶT ĐẤT — không với tới quân bay */
+SPECS.firebat.groundOnly = true;
 var BSPECS = {
   cc:       { name:'Trung Tâm Chỉ Huy', spr:'command',  hp:1500, size:104, draw:138, supplyCap:10 },
   depot:    { name:'Kho Tiếp Tế',       spr:'depot',    hp:350,  size:64,  draw:92,  supplyCap:8 },
   barracks: { name:'Doanh Trại',        spr:'barracks', hp:800, size:84,  draw:118 },
-  factory:  { name:'Xưởng Cơ Khí',      spr:'factory',  hp:1250, size:92,  draw:126 },
+  factory:  { name:'Nhà Tăng',          spr:'factory',  hp:1250, size:92,  draw:126 },
+  airfac:   { name:'Nhà Máy Bay',       spr:'airfac',   hp:1100, size:92,  draw:126 },
   turret:   { name:'Tháp Tên Lửa',      spr:'turret',   hp:320,  size:52,  draw:70, dmg:8, range:245, cd:0.45, projSpeed:540 },
   refinery: { name:'Trạm Lọc Khí',      spr:'refinery', hp:700,  size:84,  draw:118 },
   hatchery: { name:'Tổ Quái',           spr:'hatchery', hp:1500, size:118, draw:158, supplyCap:1 },
   extractor:{ name:'Trạm Chiết Khí',    spr:'extractor', hp:650, size:84,  draw:118 },
   pool:     { name:'Hồ Sinh Sản',       spr:'spawningpool', hp:775, size:76, draw:106 },
   zergden:  { name:'Hang Hydralisk',    spr:'zergden',  hp:900,  size:84,  draw:112 },
+  spire:    { name:'Tổ Bay',            spr:'spire',    hp:850,  size:80,  draw:112 },
   sunken:   { name:'Ổ Phòng Thủ Sunken', spr:'sunkencolony', hp:300, size:56, draw:78, dmg:20, range:210, cd:1.2, projSpeed:260 },
   nexus:    { name:'Nexus',             spr:'nexus',    hp:1500, size:110, draw:146, supplyCap:9 },
   pylon:    { name:'Pylon',             spr:'pylon',    hp:380,  size:44,  draw:64,  supplyCap:8 },
   gateway:  { name:'Cổng Gateway',      spr:'gateway',  hp:850, size:88,  draw:120 },
-  cybercore:{ name:'Lõi Cybernetics',   spr:'cybercore', hp:1000, size:76,  draw:104 },
+  cybercore:{ name:'Xưởng Cơ Giới',     spr:'cybercore', hp:1000, size:76,  draw:104 },
+  stargate: { name:'Cảng Hàng Không',   spr:'stargate', hp:1100, size:92,  draw:126 },
   cannon:   { name:'Pháo Photon',       spr:'cannon',   hp:340,  size:48,  draw:66,  dmg:12, range:230, cd:1.0, projSpeed:480 },
   assimilator:{ name:'Trạm Đồng Hoá',   spr:'assimilator', hp:750, size:84, draw:118 }
 };
@@ -1255,15 +1290,24 @@ var COSTS = {
   drone:{m:50,g:0,t:10}, zergling:{m:50,g:0,t:12}, hydralisk:{m:75,g:25,t:16}, ultralisk:{m:200,g:200,t:30}, overlord:{m:100,g:0,t:18},
   hatchery:{m:300,g:0,t:40}, extractor:{m:50,g:0,t:12}, pool:{m:200,g:0,t:22}, zergden:{m:150,g:50,t:24}, sunken:{m:125,g:0,t:16},
   probe:{m:50,g:0,t:10}, zealot:{m:100,g:0,t:16}, dragoon:{m:125,g:50,t:20}, archon:{m:250,g:150,t:28},
-  nexus:{m:400,g:0,t:45}, pylon:{m:100,g:0,t:12}, gateway:{m:150,g:0,t:22}, cybercore:{m:200,g:0,t:25}, cannon:{m:150,g:0,t:16}, assimilator:{m:100,g:0,t:12}
+  nexus:{m:400,g:0,t:45}, pylon:{m:100,g:0,t:12}, gateway:{m:150,g:0,t:22}, cybercore:{m:200,g:0,t:25}, cannon:{m:150,g:0,t:16}, assimilator:{m:100,g:0,t:12},
+  airfac:{m:200,g:100,t:25}, spire:{m:150,g:100,t:24}, stargate:{m:200,g:100,t:25},
+  robot:{m:150,g:75,t:24}, heavytank:{m:200,g:150,t:30},
+  heli:{m:100,g:25,t:16}, jet:{m:150,g:75,t:22}, gunship:{m:225,g:125,t:30},
+  bat:{m:75,g:0,t:12}, wasp:{m:100,g:50,t:18}, leviathan:{m:250,g:175,t:34},
+  scoutbot:{m:100,g:25,t:16}, artillery:{m:175,g:100,t:26}, colossus:{m:250,g:150,t:32},
+  scoutship:{m:100,g:25,t:16}, frigate:{m:150,g:75,t:22}, carrier:{m:250,g:150,t:32}
 };
 /* ============ CHỦNG TỘC: mỗi tộc một cách vận hành khác hẳn ============ */
 var UNIT_RACE = { worker:'terran', marine:'terran', firebat:'terran', tank:'terran', mech:'terran',
+  robot:'terran', heavytank:'terran', heli:'terran', jet:'terran', gunship:'terran',
   drone:'zerg', zergling:'zerg', hydralisk:'zerg', ultralisk:'zerg', overlord:'zerg',
-  probe:'protoss', zealot:'protoss', dragoon:'protoss', archon:'protoss' };
-var BLD_RACE = { cc:'terran', depot:'terran', barracks:'terran', factory:'terran', turret:'terran', refinery:'terran',
-  hatchery:'zerg', extractor:'zerg', pool:'zerg', zergden:'zerg', sunken:'zerg',
-  nexus:'protoss', pylon:'protoss', gateway:'protoss', cybercore:'protoss', cannon:'protoss', assimilator:'protoss' };
+  bat:'zerg', wasp:'zerg', leviathan:'zerg',
+  probe:'protoss', zealot:'protoss', dragoon:'protoss', archon:'protoss',
+  scoutbot:'protoss', artillery:'protoss', colossus:'protoss', scoutship:'protoss', frigate:'protoss', carrier:'protoss' };
+var BLD_RACE = { cc:'terran', depot:'terran', barracks:'terran', factory:'terran', airfac:'terran', turret:'terran', refinery:'terran',
+  hatchery:'zerg', extractor:'zerg', pool:'zerg', zergden:'zerg', spire:'zerg', sunken:'zerg',
+  nexus:'protoss', pylon:'protoss', gateway:'protoss', cybercore:'protoss', stargate:'protoss', cannon:'protoss', assimilator:'protoss' };
 var RACES = {
   terran:  { name:'Terran',  main:'cc',       worker:'worker', gasBld:'refinery',   line:'Thợ đứng xây đến khi xong · hàng đợi luyện quân ở từng nhà · Kho Tiếp Tế cấp dân số' },
   zerg:    { name:'Zerg',    main:'hatchery', worker:'drone',  gasBld:'extractor',  line:'Drone BIẾN MẤT thành nhà · quân nở từ Ấu Trùng ở Tổ · chỉ xây trên thảm nhầy · Overlord cấp dân số · tự hồi máu' },
@@ -1279,7 +1323,6 @@ function raceOfFaction(f){ if(!S) return 'terran'; return f==='player' ? (S.play
 function isWorkerType(t){ return !!WORKER_TYPES[t]; }
 var chosenRace = 'terran';
 try{ var savedRace = localStorage.getItem('ctvt_race'); if(savedRace && RACES[savedRace]) chosenRace = savedRace; }catch(e){}
-var RESEARCH_COSTS = [ {m:100,g:100,t:22}, {m:175,g:175,t:28}, {m:250,g:250,t:34} ];
 var HARVEST_AMT = 8, HARVEST_TIME = 2.4;
 /* hệ số sát thương theo loại đạn x cỡ mục tiêu (bản gốc: concussive 100/50/25, explosive 50/75/100) */
 function dmgMult(dtype, target){
@@ -1296,7 +1339,8 @@ var rng = mulberry(20261025);
 
 /* ============ TẢI SPRITE ============ */
 var IMG = {};
-['worker','marine','firebat','tank','mech','dropship','zergling','hydralisk','ultralisk','drone','overlord','probe','zealot','dragoon','archon','command','depot','barracks','factory','turret','refinery','hatchery','extractor','spawningpool','zergden','sunkencolony','nexus','pylon','gateway','cybercore','cannon','assimilator','mineral','geyser'].forEach(function(n){
+['worker','marine','firebat','tank','mech','dropship','zergling','hydralisk','ultralisk','drone','overlord','probe','zealot','dragoon','archon','command','depot','barracks','factory','turret','refinery','hatchery','extractor','spawningpool','zergden','sunkencolony','nexus','pylon','gateway','cybercore','cannon','assimilator','mineral','geyser',
+ /* FIX v6 */ 'robot','heavytank','heli','jet','gunship','bat','wasp','leviathan','scoutbot','artillery','colossus','scoutship','frigate','carrier','airfac','spire','stargate'].forEach(function(n){
   var im = new Image(); im.src = sprImg(n); IMG[n] = im;
 });
 function imgReady(im){ if(!im) return false; if(im.tagName === 'CANVAS') return im.width > 0; return im.complete && im.naturalWidth > 0; }
@@ -1367,7 +1411,22 @@ var ANIM = {
   drone:    { hover:1, hz:2.0, amp:1.5 },
   probe:    { hover:1, hz:2.2, amp:1.5 },
   archon:   { hover:1, hz:1.2, amp:2.0, pulse:1 },
-  overlord: { hz:0.8, amp:2.5, rollA:0.026 }
+  overlord: { hz:0.8, amp:2.5, rollA:0.026 },
+  /* FIX v6 — quân mới: mặt đất dùng procedural như cũ, quân bay lơ lửng theo thời gian */
+  robot:    { stride:30, frames:6, bob:1.0, roll:0.018, dust:1 },
+  heavytank:{ dust:1 },
+  artillery:{ dust:1 },
+  colossus: { stride:34, frames:6, bob:1.2, roll:0.020, dust:1 },
+  scoutbot: { stride:26, frames:6, bob:1.4, roll:0.030 },
+  heli:     { hover:1, hz:2.6, amp:1.2 },
+  jet:      { hover:1, hz:1.8, amp:1.6 },
+  gunship:  { hover:1, hz:1.4, amp:1.8 },
+  bat:      { hz:1.6, amp:2.2, rollA:0.030 },
+  wasp:     { hover:1, hz:2.2, amp:1.6 },
+  leviathan:{ hz:0.7, amp:2.6, rollA:0.020 },
+  scoutship:{ hover:1, hz:2.0, amp:1.5 },
+  frigate:  { hover:1, hz:1.2, amp:1.8 },
+  carrier:  { hz:0.9, amp:2.2, rollA:0.020 }
 };
 
 /* ============ ÂM THANH: file OGG (xem assets/sounds/MAPPING.md) + WebAudio cho thắng/thua ============ */
@@ -1614,6 +1673,28 @@ var cam = {x:0, y:WORLD_H-620, z:1};
 var FOG_CELL = 40, FOG_COLS = Math.ceil(WORLD_W/FOG_CELL), FOG_ROWS = Math.ceil(WORLD_H/FOG_CELL);
 var fog = new Uint8Array(FOG_COLS*FOG_ROWS);       /* 0 chưa khám phá · 1 đã thấy · 2 đang thấy */
 var fogT = 0, hudT = 0;
+/* FIX v6 (góp ý 13:48) — SƯƠNG MÙ MỀM: sương mù vẽ vào canvas nhỏ (1px/ô) rồi PHÓNG lên cả bản đồ
+   với làm mượt ảnh -> biên giữa các vùng tan dần thành dải chuyển, không còn cắt ô vuông cứng.
+   Logic 3 trạng thái giữ nguyên; canvas chỉ dựng lại khi sương mù thay đổi (fogDirty). */
+var fogCv = null, fogCx = null, fogDirty = true;
+function buildFogCanvas(){
+  fogCv = null; fogCx = null;
+  try{
+    var c = document.createElement('canvas'); c.width = FOG_COLS; c.height = FOG_ROWS;
+    var g = c.getContext('2d'); if(!g) return;
+    fogCv = c; fogCx = g; fogDirty = true;
+  }catch(e){}
+}
+function paintFogCanvas(){
+  if(!fogCx) return;
+  fogCx.clearRect(0, 0, FOG_COLS, FOG_ROWS);
+  var a, b;
+  fogCx.fillStyle = '#000';
+  for(b=0;b<FOG_ROWS;b++) for(a=0;a<FOG_COLS;a++) if(fog[fogIdx(a,b)]===0) fogCx.fillRect(a, b, 1, 1);
+  fogCx.fillStyle = 'rgba(0,0,0,0.45)';
+  for(b=0;b<FOG_ROWS;b++) for(a=0;a<FOG_COLS;a++) if(fog[fogIdx(a,b)]===1) fogCx.fillRect(a, b, 1, 1);
+  fogDirty = false;
+}
 function fogIdx(cx, cy){ return cy*FOG_COLS + cx; }
 function fogAtWorld(wx, wy){
   var cx = clamp((wx/FOG_CELL)|0, 0, FOG_COLS-1), cy = clamp((wy/FOG_CELL)|0, 0, FOG_ROWS-1);
@@ -1638,6 +1719,7 @@ function updateFog(){
   }
   S.units.forEach(function(u){ if(u.faction==='player') reveal(u.x, u.y, SPECS[u.type].sight); });
   S.buildings.forEach(function(b){ if(b.faction==='player') reveal(b.x, b.y, 190 + BSPECS[b.type].size/2); });
+  fogDirty = true;
 }
 /* ============ ĐỊA HÌNH PHÂN TẦNG: 0 trũng · 1 thường · 2 cao nguyên — lên/xuống CHỈ qua ô DỐC ============ */
 var TILE = 60, eCols = 0, eRows = 0, elevGrid = null, rampGrid = null, mmElevCv = null, mmPing = null;
@@ -1788,6 +1870,37 @@ function buildMmElev(){
 /* ============ HỆ HẠT / HIỆU ỨNG (giới hạn 300 hạt, tái dùng mảng) ============ */
 var PARTS = [], SCORCH = [], MARKERS = [];
 var PART_CAP = 300;
+/* FIX v6 — XÁC QUÂN chết có động tác (ngã + mờ dần ~0,35s) thay vì biến mất tức thì;
+   BOOMS = cột khói/nổ kéo dài của nhà bị phá; SHAKE = rung camera rất nhẹ khi nổ lớn gần tầm nhìn */
+var CORPSES = [], BOOMS = [];
+var SHAKE = { t:0, mag:0 };
+function addShake(x, y, mag){
+  if(!onScreen(x, y, 60)) return;
+  SHAKE.mag = Math.max(SHAKE.mag, mag); SHAKE.t = 0.28;
+}
+/* FIX v6 (góp ý 13:48) — BÓNG ĐỔ MỀM: 1 sprite gradient xuyên tâm NUNG SẴN dùng chung cho mọi
+   bóng (quân/nhà/quân bay/vệt cháy): tâm đậm ~0,42 tan dần ra mép trong suốt — không blur theo khung hình */
+var SHADOW_CV = null;
+function shadowCanvas(){
+  if(SHADOW_CV) return SHADOW_CV;
+  try{
+    var c = document.createElement('canvas'); c.width = 128; c.height = 128;
+    var g = c.getContext('2d'); if(!g) return null;
+    var gr = g.createRadialGradient(64, 64, 4, 64, 64, 62);
+    gr.addColorStop(0, 'rgba(0,0,0,0.42)');
+    gr.addColorStop(0.55, 'rgba(0,0,0,0.26)');
+    gr.addColorStop(0.82, 'rgba(0,0,0,0.10)');
+    gr.addColorStop(1, 'rgba(0,0,0,0)');
+    g.fillStyle = gr; g.fillRect(0, 0, 128, 128);
+    SHADOW_CV = c; return c;
+  }catch(e){ return null; }
+}
+function drawShadow(x, y, w, h, alpha){
+  var c = shadowCanvas(); if(!c) return;
+  ctx.save(); ctx.globalAlpha = clamp(alpha, 0, 1);
+  ctx.drawImage(c, x - w/2, y - h/2, w, h);
+  ctx.restore();
+}
 function spawnP(p){ if(PARTS.length >= PART_CAP) PARTS.shift(); PARTS.push(p); }
 function fxExplosion(x, y, big){
   spawnP({kind:'flash', x:x, y:y, vx:0, vy:0, life:0.16, max:0.16, size: big?54:26, seed:rng()*6});
@@ -1805,6 +1918,24 @@ function fxMuzzle(x, y, ang, flame){
   if(flame){ for(var i=0;i<6;i++){ var a = ang + (rng()-0.5)*0.55, sp = 70 + rng()*80;
     spawnP({kind:'flame', x:x, y:y, vx:Math.cos(a)*sp, vy:Math.sin(a)*sp, life:0.22+rng()*0.18, max:0.4, size:5+rng()*5, seed:rng()*6}); } }
 }
+/* FIX v6 — hiệu ứng TRÚNG ĐẠN tại điểm chạm: khiên Protoss -> vòng sáng loé; thịt Zerg -> bọt hữu cơ; còn lại -> tia lửa kim loại */
+function fxImpact(x, y, target){
+  var i, a, sp;
+  if(target && (target.shieldMax||0) > 0){
+    spawnP({kind:'shieldring', x:x, y:y, vx:0, vy:0, life:0.22, max:0.22, size: (target.kind==='building' ? BSPECS[target.type].size*0.62 : (SPECS[target.type].draw||48)*0.62), seed:0});
+    return;
+  }
+  var race = target ? (target.kind==='unit' ? unitRace(target.type) : bldRace(target.type)) : null;
+  if(race === 'zerg'){
+    for(i=0;i<4;i++){ a = rng()*6.283; sp = 16 + rng()*38;
+      spawnP({kind:'puff', x:x, y:y, vx:Math.cos(a)*sp, vy:Math.sin(a)*sp - 12, life:0.3+rng()*0.2, max:0.5, size:3.4+rng()*3.4, seed:rng()*6, c:[150,120,220]});
+    }
+    return;
+  }
+  for(i=0;i<4;i++){ a = rng()*6.283; sp = 40 + rng()*90;
+    spawnP({kind:'spark', x:x, y:y, vx:Math.cos(a)*sp, vy:Math.sin(a)*sp - 16, life:0.2+rng()*0.22, max:0.42, size:1.6+rng()*1.6, seed:rng()*6, c: rng()<0.5 ? [255,196,90] : [210,225,255]});
+  }
+}
 function fxSparkle(x, y){
   for(var i=0;i<7;i++) spawnP({kind:'spark', x:x+(rng()-0.5)*22, y:y+(rng()-0.5)*16, vx:(rng()-0.5)*36, vy:-14-rng()*30, life:0.3+rng()*0.25, max:0.55, size:1.6+rng()*1.6, seed:rng()*6, c:[165,243,252]});
 }
@@ -1816,7 +1947,19 @@ function tickParticles(dt){
     p.x += p.vx*dt; p.y += p.vy*dt;
     if(p.kind==='smoke' || p.kind==='steam' || p.kind==='dust'){ p.vx += Math.sin(S.time*2 + p.seed)*4*dt; p.size += 7*dt; }
     if(p.kind==='spark') p.vy += 130*dt;
+    if(p.kind==='debris'){ p.vy += 320*dt; p.vx *= (1 - 0.6*dt); } /* mảnh vỡ nhà: bay lên rồi rơi có trọng lực */
   }
+  /* FIX v6 — nhà vừa bị phá: cột khói + tia lửa còn bốc ~1,2s sau vụ nổ */
+  for(i=BOOMS.length-1;i>=0;i--){ var bm = BOOMS[i]; bm.t += dt; bm.emit += dt;
+    if(bm.t >= bm.total){ BOOMS.splice(i,1); continue; }
+    while(bm.emit > 0.15){ bm.emit -= 0.15;
+      spawnP({kind:'smoke', x:bm.x+(rng()-0.5)*30, y:bm.y-6, vx:(rng()-0.5)*16, vy:-30-rng()*20, life:0.7+rng()*0.5, max:1.2, size:9+rng()*8, seed:rng()*6});
+      if(rng() < 0.5) spawnP({kind:'spark', x:bm.x+(rng()-0.5)*24, y:bm.y-4, vx:(rng()-0.5)*90, vy:-30-rng()*60, life:0.25+rng()*0.25, max:0.5, size:1.8+rng()*1.6, seed:rng()*6, c:[255,170,60]});
+    }
+  }
+  /* FIX v6 — xác quân mờ dần hết ~0,35s thì dọn */
+  for(i=CORPSES.length-1;i>=0;i--){ CORPSES[i].t += dt; if(CORPSES[i].t > 0.4) CORPSES.splice(i,1); }
+  if(SHAKE.t > 0) SHAKE.t = Math.max(0, SHAKE.t - dt);
   for(i=SCORCH.length-1;i>=0;i--){ SCORCH[i].life -= dt/26; if(SCORCH[i].life<=0) SCORCH.splice(i,1); }
   for(i=MARKERS.length-1;i>=0;i--){ MARKERS[i].t += dt; if(MARKERS[i].t > 0.55) MARKERS.splice(i,1); }
   /* hơi khí bốc liên tục ở mọi mạch khí + lấp lánh tinh thể */
@@ -1892,7 +2035,8 @@ function makeBuilding(faction, type, x, y, built){
   var bs = BSPECS[type], sm = shieldMaxFor('building', type, bs.hp);
   var b = { id:uid(), kind:'building', faction:faction, type:type, x:x, y:y, hp:bs.hp, maxHp:bs.hp,
     shield: sm, shieldMax: sm, lastHurtAt: -99,
-    queue:[], research:null, cooldown:0, constructing: !built, progress: built?1:0 };
+    queue:[], cooldown:0, constructing: !built, progress: built?1:0 };
+  if(MAIN_TYPES[type]) b.mainLv = 1; /* cấp RIÊNG từng Nhà Chính (chỉ nhà sản xuất mới nâng CHUNG theo loại) */
   if(type==='hatchery'){ b.larvae = 3; b.larvaT = 0; b.eggs = []; b.creepT0 = (typeof S !== 'undefined' && S) ? S.time : 0; }
   return b;
 }
@@ -1906,14 +2050,14 @@ function resetGame(){
   FOG_COLS = Math.ceil(WORLD_W/FOG_CELL); FOG_ROWS = Math.ceil(WORLD_H/FOG_CELL);
   S = { started:false, paused:false, over:false, result:null, fsAttempted:false, time:0, wave:0,
         map:chosenMap, teams:chosenTeams, playerRace:chosenRace, aiRaces:resolveAiRaces(chosenRace),
-        ai:{ ai1:{wave:0, nextAt:DIFFS[chosenDiff].first}, ai2:{wave:0, nextAt:DIFFS[chosenDiff].first+20}, ai3:{wave:0, nextAt:DIFFS[chosenDiff].first+40} },
-        minerals:50, gas:0, supplyUsed:0, supplyCap:10, upgrades:{weapon:0, armor:0}, mainLevel:1, mainUpgrade:null, diff:chosenDiff,
+        ai:{ ai1:{wave:0, nextAt:DIFFS[chosenDiff].first, lvl:1}, ai2:{wave:0, nextAt:DIFFS[chosenDiff].first+20, lvl:1}, ai3:{wave:0, nextAt:DIFFS[chosenDiff].first+40, lvl:1} },
+        minerals:50, gas:0, supplyUsed:0, supplyCap:10, mainLevel:1, mainUpgrade:null, bldLevels:{}, bldUp:{}, diff:chosenDiff,
         units:[], buildings:[], nodes:[], projectiles:[], defendPings:{},
         selectedIds:[], selectedBuildingId:0, stats:{kills:0, losses:0, trained:0} };
   S.teamColorMode = computeTeamColorMode();
   TINT_CACHE = {}; /* phe đổi -> bộ sprite nhuộm màu đội phải dựng lại */
-  fog = new Uint8Array(FOG_COLS*FOG_ROWS); fogT = 0;
-  PARTS = []; SCORCH = []; MARKERS = [];
+  fog = new Uint8Array(FOG_COLS*FOG_ROWS); fogT = 0; fogDirty = true; buildFogCanvas();
+  PARTS = []; SCORCH = []; MARKERS = []; CORPSES = []; BOOMS = []; SHAKE.t = 0; SHAKE.mag = 0;
   var layout = mapLayout(chosenMap, chosenTeams), pb = map.bases.player, i;
   var prace = RACES[S.playerRace], pwt = prace.worker;
   S.buildings.push(makeBuilding('player', prace.main, pb[0], pb[1], true));
@@ -2082,17 +2226,77 @@ function orderUnitsTo(ids, wx, wy){
 function canAfford(c){ return S.minerals>=c.m && S.gas>=c.g; }
 function pay(c){ S.minerals-=c.m; S.gas-=c.g; }
 function failMsg(t){ showMsg(t); Snd.play('error', 0.7, 150); }
-var TRAIN_FROM = { cc:['worker'], barracks:['marine','firebat'], factory:['tank','mech'],
-  hatchery:['drone','zergling','hydralisk','ultralisk','overlord'], nexus:['probe'], gateway:['zealot','dragoon','archon'] };
-var REQ_BUILDING = { zergling:'pool', hydralisk:'zergden', ultralisk:'zergden', dragoon:'cybercore', archon:'cybercore' };
-var RESEARCH_FROM = { barracks:['weapon'], factory:['armor'], hatchery:['weapon','armor'], gateway:['weapon'], cybercore:['armor'] };
+var TRAIN_FROM = { cc:['worker'], barracks:['marine','firebat','robot'], factory:['mech','tank','heavytank'], airfac:['heli','jet','gunship'],
+  hatchery:['drone','zergling','hydralisk','ultralisk','overlord'], spire:['bat','wasp','leviathan'],
+  nexus:['probe'], gateway:['zealot','dragoon','archon'], cybercore:['scoutbot','artillery','colossus'], stargate:['scoutship','frigate','carrier'] };
+var REQ_BUILDING = { zergling:'pool', ultralisk:'zergden' };
+/* ===== FIX v6 — CẤP NHÀ: nhà SẢN XUẤT nâng CHUNG theo LOẠI (mỗi phe 1 cấp/loại, áp cho mọi nhà
+   cùng loại hiện có + xây sau); Nhà Chính nâng RIÊNG từng nhà (mainLv), cổng mở khoá tính theo
+   nhà chính cấp CAO NHẤT của phe. Phe máy: cấp kỹ thuật tăng theo đồng hồ trận (aiLvl). ===== */
+function aiLvl(faction){
+  if(!S || !S.ai || !S.ai[faction]) return 1;
+  return S.ai[faction].lvl || 1;
+}
+function factionMainLevel(faction){
+  if(faction==='player') return S.mainLevel;
+  return aiLvl(faction);
+}
+function typeLevel(faction, type){
+  if(MAIN_TYPES[type]) return factionMainLevel(faction); /* Tổ/Nexus/Trung Tâm: cấp sản xuất = cấp nhà chính cao nhất của phe */
+  if(faction==='player') return (S.bldLevels && S.bldLevels[type]) || 1;
+  return aiLvl(faction); /* phe máy: mọi loại nhà sản xuất đi theo cấp kỹ thuật chung của phe */
+}
+function prodLevelOf(b){ return typeLevel(b.faction, b.type); }
+/* + Ô CHỨA theo cấp loại nhà: lên Lv2 +2 ô, lên Lv3 +3 ô nữa (cứ thế: Lv n cộng thêm n ô).
+   NGHĨA CỦA "Ô" (bản tạm, chờ chốt): sức chứa HÀNG ĐỢI của mỗi nhà; riêng Tổ Quái = trần Ấu Trùng. */
+function bonusSlots(level){ return level <= 1 ? 0 : (level*(level+1)/2 - 1); }
+function queueCapFor(b){ return 5 + bonusSlots(typeLevel(b.faction, b.type)); }
+function larvaeCapFor(b){ return 3 + bonusSlots(typeLevel(b.faction, 'hatchery')); }
+/* Giá nâng cấp LOẠI nhà: RẺ HƠN xây mới — Lv1->2 = 50% giá xây, Lv2->3 = 60%; thời gian = 70% thời gian xây */
+function bldUpCost(type, curLevel){
+  var base = COSTS[type]; if(!base) return null;
+  var f = curLevel <= 1 ? 0.5 : 0.6;
+  return { m: Math.round(base.m * f), g: Math.round(base.g * f), t: Math.max(6, Math.round(base.t * 0.7)) };
+}
+function upgradeBuilding(buildingId){
+  var b = findById(buildingId);
+  if(!b || b.kind!=='building' || b.faction!=='player' || b.constructing) return false;
+  if(!!MAIN_TYPES[b.type]) return startMainUpgrade(b.id); /* Nhà Chính: nâng RIÊNG nhà đó */
+  if(!TRAIN_FROM[b.type]){ failMsg(BSPECS[b.type].name + ' không phải nhà sản xuất — không nâng cấp được!'); return false; }
+  if(!isPowered(b)){ failMsg(BSPECS[b.type].name + ' đang MẤT ĐIỆN — không nâng cấp được!'); return false; }
+  var cur = typeLevel('player', b.type);
+  if(cur >= 3){ failMsg(BSPECS[b.type].name + ' đã đạt cấp tối đa Lv3!'); return false; }
+  if(S.bldUp[b.type]){ failMsg('Đang nâng cấp ' + BSPECS[b.type].name + ' rồi — chờ xong đã!'); return false; }
+  var c = bldUpCost(b.type, cur);
+  if(!canAfford(c)){ failMsg('Không đủ tài nguyên để nâng ' + BSPECS[b.type].name + ' lên Lv' + (cur+1) + ' (cần ◆' + c.m + (c.g ? ' ●' + c.g : '') + ')'); return false; }
+  pay(c); S.bldUp[b.type] = { to: cur+1, t: 0, total: c.t };
+  Snd.play('research', 0.8, 120);
+  showMsg('Đang nâng cấp MỌI ' + BSPECS[b.type].name + ' lên Lv' + (cur+1) + ' — nhà loại này tạm dừng sản xuất', 3000);
+  renderPanel(true); return true;
+}
+function tickBldUpgrades(dt){
+  if(!S.bldUp) return;
+  Object.keys(S.bldUp).forEach(function(type){
+    var up = S.bldUp[type]; if(!up) return;
+    up.t += dt;
+    if(up.t >= up.total){
+      S.bldLevels[type] = up.to;
+      delete S.bldUp[type];
+      Snd.play('upgrade_done', 0.9, 130);
+      showMsg(BSPECS[type].name + ' đã lên Lv' + up.to + ' — áp dụng cho MỌI nhà loại này (mở quân mới + thêm ' + (up.to) + ' ô chứa mỗi nhà)!', 3600);
+      renderPanel(true);
+    }
+  });
+}
 function train(buildingId, unitType){
   var b = findById(buildingId);
   if(!b || b.kind!=='building' || b.faction!=='player' || b.constructing) return false;
   if(!TRAIN_FROM[b.type] || TRAIN_FROM[b.type].indexOf(unitType)<0) return false;
   if(!isPowered(b)){ failMsg(BSPECS[b.type].name + ' đang MẤT ĐIỆN — không sản xuất được!'); return false; }
-  if(!!MAIN_TYPES[b.type] && S.mainUpgrade){ failMsg('Nhà Chính đang nâng cấp — không luyện quân được!'); return false; }
-  if(REQ_MAIN[unitType] && S.mainLevel < REQ_MAIN[unitType]){ failMsg('Cần Nhà Chính Lv' + REQ_MAIN[unitType] + ' mới sản xuất được ' + SPECS[unitType].name + '!'); return false; }
+  if(!!MAIN_TYPES[b.type] && S.mainUpgrade && S.mainUpgrade.bid === b.id){ failMsg('Nhà Chính này đang nâng cấp — không luyện quân được!'); return false; }
+  if(S.bldUp[b.type]){ failMsg(BSPECS[b.type].name + ' đang nâng cấp lên Lv' + S.bldUp[b.type].to + ' — tạm dừng sản xuất!'); return false; }
+  var prod = UNIT_PROD[unitType];
+  if(prod && typeLevel(b.faction, b.type) < prod.lv){ failMsg('Cần ' + BSPECS[b.type].name + ' Lv' + prod.lv + ' mới sản xuất được ' + SPECS[unitType].name + ' — nâng cấp nhà ở lưới lệnh!'); return false; }
   var req = REQ_BUILDING[unitType];
   if(req && !hasBuilt(req)){ failMsg('Cần ' + BSPECS[req].name + ' trước mới sản xuất được ' + SPECS[unitType].name + '!'); return false; }
   var c = COSTS[unitType]; if(!canAfford(c)){ failMsg('Không đủ tài nguyên để luyện ' + SPECS[unitType].name); return false; }
@@ -2104,47 +2308,46 @@ function train(buildingId, unitType){
     pay(c); b.larvae--; b.eggs.push({type:unitType, t:0, total:c.t}); recalcSupply(); Snd.play('ui_click', 0.7, 80); renderPanel(true);
     return true;
   }
-  if(b.queue.length >= 5){ failMsg('Hàng đợi đã đầy (tối đa 5).'); return false; }
+  if(b.queue.length >= queueCapFor(b)){ failMsg('Hàng đợi đã đầy (tối đa ' + queueCapFor(b) + ').'); return false; }
   pay(c); b.queue.push({type:unitType, t:0, total:c.t}); recalcSupply(); Snd.play('ui_click', 0.7, 80); renderPanel(true);
   return true;
 }
 var MAIN_UNLOCK_TXT = {
-  terran: { 2:'Mở khoá: Nhà Máy (Robot Chiến Đấu) + Lính Phun Lửa ở Doanh Trại!', 3:'Mở khoá: Xe Tăng ở Nhà Máy!' },
-  zerg:   { 2:'Mở khoá: Hang Hydralisk (Quái Bắn Gai)!', 3:'Mở khoá: Quái Khổng Lồ ở Tổ Quái (cần Hang)!' },
-  protoss:{ 2:'Mở khoá: Lõi Cybernetics + Kỵ Binh Dragoon ở Cổng!', 3:'Mở khoá: Archon ở Cổng (cần Lõi)!' }
+  terran: { 2:'Mở khoá: xây Nhà Tăng + Xưởng Cơ Giới!', 3:'Mở khoá: xây Nhà Máy Bay!' },
+  zerg:   { 2:'Tổ lên Lv2: mở Quái Bắn Gai!', 3:'Mở khoá: Quái Khổng Lồ + xây Tổ Bay!' },
+  protoss:{ 2:'Mở khoá: xây Xưởng Cơ Giới!', 3:'Mở khoá: xây Cảng Hàng Không!' }
 };
-function startMainUpgrade(){
-  var b = S.buildings.find(function(x){ return x.faction==='player' && !!MAIN_TYPES[x.type] && !x.constructing; });
-  if(!b || S.mainUpgrade || S.mainLevel >= 3) return false;
-  var uc = MAIN_UP_COSTS[S.mainLevel]; if(!uc) return false;
-  if(!canAfford(uc)){ failMsg('Không đủ tài nguyên để nâng Nhà Chính lên Lv' + (S.mainLevel+1) + ' (cần ◆' + uc.m + ' ●' + uc.g + ')'); return false; }
-  pay(uc); S.mainUpgrade = { to: S.mainLevel+1, t: 0, total: uc.t };
-  Snd.play('research', 0.8, 120); showMsg('Đang nâng cấp Nhà Chính lên Lv' + (S.mainLevel+1) + ' — trong lúc này Nhà Chính không luyện quân được', 3200);
+/* FIX v6 — Nhà Chính nâng RIÊNG từng nhà (mainLv từng nhà); S.mainLevel = cấp CAO NHẤT của phe (dùng cho cổng mở khoá) */
+function recalcMainLevel(){
+  var mx = 1;
+  S.buildings.forEach(function(b){ if(b.faction==='player' && !!MAIN_TYPES[b.type] && (b.mainLv||1) > mx) mx = b.mainLv||1; });
+  S.mainLevel = mx;
+}
+function startMainUpgrade(buildingId){
+  var b = null;
+  if(buildingId){ var mb = findById(buildingId); if(mb && mb.kind==='building' && mb.faction==='player' && !!MAIN_TYPES[mb.type] && !mb.constructing) b = mb; }
+  if(!b) b = S.buildings.find(function(x){ return x.faction==='player' && !!MAIN_TYPES[x.type] && !x.constructing; });
+  if(!b || S.mainUpgrade) return false;
+  var cur = b.mainLv || 1;
+  if(cur >= 3){ failMsg('Nhà Chính này đã đạt cấp tối đa Lv3!'); return false; }
+  var uc = MAIN_UP_COSTS[cur]; if(!uc) return false;
+  if(!canAfford(uc)){ failMsg('Không đủ tài nguyên để nâng nhà này lên Lv' + (cur+1) + ' (cần ◆' + uc.m + ' ●' + uc.g + ')'); return false; }
+  pay(uc); S.mainUpgrade = { bid: b.id, to: cur+1, t: 0, total: uc.t };
+  Snd.play('research', 0.8, 120); showMsg('Đang nâng cấp Nhà Chính lên Lv' + (cur+1) + ' — trong lúc này nhà đó không luyện quân được', 3200);
   renderPanel(true); return true;
 }
 function tickMainUpgrade(dt){
   if(!S.mainUpgrade) return;
   S.mainUpgrade.t += dt;
   if(S.mainUpgrade.t >= S.mainUpgrade.total){
-    S.mainLevel = S.mainUpgrade.to; S.mainUpgrade = null;
+    var mb = findById(S.mainUpgrade.bid), to = S.mainUpgrade.to;
+    if(mb) mb.mainLv = to;
+    S.mainUpgrade = null;
+    recalcMainLevel();
     Snd.play('upgrade_done', 0.9, 130);
-    showMsg('Nhà Chính đã lên Lv' + S.mainLevel + '! ' + ((MAIN_UNLOCK_TXT[S.playerRace] || {})[S.mainLevel] || ''), 3600);
+    showMsg('Nhà Chính đã lên Lv' + to + '! ' + ((MAIN_UNLOCK_TXT[S.playerRace] || {})[to] || ''), 3600);
     renderPanel(true);
   }
-}
-function research(buildingId, kind){
-  var b = findById(buildingId);
-  if(!b || b.kind!=='building' || b.faction!=='player' || b.constructing) return false;
-  if(!RESEARCH_FROM[b.type] || RESEARCH_FROM[b.type].indexOf(kind)<0) return false;
-  if(!isPowered(b)){ failMsg(BSPECS[b.type].name + ' đang MẤT ĐIỆN — không nghiên cứu được!'); return false; }
-  if(b.research){ failMsg('Đang nghiên cứu dở, chờ xong đã!'); return false; }
-  var lvl = S.upgrades[kind];
-  if(lvl >= 3){ failMsg('Đã đạt cấp tối đa 3!'); return false; }
-  var c = RESEARCH_COSTS[lvl];
-  if(!canAfford(c)){ failMsg('Không đủ tài nguyên để nghiên cứu cấp ' + (lvl+1)); return false; }
-  pay(c); b.research = {kind:kind, t:0, total:c.t};
-  Snd.play('ui_click', 0.7, 80); renderPanel(true);
-  return true;
 }
 function hasBuilt(type){
   return S.buildings.some(function(b){ return b.faction==='player' && b.type===type && !b.constructing; });
@@ -2268,7 +2471,10 @@ function buildAt(type, x, y){
   if(type==='hatchery' && S.playerRace!=='zerg') return false; /* Tổ phụ chỉ Zerg mới "gieo" thêm được */
   var c = COSTS[type]; if(!c) return false;
   if(bldRace(type) !== S.playerRace) return false;
-  if(type==='factory' && !hasBuilt('barracks')){ failMsg('Cần xây Doanh Trại trước mới mở Xưởng Cơ Khí!'); return false; }
+  if(REQ_MAIN_BUILD[type] && S.mainLevel < REQ_MAIN_BUILD[type]){ failMsg('Cần Nhà Chính Lv' + REQ_MAIN_BUILD[type] + ' mới xây được ' + BSPECS[type].name + '!'); return false; }
+  if(type==='factory' && !hasBuilt('barracks')){ failMsg('Cần xây Doanh Trại trước mới mở Nhà Tăng!'); return false; }
+  if(type==='airfac' && !hasBuilt('factory')){ failMsg('Cần xây Nhà Tăng trước mới mở Nhà Máy Bay!'); return false; }
+  if(type==='stargate' && !hasBuilt('cybercore')){ failMsg('Cần xây Xưởng Cơ Giới trước mới mở Cảng Hàng Không!'); return false; }
   if(type==='zergden' && !hasBuilt('pool')){ failMsg('Cần Hồ Sinh Sản trước mới mở Hang Hydralisk!'); return false; }
   if(type==='sunken' && !hasBuilt('pool')){ failMsg('Cần Hồ Sinh Sản trước mới xây Ổ Sunken!'); return false; }
   if(!canAfford(c)){ failMsg('Không đủ tài nguyên để xây ' + BSPECS[type].name); return false; }
@@ -2296,19 +2502,16 @@ function buildAt(type, x, y){
 }
 function unitDamage(type){
   var sp = SPECS[type]; if(!sp) return 0;
-  return sp.dmg + (S ? S.upgrades.weapon : 0);
+  return sp.dmg;
 }
 function combatDamage(attacker, target){
-  /* sát thương giao chiến: loại đạn x cỡ + nâng cấp vũ khí (quân mình) − giáp (mục tiêu là quân mình) */
+  /* sát thương giao chiến: sát thương gốc x hệ số loại đạn theo cỡ mục tiêu (v6: bỏ hẳn nghiên cứu Vũ Khí/Giáp) */
   var raw;
   if(attacker.kind==='building'){ raw = BSPECS[attacker.type].dmg || 0; }
   else {
-    raw = SPECS[attacker.type].dmg;
-    if(attacker.faction==='player') raw += S.upgrades.weapon;
-    raw *= dmgMult(SPECS[attacker.type].dtype, target);
+    raw = SPECS[attacker.type].dmg * dmgMult(SPECS[attacker.type].dtype, target);
   }
-  var dmg = raw;
-  if(target.faction==='player') dmg = Math.max(1, raw - S.upgrades.armor);
+  var dmg = Math.max(1, raw);
   /* Độ khó (FIX M): địch đánh đau/yếu theo mức chọn; ân hạn đầu trận: quái đánh NHÀ bị giảm theo mức (VỪA: 50% trước phút 5 — hệt v3) */
   if(attacker.faction && attacker.faction!=='player'){
     var DF2 = DIFFS[S.diff||'vua'];
@@ -2353,6 +2556,10 @@ function applyDamage(e, amount, srcFaction){
     if(e.faction==='player'){ if(srcFaction && srcFaction!=='player') S.stats.losses++; }
     else if(srcFaction==='player') S.stats.kills++;
     S.projectiles = S.projectiles.filter(function(p){ return p.targetId!==e.id; });
+    /* FIX v6 — để lại XÁC có động tác ngã + mờ dần (vẽ ở drawWorld từ CORPSES), không biến mất tức thì */
+    if(CORPSES.length >= 40) CORPSES.shift();
+    CORPSES.push({ type:e.type, spr:SPECS[e.type].spr, x:e.x, y:e.y, face:e.face||0, faction:e.faction,
+      t:0, flying:!!SPECS[e.type].flying, zerg: unitRace(e.type)==='zerg', draw: SPECS[e.type].draw||48 });
     fxExplosion(e.x, e.y, false);
     Snd.play('explosion_small', 0.5, 120);
   } else {
@@ -2361,6 +2568,11 @@ function applyDamage(e, amount, srcFaction){
     S.projectiles = S.projectiles.filter(function(p){ return p.targetId!==e.id; });
     if(GAS_TYPES[e.type]){ S.nodes.forEach(function(n){ if(n.buildingId===e.id) n.buildingId = 0; }); }
     fxExplosion(e.x, e.y, true);
+    /* FIX v6 — nhà nổ: MẢNH VỠ văng + CỘT KHÓI kéo dài ~1,2s + rung camera nhẹ nếu đang nhìn thấy */
+    for(var di=0; di<8; di++){ var da = (di/8)*6.283 + rng()*0.6, dsp = 60 + rng()*120;
+      spawnP({kind:'debris', x:e.x, y:e.y - 8, vx:Math.cos(da)*dsp, vy:Math.sin(da)*dsp - 90, life:0.5+rng()*0.4, max:0.9, size:3+rng()*3.4, seed:rng()*6}); }
+    BOOMS.push({ x:e.x, y:e.y, t:0, total:1.2, emit:0 });
+    addShake(e.x, e.y, !!MAIN_TYPES[e.type] ? 3 : 2);
     Snd.play('explosion_big', 0.8, 200);
     renderPanel(true);
     if(MAIN_TYPES[e.type] && e.faction!=='player'){
@@ -2394,7 +2606,7 @@ function endGame(result){
   document.getElementById('endTitle').textContent = result==='win' ? 'THẮNG! Mọi căn cứ địch đã bị phá hủy' : 'THUA! Nhà chính của bạn đã mất';
   document.getElementById('endTitle').style.color = result==='win' ? '#4ade80' : '#f87171';
   document.getElementById('endStats').textContent =
-    'Thời gian: ' + fmtTime(S.time) + '  •  Đợt địch: ' + S.wave + '  •  Đã hạ địch: ' + S.stats.kills + '  •  Mất quân: ' + S.stats.losses + '  •  Đã luyện: ' + S.stats.trained + ' quân  •  Vũ khí +' + S.upgrades.weapon + ' / Giáp +' + S.upgrades.armor;
+    'Thời gian: ' + fmtTime(S.time) + '  •  Đợt địch: ' + S.wave + '  •  Đã hạ địch: ' + S.stats.kills + '  •  Mất quân: ' + S.stats.losses + '  •  Đã luyện: ' + S.stats.trained + ' quân  •  Nhà Chính Lv' + S.mainLevel;
   document.getElementById('endOverlay').classList.remove('hidden');
   jingle(result==='win');
 }
@@ -2437,15 +2649,39 @@ function moveToward(u, tx, ty, stopDist, dt){
   if(moved > 0.05) u.lastMoveAt = S.time;
   return dist(u.x,u.y,tx,ty) <= stopDist + 0.6;
 }
+/* FIX v6 — LUẬT KHÔNG CHIẾN: quân bay chỉ bị đánh bởi quân CÓ ĐẠN BAY (trừ loại groundOnly như
+   Lính Phun Lửa) + tháp phòng thủ (trừ Ổ Sunken chuyên mặt đất) + chính quân bay. Cận chiến không với tới. */
+function canHitAir(ent){
+  if(ent.kind === 'building') return ent.type !== 'sunken';
+  var sp = SPECS[ent.type];
+  return !!sp.flying || (sp.projSpeed > 0 && !sp.groundOnly);
+}
+function entIsFlying(e){ return e.kind === 'unit' && !!SPECS[e.type].flying; }
+var PROJ_KIND = { marine:'tracer', robot:'tracer', scoutbot:'tracer', turret:'tracer', heli:'tracer', scoutship:'tracer',
+  dragoon:'bolt', frigate:'bolt', cannon:'bolt', archon:'bolt', carrier:'bolt',
+  tank:'shell', heavytank:'shell', artillery:'shell', jet:'shell', gunship:'shell', leviathan:'shell',
+  hydralisk:'acid', wasp:'acid', sunken:'acid', bat:'acid',
+  colossus:'beam' };
+function projKindFor(type){ return PROJ_KIND[type] || 'tracer'; }
+var PROJ_POOL = [];
+function spawnProjectile(fields){
+  if(S.projectiles.length >= 220) return null; /* trần đạn đang bay: quá tải thì phát bắn áp sát thương ngay (xem shoot) */
+  var p = PROJ_POOL.pop() || {};
+  for(var k in fields) p[k] = fields[k];
+  p.id = uid();
+  S.projectiles.push(p);
+  return p;
+}
+function releaseProjectile(p){ if(PROJ_POOL.length < 240) PROJ_POOL.push(p); }
 function nearestEnemyEntity(u, maxD){
   var best=null, bd=maxD, i, e, d;
-  for(i=0;i<S.units.length;i++){ e=S.units[i]; if(e.faction===u.faction) continue; if(SPECS[e.type].flying && SPECS[u.type].projSpeed===0 && !SPECS[u.type].flying) continue; /* quân cận chiến không với tới quân bay */ d=dist(u.x,u.y,e.x,e.y); if(d<bd){bd=d;best=e;} }
+  for(i=0;i<S.units.length;i++){ e=S.units[i]; if(e.faction===u.faction) continue; if(entIsFlying(e) && !canHitAir(u)) continue; /* không đánh được quân bay thì bỏ qua */ d=dist(u.x,u.y,e.x,e.y); if(d<bd){bd=d;best=e;} }
   for(i=0;i<S.buildings.length;i++){ e=S.buildings[i]; if(e.faction===u.faction) continue; d=dist(u.x,u.y,e.x,e.y)-BSPECS[e.type].size/2; if(d<bd){bd=d;best=e;} }
   return best;
 }
-function nearestEnemyNear(faction, x, y, maxD){
+function nearestEnemyNear(faction, x, y, maxD, attacker){
   var best = null, bd = maxD, i, e, d;
-  for(i = 0; i < S.units.length; i++){ e = S.units[i]; if(e.faction === faction) continue; d = dist(x, y, e.x, e.y); if(d < bd){ bd = d; best = e; } }
+  for(i = 0; i < S.units.length; i++){ e = S.units[i]; if(e.faction === faction) continue; if(attacker && entIsFlying(e) && !canHitAir(attacker)) continue; d = dist(x, y, e.x, e.y); if(d < bd){ bd = d; best = e; } }
   for(i = 0; i < S.buildings.length; i++){ e = S.buildings[i]; if(e.faction === faction) continue; d = dist(x, y, e.x, e.y) - BSPECS[e.type].size / 2; if(d < bd){ bd = d; best = e; } }
   return best;
 }
@@ -2458,13 +2694,13 @@ function guardTick(u, dt){
   var acqR = acqRangeOf(u), leash = acqR + 160;
   if(u.postX == null || u.postX === undefined){ u.postX = u.x; u.postY = u.y; }
   var target = null;
-  if(u.combatTargetId){ var ct = findById(u.combatTargetId); if(ct && ct.faction !== u.faction) target = ct; else u.combatTargetId = 0; }
+  if(u.combatTargetId){ var ct = findById(u.combatTargetId); if(ct && ct.faction !== u.faction && !(entIsFlying(ct) && !canHitAir(u))) target = ct; else u.combatTargetId = 0; }
   if(!target){
     target = nearestEnemyEntity(u, acqR);
     if(!target && S.defendPings){
       var ping = S.defendPings[u.faction];
       if(ping && S.time - ping.t < 2.5 && dist(u.x, u.y, ping.x, ping.y) <= 320)
-        target = nearestEnemyNear(u.faction, ping.x, ping.y, 150);
+        target = nearestEnemyNear(u.faction, ping.x, ping.y, 150, u);
     }
     if(target) u.combatTargetId = target.id;
   }
@@ -2479,8 +2715,10 @@ function onScreen(x, y, pad){
   return x >= cam.x-pad && x <= cam.x+viewW()+pad && y >= cam.y-pad && y <= cam.y+viewH()+pad;
 }
 function splashHit(attacker, mainTarget, cx, cy, radius, baseTarget){
+  var mainFly = entIsFlying(mainTarget); /* FIX v6: vụ nổ ở mặt đất không lan lên quân bay và ngược lại */
   S.units.slice().forEach(function(e){
     if(e.faction===attacker.faction || e.id===mainTarget.id) return;
+    if(entIsFlying(e) !== mainFly) return;
     if(dist(cx,cy,e.x,e.y) <= radius + 12) applyDamage(e, combatDamage(attacker, e) * 0.5, attacker.faction);
   });
 }
@@ -2495,7 +2733,22 @@ var SHOT_SETS = {
   dragoon:   ['shoot_laser3','shoot_laser2'],
   archon:    ['shoot_cannon'],
   sunken:    ['shoot_spit'],
-  cannon:    ['shoot_laser3','shoot_laser4']
+  cannon:    ['shoot_laser3','shoot_laser4'],
+  /* FIX v6 — quân mới dùng lại bộ mẫu sẵn có (không thêm lớp nhiễu nào) */
+  robot:     ['shoot_laser2','shoot_laser4'],
+  heavytank: ['shoot_cannon'],
+  heli:      ['shoot_laser','shoot_laser4'],
+  jet:       ['shoot_cannon'],
+  gunship:   ['shoot_cannon'],
+  bat:       ['shoot_spit'],
+  wasp:      ['shoot_spit'],
+  leviathan: ['shoot_spit','shoot_cannon'],
+  scoutbot:  ['shoot_laser2','shoot_laser3'],
+  artillery: ['shoot_cannon'],
+  colossus:  ['shoot_laser3','shoot_cannon'],
+  scoutship: ['shoot_laser','shoot_laser2'],
+  frigate:   ['shoot_laser3','shoot_laser4'],
+  carrier:   ['shoot_laser4','shoot_cannon']
 };
 var lastShotVar = {}, mechBarrelFlip = false;
 function weaponSamples(type){ var s = SHOT_SETS[type]; return s ? s.slice() : ['shoot_laser']; }
@@ -2512,13 +2765,13 @@ function camVol(x, y, base){ /* âm lượng giảm nhẹ theo khoảng cách t�
 }
 function playWeaponShot(type, x, y, baseVol){
   var vol = camVol(x, y, baseVol==null ? 0.30 : baseVol);
-  if(type==='mech'){ /* Robot 2 nòng: luân phiên biến thể + lệch pan + lệch pitch từng nòng */
+  if(type==='mech' || type==='robot'){ /* Robot 2 nòng: luân phiên biến thể + lệch pan + lệch pitch từng nòng */
     mechBarrelFlip = !mechBarrelFlip;
-    var bv = mechBarrelFlip ? 'shoot_laser2' : 'shoot_laser4'; lastShotVar.mech = bv;
+    var bv = mechBarrelFlip ? 'shoot_laser2' : 'shoot_laser4'; lastShotVar[type] = bv;
     Snd.playEx(bv, { vol: vol, rate: mechBarrelFlip ? 0.98 : 1.10, pan: mechBarrelFlip ? -0.25 : 0.25, combat: true });
     return;
   }
-  if(type==='tank'){ /* pháo nặng: tiếng pháo + 1 lớp nổ nhỏ trầm đi kèm */
+  if(type==='tank' || type==='heavytank' || type==='artillery' || type==='gunship'){ /* pháo nặng: tiếng pháo + 1 lớp nổ nhỏ trầm đi kèm */
     Snd.playEx('shoot_cannon', { vol: vol, combat: true });
     Snd.playEx('explosion_small', { vol: vol*0.35, rate: 0.8 });
     return;
@@ -2528,22 +2781,35 @@ function playWeaponShot(type, x, y, baseVol){
 function shoot(u, target){
   var sp = SPECS[u.type];
   u.cooldown = sp.cd;
-  if(u.type==='tank') u.recoilT = 0.14; /* FIX v5: nòng Xe Tăng giật lùi khi bắn */
+  if(sp.projSpeed > 0) u.recoilT = 0.14; /* FIX v6: MỌI quân bắn xa giật lùi nhẹ khi khai hoả (trước chỉ Xe Tăng) */
   if(Math.abs(target.x - u.x) > 2) u.face = target.x > u.x ? 1 : -1;
   var ang = Math.atan2(target.y - u.y, target.x - u.x);
-  fxMuzzle(u.x + Math.cos(ang)*sp.draw*0.42, u.y + Math.sin(ang)*sp.draw*0.30, ang, u.type==='firebat');
   var dmg = combatDamage(u, target);
-  var missed = elevShotMiss(u.x, u.y, target.x, target.y); /* ở tầng thấp bắn lên tầng cao: 25% trượt */
+  var missed = !entIsFlying(target) && elevShotMiss(u.x, u.y, target.x, target.y); /* tầng thấp bắn lên cao: 25% trượt; quân bay không tính tầng */
   if(sp.projSpeed>0){
-    S.projectiles.push({id:uid(), faction:u.faction, x:u.x, y:u.y, targetId:target.id, dmg:dmg, speed:sp.projSpeed,
-      splash: sp.splash||0, attackerType:u.type, attackerFaction:u.faction, flame: u.type==='firebat', miss: missed});
+    var dd0 = dist(u.x, u.y, target.x, target.y);
+    var pk = projKindFor(u.type);
+    var spawned = spawnProjectile({ faction:u.faction, x:u.x, y:u.y, sx:u.x, sy:u.y, tx:target.x, ty:target.y, targetId:target.id, dmg:dmg, speed:sp.projSpeed,
+      splash: sp.splash||0, attackerType:u.type, attackerFaction:u.faction, flame: u.type==='firebat', miss: missed,
+      kind: pk, arcH: pk==='shell' ? Math.max(14, dd0*0.22) : 0 });
+    if(!spawned){ /* trần đạn: phát này áp sát thương ngay thay vì mất đòn */
+      if(!missed){ applyDamage(target, dmg, u.faction); if(sp.splash) splashHit(u, target, target.x, target.y, sp.splash, target); }
+    }
+    fxMuzzle(u.x + Math.cos(ang)*sp.draw*0.42, u.y + Math.sin(ang)*sp.draw*0.30, ang, u.type==='firebat');
     if(onScreen(u.x,u.y)) playWeaponShot(u.type, u.x, u.y, 0.30);
-  } else if(missed){
-    fxFizzle(target.x, target.y); /* đòn cận chiến vung lên dốc trượt mục tiêu */
   } else {
-    applyDamage(target, dmg, u.faction);
-    if(sp.splash) splashHit(u, target, target.x, target.y, sp.splash, target);
-    if(onScreen(u.x,u.y)) Snd.playEx('hit_tick', { vol: 0.17, throttleMs: 90, combat: true }); /* cận chiến: tiếng va chạm khi chạm mục tiêu */
+    /* CẬN CHIẾN: lao người tới + vệt chém loé tại mục tiêu */
+    var ld = Math.max(1, dist(u.x, u.y, target.x, target.y));
+    u.lungeT = 0.18; u.lungeDx = (target.x - u.x)/ld; u.lungeDy = (target.y - u.y)/ld;
+    spawnP({kind:'slash', x:target.x, y:target.y - 4, vx:0, vy:0, life:0.16, max:0.16, size: Math.max(10, (sp.draw||40)*0.34), seed: ang});
+    if(missed){
+      fxFizzle(target.x, target.y); /* đòn cận chiến vung lên dốc trượt mục tiêu */
+    } else {
+      applyDamage(target, dmg, u.faction);
+      fxImpact(target.x, target.y, target);
+      if(sp.splash) splashHit(u, target, target.x, target.y, sp.splash, target);
+      if(onScreen(u.x,u.y)) Snd.playEx('hit_tick', { vol: 0.17, throttleMs: 90, combat: true }); /* cận chiến: tiếng va chạm khi chạm mục tiêu */
+    }
   }
 }
 function engageTarget(u, target, dt){
@@ -2583,7 +2849,8 @@ function tickUnit(u, dt){
     return;
   }
   var target = null;
-  if(o.type==='attack' && o.targetId){ target = findById(o.targetId); if(!target){ setOrder(u,{type:'idle',x:u.x,y:u.y,targetId:0,nodeId:0,phase:'', harvestT:0}); } }
+  if(o.type==='attack' && o.targetId){ target = findById(o.targetId); if(!target){ setOrder(u,{type:'idle',x:u.x,y:u.y,targetId:0,nodeId:0,phase:'', harvestT:0}); }
+    else if(entIsFlying(target) && !canHitAir(u)){ target = null; setOrder(u,{type:'idle',x:u.x,y:u.y,targetId:0,nodeId:0,phase:'', harvestT:0}); } /* FIX v6: không đánh được quân bay -> bỏ lệnh, đừng đuổi theo vô ích */ }
   if(target){ engageTarget(u, target, dt); return; }
   if(o.type==='attackmove'){ /* lệnh tấn công-di chuyển của người chơi: đánh địch gặp trên đường, không bị guard kéo đi */
     var ne = nearestEnemyEntity(u, sp.sight);
@@ -2603,16 +2870,23 @@ function tickProjectiles(dt){
   S.projectiles.forEach(function(p){
     var t = findById(p.targetId);
     if(!t){ dead.push(p.id); return; }
+    p.tx = t.x; p.ty = t.y; /* đầu đạn bám mục tiêu di động (vẽ vòng cung cần điểm đích hiện tại) */
     p.trail = (p.trail||0) + dt;
-    if(p.trail > 0.03){ p.trail = 0; spawnP({kind:'spark', x:p.x, y:p.y, vx:0, vy:0, life:0.16, max:0.16, size: p.flame?3.4:2.2, seed:0, c: p.flame ? [251,146,60] : (p.faction==='player' ? [253,224,71] : [240,171,252])}); }
+    if(p.trail > 0.03){ p.trail = 0;
+      var tc = p.kind==='acid' ? [163,230,53] : (p.kind==='bolt' || p.kind==='beam') ? [125,245,255] : (p.flame ? [251,146,60] : (p.faction==='player' ? [253,224,71] : [240,171,252]));
+      spawnP({kind:'spark', x:p.x, y:p.y, vx:0, vy:0, life:0.16, max:0.16, size: p.flame?3.4:2.2, seed:0, c: tc}); }
     var d = dist(p.x,p.y,t.x,t.y), step = p.speed*dt;
     if(d <= Math.max(12, step)){
       if(p.miss){ fxFizzle(t.x, t.y); dead.push(p.id); return; } /* đạn bắn lên cao trượt: chỉ tóe lửa xám, không sát thương */
       applyDamage(t, p.dmg, p.attackerFaction);
+      fxImpact(t.x, t.y, t); /* FIX v6: tóe lửa/bọt hữu cơ/vòng khiên NGAY điểm chạm */
+      if(p.kind === 'shell') spawnP({kind:'ring', x:t.x, y:t.y, vx:0, vy:0, life:0.3, max:0.3, size: Math.max(26, (p.splash||0) + 14), seed:0}); /* vòng nổ của đạn pháo */
       if(!p.flame && onScreen(t.x, t.y)) Snd.playEx('hit_tick', { vol: 0.09, throttleMs: 70, combat: true }); /* đạn chạm: tick kim loại rất nhỏ xác nhận trúng */
       if(p.splash){
+        var tFly = entIsFlying(t);
         S.units.slice().forEach(function(e){
           if(e.faction===p.attackerFaction || e.id===t.id) return;
+          if(entIsFlying(e) !== tFly) return; /* nổ mặt đất không lan lên trời và ngược lại */
           var fd = dist(t.x,t.y,e.x,e.y);
           if(fd <= p.splash + 12){
             var fake = {kind:'unit', faction:p.attackerFaction, type:p.attackerType};
@@ -2625,7 +2899,10 @@ function tickProjectiles(dt){
     }
     p.x += (t.x-p.x)/d*step; p.y += (t.y-p.y)/d*step;
   });
-  if(dead.length) S.projectiles = S.projectiles.filter(function(p){ return dead.indexOf(p.id)<0; });
+  if(dead.length){
+    S.projectiles.forEach(function(p){ if(dead.indexOf(p.id) >= 0) releaseProjectile(p); }); /* trả đạn về HỒ để tái dùng */
+    S.projectiles = S.projectiles.filter(function(p){ return dead.indexOf(p.id)<0; });
+  }
 }
 function tickBuildings(dt){
   S.buildings.slice().forEach(function(b){
@@ -2638,7 +2915,7 @@ function tickBuildings(dt){
     if(b.type==='hatchery' && !b.constructing){
       /* ẤU TRÙNG: tự sinh mỗi ~12s, tối đa 3 · TRỨNG: nở tại Tổ, Zergling nở 2 con */
       b.larvaT = (b.larvaT || 0) + dt;
-      if(b.larvaT >= 12){ b.larvaT = 0; if((b.larvae || 0) < 3){ b.larvae = (b.larvae || 0) + 1; if(b.faction==='player') renderPanel(true); } }
+      if(b.larvaT >= 12){ b.larvaT = 0; if((b.larvae || 0) < larvaeCapFor(b)){ b.larvae = (b.larvae || 0) + 1; if(b.faction==='player') renderPanel(true); } }
       if(b.eggs && b.eggs.length){
         var eg = b.eggs[0]; eg.t += dt;
         if(eg.t >= eg.total){
@@ -2653,14 +2930,6 @@ function tickBuildings(dt){
         }
       }
     }
-    if(b.research && isPowered(b)){
-      b.research.t += dt;
-      if(b.research.t >= b.research.total){
-        S.upgrades[b.research.kind]++;
-        if(b.faction==='player'){ showMsg((b.research.kind==='weapon' ? 'Vũ Khí' : 'Giáp') + ' đã lên cấp ' + S.upgrades[b.research.kind] + '!'); Snd.play('train_done', 0.8, 100); }
-        b.research = null; renderPanel(true);
-      }
-    }
     if(DEF_TYPES[b.type] && b.faction==='player' && isPowered(b)){ /* mất điện (Protoss) = pháo im lặng */
       if(b.cooldown>0) b.cooldown -= dt;
       var dsp = BSPECS[b.type];
@@ -2669,12 +2938,14 @@ function tickBuildings(dt){
       if(tgt && b.cooldown<=0){
         b.cooldown = dsp.cd;
         fxMuzzle(b.x, b.y - 16, Math.atan2(tgt.y-b.y, tgt.x-b.x), false);
-        S.projectiles.push({id:uid(), faction:'player', x:b.x, y:b.y-14, targetId:tgt.id,
-          dmg: Math.max(1, dsp.dmg - 0), speed:dsp.projSpeed, splash:0, attackerType:b.type, attackerFaction:'player', flame:false, miss: elevShotMiss(b.x, b.y, tgt.x, tgt.y)});
+        var dpk = projKindFor(b.type);
+        spawnProjectile({ faction:'player', x:b.x, y:b.y-14, sx:b.x, sy:b.y-14, tx:tgt.x, ty:tgt.y, targetId:tgt.id,
+          dmg: Math.max(1, dsp.dmg), speed:dsp.projSpeed, splash:0, attackerType:b.type, attackerFaction:'player', flame:false,
+          kind: dpk, arcH: 0, miss: !entIsFlying(tgt) && elevShotMiss(b.x, b.y, tgt.x, tgt.y) });
         if(onScreen(b.x,b.y)) playWeaponShot(b.type==='sunken' ? 'sunken' : 'turret', b.x, b.y, 0.25);
       }
     }
-    if(b.queue.length && isPowered(b) && !(b.faction==='player' && !!MAIN_TYPES[b.type] && S.mainUpgrade)){
+    if(b.queue.length && isPowered(b) && !(S.mainUpgrade && S.mainUpgrade.bid === b.id) && !(b.faction==='player' && S.bldUp && S.bldUp[b.type])){ /* nhà chính đang nâng RIÊNG / loại nhà đang nâng CHUNG: tạm dừng sản xuất */
       var q = b.queue[0]; q.t += dt;
       if(q.t >= q.total){
         b.queue.shift();
@@ -2692,6 +2963,9 @@ function tickAI(dt){
     if(!base) return;
     var st = S.ai[team];
     if(!st) return;
+    /* FIX v6 — cấp kỹ thuật của phe máy leo theo đồng hồ trận (Lv2 ~phút 5, Lv3 ~phút 10):
+       mở roster theo CẤP NHÀ CHUNG của phe máy + quân bay vào sóng từ ~phút 6 (Dễ: sau phút 8) */
+    st.lvl = S.time >= 600 ? 3 : (S.time >= 300 ? 2 : 1);
     if(S.time >= st.nextAt && !S.over){
       st.wave++; st.nextAt += DIFFS[S.diff||'vua'].interval;
       S.wave = Math.max(S.wave, st.wave);
@@ -2726,6 +3000,15 @@ function tickAI(dt){
         for(i=0;i<nLing;i++){ u = makeUnit(team, compBasic, base.x + sx*(60+(i%4)*42), base.y+105+((i/4)|0)*40); u.order={type:'attackmove',x:tgt.x,y:tgt.y,targetId:0,nodeId:0,phase:'',harvestT:0}; if(DF.hpMul!==1){ u.maxHp=Math.round(u.maxHp*DF.hpMul); u.hp=u.maxHp; if(u.shieldMax){ u.shieldMax=Math.round(u.shieldMax*DF.hpMul); u.shield=u.shieldMax; } } S.units.push(u); }
         for(i=0;i<nHyd;i++){ u = makeUnit(team, compMid, base.x + sx*(70+(i%3)*46), base.y+130+((i/3)|0)*42); u.order={type:'attackmove',x:tgt.x,y:tgt.y,targetId:0,nodeId:0,phase:'',harvestT:0}; if(DF.hpMul!==1){ u.maxHp=Math.round(u.maxHp*DF.hpMul); u.hp=u.maxHp; if(u.shieldMax){ u.shieldMax=Math.round(u.shieldMax*DF.hpMul); u.shield=u.shieldMax; } } S.units.push(u); }
         for(i=0;i<nUlt;i++){ u = makeUnit(team, compHeavy, base.x + sx*40 + i*70*(sx), base.y+185); u.order={type:'attackmove',x:tgt.x,y:tgt.y,targetId:0,nodeId:0,phase:'',harvestT:0}; if(DF.hpMul!==1){ u.maxHp=Math.round(u.maxHp*DF.hpMul); u.hp=u.maxHp; if(u.shieldMax){ u.shieldMax=Math.round(u.shieldMax*DF.hpMul); u.shield=u.shieldMax; } } S.units.push(u); }
+        /* FIX v6 — QUÂN BAY vào sóng: Vừa/Khó từ ~phút 6, Dễ không trước phút 8; loại bay theo tộc + leo theo sóng */
+        var airAt = S.diff === 'de' ? 480 : 360;
+        if(S.time >= airAt && wc >= 4){
+          var compAir1 = arace==='terran' ? 'heli' : (arace==='protoss' ? 'scoutship' : 'bat');
+          var compAir2 = arace==='terran' ? 'jet' : (arace==='protoss' ? 'frigate' : 'wasp');
+          var nA1 = 1 + (wc >= 7 ? 1 : 0), nA2 = (S.time >= 540 && wc >= 6) ? 1 : 0;
+          for(i=0;i<nA1;i++){ u = makeUnit(team, compAir1, base.x + sx*(50+i*46), base.y+235+((i%2)*38)); u.order={type:'attackmove',x:tgt.x,y:tgt.y,targetId:0,nodeId:0,phase:'',harvestT:0}; if(DF.hpMul!==1){ u.maxHp=Math.round(u.maxHp*DF.hpMul); u.hp=u.maxHp; if(u.shieldMax){ u.shieldMax=Math.round(u.shieldMax*DF.hpMul); u.shield=u.shieldMax; } } S.units.push(u); }
+          for(i=0;i<nA2;i++){ u = makeUnit(team, compAir2, base.x + sx*90, base.y+275); u.order={type:'attackmove',x:tgt.x,y:tgt.y,targetId:0,nodeId:0,phase:'',harvestT:0}; if(DF.hpMul!==1){ u.maxHp=Math.round(u.maxHp*DF.hpMul); u.hp=u.maxHp; if(u.shieldMax){ u.shieldMax=Math.round(u.shieldMax*DF.hpMul); u.shield=u.shieldMax; } } S.units.push(u); }
+        }
         if(tgt.faction==='player') showMsg('Đợt địch thứ ' + st.wave + ' (' + (TEAM_NAMES[team] || team) + ') đang tràn đến!', 3000);
       }
     }
@@ -2747,6 +3030,7 @@ function tickSeparation(){
        có thể lớn hơn tầm cận chiến (26-27px) — tách cả cặp đang đánh sẽ làm quân cận chiến
        không bao giờ vào được tầm ra đòn (đo thực tế: zealot bị giữ ở 29,4px > tầm 27px, Q2 TTK fail) */
     if(a.combatTargetId===b.id || b.combatTargetId===a.id) continue;
+    if(!!SPECS[a.type].flying !== !!SPECS[b.type].flying) continue; /* FIX v6: quân bay lơ lửng TRÊN quân đất — không chen đẩy nhau */
     /* bán kính tách theo CỠ quân: quân nhỏ giữ 22 như cũ, quân to không còn chồng lấp thành cục */
     var rr = clamp((SPECS[a.type].draw + SPECS[b.type].draw)*0.30, 22, 46);
     if(d>0 && d<rr){ var push=(rr-d)/2, dx=(b.x-a.x)/d, dy=(b.y-a.y)/d; a.x-=dx*push; a.y-=dy*push; b.x+=dx*push; b.y+=dy*push; }
@@ -2758,6 +3042,7 @@ function tick(dt){
   S.time += dt;
   tickAI(dt);
   tickMainUpgrade(dt);
+  tickBldUpgrades(dt); /* FIX v6: đồng hồ nâng cấp LOẠI nhà sản xuất (nâng chung) */
   S.units.slice().forEach(function(u){ if(findById(u.id)) tickUnit(u, dt); });
   /* FIX v5 — hậu xử lý HOẠT HÌNH: tốc độ thật suy từ quãng đường vừa đi (không phải lệnh),
      vận tốc dư thừa tiêu dần khi quân không còn được moveToward gọi (đang bắn/đang đứng),
@@ -2768,6 +3053,7 @@ function tick(dt){
     u.speedNow = (u.speedNow||0)*0.5 + inst*0.5;
     if(u._mvT !== S.time){ var dk = Math.max(0, 1 - 11*dt); u.vx = (u.vx||0)*dk; u.vy = (u.vy||0)*dk; }
     if(u.recoilT > 0) u.recoilT = Math.max(0, u.recoilT - dt);
+    if(u.lungeT > 0) u.lungeT = Math.max(0, u.lungeT - dt); /* FIX v6: nhịp lao chém cận chiến */
     var an = ANIM[u.type];
     if(an && an.dust && inst > 26){
       u.dustAcc = (u.dustAcc||0) + delta;
@@ -2896,32 +3182,35 @@ function currentCommands(){
     if(b.constructing) return cells;
     (TRAIN_FROM[b.type]||[]).forEach(function(ut){
       var rsn = '';
-      if(REQ_MAIN[ut] && S.mainLevel < REQ_MAIN[ut]) rsn = 'Cần Nhà Chính Lv' + REQ_MAIN[ut];
-      else if(!!MAIN_TYPES[b.type] && S.mainUpgrade) rsn = 'Đang nâng cấp nhà chính';
+      var prod = UNIT_PROD[ut];
+      if(prod && typeLevel('player', b.type) < prod.lv) rsn = 'Cần ' + BSPECS[b.type].name + ' Lv' + prod.lv + ' (nâng chung)';
+      else if(S.bldUp && S.bldUp[b.type]) rsn = 'Đang nâng cấp loại nhà này';
+      else if(!!MAIN_TYPES[b.type] && S.mainUpgrade && S.mainUpgrade.bid === b.id) rsn = 'Đang nâng cấp nhà chính này';
       else if(REQ_BUILDING[ut] && !hasBuilt(REQ_BUILDING[ut])) rsn = 'Cần ' + BSPECS[REQ_BUILDING[ut]].name;
       else if(!isPowered(b)) rsn = 'Nhà đang mất điện (cần Pylon)';
-      else if(b.type==='hatchery' ? (b.larvae||0)<=0 : b.queue.length>=5) rsn = b.type==='hatchery' ? 'Chưa có Ấu Trùng — đợi thêm' : 'Hàng đợi đã đầy';
+      else if(b.type==='hatchery' ? (b.larvae||0)<=0 : b.queue.length>=queueCapFor(b)) rsn = b.type==='hatchery' ? 'Chưa có Ấu Trùng — đợi thêm' : 'Hàng đợi đã đầy';
       else if(S.supplyUsed + SPECS[ut].supply * (ut==='zergling' ? 2 : 1) > S.supplyCap) rsn = S.supplyCap >= 300 ? 'Đã đạt tối đa 300' : 'Hết dân số';
       else if(!canAfford(COSTS[ut])) rsn = 'Không đủ tài nguyên';
       cells.push({ img:SPECS[ut].spr, action:'train', unit:ut, cost:COSTS[ut], disabled: !!rsn, reason: rsn });
     });
-    if(!!MAIN_TYPES[b.type]){
+    if(!!MAIN_TYPES[b.type]){ /* Nhà Chính: nâng RIÊNG nhà đang chọn */
+      var mlv = b.mainLv || 1;
       if(S.mainUpgrade) cells.push({ icon:'lvl', action:'upmain', disabled:true, reason:'Đang nâng cấp lên Lv' + S.mainUpgrade.to + '…', lvl:'…' });
-      else if(S.mainLevel >= 3) cells.push({ icon:'lvl', action:'upmain', disabled:true, reason:'Nhà Chính đã tối đa Lv3', lvl:'MAX' });
-      else { var uc2 = MAIN_UP_COSTS[S.mainLevel]; cells.push({ icon:'lvl', action:'upmain', cost:uc2, disabled: !canAfford(uc2), reason: !canAfford(uc2) ? 'Không đủ tài nguyên để nâng cấp' : '', lvl:'Lv' + (S.mainLevel+1) }); }
+      else if(mlv >= 3) cells.push({ icon:'lvl', action:'upmain', disabled:true, reason:'Nhà Chính này đã tối đa Lv3', lvl:'MAX' });
+      else { var uc2 = MAIN_UP_COSTS[mlv]; cells.push({ icon:'lvl', action:'upmain', cost:uc2, disabled: !canAfford(uc2), reason: !canAfford(uc2) ? 'Không đủ tài nguyên để nâng cấp' : '', lvl:'Lv' + (mlv+1) }); }
+    } else if(TRAIN_FROM[b.type]){ /* FIX v6 — NÂNG CẤP NHÀ SẢN XUẤT: nâng CHUNG cả loại, rẻ hơn xây mới, thêm ô chứa */
+      var tlv = typeLevel('player', b.type);
+      if(S.bldUp && S.bldUp[b.type]) cells.push({ icon:'lvl', action:'upbld', disabled:true, reason:'Đang nâng mọi ' + BSPECS[b.type].name + ' lên Lv' + S.bldUp[b.type].to + '…', lvl:'…', prog: S.bldUp[b.type].t / S.bldUp[b.type].total });
+      else if(tlv >= 3) cells.push({ icon:'lvl', action:'upbld', disabled:true, reason: BSPECS[b.type].name + ' đã tối đa Lv3', lvl:'MAX' });
+      else { var uc3 = bldUpCost(b.type, tlv); cells.push({ icon:'lvl', action:'upbld', cost:uc3, disabled: !isPowered(b) || !canAfford(uc3), reason: !isPowered(b) ? 'Nhà đang mất điện' : (!canAfford(uc3) ? 'Không đủ tài nguyên để nâng cấp' : ''), lvl:'Lv' + (tlv+1) }); }
     }
-    (RESEARCH_FROM[b.type]||[]).forEach(function(rk){
-      var lv = S.upgrades[rk];
-      cells.push({ icon: rk==='weapon' ? 'upAtk' : 'upDef', action:'research', kind:rk, cost: lv<3 ? RESEARCH_COSTS[lv] : null,
-        disabled: lv>=3 || !!b.research || !isPowered(b) || !canAfford(RESEARCH_COSTS[Math.min(lv,2)]), lvl: lv>=3 ? 'MAX' : ('Lv' + (lv+1)) });
-    });
     return cells;
   }
   if(sel.length){
     if(cmdPage==='build'){
-      var blist = { terran:['depot','barracks','factory','refinery','turret'],
-                    zerg:['pool','zergden','sunken','extractor','hatchery'],
-                    protoss:['pylon','gateway','cybercore','cannon','assimilator'] }[S.playerRace] || [];
+      var blist = { terran:['depot','barracks','factory','airfac','refinery','turret'],
+                    zerg:['pool','zergden','spire','sunken','extractor','hatchery'],
+                    protoss:['pylon','gateway','cybercore','stargate','cannon','assimilator'] }[S.playerRace] || [];
       blist.forEach(function(bt){
         var rsn2 = '';
         if(REQ_MAIN_BUILD[bt] && S.mainLevel < REQ_MAIN_BUILD[bt]) rsn2 = 'Cần Nhà Chính Lv' + REQ_MAIN_BUILD[bt];
@@ -2944,13 +3233,14 @@ function currentCommands(){
   return cells;
 }
 /* v5.3: chú thích NGẮN dưới icon lưới lệnh 3x3 (như mẫu SC2) — tối đa ~6 ký tự để vừa ô ~36px */
-var CMD_CAP_U = { worker:'Thợ', marine:'Lính', firebat:'Lửa', tank:'Tăng', mech:'Máy', zergling:'Nhỏ', hydralisk:'Gai', ultralisk:'Khổng', drone:'Drone', overlord:'Chúa', probe:'Probe', zealot:'Zealot', dragoon:'Kỵ', archon:'Archon' };
-var CMD_CAP_B = { depot:'Kho', barracks:'Trại', factory:'Xưởng', refinery:'Khí', turret:'Tháp', pool:'Hồ', zergden:'Hang', sunken:'Ổ', extractor:'Khí', hatchery:'Tổ', pylon:'Điện', gateway:'Cổng', cybercore:'Lõi', cannon:'Pháo', assimilator:'Khí' };
+var CMD_CAP_U = { worker:'Thợ', marine:'Lính', firebat:'Lửa', tank:'Tăng', mech:'Máy', zergling:'Nhỏ', hydralisk:'Gai', ultralisk:'Khổng', drone:'Drone', overlord:'Chúa', probe:'Probe', zealot:'Zealot', dragoon:'Kỵ', archon:'Archon',
+  robot:'Robot', heavytank:'T.Nặng', heli:'Tr.Thăng', jet:'Phi Cơ', gunship:'P.Hạm', bat:'Dơi', wasp:'Ong', leviathan:'Chúa Bay', scoutbot:'Tr.Sát', artillery:'Pháo', colossus:'Cỗ Máy', scoutship:'P.Thuyền', frigate:'C.Hạm', carrier:'Mẫu Hạm' };
+var CMD_CAP_B = { depot:'Kho', barracks:'Trại', factory:'Nhà Tăng', airfac:'Bay', refinery:'Khí', turret:'Tháp', pool:'Hồ', zergden:'Hang', spire:'Tổ Bay', sunken:'Ổ', extractor:'Khí', hatchery:'Tổ', pylon:'Điện', gateway:'Cổng', cybercore:'Cơ Giới', stargate:'Cảng', cannon:'Pháo', assimilator:'Khí' };
 function cmdCaption(c){
   if(!c) return '';
   if(c.action==='train') return CMD_CAP_U[c.unit] || '';
   if(c.action==='build') return CMD_CAP_B[c.b] || '';
-  if(c.action==='research') return c.kind==='weapon' ? 'Vũ Khí' : 'Giáp';
+  if(c.action==='upbld') return 'Nâng Nhà';
   if(c.action==='upmain') return 'Lên Cấp';
   if(c.action==='cancelPlace') return 'Hủy';
   if(c.action==='stop') return 'Dừng';
@@ -2962,10 +3252,10 @@ function renderPanel(force){
   if(!S) return;
   var sel = selectedUnits(), b = S.selectedBuildingId ? findById(S.selectedBuildingId) : null;
   var selKey = S.selectedIds.join(',') + '|L' + S.mainLevel + (S.mainUpgrade ? '|U' + Math.round(S.time*2) : '');
-  var sig = selKey + '|' + S.selectedBuildingId + '|' + (placing?placing.type:'') + '|' + (pendingOrder||'') + '|' + cmdPage + '|' +
-            (S.minerals|0) + '|' + (S.gas|0) + '|' + S.supplyUsed + '/' + S.supplyCap + '|' + S.upgrades.weapon + ',' + S.upgrades.armor + '|' +
-            (b ? (b.queue.map(function(q){return q.type;}).join('.') + ':' + b.constructing + ':' + (b.research?b.research.kind:'') + (GAS_TYPES[b.type] ? ':g' + gasWorkerCount(b) : '') + (b.type==='hatchery' ? ':L' + (b.larvae||0) + 'E' + ((b.eggs||[]).map(function(e2){return e2.type;}).join('.')) : '') + (b.shieldMax ? ':s' + Math.round(b.shield) : '')) : '') + '|' +
-            ((b && (b.queue.length || b.research || b.constructing)) || S.buildings.some(function(x){return !!x.research;}) ? Math.round(S.time*2) : '') + '|' +
+  var sig = selKey + '|BL' + Object.keys(S.bldLevels||{}).map(function(k){ return k + S.bldLevels[k]; }).join('.') + (Object.keys(S.bldUp||{}).length ? '|BU' + Math.round(S.time*2) : '') + '|' + S.selectedBuildingId + '|' + (placing?placing.type:'') + '|' + (pendingOrder||'') + '|' + cmdPage + '|' +
+            (S.minerals|0) + '|' + (S.gas|0) + '|' + S.supplyUsed + '/' + S.supplyCap + '|' +
+            (b ? (b.queue.map(function(q){return q.type;}).join('.') + ':' + b.constructing + (GAS_TYPES[b.type] ? ':g' + gasWorkerCount(b) : '') + (b.type==='hatchery' ? ':L' + (b.larvae||0) + 'E' + ((b.eggs||[]).map(function(e2){return e2.type;}).join('.')) : '') + (b.shieldMax ? ':s' + Math.round(b.shield) : '')) : '') + '|' +
+            ((b && (b.queue.length || b.constructing)) || (S.bldUp && Object.keys(S.bldUp).length) ? Math.round(S.time*2) : '') + '|' +
             sel.map(function(u){ return Math.ceil(u.hp); }).join('.') + '|' + S.units.length + '|' +
             (function(){ var nx2 = Infinity; aiTeamList().forEach(function(t){ if(S.ai && S.ai[t]) nx2 = Math.min(nx2, S.ai[t].nextAt); }); return isFinite(nx2) ? Math.ceil(Math.max(0, nx2 - S.time)/4) : 0; })();
   if(!force && sig===panelSig) return; panelSig = sig;
@@ -2978,15 +3268,15 @@ function renderPanel(force){
   } else if(b && b.faction==='player'){
     /* v5-E: panel nhà nén còn 2 dòng — tên+máu, rồi MỘT dòng gộp: thanh máu · các dòng phụ nối bằng ' · ' (ưu tiên việc đang diễn ra) · ô hàng đợi */
     var h = portraitHTML(BSPECS[b.type].spr) + '<div class="infoMain">' +
-      '<div class="infoName">' + BSPECS[b.type].name + (!!MAIN_TYPES[b.type] ? ' Lv' + S.mainLevel : '') + ' <span class="hpNums">' + Math.ceil(b.hp) + ' / ' + b.maxHp + '</span></div>';
+      '<div class="infoName">' + BSPECS[b.type].name + (!!MAIN_TYPES[b.type] ? ' Lv' + (b.mainLv||1) : (TRAIN_FROM[b.type] ? ' Lv' + typeLevel('player', b.type) : '')) + ' <span class="hpNums">' + Math.ceil(b.hp) + ' / ' + b.maxHp + '</span></div>';
     var subs = [];
     if(b.constructing) subs.push('Đang xây: ' + Math.round(b.progress*100) + '%');
-    if(!!MAIN_TYPES[b.type]) subs.push('Cấp Nhà Chính: ' + '●'.repeat(S.mainLevel) + '○'.repeat(3 - S.mainLevel) + (S.mainUpgrade ? ' • Đang nâng lên Lv' + S.mainUpgrade.to + ': ' + Math.round(S.mainUpgrade.t/S.mainUpgrade.total*100) + '%' : ' • Nâng cấp ở lưới lệnh để mở khoá nhà/quân mới'));
+    if(!!MAIN_TYPES[b.type]) subs.push('Cấp nhà này: ' + '●'.repeat(b.mainLv||1) + '○'.repeat(3 - (b.mainLv||1)) + (S.mainUpgrade && S.mainUpgrade.bid===b.id ? ' • Đang nâng lên Lv' + S.mainUpgrade.to + ': ' + Math.round(S.mainUpgrade.t/S.mainUpgrade.total*100) + '%' : ' • Nhà Chính nâng RIÊNG từng nhà; cổng mở khoá tính theo nhà cấp cao nhất (Lv' + S.mainLevel + ')'));
+    if(TRAIN_FROM[b.type] && !MAIN_TYPES[b.type]) subs.push('Cấp CHUNG cho mọi nhà ' + BSPECS[b.type].name + ': Lv' + typeLevel('player', b.type) + ' • Hàng đợi mỗi nhà: ' + queueCapFor(b) + ' ô' + (S.bldUp && S.bldUp[b.type] ? ' • Đang nâng lên Lv' + S.bldUp[b.type].to + ': ' + Math.round(S.bldUp[b.type].t/S.bldUp[b.type].total*100) + '%' : ''));
     if(b.shieldMax) subs.push('Khiên: ' + Math.round(b.shield) + '/' + b.shieldMax + (isPowered(b) ? '' : ' • <b>MẤT ĐIỆN</b> — nhà tê liệt, cần Pylon gần hơn'));
     if(BSPECS[b.type].dmg) subs.push('Sát thương: ' + BSPECS[b.type].dmg + (b.type==='turret' ? ' ×2 phát nhanh' : ''));
-    /* tiến độ nghiên cứu chỉ hiện ở khung Nâng cấp (upgStat) — không lặp lại ở đây để panel gầy không bị tràn */
     if(GAS_TYPES[b.type]) subs.push('Thợ đang hút khí: ' + gasWorkerCount(b) + ' • chạm Thợ vào trạm để thêm người hút');
-    if(b.type==='hatchery') subs.push('Ấu Trùng: ' + (b.larvae||0) + '/3 (12s thêm 1) • Trứng đang nở: ' + ((b.eggs||[]).length) + ' • Thảm nhầy (Creep) đang lan — chỉ xây nhà Zerg trên thảm');
+    if(b.type==='hatchery') subs.push('Ấu Trùng: ' + (b.larvae||0) + '/' + larvaeCapFor(b) + ' (12s thêm 1) • Cấp sản xuất của Tổ = cấp nhà chính cao nhất Lv' + S.mainLevel + ' • Trứng đang nở: ' + ((b.eggs||[]).length) + ' • Thảm nhầy (Creep) đang lan — chỉ xây nhà Zerg trên thảm');
     if(b.type==='cc') subs.push('Cung cấp dân số +10 • Luyện Robot Thợ tại đây');
     h += '<div class="infoLine2">' + segBarHTML(b.hp, b.maxHp, 18) +
       (subs.length ? '<div class="infoSub">' + subs.join(' · ') + '</div>' : '');
@@ -3034,9 +3324,10 @@ function renderPanel(force){
     S.units.forEach(function(u){ if(u.faction!=='player') return; if(isWorkerType(u.type)) wkN++; else armyN++; });
     var nxW = Infinity; aiTeamList().forEach(function(t){ if(S.ai && S.ai[t]) nxW = Math.min(nxW, S.ai[t].nextAt); });
     var waveTxt = S.over ? '—' : (isFinite(nxW) ? fmtTime(Math.max(0, nxW - S.time)) : '—');
-    var resB = S.buildings.find(function(x){ return x.faction==='player' && x.research; });
-    var mid = resB ? ('Đang nghiên cứu ' + (resB.research.kind==='weapon' ? 'Vũ Khí' : 'Giáp') + ' Lv' + (S.upgrades[resB.research.kind]+1) + '<span class="resBar"><i style="width:' + Math.round(resB.research.t/resB.research.total*100) + '%"></i></span>')
-                   : ('Đợt địch kế: <b style="color:#f3d27a">' + waveTxt + '</b> · Vũ Khí +' + S.upgrades.weapon + ' · Giáp +' + S.upgrades.armor);
+    var upTypes = S.bldUp ? Object.keys(S.bldUp) : [];
+    var mid = S.mainUpgrade ? ('Đang nâng Nhà Chính lên Lv' + S.mainUpgrade.to + '<span class="resBar"><i style="width:' + Math.round(S.mainUpgrade.t/S.mainUpgrade.total*100) + '%"></i></span>')
+              : (upTypes.length ? ('Đang nâng ' + BSPECS[upTypes[0]].name + ' (cấp chung) lên Lv' + S.bldUp[upTypes[0]].to + '<span class="resBar"><i style="width:' + Math.round(S.bldUp[upTypes[0]].t/S.bldUp[upTypes[0]].total*100) + '%"></i></span>')
+                   : ('Đợt địch kế: <b style="color:#f3d27a">' + waveTxt + '</b> · Nhà Chính Lv' + S.mainLevel));
     info.innerHTML = '<div class="infoMain baseStat"><div class="infoName">CĂN CỨ — Thợ: ' + wkN + ' · Quân: ' + armyN + ' · Dân số: ' + S.supplyUsed + '/' + S.supplyCap + '</div>' +
       '<div class="infoSub">' + mid + '</div></div>';
   }
@@ -3049,12 +3340,12 @@ function renderPanel(force){
     var c = cmds[i];
     if(!c){ gh += '<button class="cmdBtn" disabled aria-hidden="true"></button>'; continue; }
     var prog = -1;
-    if(b && c.action==='research' && b.research && b.research.kind===c.kind) prog = b.research.t/b.research.total;
+    if(b && c.action==='upbld' && typeof c.prog === 'number') prog = c.prog;
     if(b && c.action==='train' && b.queue && b.queue.length && b.queue[0].type===c.unit) prog = b.queue[0].t/b.queue[0].total;
     var tint = 'tNeu';
     if(c.action==='order' && c.mode==='attack') tint = 'tAtk';
     else if(c.action==='train') tint = isWorkerType(c.unit) ? 'tCool' : 'tAtk';
-    else if(c.action==='build' || c.action==='research' || c.action==='upmain' || c.action==='page') tint = 'tCool';
+    else if(c.action==='build' || c.action==='upbld' || c.action==='upmain' || c.action==='page') tint = 'tCool';
     var cap = cmdCaption(c);
     gh += '<button class="cmdBtn ' + tint + (c.active ? ' active' : '') + '" data-i="' + i + '"' + (c.disabled ? ' disabled' : '') + '>' +
       (c.img ? '<img src="' + sprImg(c.img) + '" alt="">' : IC[c.icon]) +
@@ -3064,24 +3355,6 @@ function renderPanel(force){
   }
   grid.innerHTML = gh;
   grid._cmds = cmds;
-  /* --- khung nâng cấp (cột trái ở màn dọc) --- */
-  var up = document.getElementById('upgPanel');
-  if(up){
-    function pips(lvl){ var h=''; for(var j=0;j<3;j++) h += '<span class="' + (j<lvl?'':'off') + '">●</span>'; return h; }
-    function upgCard(kind){
-      var lv = S.upgrades[kind], rb = S.buildings.find(function(x){ return x.faction==='player' && x.research && x.research.kind===kind; });
-      var need = kind==='weapon' ? 'barracks' : 'factory';
-      var cost = lv < 3 ? RESEARCH_COSTS[lv] : null;
-      var cant = cost && !canAfford(cost);
-      var btnTxt = lv>=3 ? 'MAX' : (rb ? 'ĐANG NÂNG…' : 'NÂNG');
-      return '<div class="upgRow">' + (kind==='weapon' ? IC.upAtk : IC.upDef) +
-        '<span class="uName">' + (kind==='weapon' ? 'Vũ Khí' : 'Giáp') + '</span><span class="pips">' + pips(lv) + '</span>' +
-        (cost ? '<span class="ucost' + (cant ? ' cant' : '') + '">◆' + cost.m + (cost.g ? ' ●' + cost.g : '') + '</span>' : '<span class="ucost">tối đa</span>') +
-        '<button data-upg="' + kind + '"' + (!hasBuilt(need) || lv>=3 ? ' disabled' : '') + '>' + btnTxt + '</button>' +
-        (rb ? '<span class="upgProg" style="width:' + Math.round(rb.research.t/rb.research.total*100) + '%"></span>' : '') + '</div>';
-    }
-    up.innerHTML = upgCard('weapon') + upgCard('armor');
-  }
   /* --- khối portrait / MENU (cột dọc) --- */
   var mp = document.getElementById('menuPortrait');
   if(mp){
@@ -3130,18 +3403,6 @@ document.getElementById('menuBtn').addEventListener('click', function(){
   togglePause();
   showMsg(S.paused ? 'Đã tạm dừng — bấm MENU để chơi tiếp' : 'Tiếp tục trận đấu');
 });
-document.getElementById('upgPanel').addEventListener('click', function(ev){
-  var btn = ev.target.closest ? ev.target.closest('button') : null; if(!btn || btn.disabled) return;
-  var kind = btn.getAttribute('data-upg');
-  var bt = kind==='weapon' ? 'barracks' : 'factory';
-  var b = S.buildings.find(function(x){ return x.faction==='player' && x.type===bt && !x.constructing; });
-  if(!b) return;
-  S.selectedBuildingId = b.id; S.selectedIds = []; cmdPage = 'main'; placing = null; pendingOrder = null;
-  Snd.play('select', 0.6, 100);
-  if(b.research) setCostLine('<span style="color:#8dff9a">Đang nghiên cứu…</span>');
-  else if(S.upgrades[kind] < 3) setCostLine(costHTML(RESEARCH_COSTS[S.upgrades[kind]]));
-  renderPanel(true);
-});
 document.getElementById('cmdGrid').addEventListener('click', function(ev){
   if(performance.now() < suppressCmdClickUntil) return; /* click "ma" ngay sau khi thả kéo — bỏ qua */
   var btn = ev.target.closest ? ev.target.closest('button') : null; if(!btn) return;
@@ -3152,8 +3413,8 @@ document.getElementById('cmdGrid').addEventListener('click', function(ev){
   if(c.cost) setCostLine(costHTML(c.cost));
   if(c.action==='cancelPlace'){ placing = null; showMsg('Đã hủy đặt nhà'); }
   else if(c.action==='train'){ var b = findById(S.selectedBuildingId); if(b) train(b.id, c.unit); }
-  else if(c.action==='research'){ var b2 = findById(S.selectedBuildingId); if(b2) research(b2.id, c.kind); }
-  else if(c.action==='upmain'){ startMainUpgrade(); }
+  else if(c.action==='upbld'){ var b2 = findById(S.selectedBuildingId); if(b2) upgradeBuilding(b2.id); }
+  else if(c.action==='upmain'){ var b3 = findById(S.selectedBuildingId); startMainUpgrade(b3 ? b3.id : 0); }
   else if(c.action==='stop'){ selectedUnits().forEach(function(u){ setOrder(u,{type:'idle',x:u.x,y:u.y,targetId:0,nodeId:0,phase:'',harvestT:0}); }); pendingOrder = null; }
   else if(c.action==='order'){ pendingOrder = (pendingOrder===c.mode) ? null : c.mode; if(pendingOrder) showMsg(pendingOrder==='attack' ? 'Chạm vào đích để tấn công' : pendingOrder==='harvest' ? 'Chạm vào mỏ khoáng / mạch khí' : 'Chạm vào điểm đến'); }
   else if(c.action==='page'){ cmdPage = c.page; }
@@ -3708,15 +3969,18 @@ function drawWorld(){
   ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
   ctx.fillStyle = '#05060a'; ctx.fillRect(0,0,cssW(),cssH());
   ctx.save(); ctx.scale(cam.z, cam.z); ctx.translate(-cam.x, -cam.y);
+  /* FIX v6 — rung camera RẤT NHẸ (tối đa 3px) khi có nổ lớn trong tầm nhìn, tự tắt sau ~0,28s */
+  if(SHAKE.t > 0){
+    var shk = SHAKE.mag * (SHAKE.t / 0.28);
+    ctx.translate((rng()-0.5) * 2 * shk, (rng()-0.5) * 2 * shk);
+  }
   if(terrainCv) ctx.drawImage(terrainCv, cam.x, cam.y, vw, vh, cam.x, cam.y, vw, vh);
   else { ctx.fillStyle = '#33363d'; ctx.fillRect(cam.x, cam.y, vw, vh); }
-  /* vết cháy do nổ để lại, mờ dần */
+  /* vết cháy do nổ để lại, mờ dần — FIX v6: dùng sprite bóng mềm chung (mép tan, không còn elip cứng) */
   SCORCH.forEach(function(sc){
     if(sc.x<cam.x-60||sc.x>cam.x+vw+60||sc.y<cam.y-60||sc.y>cam.y+vh+60) return;
-    ctx.fillStyle = 'rgba(8,6,5,' + (0.5*clamp(sc.life,0,1)).toFixed(3) + ')';
-    ctx.beginPath(); ctx.ellipse(sc.x, sc.y, sc.r, sc.r*0.62, 0, 0, 6.29); ctx.fill();
-    ctx.fillStyle = 'rgba(30,20,12,' + (0.35*clamp(sc.life,0,1)).toFixed(3) + ')';
-    ctx.beginPath(); ctx.ellipse(sc.x, sc.y, sc.r*0.55, sc.r*0.34, 0, 0, 6.29); ctx.fill();
+    drawShadow(sc.x, sc.y, sc.r*2.2, sc.r*1.4, 0.85 * clamp(sc.life, 0, 1));
+    drawShadow(sc.x, sc.y, sc.r*1.2, sc.r*0.75, 0.8 * clamp(sc.life, 0, 1));
   });
   /* mỏ tài nguyên — chỉ vẽ khi đã khám phá */
   S.nodes.forEach(function(n){
@@ -3760,10 +4024,23 @@ function drawWorld(){
       if(ca===0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
     }
     ctx.closePath();
-    ctx.fillStyle = S.teamColorMode ? ('rgba(' + teamRGB(b.faction) + ',0.20)') : (b.faction==='player' ? 'rgba(147,51,234,0.20)' : (b.faction==='ai2' ? 'rgba(217,119,6,0.20)' : (b.faction==='ai3' ? 'rgba(124,58,237,0.20)' : 'rgba(190,24,93,0.20)')));
+    /* FIX v6 (góp ý 13:48) — MÉP THẢM tan mềm: lấp bằng gradient xuyên tâm (đậm ở tâm, tan ra trong suốt ở mép)
+       + 1 nét viền RỘNG alpha rất thấp thay cho đường viền cứng 2px */
+    var crgb = S.teamColorMode ? teamRGB(b.faction) : (b.faction==='player' ? '147,51,234' : (b.faction==='ai2' ? '217,119,6' : (b.faction==='ai3' ? '124,58,237' : '190,24,93')));
+    var cg = null;
+    try{ cg = ctx.createRadialGradient(b.x, b.y, cr*0.25, b.x, b.y, cr*1.14); }catch(e){}
+    if(cg){
+      cg.addColorStop(0, 'rgba(' + crgb + ',0.21)');
+      cg.addColorStop(0.78, 'rgba(' + crgb + ',0.19)');
+      cg.addColorStop(0.93, 'rgba(' + crgb + ',0.09)');
+      cg.addColorStop(1, 'rgba(' + crgb + ',0)');
+      ctx.fillStyle = cg;
+    } else {
+      ctx.fillStyle = 'rgba(' + crgb + ',0.20)';
+    }
     ctx.fill();
-    ctx.strokeStyle = S.teamColorMode ? ('rgba(' + teamRGB(b.faction) + ',0.5)') : (b.faction==='player' ? 'rgba(192,132,252,0.5)' : 'rgba(251,113,133,0.45)');
-    ctx.lineWidth = 2; ctx.stroke();
+    ctx.strokeStyle = 'rgba(' + crgb + ',0.06)';
+    ctx.lineWidth = 10; ctx.stroke();
   });
   /* VÙNG ĐIỆN Pylon — hiện vòng khi đang đặt nhà Protoss hoặc đang chọn 1 Pylon của mình */
   if(S.playerRace==='protoss'){
@@ -3790,12 +4067,71 @@ function drawWorld(){
     }
     if(e.kind==='building') drawBuilding(e); else drawUnit(e);
   });
-  /* đạn */
+  /* FIX v6 — XÁC QUÂN: ngã + mờ dần (Zerg CHÌM xuống đất; quân bay RƠI xuống) trong ~0,35s */
+  CORPSES.forEach(function(cp){
+    if(cp.faction!=='player' && fogAtWorld(cp.x, cp.y)!==2) return;
+    var f = clamp(cp.t/0.35, 0, 1);
+    var im = IMG[cp.spr]; if(!im || !im.complete || !im.naturalWidth) return;
+    ctx.save();
+    ctx.globalAlpha = 1 - f;
+    if(cp.zerg){ /* Zerg: chìm dọc + bẹp xuống */
+      ctx.translate(cp.x, cp.y + 13*f);
+      ctx.scale(1, 1 - 0.45*f);
+      ctx.drawImage(im, -cp.draw/2, -cp.draw/2, cp.draw, cp.draw);
+    } else if(cp.flying){ /* quân bay: rơi xuống đất */
+      ctx.translate(cp.x, cp.y + 30*f*f);
+      ctx.rotate(cp.face + f*1.1);
+      ctx.drawImage(im, -cp.draw/2, -cp.draw/2, cp.draw, cp.draw);
+    } else { /* mặt đất: đổ nghiêng theo hướng mặt */
+      ctx.translate(cp.x, cp.y);
+      ctx.rotate(cp.face + f*1.25);
+      ctx.drawImage(im, -cp.draw/2, -cp.draw/2, cp.draw, cp.draw);
+    }
+    ctx.restore();
+  });
+  /* FIX v6 — ĐẠN hiển thị theo LOẠI VŨ KHÍ: vệt đạn thẳng · tia năng lượng · đạn pháo CONG (vẽ bóng đất + đầu đạn theo chiều cao) · cục dịch · tia lửa điện */
   S.projectiles.forEach(function(p){
-    ctx.fillStyle = p.flame ? '#fb923c' : (p.faction==='player' ? '#fde047' : '#f0abfc');
-    ctx.beginPath(); ctx.arc(p.x,p.y, p.flame?5:4, 0, 6.29); ctx.fill();
-    ctx.strokeStyle = p.flame ? 'rgba(251,146,60,.5)' : 'rgba(253,224,71,.45)'; ctx.lineWidth=2;
-    ctx.beginPath(); ctx.arc(p.x,p.y,8,0,6.29); ctx.stroke();
+    var dx = p.tx - p.sx, dy = p.ty - p.sy, dd = Math.max(1, Math.sqrt(dx*dx + dy*dy));
+    var ux = dx/dd, uy = dy/dd;
+    var col = p.faction==='player' ? '#fde047' : '#f0abfc';
+    if(p.kind === 'shell' && p.arcH){
+      var f2 = clamp(1 - (dist(p.x, p.y, p.tx, p.ty) / dd), 0, 1);
+      var z = 4 * p.arcH * f2 * (1 - f2);
+      ctx.fillStyle = 'rgba(0,0,0,0.28)';
+      ctx.beginPath(); ctx.ellipse(p.x, p.y, 4.5, 2.6, 0, 0, 6.29); ctx.fill(); /* bóng của đầu đạn trên mặt đất */
+      ctx.fillStyle = '#ffd9a0';
+      ctx.beginPath(); ctx.arc(p.x, p.y - z, 3.4, 0, 6.29); ctx.fill();
+      ctx.fillStyle = 'rgba(255,255,255,0.9)';
+      ctx.beginPath(); ctx.arc(p.x, p.y - z, 1.5, 0, 6.29); ctx.fill();
+      return;
+    }
+    if(p.kind === 'beam'){ /* tia năng lượng: vệt dài theo hướng bay */
+      ctx.strokeStyle = p.faction==='player' ? 'rgba(125,245,255,0.95)' : 'rgba(240,171,252,0.95)'; ctx.lineWidth = 3;
+      ctx.beginPath(); ctx.moveTo(p.x - ux*30, p.y - uy*30); ctx.lineTo(p.x, p.y); ctx.stroke();
+      ctx.strokeStyle = 'rgba(255,255,255,0.85)'; ctx.lineWidth = 1.2;
+      ctx.beginPath(); ctx.moveTo(p.x - ux*30, p.y - uy*30); ctx.lineTo(p.x, p.y); ctx.stroke();
+      return;
+    }
+    if(p.kind === 'acid'){ /* cục dịch xanh lá */
+      ctx.fillStyle = '#a3e635';
+      ctx.beginPath(); ctx.arc(p.x, p.y, 3.6, 0, 6.29); ctx.fill();
+      ctx.fillStyle = 'rgba(220,255,160,0.85)';
+      ctx.beginPath(); ctx.arc(p.x - 1, p.y - 1, 1.5, 0, 6.29); ctx.fill();
+      return;
+    }
+    if(p.kind === 'bolt'){ /* tia điện/năng lượng ngắn, sáng */
+      ctx.strokeStyle = col; ctx.lineWidth = 2.6;
+      ctx.beginPath(); ctx.moveTo(p.x - ux*13, p.y - uy*13); ctx.lineTo(p.x, p.y); ctx.stroke();
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath(); ctx.arc(p.x, p.y, 2.2, 0, 6.29); ctx.fill();
+      return;
+    }
+    /* tracer (mặc định) + flame cũ: vệt sáng ngắn + đầu đạn */
+    ctx.strokeStyle = p.flame ? 'rgba(251,146,60,0.75)' : (p.faction==='player' ? 'rgba(253,224,71,0.75)' : 'rgba(240,171,252,0.75)');
+    ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(p.x - ux*11, p.y - uy*11); ctx.lineTo(p.x, p.y); ctx.stroke();
+    ctx.fillStyle = p.flame ? '#fb923c' : col;
+    ctx.beginPath(); ctx.arc(p.x, p.y, p.flame ? 5 : 2.6, 0, 6.29); ctx.fill();
   });
   /* hạt hiệu ứng (vẽ dưới sương mù để vùng chưa khám phá vẫn che được) */
   PARTS.forEach(function(p){
@@ -3812,6 +4148,16 @@ function drawWorld(){
       ctx.fillStyle='rgba(255,255,255,' + (0.95*a).toFixed(3) + ')'; ctx.beginPath(); ctx.arc(p.x,p.y,p.size*0.45*a,0,6.29); ctx.fill(); }
     else if(p.kind==='ring'){ ctx.strokeStyle='rgba(255,196,110,' + (0.8*a).toFixed(3) + ')'; ctx.lineWidth=3.5*a+0.5;
       ctx.beginPath(); ctx.arc(p.x,p.y, p.size*(1-a)+6, 0, 6.29); ctx.stroke(); }
+    /* FIX v6 — các loại hạt mới: mảnh vỡ nhà, bọt hữu cơ Zerg, nhát chém cận chiến, vòng khiên Protoss */
+    else if(p.kind==='debris'){ ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.seed + (1-a)*3);
+      ctx.fillStyle='rgba(58,52,48,' + (0.92*a).toFixed(3) + ')'; ctx.fillRect(-p.size/2, -p.size/2, p.size, p.size*0.7); ctx.restore(); }
+    else if(p.kind==='puff'){ ctx.fillStyle='rgba(' + p.c[0] + ',' + p.c[1] + ',' + p.c[2] + ',' + (0.55*a).toFixed(3) + ')';
+      ctx.beginPath(); ctx.arc(p.x, p.y, p.size*(1.3-0.5*a), 0, 6.29); ctx.fill(); }
+    else if(p.kind==='slash'){ ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.seed);
+      ctx.strokeStyle='rgba(235,248,255,' + (0.85*a).toFixed(3) + ')'; ctx.lineWidth = 2.4*a + 0.6;
+      ctx.beginPath(); ctx.arc(0, 0, p.size, -1.1, 0.7); ctx.stroke(); ctx.restore(); }
+    else if(p.kind==='shieldring'){ ctx.strokeStyle='rgba(110,235,255,' + (0.75*a).toFixed(3) + ')'; ctx.lineWidth = 2.2*a + 0.6;
+      ctx.beginPath(); ctx.arc(p.x, p.y, p.size*(1.12-0.55*a), 0, 6.29); ctx.stroke(); }
     else if(p.kind==='glint'){ var tw = Math.sin((1-a)*3.14159);
       ctx.strokeStyle='rgba(190,245,255,' + (0.9*tw).toFixed(3) + ')'; ctx.lineWidth=1.6;
       var gs = p.size*(0.5+tw*0.7);
@@ -3824,10 +4170,18 @@ function drawWorld(){
   var cx0 = Math.max(0, (cam.x/FOG_CELL)|0), cy0 = Math.max(0, (cam.y/FOG_CELL)|0);
   var cx1 = Math.min(FOG_COLS-1, ((cam.x+vw)/FOG_CELL)|0), cy1 = Math.min(FOG_ROWS-1, ((cam.y+vh)/FOG_CELL)|0);
   var a, b2;
-  ctx.fillStyle = '#000';
-  for(b2=cy0;b2<=cy1;b2++) for(a=cx0;a<=cx1;a++) if(fog[fogIdx(a,b2)]===0) ctx.fillRect(a*FOG_CELL, b2*FOG_CELL, FOG_CELL+1, FOG_CELL+1);
-  ctx.fillStyle = 'rgba(0,0,0,0.45)';
-  for(b2=cy0;b2<=cy1;b2++) for(a=cx0;a<=cx1;a++) if(fog[fogIdx(a,b2)]===1) ctx.fillRect(a*FOG_CELL, b2*FOG_CELL, FOG_CELL+1, FOG_CELL+1);
+  /* FIX v6 — sương mù vẽ qua canvas nhỏ phóng mượt (biên tan mềm); canvas không có thì về cách cũ ô vuông */
+  if(fogCv && fogCx){
+    if(fogDirty) paintFogCanvas();
+    ctx.save(); ctx.imageSmoothingEnabled = true;
+    ctx.drawImage(fogCv, 0, 0, FOG_COLS * FOG_CELL, FOG_ROWS * FOG_CELL);
+    ctx.restore();
+  } else {
+    ctx.fillStyle = '#000';
+    for(b2=cy0;b2<=cy1;b2++) for(a=cx0;a<=cx1;a++) if(fog[fogIdx(a,b2)]===0) ctx.fillRect(a*FOG_CELL, b2*FOG_CELL, FOG_CELL+1, FOG_CELL+1);
+    ctx.fillStyle = 'rgba(0,0,0,0.45)';
+    for(b2=cy0;b2<=cy1;b2++) for(a=cx0;a<=cx1;a++) if(fog[fogIdx(a,b2)]===1) ctx.fillRect(a*FOG_CELL, b2*FOG_CELL, FOG_CELL+1, FOG_CELL+1);
+  }
   /* dấu ping tại điểm ra lệnh (nở ra rồi mờ dần) */
   MARKERS.forEach(function(mk){
     var f = mk.t/0.55, col = mk.kind==='attack' || mk.kind==='error' ? '248,60,60' : (mk.kind==='harvest' ? '56,225,255' : '74,222,128');
@@ -3896,9 +4250,8 @@ function shieldBar(e, x, y, w){ /* thanh KHIÊN xanh dương nằm ngay trên th
 function drawBuilding(b){
   var bs = BSPECS[b.type], hs = bs.size/2, pc = b.faction==='player';
   var dim = (b.faction!=='player' && fogAtWorld(b.x,b.y)===1);
-  /* bóng đổ mềm dưới nhà */
-  ctx.fillStyle='rgba(0,0,0,0.38)';
-  ctx.beginPath(); ctx.ellipse(b.x+5, b.y + hs*0.94, hs*1.04, hs*0.30, 0, 0, 6.29); ctx.fill();
+  /* bóng đổ MỀM dưới nhà (sprite gradient nung sẵn — mép tan, không còn elip đặc) */
+  drawShadow(b.x + 5, b.y + hs*0.94, hs*2.3, hs*0.68, 0.95);
   if(S.selectedBuildingId===b.id){ ctx.strokeStyle='#4ade80'; ctx.lineWidth=3; ctx.strokeRect(b.x-hs-6,b.y-hs-6,bs.size+12,bs.size+12); }
   ctx.save(); if(dim) ctx.globalAlpha = 0.55;
   var drawn = false;
@@ -3920,10 +4273,15 @@ function drawBuilding(b){
     ctx.fillStyle = '#4ade80'; ctx.fillRect(b.x-hs, b.y-hs-13, bs.size*pr, 5);
   } else {
     drawn = drawSprite(UIMG(IMG, bs.spr, b.faction), b.x, b.y, bs.draw, bs.draw, false);
-    if(b.faction==='player' && !!MAIN_TYPES[b.type] && S.mainUpgrade){ /* đang NÂNG CẤP nhà chính: thanh xanh trên đầu */
+    if(b.faction==='player' && !!MAIN_TYPES[b.type] && S.mainUpgrade && S.mainUpgrade.bid===b.id){ /* nhà này đang NÂNG CẤP: thanh xanh trên đầu */
       var upp = clamp(S.mainUpgrade.t / S.mainUpgrade.total, 0, 1);
       ctx.fillStyle = 'rgba(0,0,0,.65)'; ctx.fillRect(b.x-hs, b.y-hs-13, bs.size, 5);
       ctx.fillStyle = '#4ade80'; ctx.fillRect(b.x-hs, b.y-hs-13, bs.size * upp, 5);
+    }
+    if(b.faction==='player' && S.bldUp && S.bldUp[b.type]){ /* LOẠI nhà này đang NÂNG CHUNG: thanh xanh trên đầu mọi nhà cùng loại */
+      var upb = clamp(S.bldUp[b.type].t / S.bldUp[b.type].total, 0, 1);
+      ctx.fillStyle = 'rgba(0,0,0,.65)'; ctx.fillRect(b.x-hs, b.y-hs-13, bs.size, 5);
+      ctx.fillStyle = '#4ade80'; ctx.fillRect(b.x-hs, b.y-hs-13, bs.size * upb, 5);
     }
     if(bldRace(b.type)==='protoss' && !isPowered(b)){ /* MẤT ĐIỆN: sprite tối xám, tê liệt */
       ctx.fillStyle='rgba(8,10,18,0.58)'; ctx.fillRect(b.x-hs, b.y-hs, bs.size, bs.size);
@@ -3976,6 +4334,23 @@ function drawBuilding(b){
     ctx.fillStyle = teamColor(b.faction); ctx.fillRect(b.x-hs, b.y+hs+3, bs.size, 4);
     ctx.fillStyle = 'rgba(' + teamRGB(b.faction) + ',0.25)'; ctx.fillRect(b.x-hs, b.y+hs+7, bs.size, 3);
   }
+  /* FIX v6 — VIỀN VÀNG + CHẤM CẤP cho nhà sản xuất/nhà chính đạt Lv2+: vẽ phủ lên sprite (không sửa ảnh gốc) */
+  var lvShow = TRAIN_FROM[b.type] ? typeLevel(b.faction, b.type) : (!!MAIN_TYPES[b.type] ? (b.faction==='player' ? (b.mainLv||1) : factionMainLevel(b.faction)) : 1);
+  if(!b.constructing && lvShow >= 2){
+    ctx.strokeStyle = 'rgba(245,197,66,0.92)'; ctx.lineWidth = 2.2;
+    var gt = 13;
+    ctx.beginPath();
+    ctx.moveTo(b.x-hs-3, b.y-hs-3+gt); ctx.lineTo(b.x-hs-3, b.y-hs-3); ctx.lineTo(b.x-hs-3+gt, b.y-hs-3);
+    ctx.moveTo(b.x+hs+3-gt, b.y-hs-3); ctx.lineTo(b.x+hs+3, b.y-hs-3); ctx.lineTo(b.x+hs+3, b.y-hs-3+gt);
+    ctx.moveTo(b.x+hs+3, b.y+hs+3-gt); ctx.lineTo(b.x+hs+3, b.y+hs+3); ctx.lineTo(b.x+hs+3-gt, b.y+hs+3);
+    ctx.moveTo(b.x-hs-3+gt, b.y+hs+3); ctx.lineTo(b.x-hs-3, b.y+hs+3); ctx.lineTo(b.x-hs-3, b.y+hs+3-gt);
+    ctx.stroke();
+    ctx.fillStyle = '#f5c542';
+    for(var pi2=0; pi2<lvShow; pi2++){
+      var pxd = b.x + (pi2 - (lvShow-1)/2) * 11, pyd = b.y + hs + 26;
+      ctx.save(); ctx.translate(pxd, pyd); ctx.rotate(Math.PI/4); ctx.fillRect(-3.1, -3.1, 6.2, 6.2); ctx.restore();
+    }
+  }
   if(b.shieldMax) shieldBar(b, b.x, b.y-hs-20, bs.size);
   hpBar(b.x, b.y-hs-14, bs.size, b.hp/b.maxHp, pc, S.teamColorMode ? teamColor(b.faction) : null);
   ctx.fillStyle = dim ? '#9aa7b8' : '#eaf6ff'; ctx.font='bold 11px Arial'; ctx.textAlign='center';
@@ -4012,10 +4387,9 @@ function drawUnit(u){
     ctx.strokeStyle = teamColor(u.faction); ctx.lineWidth = 1.8;
     ctx.beginPath(); ctx.ellipse(u.x, u.y + sp.draw*0.32, sp.draw*0.46, sp.draw*0.185, 0, 0, 6.29); ctx.stroke();
   }
-  /* bóng đổ: elip đặc lệch hướng, không blur — NEO ĐẤT, không nhún theo thân (chỉ co nhẹ khi thân ở đỉnh lơ lửng) */
+  /* bóng đổ MỀM (sprite gradient nung sẵn): neo đất, quân bay bóng nhạt + lệch theo độ cao */
   var shS = (an.hover || sp.flying) ? 1 - 0.05*(hovY/(an.amp||2.5)) : 1;
-  ctx.fillStyle='rgba(0,0,0,0.36)';
-  ctx.beginPath(); ctx.ellipse(u.x + (sp.flying ? 16 : 3), u.y + sp.draw*0.34, sp.draw*0.40*shS, sp.draw*0.15*shS, 0, 0, 6.29); ctx.fill();
+  drawShadow(u.x + (sp.flying ? 16 : 3), u.y + sp.draw*0.34, sp.draw*0.92*shS, sp.draw*0.36*shS, sp.flying ? 0.55 : 0.9);
   if(S.selectedIds.indexOf(u.id)>=0){
     var pu = 0.65 + 0.35*Math.sin(S.time*5);
     ctx.strokeStyle='rgba(74,222,128,' + pu.toFixed(3) + ')'; ctx.lineWidth=2.5;
@@ -4023,18 +4397,23 @@ function drawUnit(u){
   }
   /* thân: thở nhẹ khi đứng yên (giết cảm giác tượng chết) */
   var breathe = (!moving && !an.hover && !sp.flying) ? 1 + 0.008*Math.sin(S.time*2.513 + u.id*2.3) : 1;
-  var bodyY = u.y + flyY + bobY, drawn = false;
+  /* FIX v6 — GIẬT LÙI khi bắn (mọi quân bắn xa) + LAO TỚI khi chém cận chiến: lệch vị trí VẼ, không đổi vị trí thật */
+  var offX = 0, offY = 0;
+  if(u.recoilT > 0) offX = -(u.face < 0 ? -1 : 1) * (u.recoilT / 0.14) * 2.2;
+  if(u.lungeT > 0){ var lsin = Math.sin((u.lungeT / 0.18) * Math.PI); offX += (u.lungeDx||0) * lsin * 7; offY += (u.lungeDy||0) * lsin * 7; }
+  var bodyX = u.x + offX;
+  var bodyY = u.y + flyY + bobY + offY, drawn = false;
   var sheet = UIMG(IMGW, sp.spr, u.faction);
   if(sheet && an.frames && imgReady(sheet)){
     /* có sheet khung hình thật: frame do QUÃNG ĐƯỜNG chọn, bob nằm trong hình — không nhún thêm */
     var fr = moving ? Math.floor(phase * an.frames) % an.frames : 0;
-    drawn = drawFrame(sheet, fr, an.frames, u.x, u.y + flyY, sp.draw, sp.draw*breathe*pulse, u.face<0, roll*0.5 + lean);
+    drawn = drawFrame(sheet, fr, an.frames, bodyX, u.y + flyY + offY, sp.draw, sp.draw*breathe*pulse, u.face<0, roll*0.5 + lean);
   } else if(an.slither){
-    drawn = drawSlither(UIMG(IMG, sp.spr, u.faction), u.x, bodyY, sp.draw, sp.draw, u.face<0, u.animDist||0, Math.max(sf, moving?0.7:0));
+    drawn = drawSlither(UIMG(IMG, sp.spr, u.faction), bodyX, bodyY, sp.draw, sp.draw, u.face<0, u.animDist||0, Math.max(sf, moving?0.7:0));
   } else if(u.type==='tank'){
-    drawn = drawTank(u, bodyY, roll + lean) || drawSpriteT(UIMG(IMG, sp.spr, u.faction), u.x, bodyY, sp.draw, sp.draw, u.face<0, roll + lean);
+    drawn = drawTank(u, bodyY, roll + lean) || drawSpriteT(UIMG(IMG, sp.spr, u.faction), bodyX, bodyY, sp.draw, sp.draw, u.face<0, roll + lean);
   } else {
-    drawn = drawSpriteT(UIMG(IMG, sp.spr, u.faction), u.x, bodyY, sp.draw, sp.draw*breathe*pulse, u.face<0, roll + lean);
+    drawn = drawSpriteT(UIMG(IMG, sp.spr, u.faction), bodyX, bodyY, sp.draw, sp.draw*breathe*pulse, u.face<0, roll + lean);
   }
   if(!drawn){
     ctx.fillStyle = pc ? '#22d3ee' : '#f43f5e';
@@ -4609,7 +4988,21 @@ var MOVE_LINES = {
   probe:'Lướt nhanh, thân nhỏ gọn.',
   zealot:'Chạy nhanh, lao thẳng vào cận chiến.',
   dragoon:'Đi bằng bốn chân máy, tốc độ vừa, thân cỡ vừa.',
-  archon:'Bay lơ lửng tốc độ vừa, thân năng lượng cỡ lớn.'
+  archon:'Bay lơ lửng tốc độ vừa, thân năng lượng cỡ lớn.',
+  robot:'Robot hai chân bước nặng và đều, thân lớn — cỡ quân hạng nặng của Doanh Trại.',
+  heavytank:'Xích hạng nặng chạy chậm nhất Terran, thân rất to; chỉ lên xuống tầng qua dốc.',
+  heli:'Bay nhanh và linh hoạt, lơ lửng trên mọi địa hình — bóng đổ tách hẳn dưới đất.',
+  jet:'Bay nhanh, thân khí động học; vòng lượn rộng khi đổi hướng.',
+  gunship:'Bay chậm và nặng, thân pháo hạm đồ sộ; bóng đổ lớn dưới mặt đất.',
+  bat:'Bay rất nhanh, thân nhỏ — đàn dơi áp sát theo bầy.',
+  wasp:'Bay tốc độ vừa, cánh đập liên hồi.',
+  leviathan:'Bay chậm, thân sinh học khổng lồ — bóng che cả một khoảng đất.',
+  scoutbot:'Robot trinh sát bốn chân chạy nhanh, thân nhỏ gọn.',
+  artillery:'Pháo tự hành đi chậm bằng bánh xích, thân cỡ vừa-lớn.',
+  colossus:'Cỗ máy bốn chân khổng lồ bước chậm mà dài; thân cao vượt mọi quân bộ Protoss.',
+  scoutship:'Bay nhanh, thân phi thuyền nhỏ — trinh sát đường không.',
+  frigate:'Bay tốc độ vừa, thân chiến hạm nhỏ gọn.',
+  carrier:'Bay chậm, thân mẫu hạm khổng lồ che bóng lớn trên mặt đất.'
 };
 var ATK_LINES = {
   worker:'Cận chiến bằng mỏ cắt khi được lệnh đánh — chỉ đủ tự vệ, đừng đem thợ đi đánh nhau.',
@@ -4627,39 +5020,73 @@ var ATK_LINES = {
   archon:'Cầu sét năng lượng diện rộng hẹp: trúng tâm chịu đủ, lan ra mép giảm dần.',
   turret:'Đạn đuổi theo mục tiêu, nhịp bắn rất nhanh; đánh được cả quân bay.',
   sunken:'Gai ngầm đâm từ dưới đất lên quân bộ trong tầm; KHÔNG đánh được quân bay.',
-  cannon:'Đạn photon sáng đuổi theo mục tiêu; đánh được cả quân bay. Ngoài vùng điện Pylon thì không bắn.'
+  cannon:'Đạn photon sáng đuổi theo mục tiêu; đánh được cả quân bay. Ngoài vùng điện Pylon thì không bắn.',
+  robot:'HAI nòng pháo lớn luân phiên nã đạn sáng — mỗi phát một nòng, nhịp dồn dập, đạn bay rất nhanh.',
+  heavytank:'Pháo hạng nặng bắn đạn CONG cầu vồng, chạm đất nổ lớn: vòng xung, lửa khói và vệt cháy; diện rộng lớn, nạp rất chậm.',
+  heli:'Súng máy trên thân nã vệt đạn thẳng liên thanh — sát thương nhỏ nhưng nhịp cực nhanh.',
+  jet:'Tên lửa nổ diện rộng nhỏ: đạn cong nhẹ tới mục tiêu, trúng tóe lửa và khói.',
+  gunship:'Pháo hạm bắn đạn nổ cong, diện rộng vừa — chuyên càn quét cụm quân và nhà.',
+  bat:'Khạc tia axit nhỏ ở cự ly gần-trung, nhịp nhanh; chỉ có tác dụng khi áp sát theo đàn.',
+  wasp:'Phun cục dịch axit xanh bám mục tiêu, ăn mòn đều theo nhịp vừa.',
+  leviathan:'Khạc cầu axit nổ — diện rộng nhỏ; đòn nặng nhất của quân bay Zerg.',
+  scoutbot:'Súng tia bắn vệt sáng ngắn, nhịp nhanh — trinh sát có răng.',
+  artillery:'Pháo tự hành bắn đạn CONG tầm rất xa, nổ diện rộng; đứng ngoài tầm hầu hết quân địch mà nã vào.',
+  colossus:'Tia năng lượng kép quét thẳng vào mục tiêu — vệt tia dài sáng rực, sát thương đơn mục tiêu rất lớn.',
+  scoutship:'Súng tia nhẹ bắn nhanh từ trên cao; hợp quấy rối thợ và đuổi quân bay yếu.',
+  frigate:'Pháo năng lượng nhịp vừa, đạn tia sáng đuổi theo mục tiêu — xương sống không quân Protoss.',
+  carrier:'Nòng pháo chính bắn tia năng lượng nặng — đòn bay mạnh nhất của Protoss, diện rộng rất nhỏ.'
 };
 var USE_LINES = {
   worker:'Khai thác khoáng & khí (+8 mỗi chuyến mang về nhà chính); xây nhà Terran — đứng xây cho đến khi xong.',
   drone:'Khai thác như thợ; khi xây, Drone BIẾN MẤT hoá thành chính toà nhà; nhà Zerg chỉ xây trên thảm nhầy.',
   probe:'Khai thác như thợ; mở cổng warp gọi nhà xuống rồi đi ngay — không cần đứng xây.',
   overlord:'Nhà dân số BAY của Zerg: mỗi con +8 dân số. Không có vũ khí.',
-  cc:'Nhà chính Terran: luyện Robot Thợ, nơi thợ mang tài nguyên về. NÂNG CẤP Lv2/Lv3 tại đây để mở khoá nhà và quân mới.',
+  robot:'Quân hạng nặng của Doanh Trại (mở ở Doanh Trại Lv3): 220 máu, hai nòng pháo — xương sống bộ binh cuối trận.',
+  heavytank:'Đỉnh của Nhà Tăng (Lv3): pháo nổ diện rộng, 260 máu — phá cụm quân và công trình.',
+  heli:'Không quân nhẹ của Nhà Máy Bay (Lv1): nhanh, rẻ — trinh sát, quấy rối thợ, đuổi quân bay yếu.',
+  jet:'Không quân tầm trung (Nhà Máy Bay Lv2): tên lửa nổ diện rộng nhỏ, khắc chế cụm quân đất và đàn bay.',
+  gunship:'Không quân hạng nặng (Nhà Máy Bay Lv3): pháo nổ diện rộng, 240 máu — càn quét cuối trận.',
+  bat:'Quân bay rẻ nhất game (Tổ Bay Lv1): yếu lẻ loi, mạnh theo đàn lớn.',
+  wasp:'Quân bay tầm trung (Tổ Bay Lv2): dịch axit ăn mòn tốt cả quân bay lẫn nhà.',
+  leviathan:'Quân bay hạng nặng (Tổ Bay Lv3): 320 máu, cầu axit nổ — chúa tể bầu trời Zerg.',
+  scoutbot:'Quân mặt đất của Xưởng Cơ Giới (Lv1): nhanh, bắn tia — trinh sát và hỗ trợ hoả lực.',
+  artillery:'Pháo tầm xa của Xưởng Cơ Giới (Lv2): bắn cong qua đầu quân nhà, nổ diện rộng.',
+  colossus:'Đỉnh của Xưởng Cơ Giới (Lv3): 300 máu + khiên, tia năng lượng kép — cỗ máy chiến tranh Protoss.',
+  scoutship:'Quân bay nhẹ của Cảng Hàng Không (Lv1): nhanh — săn quân bay yếu và quấy rối.',
+  frigate:'Quân bay tầm trung (Cảng Hàng Không Lv2): pháo năng lượng cân bằng không/đất.',
+  carrier:'Quân bay hạng nặng (Cảng Hàng Không Lv3): 300 máu + khiên — mẫu hạm kết liễu trận đấu.',
+  cc:'Nhà chính Terran: luyện Robot Thợ, nơi thợ mang tài nguyên về. NÂNG CẤP Lv2/Lv3 (riêng nhà này) để mở khoá xây Nhà Tăng và Nhà Máy Bay.',
   depot:'Tăng giới hạn dân số Terran (+8).',
-  barracks:'Luyện Lính Bắn Tia; Lính Phun Lửa mở khi Nhà Chính đạt Lv2.',
-  factory:'Luyện Robot Chiến Đấu và Xe Tăng Pháo (Xe Tăng cần Nhà Chính Lv3).',
-  turret:'Tháp phòng thủ tự động của Terran — tự quét địch trong tầm.',
+  barracks:'Nhà sản xuất bộ binh — cấp CHUNG theo loại: Lv1 Lính Bắn Tia · Lv2 +Lính Phun Lửa · Lv3 +Robot Song Súng. Nâng cấp áp cho mọi Doanh Trại.',
+  factory:'Nhà Tăng — cấp CHUNG theo loại: Lv1 Cơ Giới · Lv2 +Xe Tăng · Lv3 +Xe Tăng Hạng Nặng. Cần Nhà Chính Lv2 mới xây được.',
+  airfac:'Nhà Máy Bay — cấp CHUNG theo loại: Lv1 Trực Thăng · Lv2 +Phi Cơ · Lv3 +Pháo Hạm. Cần Nhà Chính Lv3 + đã có Nhà Tăng.',
+  turret:'Tháp phòng thủ tự động của Terran — tự quét địch trong tầm, đánh được cả quân bay.',
   refinery:'Xây TRÊN mạch khí: thợ vào hút khí (8 khí mỗi chuyến).',
-  hatchery:'Tổ chính Zerg: tự sinh Ấu Trùng (tối đa 3) để nở mọi quân Zerg, luyện Drone; lan thảm nhầy ra xung quanh; nâng cấp Lv2/Lv3 tại đây.',
+  hatchery:'Tổ chính Zerg: tự sinh Ấu Trùng (trần tăng theo cấp nhà chính: 3/5/8) để nở mọi quân Zerg đất, luyện Drone + Overlord; lan thảm nhầy; cấp sản xuất = cấp nhà chính cao nhất: Lv2 mở Bắn Gai · Lv3 mở Khổng Lồ (cần Hang) + xây Tổ Bay.',
   extractor:'Xây TRÊN mạch khí: Drone vào hút khí cho Zerg.',
   pool:'Mở khoá Quái Nhỏ ở Tổ; là điều kiện để xây Hang Hydralisk.',
-  zergden:'Mở khoá Quái Bắn Gai ở Tổ; là điều kiện cho Quái Khổng Lồ (cần thêm Nhà Chính Lv3).',
-  sunken:'Ổ phòng thủ mặt đất của Zerg.',
-  nexus:'Nhà chính Protoss: luyện Probe, nơi thợ mang tài nguyên về; nâng cấp Lv2/Lv3 tại đây; có khiên tự hồi như mọi nhà Protoss.',
+  zergden:'Điều kiện cho Quái Khổng Lồ ở Tổ (cần thêm Tổ Lv3).',
+  spire:'Tổ Bay — nhà sản xuất quân bay Zerg, cấp CHUNG theo loại: Lv1 Dơi · Lv2 +Ong Chiến · Lv3 +Chúa Tể Bay. Sản xuất theo hàng đợi như nhà máy thường (không qua Ấu Trùng).',
+  sunken:'Ổ phòng thủ mặt đất của Zerg — không đánh được quân bay.',
+  nexus:'Nhà chính Protoss: luyện Probe, nơi thợ mang tài nguyên về; nâng cấp Lv2/Lv3 (riêng nhà này) mở Xưởng Cơ Giới và Cảng Hàng Không; có khiên tự hồi như mọi nhà Protoss.',
   pylon:'Tạo VÙNG NĂNG LƯỢNG quanh nó: nhà Protoss phải nằm trong vùng điện mới hoạt động được; đồng thời cấp dân số (+8).',
-  gateway:'Warp Lính Zealot; Dragoon cần Lõi Cybernetics; Archon cần Lõi + Nhà Chính Lv3.',
-  cybercore:'Mở khoá Dragoon và Archon ở Cổng Gateway.',
-  cannon:'Pháo phòng thủ tự động của Protoss — phải nằm trong vùng điện Pylon.',
+  gateway:'Cổng warp quân bộ — cấp CHUNG theo loại: Lv1 Zealot · Lv2 +Dragoon · Lv3 +Archon.',
+  cybercore:'Xưởng Cơ Giới — nhà sản xuất cơ giới mặt đất, cấp CHUNG theo loại: Lv1 Robot Trinh Sát · Lv2 +Pháo Tự Hành · Lv3 +Cỗ Máy Chiến Tranh. Cần Nhà Chính Lv2 mới xây được; phải có điện Pylon.',
+  stargate:'Cảng Hàng Không — cấp CHUNG theo loại: Lv1 Phi Thuyền · Lv2 +Chiến Hạm Nhỏ · Lv3 +Mẫu Hạm. Cần Nhà Chính Lv3 + đã có Xưởng Cơ Giới; phải có điện Pylon.',
+  cannon:'Pháo phòng thủ tự động của Protoss — phải nằm trong vùng điện Pylon; đánh được cả quân bay.',
   assimilator:'Xây TRÊN mạch khí: Probe vào hút khí cho Protoss.'
 };
 var dictBuilt = false;
+var DMG_TYPE_TXT = { normal:'Thường', concussive:'Chấn động (mạnh với quân nhỏ)', explosive:'Nổ (mạnh với quân to)' };
 function dictCardUnit(t){
   var sp = SPECS[t], c = COSTS[t] || {m:0, g:0}, sh = shieldMaxFor('unit', t, sp.hp);
+  var prod = UNIT_PROD[t] || {b:'', lv:1};
   var req = '';
-  if(REQ_MAIN[t]) req += '<span class="dictReq">Nhà Chính Lv' + REQ_MAIN[t] + '</span>';
+  if(prod.b) req += '<span class="dictReq">' + BSPECS[prod.b].name + ' Lv' + prod.lv + '</span>';
   if(REQ_BUILDING[t]) req += '<span class="dictReq">Cần ' + BSPECS[REQ_BUILDING[t]].name + '</span>';
-  var stats = '◆' + c.m + ' ●' + c.g + ' · ❤' + sp.hp + (sh ? ' + 🛡' + sh : '') + ' · ⚔' + (sp.dmg > 0 ? sp.dmg + (sp.splash ? ' · diện rộng' : '') : '—') + ' · 👥' + sp.supply;
-  var h = '<div class="dictCard" data-kind="unit" data-type="' + t + '" data-hp="' + sp.hp + '" data-dmg="' + (sp.dmg || 0) + '" data-sup="' + sp.supply + '" data-cm="' + c.m + '" data-cg="' + c.g + '">'
+  var stats = '◆' + c.m + ' ●' + c.g + ' · ⏱ luyện ' + (c.t || 0) + 's · ❤' + sp.hp + (sh ? ' + 🛡' + sh : '') + ' · ⚔' + (sp.dmg > 0 ? sp.dmg + ' (' + (DMG_TYPE_TXT[sp.dtype] || 'Thường') + ')' + (sp.splash ? ' · diện rộng' : '') : '—') + ' · 👥' + sp.supply
+    + ' · Tầm ' + (sp.range || 0) + ' · Tốc độ ' + (sp.speed || 0) + ' · ' + (sp.flying ? '☁ QUÂN BAY' : 'Quân mặt đất');
+  var h = '<div class="dictCard" data-kind="unit" data-type="' + t + '" data-hp="' + sp.hp + '" data-dmg="' + (sp.dmg || 0) + '" data-sup="' + sp.supply + '" data-cm="' + c.m + '" data-cg="' + c.g + '" data-range="' + (sp.range || 0) + '" data-speed="' + (sp.speed || 0) + '" data-time="' + (c.t || 0) + '" data-prod="' + (prod.b || '') + '" data-lvl="' + prod.lv + '" data-air="' + (sp.flying ? 1 : 0) + '">'
     + '<img src="' + IMG[sp.spr].src + '" alt=""><div class="dictMain"><div class="dictName">' + sp.name + req + '</div>'
     + '<div class="dictStats">' + stats + '</div>';
   if(MOVE_LINES[t]) h += '<div class="dictLine"><b>Di chuyển:</b> ' + MOVE_LINES[t] + '</div>';
@@ -4671,11 +5098,19 @@ function dictCardBld(t){
   var bs = BSPECS[t], c = COSTS[t] || {m:0, g:0}, sh = shieldMaxFor('building', t, bs.hp), isDef = !!DEF_TYPES[t];
   var dmg = isDef ? (bs.dmg || 0) : 0;
   var req = REQ_MAIN_BUILD[t] ? '<span class="dictReq">Nhà Chính Lv' + REQ_MAIN_BUILD[t] + '</span>' : '';
-  var stats = '◆' + c.m + ' ●' + c.g + ' · ❤' + bs.hp + (sh ? ' + 🛡' + sh : '') + ' · ⚔' + (dmg ? dmg + (bs.cd && bs.cd <= 0.6 ? ' · bắn nhanh' : '') : '—') + ' · 👥' + (bs.supplyCap ? '+' + bs.supplyCap : '—');
-  var h = '<div class="dictCard" data-kind="building" data-type="' + t + '" data-hp="' + bs.hp + '" data-dmg="' + dmg + '" data-sup="' + (bs.supplyCap || 0) + '" data-cm="' + c.m + '" data-cg="' + c.g + '">'
+  var stats = '◆' + c.m + ' ●' + c.g + ' · ⏱ xây ' + (c.t || 0) + 's · ❤' + bs.hp + (sh ? ' + 🛡' + sh : '') + ' · ⚔' + (dmg ? dmg + (bs.cd && bs.cd <= 0.6 ? ' · bắn nhanh' : '') : '—') + ' · 👥' + (bs.supplyCap ? '+' + bs.supplyCap : '—');
+  var h = '<div class="dictCard" data-kind="building" data-type="' + t + '" data-hp="' + bs.hp + '" data-dmg="' + dmg + '" data-sup="' + (bs.supplyCap || 0) + '" data-cm="' + c.m + '" data-cg="' + c.g + '" data-time="' + (c.t || 0) + '">'
     + '<img src="' + IMG[bs.spr].src + '" alt=""><div class="dictMain"><div class="dictName">' + bs.name + req + '</div>'
     + '<div class="dictStats">' + stats + '</div>';
   if(USE_LINES[t]) h += '<div class="dictLine"><b>Công dụng:</b> ' + USE_LINES[t] + '</div>';
+  if(TRAIN_FROM[t]){
+    var plist = TRAIN_FROM[t].map(function(ut){ return SPECS[ut].name + ' (Lv' + (UNIT_PROD[ut] ? UNIT_PROD[ut].lv : 1) + ')'; }).join(' · ');
+    h += '<div class="dictLine"><b>Sản xuất:</b> ' + plist + '</div>';
+  }
+  if(TRAIN_FROM[t] && !MAIN_TYPES[t]){
+    var up2 = bldUpCost(t, 1), up3 = bldUpCost(t, 2);
+    h += '<div class="dictLine"><b>Nâng cấp CHUNG theo loại:</b> lên Lv2 ◆' + up2.m + (up2.g ? ' ●' + up2.g : '') + ' (' + up2.t + 's, +2 ô mỗi nhà) · lên Lv3 ◆' + up3.m + (up3.g ? ' ●' + up3.g : '') + ' (' + up3.t + 's, +3 ô mỗi nhà) — luôn rẻ hơn xây mới ◆' + c.m + (c.g ? ' ●' + c.g : '') + '.</div>';
+  }
   if(isDef && ATK_LINES[t]) h += '<div class="dictLine"><b>Ra đòn:</b> ' + ATK_LINES[t] + '</div>';
   return h + '</div></div>';
 }
@@ -4723,7 +5158,9 @@ window.__RTS__ = {
   trainAt: function(bid, ut){ return train(bid, ut); },
   debugSpawn: function(faction, type, x, y){ var u = makeUnit(faction, type, x, y); S.units.push(u); recalcSupply(); return u.id; },
   debugSpawnBuilding: function(faction, type, x, y){ var b = makeBuilding(faction, type, x, y); b.constructing = false; b.progress = 1; S.buildings.push(b); recalcSupply(); return b.id; },
-  defs: function(){ return { units: SPECS, buildings: BSPECS, costs: COSTS, reqMain: REQ_MAIN, reqMainBuild: REQ_MAIN_BUILD, reqBuilding: REQ_BUILDING }; },
+  defs: function(){ return { units: SPECS, buildings: BSPECS, costs: COSTS, prodReq: UNIT_PROD, reqMainBuild: REQ_MAIN_BUILD, reqBuilding: REQ_BUILDING }; },
+  upgradeBuilding: function(bid){ return upgradeBuilding(bid); },
+  bldLevel: function(bid){ var b = findById(bid); return b ? typeLevel(b.faction, b.type) : 0; },
   findPath: findPath,
   mapLayout: mapLayout,
   mapDef: function(id){ return MAPS[id]; },
@@ -4741,7 +5178,6 @@ window.__RTS__ = {
   get buildings(){ return S.buildings; },
   get resources(){ return S.nodes; },
   getResources: function(){ return {minerals:S.minerals, gas:S.gas, supplyUsed:S.supplyUsed, supplyCap:S.supplyCap}; },
-  getUpgrades: function(){ return {weapon:S.upgrades.weapon, armor:S.upgrades.armor}; },
   unitDamage: unitDamage,
   fogInfo: function(){
     var v=0, ex=0, i;
@@ -4761,7 +5197,6 @@ window.__RTS__ = {
   addResources: function(n){ S.minerals += n; S.gas += n; updateHUD(); },
   tick: function(dt){ tick(dt||0.1); },
   train: train,
-  research: research,
   setMap: function(id){ setMapChoice(id); return chosenMap; },
   setTeams: function(n){ setTeamsChoice(n); return chosenTeams; },
   setRace: function(r){ setRaceChoice(r); return chosenRace; },
@@ -4770,7 +5205,8 @@ window.__RTS__ = {
   setupInfo: function(){ return { size: chosenSize, type: chosenType, maxRows: maxAiRows(), rows: aiRows.slice(), configured: configuredRows(), openRow: openRow, teams: chosenTeams }; },
   setAiRow: function(i, v){ setAiRowChoice(i, v === undefined ? 'random' : v, false); return aiRows.slice(); },
   tilesetOf: function(id){ return tilesetOf(id); },
-  fx: { count: function(){ return PARTS.length; }, burst: function(x,y){ fxExplosion(x,y,false); return PARTS.length; } },
+  fx: { count: function(){ return PARTS.length; }, burst: function(x,y){ fxExplosion(x,y,false); return PARTS.length; },
+        shake: function(){ return { t: SHAKE.t, mag: SHAKE.mag }; }, corpses: function(){ return CORPSES.length; }, projKinds: function(){ return S.projectiles.map(function(p){ return p.kind || ''; }); } },
   buildAt: buildAt,
   orderMove: orderMove,
   orderAttackMove: orderAttackMove,
