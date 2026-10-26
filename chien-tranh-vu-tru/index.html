@@ -810,6 +810,66 @@ html,body{width:100%;height:100%;height:100dvh;overflow:hidden;background:#000;c
 /* — LỚP PHỦ TẠM DỪNG (v6.1): chứa lối về màn hình chính thay nút MENU cũ — */
 #pauseOverlay .card{text-align:center}
 #pauseOverlay .card button{display:block;width:100%;margin-top:10px}
+/* ===== V6.3 — CONSOLE BẬC THANG (mẫu SC2 người dùng gửi lại 16:26; lệnh 16:27: ô giữa
+   "thu thấp nhất có thể để tạo không gian cho map") =====
+   Hai khối BÊN (minimap · lưới lệnh) giữ NGUYÊN chiều cao hàng 100px + khung chạm khắc riêng,
+   vai vát góc như mẫu. Ô GIỮA (thẻ chọn) hạ xuống 54px — mức thấp nhất còn giữ được:
+   nút nâng cấp cao 30px (>= 28), tên+cấp+máu trên MỘT dòng, dòng sản xuất/hàng đợi MỘT dòng,
+   chọn nhóm vẫn 2 tầng (tab 13px + thẻ nén). Hàng console thành LỚP PHỦ trong suốt trên canvas
+   phủ toàn khung: dải map giữa hai khối bên (cao hơn ô giữa 46px) hiện ra + chạm xuyên qua được
+   (console pointer-events:none, từng khối auto). Camera/minimap vẫn tính theo vùng BẢO ĐẢM
+   (phía trên hai khối bên) — xem visPx()/gViewH() ở JS. */
+:root{--consoleMidH:54px}
+#console{position:absolute;left:0;right:0;bottom:0;height:var(--consoleH);padding:1px 6px;gap:6px;
+  background:transparent;border-top:none;box-shadow:none;clip-path:none;pointer-events:none;z-index:20}
+#mmBlock{pointer-events:auto;border-top:2px solid var(--acc, rgba(45,212,191,.55));
+  clip-path:polygon(12px 0,100% 0,100% 100%,0 100%,0 12px)}
+#cmdWrap{pointer-events:auto;background:linear-gradient(165deg,#2d3647,#10141c 60%,#1c232f);
+  border:1px solid #5a6677;border-top:2px solid var(--acc, rgba(45,212,191,.55));border-radius:4px;
+  box-shadow:inset 0 1px 0 rgba(180,205,240,.2),inset 0 -8px 14px rgba(0,0,0,.5);
+  clip-path:polygon(0 0,calc(100% - 12px) 0,100% 12px,100% 100%,0 100%)}
+#infoCol{pointer-events:auto;align-self:flex-end;height:var(--consoleMidH);padding:1px 6px;gap:1px;
+  background:linear-gradient(180deg,#2d3647,#10141c 60%,#1c232f);border:1px solid #5a6677;border-bottom:none;
+  border-top:2px solid var(--acc, rgba(45,212,191,.55));border-radius:5px 5px 0 0;
+  box-shadow:inset 0 1px 0 rgba(180,205,240,.2),inset 0 -8px 14px rgba(0,0,0,.5)}
+/* — tầng tab + dòng đợt địch nén theo ô giữa — */
+#selRow{height:13px}
+#selRow #statBar{font-size:9.5px}
+.selTotal{font-size:9.5px}
+.typeTab{height:13px}
+.typeTab img{width:11px;height:11px}
+/* — panel giữa: khung mỏng lại, chân dung 32px — */
+#infoPanel{border-width:1px;padding:1px 4px;gap:5px;background:rgba(5,7,12,.78)}
+#infoPanel .portraitBox{width:32px;height:32px;align-self:center}
+#infoPanel .infoName{font-size:10.5px;line-height:1.2}
+#infoPanel .infoSub{font-size:9.5px}
+#infoPanel .infoHint{font-size:9.5px;line-height:1.3}
+/* — cột chân dung thành HÀNG NGANG: hình 32 + nút nâng 30px ngay bên phải (DOM giữ nguyên
+   thứ tự hình -> nút; chỉ đổi hướng hiển thị để ô giữa đạt 54px) — */
+.portCol{flex-direction:row;width:auto;align-items:center;gap:4px;align-self:center}
+.portCol .portraitBox{flex:none;width:32px;height:32px;align-self:auto}
+.upgBtn{width:57px;height:30px;padding:1px;justify-content:center}
+.upgBtn .upgTop{font-size:8.5px}
+.upgBtn .upgCost{font-size:8px}
+/* — thẻ nhà nén 2 DÒNG: dòng 1 = tên+cấp | thanh máu | khiên; dòng 2 = hộp sản xuất 1 hàng — */
+#infoPanel .infoMain.bCard{justify-content:center;gap:2px;padding:0}
+.bTop{flex-direction:row;align-items:center;gap:7px}
+.bTop .infoName{flex:none;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bTop .infoLine2{flex:1;gap:6px}
+.bTop .infoLine2 .infoSub{flex:1}
+.prodBox{flex-direction:row;align-items:center;gap:6px;padding:1px 5px;margin-top:0}
+.prodTxt{flex:1;min-width:0;font-size:9.5px}
+.prodBox .queueRow{flex:none;gap:2px}
+.qSlot{width:15px;height:15px}
+/* — thẻ loại (chọn nhóm) nén: hình 22px, chữ 9.5px — */
+.typeCard.big{padding:1px 4px;gap:4px}
+.typeCard.big img.tcImg{width:22px;height:22px}
+.typeCard.big .tcName{font-size:9.5px}
+.typeCard.big .cnt{font-size:9.5px}
+.typeCard.big .hpMini{height:3px}
+/* — phần tử neo đáy khung nhìn phải tránh hai khối bên cao 100px (canvas nay phủ toàn khung) — */
+#cmdCost{bottom:calc(var(--consoleH) + 8px)}
+#btnCancelPlace{bottom:calc(var(--consoleH) + 46px)}
 </style>
 </head>
 <body>
@@ -2086,7 +2146,7 @@ function addMarker(x, y, kind){ MARKERS.push({x:x, y:y, t:0, kind:kind}); if(MAR
    căn cứ ở góc bản đồ cũng đưa được vào giữa màn, zoom ở mép không còn "cấn". */
 var CAM_MARGIN_FRAC = 0.4;
 function clampCam(){
-  var vw = viewW(), vh = viewH(), mx = vw * CAM_MARGIN_FRAC, my = vh * CAM_MARGIN_FRAC;
+  var vw = viewW(), vh = gViewH(), mx = vw * CAM_MARGIN_FRAC, my = vh * CAM_MARGIN_FRAC;
   var hiX = WORLD_W - vw + mx, hiY = WORLD_H - vh + my;
   cam.x = hiX < -mx ? (WORLD_W - vw)/2 : clamp(cam.x, -mx, hiX);
   cam.y = hiY < -my ? (WORLD_H - vh)/2 : clamp(cam.y, -my, hiY);
@@ -2106,7 +2166,7 @@ function frameHome(){
   var x0=1e9, y0=1e9, x1=-1e9, y1=-1e9;
   pts.forEach(function(p){ x0=Math.min(x0,p[0]); y0=Math.min(y0,p[1]); x1=Math.max(x1,p[0]); y1=Math.max(y1,p[1]); });
   var pad = 70, bw = (x1-x0) + pad*2, bh = (y1-y0) + pad*2;
-  var vw = cssW(), vh = cssH();
+  var vw = cssW(), vh = visPx(); /* v6.3: đóng khung theo vùng BẢO ĐẢM — trọn căn cứ phải thấy rõ phía trên hai khối bên */
   cam.z = clamp(Math.min(vw/Math.max(1,bw), vh/Math.max(1,bh)), Z_MIN, 1);
   cam.x = (x0+x1)/2 - (vw/cam.z)/2;
   cam.y = (y0+y1)/2 - (vh/cam.z)/2;
@@ -2866,7 +2926,7 @@ function pickShotVar(type){
   lastShotVar[type] = v; return v;
 }
 function camVol(x, y, base){ /* âm lượng giảm nhẹ theo khoảng cách tới tâm khung nhìn: trận gần nghe rõ, trận xa nghe nhỏ */
-  var cx = cam.x + viewW()/2, cy = cam.y + viewH()/2;
+  var cx = cam.x + viewW()/2, cy = cam.y + gViewH()/2; /* v6.3: tâm nghe = tâm vùng BẢO ĐẢM */
   return base * clamp(1.12 - Math.hypot(x-cx, y-cy)/950, 0.35, 1);
 }
 function playWeaponShot(type, x, y, baseVol){
@@ -3675,6 +3735,14 @@ function cssW(){ return cvW || canvas.clientWidth || 960; }
 function cssH(){ return cvH || canvas.clientHeight || 620; }
 function viewW(){ return cssW() / cam.z; }
 function viewH(){ return cssH() / cam.z; }
+/* V6.3 CONSOLE BẬC THANG: canvas phủ TOÀN khung (cssH = cả khung), nhưng vùng map BẢO ĐẢM
+   nhìn thấy ở MỌI cột chỉ cao tới phía trên hai khối bên (cao CON_SIDE_H = hàng console 100px).
+   Kẹp camera / khung minimap / ghim tâm / đóng khung căn cứ dùng chiều cao BẢO ĐẢM (visPx,
+   gViewH) — quân không bao giờ BẮT BUỘC phải núp sau khối bên hơn trước đây. Dải map phía
+   trên ô giữa hạ thấp là phần NHÌN THÊM: vẽ + culling + chạm dùng canvas đầy đủ (viewW/viewH). */
+var CON_SIDE_H = 100;
+function visPx(){ return Math.max(60, cssH() - CON_SIDE_H); }
+function gViewH(){ return visPx() / cam.z; }
 /* ===== KHUNG NGANG + XOAY 90° =====
    Thiết kế luôn là khung NGANG. Viewport dọc -> khung được đặt kích thước hoán đổi (w=vh, h=vw)
    và xoay +90° quanh tâm bằng CSS: đáy khung (console) áp vào mép TRÁI màn hình, góc phải-trên
@@ -3709,19 +3777,22 @@ function clientToCanvas(cx, cy){
 }
 function resize(){
   layoutStage();
+  var csEl = document.getElementById('console');
+  if(csEl && csEl.offsetHeight) CON_SIDE_H = csEl.offsetHeight; /* v6.3: đo chiều cao hai khối bên từ DOM thật */
   var view = document.getElementById('view');
   var w = (view && view.clientWidth) || window.innerWidth || 960, h = (view && view.clientHeight) || 500;
   DPR = dprEffective();
-  /* giữ nguyên tâm khung nhìn khi xoay máy giữa trận (không nhảy hình, không mất chọn) — tính theo PIXEL CSS */
+  /* giữ nguyên tâm khung nhìn khi xoay máy giữa trận (không nhảy hình, không mất chọn) — tính theo PIXEL CSS;
+     tâm được giữ theo vùng BẢO ĐẢM (visPx) để hình không trôi sau khi đổi hình bậc thang */
   var had = cvW>0 && cvH>0;
-  var cx = had ? cam.x + (cvW/cam.z)/2 : 0, cy = had ? cam.y + (cvH/cam.z)/2 : 0;
+  var cx = had ? cam.x + (cvW/cam.z)/2 : 0, cy = had ? cam.y + (visPx()/cam.z)/2 : 0;
   if(w>0){ cvW = w; canvas.width = Math.round(w * DPR); }
   if(h>0){ cvH = h; canvas.height = Math.round(h * DPR); }
   try{ ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = 'high'; }catch(e){}
   var mw = mmCanvas.clientWidth || 0, mh = mmCanvas.clientHeight || 0;
   if(mw>0 && mh>0){ mmCanvas.width = Math.round(mw * DPR); mmCanvas.height = Math.round(mh * DPR); }
   try{ mmCtx.imageSmoothingEnabled = true; mmCtx.imageSmoothingQuality = 'high'; }catch(e){}
-  if(had){ cam.x = cx - (cvW/cam.z)/2; cam.y = cy - (cvH/cam.z)/2; }
+  if(had){ cam.x = cx - (cvW/cam.z)/2; cam.y = cy - (visPx()/cam.z)/2; }
   clampCam();
 }
 /* Layout tự chữa: mọi nguồn đổi kích thước (resize cửa sổ, xoay máy, thanh trình duyệt hiện/ẩn làm
@@ -4652,7 +4723,7 @@ function drawMinimap(){
     mmCtx.fillRect(a*FOG_CELL*sx, b*FOG_CELL*sy, FOG_CELL*sx+1, FOG_CELL*sy+1);
   }
   mmCtx.strokeStyle = teamColor('player'); mmCtx.lineWidth = 2; /* khung nhìn = màu phe người chơi (FIX K) */
-  mmCtx.strokeRect(cam.x*sx, cam.y*sy, viewW()*sx, viewH()*sy);
+  mmCtx.strokeRect(cam.x*sx, cam.y*sy, viewW()*sx, gViewH()*sy); /* v6.3: khung minimap = vùng BẢO ĐẢM (không tính dải cộng thêm ở giữa) */
   /* ping đỏ tại điểm căn cứ bị đánh: 3 vòng chớp trong ~2,4s (kiểu StarCraft) */
   if(mmPing){
     var age = (performance.now() - mmPing.t0)/1000;
@@ -4826,7 +4897,7 @@ function mmGo(ev){
   var p = toStage(rawX, rawY), off = elStageOffset(mmCanvas);
   var cx = p.x - off.x, cy = p.y - off.y;
   cam.x = cx/(mmCanvas.clientWidth||1)*WORLD_W - viewW()/2;
-  cam.y = cy/(mmCanvas.clientHeight||1)*WORLD_H - viewH()/2;
+  cam.y = cy/(mmCanvas.clientHeight||1)*WORLD_H - gViewH()/2; /* v6.3: ghim tâm theo vùng BẢO ĐẢM */
   clampCam();
 }
 mmCanvas.addEventListener('mousedown', function(ev){ mmDrag=true; mmGo(ev); });
@@ -4921,9 +4992,9 @@ function loop(ts){
     /* ATTRACT (FIX J): chưa vào trận thì camera trôi chậm qua thế giới sau màn bắt đầu (~50% tối + vignette bằng CSS) */
     if(S && !S.started && !S.over){
       cam.x += 15 * dt * attractDirX; cam.y += 8 * dt * attractDirY; clampCam();
-      var amx = 0.4 * viewW(), amy = 0.4 * viewH();
+      var amx = 0.4 * viewW(), amy = 0.4 * gViewH();
       if(cam.x <= -amx + 2) attractDirX = 1; else if(cam.x >= WORLD_W - viewW() + amx - 2) attractDirX = -1;
-      if(cam.y <= -amy + 2) attractDirY = 1; else if(cam.y >= WORLD_H - viewH() + amy - 2) attractDirY = -1;
+      if(cam.y <= -amy + 2) attractDirY = 1; else if(cam.y >= WORLD_H - gViewH() + amy - 2) attractDirY = -1;
     }
     /* PERF GUARD: thời gian tick+render trung bình trượt ~60 khung; nếu > 26ms trong 3 cửa sổ
        liên tiếp (nặng THẬT, không phải giật thoáng qua) thì hạ DPR từng nấc 3 -> 2 -> 1.5.
