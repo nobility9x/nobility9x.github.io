@@ -64,9 +64,7 @@ html,body{width:100%;height:100%;height:100dvh;overflow:hidden;background:#000;c
 /* ===== KHUNG NHÌN BẢN ĐỒ ===== */
 #view{position:relative;flex:1;min-height:0;min-width:0;background:#05060a}
 #game{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none;cursor:crosshair}
-#zoomBtns{position:absolute;bottom:8px;right:8px;display:flex;flex-direction:column;gap:6px;z-index:6}
-#zoomBtns button{width:36px;height:36px;background:rgba(10,14,22,.85);border:2px solid #454e61;color:#fff;border-radius:8px;font-size:19px;font-weight:900;cursor:pointer;line-height:1;opacity:.75}
-#msg{position:absolute;top:8px;left:8px;background:rgba(5,7,12,.88);border:2px solid #b45309;color:#fde68a;border-radius:8px;padding:4px 10px;font-weight:700;font-size:12px;display:none;z-index:6;max-width:62%}
+#msg{position:absolute;top:30px;left:8px;background:rgba(5,7,12,.88);border:2px solid #b45309;color:#fde68a;border-radius:8px;padding:4px 10px;font-weight:700;font-size:12px;display:none;z-index:6;max-width:62%}
 /* Dòng giá lệnh: dải mảnh nổi ở đáy-trái khung nhìn bản đồ */
 #cmdCost{position:absolute;left:8px;bottom:8px;z-index:7;display:flex;align-items:center;gap:12px;min-height:18px;background:rgba(5,7,12,.88);border:1px solid #39404f;border-radius:5px;padding:2px 8px;font-size:11.5px;font-weight:700;color:#cfe3f5;overflow:hidden;white-space:nowrap;pointer-events:none}
 #cmdCost:empty{display:none}
@@ -716,32 +714,29 @@ html,body{width:100%;height:100%;height:100dvh;overflow:hidden;background:#000;c
 #startCard #btnBackSplash{background:linear-gradient(180deg,#364a66,#1e2c42);box-shadow:inset 0 1px 0 rgba(205,230,255,.32);color:#dbe9f7}
 
 /* ===== V5.3 CONSOLE V3 — ĐÚNG DẠNG MẪU SC2 NGƯỜI DÙNG GỬI (102227_6) =====
-   Khối TRÁI: dải tài nguyên (khoáng/khí/dân số/giờ) NGAY TRÊN minimap · minimap to hết chiều cao
-   còn lại · lưới phụ 2x2 cạnh minimap = [chân dung MENU | tiếng] / [tạm dừng | toàn màn hình].
+   Khối TRÁI: minimap to hết chiều cao · cột nút phụ dọc cạnh minimap.
    Khối GIỮA hai tầng như mẫu: hàng TAB LOẠI nhỏ đánh số (sprite + ×N) ở trên · hàng THẺ LỚN ở
    dưới (hình to + TÊN + [×N] + vạch máu), thẻ loại đang chọn to hơn + phát sáng + bóng xếp chồng.
    Khối PHẢI: lưới lệnh 3x3 CÓ CHỮ nhỏ dưới icon (như mẫu), đóng khung vát góc; nút ✕ huỷ đặt nhà
    vẫn là nút tròn 48px riêng trên bản đồ (luật điện thoại thắng mẫu).
-   Chiều cao qua MỘT biến --consoleH (mặc định 100px — bản 88px chỉ để chụp duyệt so sánh). */
+   Chiều cao qua MỘT biến --consoleH (mặc định 100px — bản 88px chỉ để chụp duyệt so sánh).
+   ===== V6.1 (lệnh người dùng từ ảnh chơi thật) =====
+   (1) Nút NÂNG CẤP NHÀ rời lưới lệnh -> nằm DƯỚI hình nhà trong thẻ chọn (.portCol/.upgBtn).
+   (2) BỎ nút nhà MENU: 3 nút phụ (tạm dừng · toàn màn hình · tiếng) xếp CỘT DỌC; lối về màn
+       hình chính nằm trong lớp phủ TẠM DỪNG (#pauseOverlay).
+   (3) Tài nguyên (khoáng/khí/dân số) + giờ rời console -> THANH ĐỈNH khung game (#topBar):
+       khoáng+khí một đầu, dân số đầu kia, giờ ở giữa — hết bị tay cầm máy che.
+   (4) BỎ hẳn nút +/− zoom nổi trên bản đồ — zoom bằng pinch/wheel là đủ. */
 :root{--consoleH:100px}
 #console{height:var(--consoleH);padding:1px 6px;gap:6px}
 /* — KHỐI TRÁI — */
-#mmBlock{flex:none;width:176px;display:flex;flex-direction:column;gap:2px;padding:3px;
+#mmBlock{flex:none;width:144px;display:flex;flex-direction:column;gap:2px;padding:3px;
   background:linear-gradient(165deg,#2d3647,#10141c 60%,#1c232f);border:1px solid #5a6677;border-radius:4px;
   box-shadow:inset 0 1px 0 rgba(180,205,240,.2),inset 0 -8px 14px rgba(0,0,0,.5);position:relative}
-#resStrip{flex:none;height:15px;display:flex;align-items:center;gap:6px;padding:0 1px}
-#resStrip #resCluster{position:static;margin:0;display:flex;flex-direction:row;gap:9px;z-index:auto}
-#resStrip #resCluster .res{min-height:0;background:transparent;border:none;border-radius:0;padding:0;gap:3px;font-size:12px;font-weight:800}
-#resStrip #resCluster .res svg{width:12px;height:12px}
-#resClock{margin-left:auto;font-size:12px;font-weight:800;color:#7dd7ff;white-space:nowrap}
-#resClock::before{content:'◷ ';color:#9fb4cc;font-weight:400}
 #mmRow{flex:1;min-height:0;display:flex;gap:4px}
 #mmWrap{flex:none;width:90px;height:auto;align-self:stretch;padding:2px}
-#utilGrid{flex:1;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:3px}
-#utilGrid #menuBtn{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;background:#171c26;border:1px solid #454e61;border-radius:4px;cursor:pointer;padding:1px}
-#utilGrid #menuBtn img{width:20px;height:20px;object-fit:contain;border:1px solid var(--acc, #2dd4bf);border-radius:3px;background:#0a0f16}
-#utilGrid .menuLbl{font-size:7.5px;font-weight:900;letter-spacing:1px;color:#e8c15a;line-height:1}
-#console #utilGrid .iconBtn{width:auto;height:auto;min-width:0;min-height:0;background:#171c26;border:1px solid #454e61;border-radius:4px;display:flex;align-items:center;justify-content:center}
+#utilGrid{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px}
+#console #utilGrid .iconBtn{width:38px;flex:1 1 0;min-height:28px;max-height:36px;background:#171c26;border:1px solid #454e61;border-radius:4px;display:flex;align-items:center;justify-content:center}
 #console #utilGrid .iconBtn svg{width:17px;height:17px}
 /* — KHỐI GIỮA — */
 #infoCol{padding:2px 7px;gap:2px}
@@ -784,6 +779,27 @@ html,body{width:100%;height:100%;height:100dvh;overflow:hidden;background:#000;c
 .cmdBtn img{max-width:88%;max-height:52%}
 .cmdBtn .clbl{font-size:8.5px;margin-top:1px}
 .cmdBtn .lvl{font-size:8.5px;top:0;right:2px}
+/* — THANH ĐỈNH KHUNG GAME (v6.1): tài nguyên + giờ nằm trên mép trên của khung, tách hai đầu — */
+#topBar{position:absolute;top:0;left:0;right:0;height:24px;z-index:15;pointer-events:none}
+#topBar #resCluster{position:absolute;left:8px;right:8px;top:4px;display:flex;flex-direction:row;align-items:center;gap:7px;margin:0;z-index:auto}
+#topBar #resCluster .res{min-height:0;font-size:12.5px;font-weight:800;padding:2px 7px;gap:4px;background:rgba(5,7,12,.82);border:1px solid rgba(70,85,110,.55);border-radius:5px;justify-content:flex-start}
+#topBar #resCluster .res svg{width:13px;height:13px}
+#topBar #resCluster .res.sup{margin-left:auto}
+#topBar #resClock{position:absolute;left:50%;top:4px;transform:translateX(-50%);margin:0;font-size:12.5px;font-weight:800;color:#7dd7ff;white-space:nowrap;background:rgba(5,7,12,.82);border:1px solid rgba(70,85,110,.55);border-radius:5px;padding:2px 8px}
+#topBar #resClock::before{content:'◷ ';color:#9fb4cc;font-weight:400}
+/* — CỘT CHÂN DUNG + NÚT NÂNG CẤP (v6.1): nút nâng nằm ngay DƯỚI hình nhà đang chọn — */
+.portCol{flex:none;width:54px;display:flex;flex-direction:column;gap:2px;align-self:stretch}
+.portCol .portraitBox{flex:1;min-height:0;width:54px;align-self:auto}
+.upgBtn{position:relative;flex:none;width:54px;padding:2px 1px 3px;display:flex;flex-direction:column;align-items:center;gap:0;background:linear-gradient(180deg,#3d5a2a,#22331a);border:1px solid #7ba24d;border-radius:4px;cursor:pointer;color:#eaf6d8;overflow:hidden}
+.upgBtn .upgTop{font-size:9px;font-weight:900;line-height:1.2;white-space:nowrap}
+.upgBtn .upgCost{font-size:8.5px;font-weight:800;color:#ffd76a;line-height:1.2;white-space:nowrap}
+.upgBtn:disabled{background:#1a2029;border-color:#3c465a;color:#7d8aa0;cursor:default}
+.upgBtn:disabled .upgCost{color:#7d8aa0}
+.upgBtn .upgProg{position:absolute;left:0;bottom:0;height:3px;background:#22d3ee}
+.upgCap{flex:none;font-size:7px;line-height:1.1;color:#9fb4cc;text-align:center}
+/* — LỚP PHỦ TẠM DỪNG (v6.1): chứa lối về màn hình chính thay nút MENU cũ — */
+#pauseOverlay .card{text-align:center}
+#pauseOverlay .card button{display:block;width:100%;margin-top:10px}
 </style>
 </head>
 <body>
@@ -791,28 +807,26 @@ html,body{width:100%;height:100%;height:100dvh;overflow:hidden;background:#000;c
 <div id="stage">
 <div id="view">
     <canvas id="game"></canvas>
-    <div id="zoomBtns"><button id="btnZoomIn" type="button" aria-label="Phóng to">+</button><button id="btnZoomOut" type="button" aria-label="Thu nhỏ">−</button></div>
+    <div id="topBar">
+      <div id="resCluster">
+        <div class="res min" data-res="min"></div>
+        <div class="res gas" data-res="gas"></div>
+        <div class="res sup" data-res="sup"></div>
+      </div>
+      <div id="resClock"><span id="resTime">00:00</span></div>
+    </div>
     <div id="msg"></div>
     <div id="cmdCost"></div>
     <button id="btnCancelPlace" class="hidden" type="button" aria-label="Hủy đặt nhà">✕</button>
 </div>
 <div id="console">
     <div id="mmBlock">
-      <div id="resStrip">
-        <div id="resCluster">
-          <div class="res min" data-res="min"></div>
-          <div class="res gas" data-res="gas"></div>
-          <div class="res sup" data-res="sup"></div>
-        </div>
-        <div id="resClock"><span id="resTime">00:00</span></div>
-      </div>
       <div id="mmRow">
         <div id="mmWrap"><canvas id="minimap" width="208" height="160"></canvas></div>
         <div id="utilGrid">
-          <div class="mbLeft" id="menuBtn" title="Menu / Tạm dừng"><img id="menuPortrait" src="assets/sprites/command.png" alt=""><div class="menuLbl">MENU</div></div>
-          <button class="iconBtn" id="btnMute" type="button" aria-label="Bật / tắt tiếng"></button>
           <button class="iconBtn" id="btnPause" type="button" aria-label="Tạm dừng"></button>
           <button class="iconBtn" id="btnFs" type="button" aria-label="Toàn màn hình"></button>
+          <button class="iconBtn" id="btnMute" type="button" aria-label="Bật / tắt tiếng"></button>
         </div>
       </div>
     </div>
@@ -955,6 +969,13 @@ html,body{width:100%;height:100%;height:100dvh;overflow:hidden;background:#000;c
         <div id="dictBody"></div>
       </div>
     </div>
+  </div>
+</div>
+<div class="overlay hidden" id="pauseOverlay">
+  <div class="card">
+    <h2>TẠM DỪNG</h2>
+    <button id="btnResume" type="button">▶ TIẾP TỤC</button>
+    <button id="btnToMenu" type="button">🏠 VỀ MÀN HÌNH CHÍNH</button>
   </div>
 </div>
 <div class="overlay hidden" id="endOverlay">
@@ -2089,12 +2110,12 @@ function resetGame(){
   /* Tông màu console theo tộc (chỉ đổi accent, bố cục giữ nguyên) */
   var accCol = S.playerRace==='zerg' ? '#e0653a' : (S.playerRace==='protoss' ? '#e8c15a' : '#2dd4bf');
   var stgEl = document.getElementById('stage'); if(stgEl) stgEl.style.setProperty('--acc', accCol);
-  var mpEl = document.getElementById('menuPortrait'); if(mpEl) mpEl.src = sprImg(prace.main==='cc' ? 'command' : prace.main);
   frameHome();
   placing = null; pendingOrder = null; cmdPage = 'main'; panelSig = '';
   var ccEl = document.getElementById('cmdCost'); if(ccEl) ccEl.innerHTML = ''; /* tránh sót dòng giá của ván trước */
   recalcSupply(); buildElevation(); buildMmElev(); updateFog(); buildTerrain();
   document.getElementById('endOverlay').classList.add('hidden');
+  var poEl = document.getElementById('pauseOverlay'); if(poEl) poEl.classList.add('hidden');
   /* KHÔNG tự hiện màn setup ở đây: luồng vào game là splash -> (Offline) -> setup -> startGame;
      resetGame chỉ làm mới thế giới (chọn tộc/bản đồ từ setup, hoặc Chơi Lại từ màn kết thúc). */
   updateStartPickUI();
@@ -2296,7 +2317,7 @@ function train(buildingId, unitType){
   if(!!MAIN_TYPES[b.type] && S.mainUpgrade && S.mainUpgrade.bid === b.id){ failMsg('Nhà Chính này đang nâng cấp — không luyện quân được!'); return false; }
   if(S.bldUp[b.type]){ failMsg(BSPECS[b.type].name + ' đang nâng cấp lên Lv' + S.bldUp[b.type].to + ' — tạm dừng sản xuất!'); return false; }
   var prod = UNIT_PROD[unitType];
-  if(prod && typeLevel(b.faction, b.type) < prod.lv){ failMsg('Cần ' + BSPECS[b.type].name + ' Lv' + prod.lv + ' mới sản xuất được ' + SPECS[unitType].name + ' — nâng cấp nhà ở lưới lệnh!'); return false; }
+  if(prod && typeLevel(b.faction, b.type) < prod.lv){ failMsg('Cần ' + BSPECS[b.type].name + ' Lv' + prod.lv + ' mới sản xuất được ' + SPECS[unitType].name + ' — bấm nút ⬆ dưới hình nhà để nâng cấp!'); return false; }
   var req = REQ_BUILDING[unitType];
   if(req && !hasBuilt(req)){ failMsg('Cần ' + BSPECS[req].name + ' trước mới sản xuất được ' + SPECS[unitType].name + '!'); return false; }
   var c = COSTS[unitType]; if(!canAfford(c)){ failMsg('Không đủ tài nguyên để luyện ' + SPECS[unitType].name); return false; }
@@ -2603,6 +2624,7 @@ function endGame(result){
   Music.stop();
   if(S.over) return;
   S.over = true; S.result = result;
+  var poEnd = document.getElementById('pauseOverlay'); if(poEnd) poEnd.classList.add('hidden');
   document.getElementById('endTitle').textContent = result==='win' ? 'THẮNG! Mọi căn cứ địch đã bị phá hủy' : 'THUA! Nhà chính của bạn đã mất';
   document.getElementById('endTitle').style.color = result==='win' ? '#4ade80' : '#f87171';
   document.getElementById('endStats').textContent =
@@ -3173,6 +3195,48 @@ function portraitHTML(spr){
   if(imgReady(im)) return '<div class="portraitBox"><img src="' + sprImg(spr) + '" alt=""></div>';
   return '<div class="portraitBox">' + IC.crystal + '</div>';
 }
+/* v6.1: nút NÂNG CẤP nằm ngay DƯỚI hình nhà trong thẻ chọn (đã rời khỏi lưới lệnh).
+   Trả '' khi nhà không nâng được (không phải nhà chính/nhà sản xuất, đang xây).
+   Cùng luật khoá với lưới lệnh cũ: nhà chính nâng RIÊNG, nhà sản xuất nâng CHUNG cả loại. */
+function upgBtnHTML(b){
+  if(!b || b.constructing) return '';
+  var inner = '', dis = '', reason = '', kind = '', cap = '';
+  if(!!MAIN_TYPES[b.type]){
+    kind = 'upmain'; cap = 'Nâng RIÊNG nhà này';
+    var mlv = b.mainLv || 1;
+    if(S.mainUpgrade && S.mainUpgrade.bid === b.id){
+      var p1 = Math.round(S.mainUpgrade.t / S.mainUpgrade.total * 100);
+      inner = '<span class="upgTop">Đang nâng</span><span class="upgCost">' + p1 + '%</span><span class="upgProg" style="width:' + p1 + '%"></span>';
+      dis = ' disabled'; reason = 'Đang nâng cấp nhà này';
+    } else if(S.mainUpgrade){
+      inner = '<span class="upgTop">⬆ Lv' + (mlv+1) + '</span><span class="upgCost">Đang bận</span>';
+      dis = ' disabled'; reason = 'Một Nhà Chính khác đang nâng cấp';
+    } else if(mlv >= 3){
+      inner = '<span class="upgTop">MAX Lv3</span>'; dis = ' disabled'; reason = 'Nhà Chính này đã tối đa Lv3';
+    } else {
+      var uc = MAIN_UP_COSTS[mlv]; if(!uc) return '';
+      inner = '<span class="upgTop">⬆ Lv' + (mlv+1) + '</span><span class="upgCost">' + uc.m + '◆' + (uc.g ? ' ' + uc.g + '●' : '') + '</span>';
+      if(!canAfford(uc)){ dis = ' disabled'; reason = 'Không đủ tài nguyên để nâng cấp'; }
+    }
+  } else if(TRAIN_FROM[b.type]){
+    kind = 'upbld'; cap = 'Nâng CHUNG loại nhà này';
+    var tlv = typeLevel('player', b.type);
+    if(S.bldUp && S.bldUp[b.type]){
+      var p2 = Math.round(S.bldUp[b.type].t / S.bldUp[b.type].total * 100);
+      inner = '<span class="upgTop">Đang nâng</span><span class="upgCost">' + p2 + '%</span><span class="upgProg" style="width:' + p2 + '%"></span>';
+      dis = ' disabled'; reason = 'Đang nâng cấp loại nhà này';
+    } else if(tlv >= 3){
+      inner = '<span class="upgTop">MAX Lv3</span>'; dis = ' disabled'; reason = BSPECS[b.type].name + ' đã tối đa Lv3';
+    } else {
+      var uc3 = bldUpCost(b.type, tlv); if(!uc3) return '';
+      inner = '<span class="upgTop">⬆ Lv' + (tlv+1) + '</span><span class="upgCost">' + uc3.m + '◆' + (uc3.g ? ' ' + uc3.g + '●' : '') + '</span>';
+      if(!isPowered(b)){ dis = ' disabled'; reason = 'Nhà đang mất điện'; }
+      else if(!canAfford(uc3)){ dis = ' disabled'; reason = 'Không đủ tài nguyên để nâng cấp'; }
+    }
+  } else return '';
+  return '<button class="upgBtn" type="button" data-kind="' + kind + '"' + dis + (reason ? ' data-reason="' + reason + '" title="' + reason + '"' : '') + '>' + inner + '</button>' +
+    '<div class="upgCap">' + cap + '</div>';
+}
 /* Lưới lệnh: trả về mảng lệnh của trang hiện tại (tối đa 6 lệnh — lưới hiển thị 4x2 từ v5-E) {icon|img, action, unit|b|kind, cost, disabled, lvl, active} */
 function currentCommands(){
   var cells = [], sel = selectedUnits(), b = S.selectedBuildingId ? findById(S.selectedBuildingId) : null;
@@ -3193,17 +3257,8 @@ function currentCommands(){
       else if(!canAfford(COSTS[ut])) rsn = 'Không đủ tài nguyên';
       cells.push({ img:SPECS[ut].spr, action:'train', unit:ut, cost:COSTS[ut], disabled: !!rsn, reason: rsn });
     });
-    if(!!MAIN_TYPES[b.type]){ /* Nhà Chính: nâng RIÊNG nhà đang chọn */
-      var mlv = b.mainLv || 1;
-      if(S.mainUpgrade) cells.push({ icon:'lvl', action:'upmain', disabled:true, reason:'Đang nâng cấp lên Lv' + S.mainUpgrade.to + '…', lvl:'…' });
-      else if(mlv >= 3) cells.push({ icon:'lvl', action:'upmain', disabled:true, reason:'Nhà Chính này đã tối đa Lv3', lvl:'MAX' });
-      else { var uc2 = MAIN_UP_COSTS[mlv]; cells.push({ icon:'lvl', action:'upmain', cost:uc2, disabled: !canAfford(uc2), reason: !canAfford(uc2) ? 'Không đủ tài nguyên để nâng cấp' : '', lvl:'Lv' + (mlv+1) }); }
-    } else if(TRAIN_FROM[b.type]){ /* FIX v6 — NÂNG CẤP NHÀ SẢN XUẤT: nâng CHUNG cả loại, rẻ hơn xây mới, thêm ô chứa */
-      var tlv = typeLevel('player', b.type);
-      if(S.bldUp && S.bldUp[b.type]) cells.push({ icon:'lvl', action:'upbld', disabled:true, reason:'Đang nâng mọi ' + BSPECS[b.type].name + ' lên Lv' + S.bldUp[b.type].to + '…', lvl:'…', prog: S.bldUp[b.type].t / S.bldUp[b.type].total });
-      else if(tlv >= 3) cells.push({ icon:'lvl', action:'upbld', disabled:true, reason: BSPECS[b.type].name + ' đã tối đa Lv3', lvl:'MAX' });
-      else { var uc3 = bldUpCost(b.type, tlv); cells.push({ icon:'lvl', action:'upbld', cost:uc3, disabled: !isPowered(b) || !canAfford(uc3), reason: !isPowered(b) ? 'Nhà đang mất điện' : (!canAfford(uc3) ? 'Không đủ tài nguyên để nâng cấp' : ''), lvl:'Lv' + (tlv+1) }); }
-    }
+    /* v6.1: NÚT NÂNG CẤP KHÔNG còn nằm trong lưới lệnh — đã chuyển xuống dưới hình nhà
+       trong thẻ chọn (xem upgBtnHTML). Lưới chỉ còn lệnh luyện quân; các ô trống đệm sau. */
     return cells;
   }
   if(sel.length){
@@ -3240,8 +3295,6 @@ function cmdCaption(c){
   if(!c) return '';
   if(c.action==='train') return CMD_CAP_U[c.unit] || '';
   if(c.action==='build') return CMD_CAP_B[c.b] || '';
-  if(c.action==='upbld') return 'Nâng Nhà';
-  if(c.action==='upmain') return 'Lên Cấp';
   if(c.action==='cancelPlace') return 'Hủy';
   if(c.action==='stop') return 'Dừng';
   if(c.action==='page') return c.page==='build' ? 'Xây' : 'Lệnh';
@@ -3267,7 +3320,8 @@ function renderPanel(force){
       '<div class="infoSub">Kéo-thả hoặc chạm lên bản đồ để đặt nhà: khung XANH = đặt được, ĐỎ = không (có ghi lý do). Nút ✕ đỏ (góc dưới-trái bản đồ) để hủy.' + (GAS_TYPES[placing.type] ? ' ' + BSPECS[placing.type].name + ' chỉ đặt được trên mạch khí — các mạch khí đang được khoanh sáng.' : '') + (S.playerRace==='zerg' && placing.type!=='hatchery' && !GAS_TYPES[placing.type] ? ' Nhà Zerg chỉ xây được trên thảm nhầy quanh Tổ Quái.' : '') + (S.playerRace==='protoss' && placing.type!=='pylon' && !GAS_TYPES[placing.type] ? ' Nhà Protoss phải nằm trong vùng năng lượng của Pylon.' : '') + '</div></div>';
   } else if(b && b.faction==='player'){
     /* v5-E: panel nhà nén còn 2 dòng — tên+máu, rồi MỘT dòng gộp: thanh máu · các dòng phụ nối bằng ' · ' (ưu tiên việc đang diễn ra) · ô hàng đợi */
-    var h = portraitHTML(BSPECS[b.type].spr) + '<div class="infoMain">' +
+    /* v6.1: cột trái = hình nhà + nút NÂNG CẤP ngay bên dưới hình (upgBtnHTML; nhà không nâng được thì cột chỉ có hình) */
+    var h = '<div class="portCol">' + portraitHTML(BSPECS[b.type].spr) + upgBtnHTML(b) + '</div><div class="infoMain">' +
       '<div class="infoName">' + BSPECS[b.type].name + (!!MAIN_TYPES[b.type] ? ' Lv' + (b.mainLv||1) : (TRAIN_FROM[b.type] ? ' Lv' + typeLevel('player', b.type) : '')) + ' <span class="hpNums">' + Math.ceil(b.hp) + ' / ' + b.maxHp + '</span></div>';
     var subs = [];
     if(b.constructing) subs.push('Đang xây: ' + Math.round(b.progress*100) + '%');
@@ -3333,19 +3387,18 @@ function renderPanel(force){
   }
   /* --- lưới lệnh 3×3 trong khối đóng khung riêng (v5.3: ĐÚNG DẠNG MẪU SC2 — icon + CHỮ NGẮN
      dưới icon; nhuộm tông theo loại lệnh như v5.1: tấn công / sản xuất quân chiến đấu = ẤM, xây /
-     nghiên cứu / nâng nhà chính / chuyển trang = LẠNH, dừng / huỷ = trung tính. Giá vẫn KHÔNG in
+     xây dựng / chuyển trang = LẠNH, dừng / huỷ = trung tính (v6.1: nâng cấp không còn ở lưới). Giá vẫn KHÔNG in
      lên nút (v4.1) — hiện ở dòng cmdCost khi chạm; lý do khoá cũng vậy) --- */
   var cmds = currentCommands(), gh = '';
   for(var i=0;i<9;i++){
     var c = cmds[i];
     if(!c){ gh += '<button class="cmdBtn" disabled aria-hidden="true"></button>'; continue; }
     var prog = -1;
-    if(b && c.action==='upbld' && typeof c.prog === 'number') prog = c.prog;
     if(b && c.action==='train' && b.queue && b.queue.length && b.queue[0].type===c.unit) prog = b.queue[0].t/b.queue[0].total;
     var tint = 'tNeu';
     if(c.action==='order' && c.mode==='attack') tint = 'tAtk';
     else if(c.action==='train') tint = isWorkerType(c.unit) ? 'tCool' : 'tAtk';
-    else if(c.action==='build' || c.action==='upbld' || c.action==='upmain' || c.action==='page') tint = 'tCool';
+    else if(c.action==='build' || c.action==='page') tint = 'tCool';
     var cap = cmdCaption(c);
     gh += '<button class="cmdBtn ' + tint + (c.active ? ' active' : '') + '" data-i="' + i + '"' + (c.disabled ? ' disabled' : '') + '>' +
       (c.img ? '<img src="' + sprImg(c.img) + '" alt="">' : IC[c.icon]) +
@@ -3355,14 +3408,6 @@ function renderPanel(force){
   }
   grid.innerHTML = gh;
   grid._cmds = cmds;
-  /* --- khối portrait / MENU (cột dọc) --- */
-  var mp = document.getElementById('menuPortrait');
-  if(mp){
-    var msrc = sprImg('command');
-    if(b) msrc = sprImg(BSPECS[b.type].spr);
-    else if(sel.length) msrc = sprImg(SPECS[sel[0].type].spr);
-    if(mp.getAttribute('src') !== msrc) mp.src = msrc;
-  }
   /* nút ✕ hủy đặt nhà: chỉ hiện đúng khi đang ở chế độ đặt */
   var cbp = document.getElementById('btnCancelPlace');
   if(cbp) cbp.classList.toggle('hidden', !placing);
@@ -3383,6 +3428,16 @@ document.getElementById('selTabs').addEventListener('click', function(ev){
   var ctype = tab.getAttribute('data-type'); if(ctype) narrowToType(ctype);
 });
 document.getElementById('infoPanel').addEventListener('click', function(ev){
+  /* v6.1: nút NÂNG CẤP dưới hình nhà — bấm là nâng ngay (upgradeBuilding tự rẽ nhánh:
+     nhà chính -> nâng RIÊNG nhà đó; nhà sản xuất -> nâng CHUNG cả loại) */
+  var ub = ev.target.closest ? ev.target.closest('.upgBtn') : null;
+  if(ub){
+    if(ub.disabled){ var rsn = ub.getAttribute('data-reason'); if(rsn) setCostLine('<span style="color:#fda4af">' + rsn + '</span>'); return; }
+    var bb = S.selectedBuildingId ? findById(S.selectedBuildingId) : null;
+    if(bb) upgradeBuilding(bb.id);
+    renderPanel(true);
+    return;
+  }
   var cell = ev.target.closest ? ev.target.closest('.selCell') : null; if(!cell) return;
   /* v5.1: thẻ loại quân — chạm = thu hẹp vùng chọn xuống đúng loại đó (giữ nguyên các quân đang chọn thuộc loại) */
   var ctype = cell.getAttribute('data-type');
@@ -3398,11 +3453,6 @@ document.getElementById('infoPanel').addEventListener('click', function(ev){
   S.selectedIds = [uid]; S.selectedBuildingId = 0; pendingOrder = null;
   Snd.play('select', 0.6, 90); renderPanel(true);
 });
-document.getElementById('menuBtn').addEventListener('click', function(){
-  if(!S || !S.started || S.over) return;
-  togglePause();
-  showMsg(S.paused ? 'Đã tạm dừng — bấm MENU để chơi tiếp' : 'Tiếp tục trận đấu');
-});
 document.getElementById('cmdGrid').addEventListener('click', function(ev){
   if(performance.now() < suppressCmdClickUntil) return; /* click "ma" ngay sau khi thả kéo — bỏ qua */
   var btn = ev.target.closest ? ev.target.closest('button') : null; if(!btn) return;
@@ -3413,8 +3463,6 @@ document.getElementById('cmdGrid').addEventListener('click', function(ev){
   if(c.cost) setCostLine(costHTML(c.cost));
   if(c.action==='cancelPlace'){ placing = null; showMsg('Đã hủy đặt nhà'); }
   else if(c.action==='train'){ var b = findById(S.selectedBuildingId); if(b) train(b.id, c.unit); }
-  else if(c.action==='upbld'){ var b2 = findById(S.selectedBuildingId); if(b2) upgradeBuilding(b2.id); }
-  else if(c.action==='upmain'){ var b3 = findById(S.selectedBuildingId); startMainUpgrade(b3 ? b3.id : 0); }
   else if(c.action==='stop'){ selectedUnits().forEach(function(u){ setOrder(u,{type:'idle',x:u.x,y:u.y,targetId:0,nodeId:0,phase:'',harvestT:0}); }); pendingOrder = null; }
   else if(c.action==='order'){ pendingOrder = (pendingOrder===c.mode) ? null : c.mode; if(pendingOrder) showMsg(pendingOrder==='attack' ? 'Chạm vào đích để tấn công' : pendingOrder==='harvest' ? 'Chạm vào mỏ khoáng / mạch khí' : 'Chạm vào điểm đến'); }
   else if(c.action==='page'){ cmdPage = c.page; }
@@ -4653,6 +4701,9 @@ function togglePause(){
   if(!S.started || S.over) return;
   S.paused = !S.paused;
   setPauseIcon();
+  /* v6.1: lớp phủ tạm dừng chứa lối TIẾP TỤC + VỀ MÀN HÌNH CHÍNH (thay nút MENU cũ đã bỏ) */
+  var po = document.getElementById('pauseOverlay');
+  if(po) po.classList.toggle('hidden', !S.paused);
 }
 function setMuteIcon(){
   document.getElementById('btnMute').innerHTML = Snd.state().muted ? IC.sndOff : IC.sndOn;
@@ -4660,8 +4711,18 @@ function setMuteIcon(){
 document.getElementById('btnPause').addEventListener('click', function(){ Snd.play('ui_click', 0.6, 60); togglePause(); });
 document.getElementById('btnFs').addEventListener('click', function(){ Snd.play('ui_click', 0.6, 60); toggleFullscreen(); });
 document.getElementById('btnMute').addEventListener('click', function(){ Snd.toggleMute(); setMuteIcon(); if(!Snd.state().muted) Snd.play('ui_click', 0.6, 0); });
-document.getElementById('btnZoomIn').addEventListener('click', function(){ setZoom(cam.z*1.25); });
-document.getElementById('btnZoomOut').addEventListener('click', function(){ setZoom(cam.z/1.25); });
+/* v6.1: nút +/− zoom nổi trên bản đồ ĐÃ BỎ HẲN — zoom bằng pinch (cảm ứng) / wheel (chuột) / phím +/− */
+document.getElementById('btnResume').addEventListener('click', function(){ Snd.play('ui_click', 0.6, 60); togglePause(); });
+document.getElementById('btnToMenu').addEventListener('click', function(){
+  Snd.play('ui_click', 0.7, 40);
+  Music.stop();
+  resetGame(); /* S.started=false, paused=false — thế giới làm mới, chờ ở màn hình chính */
+  document.getElementById('pauseOverlay').classList.add('hidden');
+  document.getElementById('endOverlay').classList.add('hidden');
+  var sp2 = document.getElementById('splashOverlay'); if(sp2) sp2.classList.add('hidden');
+  document.getElementById('startOverlay').classList.remove('hidden');
+  setPauseIcon();
+});
 document.getElementById('btnStart').addEventListener('click', startGame);
 /* SPLASH (FIX J-revised): màn 1 = key-art 3 tộc + 2 lựa chọn. Online = placeholder "Sắp mở" theo lệnh anh. */
 (function(){
