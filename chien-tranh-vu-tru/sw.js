@@ -2,7 +2,7 @@
    Chiến lược: HTML = network-first (bản đăng mới luôn tới được người đã cài),
    tài nguyên tĩnh (sprite/tiếng/icon/manifest) = cache-first.
    Đổi BUILD_ID mỗi lần phát hành để dọn cache cũ. */
-const BUILD_ID = 'ctvt-v11-2';
+const BUILD_ID = 'ctvt-v12-1';
 const CACHE = BUILD_ID;
 
 const CORE = [
@@ -25,7 +25,9 @@ const SPRITES = ['worker','marine','firebat','tank','mech','dropship','zergling'
   /* FIX v6: quân bay + quân/nhà mới */
   'robot','heavytank','heli','jet','gunship','bat','wasp','leviathan','scoutbot','artillery','colossus','scoutship','frigate','carrier','airfac','spire','stargate',
   /* v10: thân không súng + lớp vũ khí xoay · v11: sunken_spine (ngòi Sunken — Cường duyệt 2026-10-26 23:09) */
-  'marine_body','marine_rifle','firebat_body','firebat_nozzle_r','firebat_nozzle_l','mech_body','mech_barrel_r','mech_barrel_l','robot_body','robot_barrel','heli_body','heli_chin','heavytank_hull','heavytank_turret','artillery_body','artillery_cannon','turret_base','turret_launcher','sunken_spine'].map(function (n) { return 'assets/sprites/' + n + '.png'; });
+  'marine_body','marine_rifle','firebat_body','firebat_nozzle_r','firebat_nozzle_l','mech_body','mech_barrel_r','mech_barrel_l','robot_body','robot_barrel','heli_body','heli_chin','heavytank_hull','heavytank_turret','artillery_body','artillery_cannon','turret_base','turret_launcher','sunken_spine',
+  /* v12: lớp chi route B (chân/hông) + rotor heli + cánh bat/wasp + dải xích cuộn theo bên */
+  'scoutbot_legsL','scoutbot_legsR','scoutbot_torso','mech_legsL','mech_legsR','mech_torso','mech_bodyNL','robot_legsL','robot_legsR','robot_torso','robot_bodyNL','firebat_legsL','firebat_legsR','firebat_torso','firebat_bodyNL','heli_rotor','heli_nr','heli_body_nr','bat_wingL','bat_wingR','bat_bodyNW','wasp_wingL','wasp_wingR','wasp_bodyNW','heavytank_track','artillery_track'].map(function (n) { return 'assets/sprites/' + n + '.png'; });
 /* v11: âm thanh TỔNG HỢP WebAudio toàn diện — không còn file tiếng nào để precache */
 const SOUNDS = [];
 const PRECACHE = CORE.concat(SPRITES, SOUNDS);

@@ -2571,7 +2571,7 @@ function raceOfFaction(f){ if(!S) return 'terran'; return f==='player' ? (S.play
 function isWorkerType(t){ return !!WORKER_TYPES[t]; }
 var chosenRace = 'terran';
 try{ var savedRace = localStorage.getItem('ctvt_race'); if(savedRace && RACES[savedRace]) chosenRace = savedRace; }catch(e){}
-var HARVEST_AMT = 8, HARVEST_TIME = 2.4;
+var HARVEST_AMT = 8, HARVEST_TIME = 5.2;
 /* hệ số sát thương theo loại đạn x cỡ mục tiêu (bản gốc: concussive 100/50/25, explosive 50/75/100) */
 function dmgMult(dtype, target){
   var sz = target.kind==='building' ? 'large' : (SPECS[target.type] ? SPECS[target.type].size : 'medium');
@@ -2648,7 +2648,7 @@ var IMGP = {};
 var TANK_PIVOT = { x: 0.469, y: 0.414 }; /* tâm tháp trong ô sprite gốc (đo từ tank.png: ~(120,106)/256) */
 /* v10: thân KHÔNG súng + lớp vũ khí xoay quanh pivot (cắt từ tranh GỐC, cùng cỡ canvas) */
 var IMGL = {};
-['marine_body','marine_rifle','firebat_body','firebat_nozzle_r','firebat_nozzle_l','mech_body','mech_barrel_r','mech_barrel_l','robot_body','robot_barrel','heli_body','heli_chin','heavytank_hull','heavytank_turret','artillery_body','artillery_cannon','turret_base','turret_launcher','sunken_spine'].forEach(function(n){
+['marine_body','marine_rifle','firebat_body','firebat_nozzle_r','firebat_nozzle_l','mech_body','mech_barrel_r','mech_barrel_l','robot_body','robot_barrel','heli_body','heli_chin','heavytank_hull','heavytank_turret','artillery_body','artillery_cannon','turret_base','turret_launcher','sunken_spine','scoutbot_legsL','scoutbot_legsR','scoutbot_torso','mech_legsL','mech_legsR','mech_torso','mech_bodyNL','robot_legsL','robot_legsR','robot_torso','robot_bodyNL','firebat_legsL','firebat_legsR','firebat_torso','firebat_bodyNL','heli_rotor','heli_nr','heli_body_nr','bat_wingL','bat_wingR','bat_bodyNW','wasp_wingL','wasp_wingR','wasp_bodyNW','heavytank_track','artillery_track'].forEach(function(n){
   var im = new Image(); im.src = 'assets/sprites/' + n + '.png'; IMGL[n] = im;
 });
 /* v10 HIỆU CHUẨN (step 0, đo trên tranh thật tank_turret.png bằng grounded point + PIL centroid):
@@ -2748,7 +2748,7 @@ var ANIM = {
   marine:   { stride:24, frames:6, bob:1.6, roll:0.035 },
   firebat:  { stride:25, frames:6, bob:1.5, roll:0.035 },
   zealot:   { stride:26, frames:6, bob:1.8, roll:0.040 },
-  zergling: { stride:19, frames:4, bob:1.4, roll:0.045 },
+  zergling: { stride:19, frames:3, bob:1.4, roll:0.045 }, /* V12 §13.5/H1: sheet có frame 3 TRÙNG frame 1 (md5 bằng nhau) -> chu kỳ 4 thực chất [A,B,C,B] khựng mỗi vòng; dùng 3 frame thật, bỏ frame trùng (frame ứng viên AI lệch phong cách — proof-v12/art/README.md) */
   ultralisk:{ stride:40, frames:8, bob:2.6, roll:0.028, dust:1 },
   mech:     { stride:30, frames:6, bob:1.0, roll:0.018, dust:1 },
   dragoon:  { stride:28, frames:6, bob:1.6, roll:0.025 },
@@ -4068,21 +4068,94 @@ function findPath(sx, sy, tx2, ty2){
   return sm;
 }
 /* Lái quân: cùng tầng + đường thẳng không cắt vách thì đi thẳng; khác tầng thì bám điểm đường A* qua DỐC */
+/* V12 §7: ngân sách findPath dùng chung toàn tick (6 lượt) — đếm theo S.time */
+function fpBudgetOk(){
+  if(S._fpTick !== S.time){ S._fpTick = S.time; S._fpCount = 0; }
+  if(S._fpCount >= 6) return false;
+  S._fpCount++;
+  return true;
+}
+/* V12 §5: CHẤP NHẬN SLOT BỊ CHIẾM — chặng cuối trực tiếp (không còn đường vòng): đã vào
+   sát đích (stopDist + 26px) mà bị chặn đứng (tốc < 12) suốt 0,5s thì coi như ĐÃ TỚI.
+   Gốc lỗi: slot trùng (lưới cũ + kẹp cạnh bản đồ) + separation nhẹ không xô nổi quân đang
+   ngồi -> quân đến quay vòng ở ~13px mãi không khớp vòng dừng 8,6px (đo thật ở cửa dốc). */
+function directLeg(u, tx, ty, stopDist, dt){
+  u._wpCap = 1;
+  var arrived = moveToward(u, tx, ty, stopDist, dt);
+  if(arrived){ u._blkT = 0; u._blkD = undefined; return true; }
+  if(stopDist <= 12){
+    var dd = dist(u.x, u.y, tx, ty);
+    if(dd <= stopDist + 26){
+      /* đo TIẾN TRIỂN chứ không đo tốc độ: quân bị slot-trùng/separation ép cân bằng vẫn
+         còn vận tốc ~30px/s (đang "ép tường") nhưng vị trí không nhích — bản cũ chờ vv<12
+         nên không bao giờ khớp (đo thật: kẹt 24s ở 9,2px trước slot) */
+      if(u._blkD === undefined || dd < u._blkD - 1.5){ u._blkD = dd; u._blkT = 0; }
+      else { u._blkT = (u._blkT || 0) + dt; if(u._blkT >= 0.5){ u._blkT = 0; u._blkD = undefined; return true; } }
+    } else { u._blkT = 0; u._blkD = undefined; }
+  }
+  return false;
+}
+/* V12 §5: điểm SỤP ĐOÀN (via) — lệnh nhóm ghi sẵn điểm cửa hẹp đầu tiên trên đường của
+   TÂM ĐOÀN vào lệnh từng quân; steerMove cho quân qua via trước (thành hàng qua cửa)
+   rồi mới tới slot riêng. Quân bay / lệnh không khớp đích của lệnh thì bỏ qua via. */
 function steerMove(u, tx, ty, stopDist, dt){
-  if(SPECS[u.type].flying){ u.path = null; u.pathGoal = ''; return moveToward(u, tx, ty, stopDist, dt); } /* bay: thẳng qua mọi tầng */
+  var o = u.order;
+  if(o && o.viaX != null && o.x === tx && o.y === ty && !SPECS[u.type].flying){
+    if(dist(u.x, u.y, o.viaX, o.viaY) < 24) o.viaX = null;
+    else return steerTo(u, o.viaX, o.viaY, 8, dt);
+  }
+  return steerTo(u, tx, ty, stopDist, dt);
+}
+function steerTo(u, tx, ty, stopDist, dt){
+  if(SPECS[u.type].flying){ u.path = null; u.pathGoal = ''; return directLeg(u, tx, ty, stopDist, dt); } /* bay: thẳng qua mọi tầng */
   var need = levelAt(u.x, u.y) !== levelAt(tx, ty) || segCrossesCliff(u.x, u.y, tx, ty);
-  if(!need){ u.path = null; u.pathGoal = ''; return moveToward(u, tx, ty, stopDist, dt); }
+  if(!need){ u.path = null; u.pathGoal = ''; return directLeg(u, tx, ty, stopDist, dt); }
   var gk = tileX(tx) + ',' + tileY(ty);
-  if(!u.path || u.pathGoal !== gk){ u.path = findPath(u.x, u.y, tx, ty); u.pathGoal = gk; }
-  if(!u.path || !u.path.length){ u.path = null; return moveToward(u, tx, ty, stopDist, dt); }
+  if(!u.path || u.pathGoal !== gk){
+    /* V12 §7: ngân sách findPath 6 lượt/tick — hết lượt thì tick này đi thẳng tạm về đích
+       (không đặt pathGoal để tick sau tính tiếp), tránh cả đoàn cùng tính đường một khung */
+    if(fpBudgetOk()){ u.path = findPath(u.x, u.y, tx, ty); u.pathGoal = gk; }
+    else if(!u.path) return directLeg(u, tx, ty, stopDist, dt);
+  }
+  if(!u.path || !u.path.length){ u.path = null; return directLeg(u, tx, ty, stopDist, dt); }
   var wp = u.path[0];
   if(segCrossesCliff(u.x, u.y, wp.x, wp.y)){
     /* Đã lệch khỏi trục đường A* (bị trượt dọc vách / bị đẩy / ăn waypoint từ xa): đi thẳng tới
        waypoint sẽ CẮT VÁCH và kẹt ở góc — tính lại đường ngay từ vị trí hiện tại. */
-    var rp = findPath(u.x, u.y, tx, ty);
-    if(rp && rp.length){ u.path = rp; wp = u.path[0]; }
+    if(fpBudgetOk()){ var rp = findPath(u.x, u.y, tx, ty); if(rp && rp.length){ u.path = rp; wp = u.path[0]; } }
   }
-  moveToward(u, wp.x, wp.y, 8, dt);
+  /* V12 §7: TRẦN LƯỚT WAYPOINT — hồ sơ hụt tốc của bản cũ tại mỗi waypoint thường
+     (creep sf = clamp((d-8)/48, 0,30, 1)) được giữ lại như một TRẦN tốc độ cruise:
+     dải rush F1 của v9 đã hiệu chuẩn theo đúng hồ sơ này (luật cứng §0.2 — đo lại:
+     bỏ trần là rush nhanh hơn 3,2-4,5s, ra khỏi dải). Điểm TỚI HẠN (dốc/đổi tầng)
+     không áp trần — ở đó luật qua-sát-tâm-ô 12px + pursuit=0 đã giữ nhịp. */
+  var wpDist0 = dist(u.x, u.y, wp.x, wp.y);
+  u._wpCap = wpDist0 < 56 ? clamp((wpDist0 - 8) / 48, 0.30, 1) : 1;
+  /* V12: góc gập tại waypoint này -> hệ số hãm cua cho moveToward (đoạn ra = wp -> điểm kế/đích cuối) */
+  if(u.path && u.path.length){
+    var nxtP = u.path.length > 1 ? u.path[1] : { x: tx, y: ty };
+    var bdA = Math.atan2(nxtP.y - wp.y, nxtP.x - wp.x) - Math.atan2(wp.y - u.y, wp.x - u.x);
+    while(bdA > Math.PI) bdA -= Math.PI * 2; while(bdA < -Math.PI) bdA += Math.PI * 2;
+    u._capF = clamp(1.02 - (Math.abs(bdA) / Math.PI) * 1.05, 0.32, 1);
+  } else u._capF = 1;
+  /* V12 §7: PURE PURSUIT — điểm ngắm nằm TRÊN polyline đường đi, cách quân
+     clamp(speed x 0,35, 18, 46)px: cua được cắt mượt theo hình học thật thay vì
+     ghim từng waypoint. NGOẠI LỆ CỨNG: đoạn tới chạm ô dốc / cắt vách / đổi tầng
+     thì điểm ngắm CHỐT ở waypoint tới hạn đó (lookahead = 0 qua đoạn tới hạn);
+     chặng cuối (tổng đường còn lại < lookahead) ngắm thẳng waypoint cuối. */
+  var aimX = wp.x, aimY = wp.y;
+  {
+    var L = clamp(SPECS[u.type].speed * 0.35, 18, 46), acc = 0, ax = u.x, ay = u.y, done = false;
+    for(var pi = 0; pi < u.path.length && !done; pi++){
+      var bp = u.path[pi];
+      var segCrit = segCrossesCliff(ax, ay, bp.x, bp.y) || isRampAt(bp.x, bp.y) || levelAt(bp.x, bp.y) !== levelAt(ax, ay);
+      var segLen = Math.hypot(bp.x - ax, bp.y - ay);
+      if(segCrit){ aimX = bp.x; aimY = bp.y; done = true; break; }
+      if(acc + segLen >= L){ var fr = segLen > 0 ? (L - acc) / segLen : 0; aimX = ax + (bp.x - ax) * fr; aimY = ay + (bp.y - ay) * fr; done = true; break; }
+      acc += segLen; ax = bp.x; ay = bp.y; aimX = bp.x; aimY = bp.y;
+    }
+  }
+  moveToward(u, aimX, aimY, 8, dt, true); /* V12 §7: waypoint TRUNG GIAN = cruise (không arrive) — hãm chỉ ở đích cuối */
   /* waypoint là ô DỐC hoặc khác tầng với quân: phải tới sát tâm ô (12px) mới được qua điểm —
      ăn điểm từ xa 36px tại góc dốc = cắt mép vách */
   var wpCrit = isRampAt(wp.x, wp.y) || levelAt(wp.x, wp.y) !== levelAt(u.x, u.y);
@@ -4095,7 +4168,7 @@ function steerMove(u, tx, ty, stopDist, dt){
     u._wpT += dt;
     if(u._wpT >= 1){ if(dist(u.x, u.y, u._wpX, u._wpY) < 4) u.path.shift(); u._wpX = u.x; u._wpY = u.y; u._wpT = 0; }
   }
-  if(!u.path.length){ u.path = null; return moveToward(u, tx, ty, stopDist, dt); }
+  if(!u.path.length){ u.path = null; return directLeg(u, tx, ty, stopDist, dt); }
   return dist(u.x, u.y, tx, ty) <= stopDist + 0.6;
 }
 /* Lợi thế cao điểm kiểu StarCraft: bắn từ THẤP lên CAO trượt 25%; từ cao xuống / ngang tầng không bao giờ trượt vì địa hình */
@@ -4481,16 +4554,71 @@ function setOrder(u, o){
       if(!transferred) u.atk = null;
     }
   }
-  u.order = o; u.combatTargetId = 0; u.path = null; u.pathGoal = '';
+  u.order = o; u.combatTargetId = 0; u.path = null; u.pathGoal = ''; u.reactT = 0;
   if(o.type==='move' || o.type==='attackmove' || o.type==='attack') u.postX = null; /* FIX R: neo mới = điểm đến */ }
+/* V12 §5: ĐIỂM ĐẾN NHÓM = ĐỘI HÌNH TƯƠNG ĐỐI (thay lưới cứng 3 cột của bản cũ):
+   - slot = điểm bấm + (vị trí quân - tâm đoàn) x hệ số nén (đoàn tản rộng thì nén về,
+     sàn nén 0,45; lệch tối đa giữ nguyên khi đoàn đã gọn <= 52px).
+   - GÁN THAM LAM quân<->slot theo khoảng cách gần nhất trước: không còn cảnh hai quân
+     lao cắt mặt nhau tới slot của nhau; slot TRÙNG nhau là không thể (mỗi quân một lệch riêng).
+   - VIA: đường của TÂM ĐOÀN tới điểm bấm có điểm cửa hẹp đầu tiên (ô dốc / đổi tầng /
+     đoạn cắt vách) -> cả đoàn qua đó trước (xem steerMove). */
+function assignGroupOrders(list, x, y, type){
+  var n = list.length, cx = 0, cy = 0, i, j;
+  list.forEach(function(u){ cx += u.x; cy += u.y; });
+  cx /= n; cy /= n;
+  var maxOff = 0;
+  list.forEach(function(u){ var d = Math.hypot(u.x - cx, u.y - cy); if(d > maxOff) maxOff = d; });
+  var scale = maxOff > 52 ? Math.max(0.45, 52 / maxOff) : 1;
+  var slots = list.map(function(u){
+    return { x: clamp(x + (u.x - cx) * scale, 20, WORLD_W - 20), y: clamp(y + (u.y - cy) * scale, 20, WORLD_H - 20), taken: false };
+  });
+  var viaX = null, viaY = null;
+  if(n >= 2){
+    var cp = findPath(cx, cy, x, y);
+    if(cp && cp.length > 1){
+      var cl = levelAt(cx, cy), px = cx, py = cy;
+      for(i = 0; i < cp.length - 1; i++){
+        var p = cp[i];
+        if(isRampAt(p.x, p.y) || levelAt(p.x, p.y) !== cl || segCrossesCliff(px, py, p.x, p.y)){
+          if(Math.hypot(p.x - cx, p.y - cy) > 60 && Math.hypot(p.x - x, p.y - y) > 60){ viaX = p.x; viaY = p.y; }
+          break;
+        }
+        px = p.x; py = p.y;
+      }
+    }
+  }
+  /* khử CHỒNG slot: kẹp cạnh bản đồ + nén có thể ép hai slot sát nhau hơn một thân quân
+     (đo thật: 4 cặp slot trùng khít ở mép trên) — nới cặp < 26px ra xa nhau theo trục cặp,
+     vài vòng thư giãn rồi kẹp lại biên */
+  for(var rp2 = 0; rp2 < 4; rp2++) for(i = 0; i < slots.length; i++) for(j = i + 1; j < slots.length; j++){
+    var sdx = slots[j].x - slots[i].x, sdy = slots[j].y - slots[i].y, sd = Math.hypot(sdx, sdy);
+    if(sd < 26){
+      if(sd < 0.01){ sdx = (j - i) * 0.7 + 0.3; sdy = 1; sd = Math.hypot(sdx, sdy); }
+      var push = (26 - sd) / 2 + 0.5, ux2 = sdx / sd, uy2 = sdy / sd;
+      slots[i].x -= ux2 * push; slots[i].y -= uy2 * push;
+      slots[j].x += ux2 * push; slots[j].y += uy2 * push;
+    }
+  }
+  slots.forEach(function(s){ s.x = clamp(s.x, 20, WORLD_W - 20); s.y = clamp(s.y, 20, WORLD_H - 20); });
+  var free = list.slice();
+  while(free.length){
+    var bi = -1, bj = -1, bd = Infinity;
+    for(i = 0; i < free.length; i++) for(j = 0; j < slots.length; j++){
+      if(slots[j].taken) continue;
+      var dd = Math.hypot(free[i].x - slots[j].x, free[i].y - slots[j].y);
+      if(dd < bd){ bd = dd; bi = i; bj = j; }
+    }
+    var u2 = free.splice(bi, 1)[0]; slots[bj].taken = true;
+    setOrder(u2, {type:type, x:slots[bj].x, y:slots[bj].y, targetId:0, nodeId:0, phase:'', harvestT:0, viaX:viaX, viaY:viaY});
+    u2.reactT = (mvOf(u2).Ta >= 0.3 ? 0.16 : 0.10) * hash01(u2.id * 13 + 5); /* V12 §3.5 */
+  }
+}
 function orderMove(ids, x, y, f){
   if(NET.role==='guest' && NET.phase==='match' && !f){ NET.sendIntent({a:'move', ids:ids.slice(), x:x, y:y}); if(ids.length){ Snd.play('move', 0.7, 300); addMarker(x, y, 'move'); } return ids.length>0; }
   f = f || 'player';
   var list = S.units.filter(function(u){ return ids.indexOf(u.id)>=0 && u.faction===f; });
-  list.forEach(function(u,i){
-    var ox = (i%3-1)*30, oy = (((i/3)|0)-1)*30;
-    setOrder(u, {type:'move', x:clamp(x+ox,20,WORLD_W-20), y:clamp(y+oy,20,WORLD_H-20), targetId:0, nodeId:0, phase:'', harvestT:0});
-  });
+  assignGroupOrders(list, x, y, 'move');
   if(list.length && f==='player'){ Snd.play('move', 0.7, 300); addMarker(x, y, 'move'); }
   return list.length>0;
 }
@@ -4498,10 +4626,7 @@ function orderAttackMove(ids, x, y, f){
   if(NET.role==='guest' && NET.phase==='match' && !f){ NET.sendIntent({a:'attackmove', ids:ids.slice(), x:x, y:y}); if(ids.length){ Snd.play('attack', 0.7, 300); addMarker(x, y, 'attack'); } return ids.length>0; }
   f = f || 'player';
   var list = S.units.filter(function(u){ return ids.indexOf(u.id)>=0 && u.faction===f; });
-  list.forEach(function(u,i){
-    var ox = (i%3-1)*30, oy = (((i/3)|0)-1)*30;
-    setOrder(u, {type:'attackmove', x:clamp(x+ox,20,WORLD_W-20), y:clamp(y+oy,20,WORLD_H-20), targetId:0, nodeId:0, phase:'', harvestT:0});
-  });
+  assignGroupOrders(list, x, y, 'attackmove');
   if(list.length && f==='player'){ Snd.play('attack', 0.7, 300); addMarker(x, y, 'attack'); }
   return list.length>0;
 }
@@ -5011,28 +5136,101 @@ function endGame(result){
 function fmtTime(sec){ var m=(sec/60)|0, s=(sec|0)%60; return (m<10?'0':'')+m+':'+(s<10?'0':'')+s; }
 
 /* ============ DI CHUYỂN & GIAO CHIẾN ============ */
-function moveToward(u, tx, ty, stopDist, dt){
-  var sp = SPECS[u.type];
-  var dx = tx-u.x, dy = ty-u.y, d = Math.sqrt(dx*dx + dy*dy);
-  if(d > 1 && Math.abs(dx) > 2) u.face = dx > 0 ? 1 : -1;
+/* ================= V12 — MÔ HÌNH LÁI MỚI (movement-spec §3) =================
+   13 lớp chuyển động: mỗi lớp có T_a (0->hết tốc), T_b (hết tốc->0), tốc độ rẽ hướng thân,
+   ma sát ngang (latDamp), bán kính hãm arrive (arrR) và trần trôi quá đích khi settle (over). */
+var MVCLASS = {
+  worker:'BP', marine:'BP', firebat:'BP', scoutbot:'BP',
+  mech:'MECH', robot:'MECH',
+  tank:'TRACK', heavytank:'TRACK', artillery:'TRACK',
+  zergling:'SWARM', hydralisk:'SERP', ultralisk:'BEHEMOTH', drone:'HOVZ',
+  zealot:'PWALK', dragoon:'PWALK', colossus:'COLOSSUS',
+  probe:'HOVP', archon:'HOVP',
+  heli:'AIRL', bat:'AIRL', scoutship:'AIRL', wasp:'AIRL',
+  jet:'AIRH', frigate:'AIRH', gunship:'AIRH', carrier:'AIRH', leviathan:'AIRH',
+  overlord:'AIRSLOW'
+};
+var MV = {
+  BP:      { Ta:0.16, Tb:0.13, turn:14,  lat:10, arrR:44,  over:2 },
+  MECH:    { Ta:0.30, Tb:0.26, turn:7,   lat:8,  arrR:64,  over:5 },
+  TRACK:   { Ta:0.38, Tb:0.34, turn:5.5, lat:14, arrR:70,  over:5 },
+  SWARM:   { Ta:0.10, Tb:0.09, turn:16,  lat:5,  arrR:54,  over:2 },
+  SERP:    { Ta:0.20, Tb:0.17, turn:9,   lat:7,  arrR:60,  over:3 },
+  BEHEMOTH:{ Ta:0.45, Tb:0.42, turn:4.5, lat:12, arrR:84,  over:5 },
+  HOVZ:    { Ta:0.22, Tb:0.20, turn:10,  lat:6,  arrR:60,  over:4 },
+  PWALK:   { Ta:0.18, Tb:0.15, turn:12,  lat:9,  arrR:64,  over:3 },
+  COLOSSUS:{ Ta:0.42, Tb:0.40, turn:4,   lat:12, arrR:84,  over:5 },
+  HOVP:    { Ta:0.22, Tb:0.20, turn:10,  lat:6,  arrR:60,  over:4 },
+  AIRL:    { Ta:0.28, Tb:0.30, turn:6.5, lat:4,  arrR:90,  over:8, bankMax:0.30, bankK:0.55 },
+  AIRH:    { Ta:0.50, Tb:0.55, turn:3.2, lat:3,  arrR:130, over:8, bankMax:0.20, bankK:0.50 },
+  AIRSLOW: { Ta:0.80, Tb:0.85, turn:1.6, lat:2,  arrR:110, over:8, bankMax:0.08, bankK:0.50 }
+};
+function mvOf(u){ return MV[MVCLASS[u.type] || 'BP']; }
+function hash01(n){ var x = Math.sin(n * 127.1 + 311.7) * 43758.5453; return x - Math.floor(x); }
+/* biến thiên cá thể (§8.8): chỉ quá độ — TUYỆT ĐỐI không jitter speed (hằng số cân bằng + thước F1) */
+function accOf(u){ return SPECS[u.type].speed / mvOf(u).Ta * (0.94 + 0.12 * hash01(u.id * 3 + 1)); }
+function brkOf(u){ return SPECS[u.type].speed / mvOf(u).Tb; }
+function turnOf(u){ return mvOf(u).turn * (0.92 + 0.16 * hash01(u.id * 7 + 2)); }
+function moveToward(u, tx, ty, stopDist, dt, cruise){
+  var sp = SPECS[u.type], mv = mvOf(u);
   if(u.vx === undefined){ u.vx = 0; u.vy = 0; }
+  if(u.hdg === undefined || u.hdg === null) u.hdg = (u.face < 0 ? Math.PI : 0);
   u._mvT = S.time;
-  /* vận tốc mong muốn: hướng tới đích, ARRIVE = hãm tốc tuyến tính trong 48px cuối trước vòng dừng */
-  var dvx = 0, dvy = 0;
-  if(d > stopDist + 0.6){
-    var sf = (d - stopDist < 48) ? clamp((d - stopDist)/48, 0.3, 1) : 1;
-    dvx = dx/d * sp.speed * sf; dvy = dy/d * sp.speed * sf;
+  var dx = tx - u.x, dy = ty - u.y, d = Math.sqrt(dx*dx + dy*dy);
+  var ox = u.x, oy = u.y, dHdg = 0, arrived = false;
+  if(cruise || d > stopDist + 0.6){
+    /* --- tầng HƯỚNG: hdg rẽ có tốc độ về phía đích (flingy SC1).
+       XOAY TẠI CHỖ ĐƯỢC TIẾP TỐC: khi vf thấp, tốc độ rẽ nhân thêm tới ~1,9× (quân nhẹ) —
+       thân nhỏ xoay trục nhanh lúc đứng/chậm như SC2; quân nặng (Ta lớn) được ít hơn. --- */
+    if(d > 1){
+      var want = Math.atan2(dy, dx);
+      var err = angErr(want, u.hdg);
+      var vf0 = u.vx * Math.cos(u.hdg) + u.vy * Math.sin(u.hdg);
+      var pivK = 1 + 0.9 * (1 - clamp(Math.abs(vf0) / Math.max(1, sp.speed), 0, 1)) * clamp(0.22 / mv.Ta, 0.3, 1); /* max(1,speed): quân bị ghim speed=0 mà chia thẳng là NaN độc cả vị trí */
+      var nh = turnToward(u.hdg, want, turnOf(u) * pivK * dt);
+      dHdg = angErr(nh, u.hdg); u.hdg = nh;
+      if(Math.abs(err) > 2.4) u._alignK = 0.35; else if(Math.abs(err) > 1.2) u._alignK = 0.65; else u._alignK = 1;
+    }
+    var hx = Math.cos(u.hdg), hy = Math.sin(u.hdg), lx = -hy, ly = hx;
+    var vf = u.vx * hx + u.vy * hy, vl = u.vx * lx + u.vy * ly;
+    /* --- tầng TỐC ĐỘ: arrive S-curve hướng về 0 tại vòng dừng, NHƯNG có sàn vào vòng 18%:
+       S-curve thuần làm des->0 khi rem->0 = quân tiệm cận mãi không vào nổi vòng (đo thật:
+       thợ kẹt ở 30,8px khi vòng dừng là 30,6). Vào vòng ở 18% rồi SETTLE phanh nốt. --- */
+    var des = sp.speed;
+    if(!cruise){
+      var rem = d - stopDist;
+      if(rem < mv.arrR){ var tt = clamp(rem / mv.arrR, 0, 1); des = sp.speed * (0.30 + 0.70 * (tt * tt * (3 - 2 * tt))); }
+      des *= (u._alignK || 1);
+    } else if(u._wpCap !== undefined && u._wpCap < 1){
+      des = Math.min(des, sp.speed * u._wpCap); /* V12 §7: trần lướt waypoint (xem steerTo) */
+    }
+    if(cruise && u._capF !== undefined && u._capF < 1){
+      /* cruise qua waypoint GẬP: hãm theo góc gập của đường (bù đúng phần creep-waypoint mà
+         dải rush F1 của v9 đã hiệu chuẩn theo — luật cứng §0.2; cua thẳng thì không hãm) */
+      var bk2 = Math.max(48, sp.speed * 0.5);
+      if(d < bk2) des = Math.min(des, sp.speed * (u._capF + (1 - u._capF) * (d / bk2))); /* min: không được xoá trần _wpCap ở trên */
+    }
+    if(vf < des) vf = Math.min(des, vf + accOf(u) * dt); else vf = Math.max(des, vf - brkOf(u) * dt);
+    vl *= Math.max(0, 1 - mv.lat * dt); /* trượt ngang tiêu theo ma sát lớp — xích gần như không trượt */
+    u.vx = hx * vf + lx * vl; u.vy = hy * vf + ly * vl;
+    u._vfNow = vf;
+    if(cruise) arrived = d <= stopDist + 0.6;
+    u._settleT = 0;
+  } else {
+    /* --- SETTLE: trong vòng dừng — phanh bằng brk của lớp, nhích chỉnh về đúng đích, chốt cứng sau 0,45s --- */
+    var dvx2 = 0, dvy2 = 0;
+    if(d > 2.5){ var cr = Math.min(sp.speed * 0.25, d * 3); dvx2 = dx / d * cr; dvy2 = dy / d * cr; }
+    var mx2 = dvx2 - u.vx, my2 = dvy2 - u.vy, ml2 = Math.sqrt(mx2*mx2 + my2*my2), cap2 = brkOf(u) * dt;
+    if(ml2 > cap2 && ml2 > 0){ mx2 = mx2/ml2*cap2; my2 = my2/ml2*cap2; }
+    u.vx += mx2; u.vy += my2;
+    u._vfNow = 0;
+    var spd2 = Math.sqrt(u.vx*u.vx + u.vy*u.vy);
+    u._settleT = (u._settleT || 0) + dt;
+    if(spd2 < 14 || u._settleT > 0.45){ if(u._settleT > 0.45 && spd2 >= 14){ u.vx *= 0.25; u.vy *= 0.25; } arrived = true; }
   }
-  /* STEERING: vận tốc thật đuổi theo vận tốc mong muốn với GIA TỐC giới hạn —
-     tăng tốc mượt từ 0, rẽ cong theo quán tính thay vì bẻ góc tức thì (lớp flingy kiểu SC1) */
-  var heavy = sp.size==='large' || u.type==='tank' || u.type==='mech';
-  var acc = sp.speed * (heavy ? 5 : 7.5), cap = acc * Math.max(dt, 0.001);
-  var mx = dvx - u.vx, my = dvy - u.vy, ml = Math.sqrt(mx*mx + my*my);
-  if(ml > cap && ml > 0){ mx = mx/ml*cap; my = my/ml*cap; }
-  u.vx += mx; u.vy += my;
-  var ox = u.x, oy = u.y;
-  var nx = u.x + u.vx*dt, ny = u.y + u.vy*dt;
-  /* VÁCH ĐỨNG: bước sang ô khác tầng mà không qua DỐC thì bị chặn (trượt theo trục còn lại nếu được) */
+  u._omg = dt > 0 ? dHdg / dt : 0;
+  /* --- tích phân vị trí QUA CỔNG VÁCH như cũ (tilesWalkable là thẩm quyền cuối — luật cứng §0.1) --- */
+  var nx = u.x + u.vx * dt, ny = u.y + u.vy * dt;
   if(elevGrid && !sp.flying){
     var otx = tileX(u.x), oty = tileY(u.y);
     if(!tilesWalkable(otx, oty, tileX(nx), tileY(ny))){
@@ -5041,14 +5239,26 @@ function moveToward(u, tx, ty, stopDist, dt){
       else { nx = u.x; ny = u.y; u.vx = 0; u.vy = 0; }
     }
   }
-  u.x = clamp(nx,16,WORLD_W-16); u.y = clamp(ny,16,WORLD_H-16);
-  var moved = dist(ox, oy, u.x, u.y);
-  u.animDist = (u.animDist||0) + moved;           /* pha hoạt hình chạy theo QUÃNG ĐƯỜNG — không theo đồng hồ */
+  u.x = clamp(nx, 16, WORLD_W - 16); u.y = clamp(ny, 16, WORLD_H - 16);
+  var movedX = u.x - ox, movedY = u.y - oy, moved = Math.sqrt(movedX*movedX + movedY*movedY);
+  u.animDist = (u.animDist || 0) + moved;
+  /* --- PHA CHI HỢP NHẤT (§13.3.1): tiến theo quãng đường DỌC hdg / (2 × stride).
+     Hai đồng hồ chân + hai vệt xích nhận thêm thành phần VI SAI khi rẽ: bên ngoài đi dài hơn,
+     bên trong đi ngắn/lùi — rẽ tại chỗ thành BƯỚC RẼ, không xoay hình (§13.3.3). --- */
+  var stride = (ANIM[u.type] && ANIM[u.type].stride) || 24;
+  var hxA = Math.cos(u.hdg), hyA = Math.sin(u.hdg);
+  var dAlong = movedX * hxA + movedY * hyA;
+  var rLeg = sp.draw * 0.30;
+  u.gaitPhase = (u.gaitPhase || 0) + dAlong / (2 * stride);
+  u.gaitL = (u.gaitL || 0) + (dAlong + dHdg * rLeg) / (2 * stride);
+  u.gaitR = (u.gaitR || 0) + (dAlong - dHdg * rLeg) / (2 * stride);
+  u.trkP = (u.trkP || 0) + (dAlong - dHdg * rLeg);   /* vệt xích phía +l (l = trục ngang thân) */
+  u.trkM = (u.trkM || 0) + (dAlong + dHdg * rLeg);   /* vệt xích phía −l */
   if(moved > 0.05) u.lastMoveAt = S.time;
-  return dist(u.x,u.y,tx,ty) <= stopDist + 0.6;
+  /* mặt thân: lật theo hdg với TRỄ (chỉ lật khi cos đổi dấu rõ + đang thật sự tiến ngang) */
+  if(Math.abs(u.vx) > 6 && Math.abs(Math.cos(u.hdg)) > 0.2){ var nf = u.vx > 0 ? 1 : -1; if(nf !== u.face) u.face = nf; }
+  return arrived;
 }
-/* FIX v6 — LUẬT KHÔNG CHIẾN: quân bay chỉ bị đánh bởi quân CÓ ĐẠN BAY (trừ loại groundOnly như
-   Lính Phun Lửa) + tháp phòng thủ (trừ Ổ Sunken chuyên mặt đất) + chính quân bay. Cận chiến không với tới. */
 function canHitAir(ent){
   if(ent.kind === 'building') return ent.type !== 'sunken';
   var sp = SPECS[ent.type];
@@ -5385,10 +5595,12 @@ function tickUnit(u, dt){
     var ne = nearestEnemyEntity(u, sp.sight);
     if(ne){ u.combatTargetId = ne.id; engageTarget(u, ne, dt); return; }
     if(u.combatTargetId){ var ct = findById(u.combatTargetId); if(ct){ engageTarget(u, ct, dt); return; } u.combatTargetId = 0; }
+    if(u.reactT > 0){ u.reactT -= dt; return; } /* V12 §3.5: trễ phản ứng khởi hành — đứng chờ hết nhịp mới đi (đánh nhau không chờ) */
     if(steerMove(u, o.x, o.y, 8, dt)) setOrder(u,{type:'idle',x:u.x,y:u.y,targetId:0,nodeId:0,phase:'', harvestT:0});
     return;
   }
   if(o.type==='move'){ /* lệnh di chuyển thuần: KHÔNG rẽ vào đánh — lệnh người chơi thắng (FIX R) */
+    if(u.reactT > 0){ u.reactT -= dt; return; } /* V12 §3.5: trễ phản ứng khởi hành — đứng chờ hết nhịp mới đi (đánh nhau không chờ) */
     if(steerMove(u, o.x, o.y, 8, dt)) setOrder(u,{type:'idle',x:u.x,y:u.y,targetId:0,nodeId:0,phase:'', harvestT:0});
     return;
   }
@@ -5583,19 +5795,102 @@ function sepStep(e, nx, ny){
   if(tilesWalkable(ax, ay, tileX(nx), ay)){ e.x = nx; return; }
   if(tilesWalkable(ax, ay, ax, tileY(ny))){ e.y = ny; return; }
 }
-function tickSeparation(){
-  var us = S.units, i, j;
-  for(i=0;i<us.length;i++) for(j=i+1;j<us.length;j++){
-    var a=us[i], b=us[j], d=dist(a.x,a.y,b.x,b.y);
-    /* cặp đang giao chiến TRỰC TIẾP với nhau thì KHÔNG tách: bán kính tách theo cỡ (tới 29-46px)
-       có thể lớn hơn tầm cận chiến (26-27px) — tách cả cặp đang đánh sẽ làm quân cận chiến
-       không bao giờ vào được tầm ra đòn (đo thực tế: zealot bị giữ ở 29,4px > tầm 27px, Q2 TTK fail) */
-    if(a.combatTargetId===b.id || b.combatTargetId===a.id) continue;
-    if(!!SPECS[a.type].flying !== !!SPECS[b.type].flying) continue; /* FIX v6: quân bay lơ lửng TRÊN quân đất — không chen đẩy nhau */
-    /* bán kính tách theo CỠ quân: quân nhỏ giữ 22 như cũ, quân to không còn chồng lấp thành cục */
-    var rr = clamp((SPECS[a.type].draw + SPECS[b.type].draw)*0.30, 22, 46);
-    if(d>0 && d<rr){ var push=(rr-d)/2, dx=(b.x-a.x)/d, dy=(b.y-a.y)/d; sepStep(a, a.x-dx*push, a.y-dy*push); sepStep(b, b.x+dx*push, b.y+dy*push); }
-    else if(d===0){ sepStep(b, b.x + 1.5, b.y); } /* trùng khít tâm: đẩy nhẹ một phía cho tách dần */
+/* ===== V12 §4: SEPARATION v2 (thay O(n^2) + teleport vị trí của bản cũ) =====
+   - Lực VẬN TỐC theo giây (không giật vị trí): vỏ mềm +30% thân thật (bodyR = draw*0,31),
+     lò xo tỉ lệ độ lún (trần tốc tách 95px/s), chia theo NGHỊCH đảo khối lượng
+     m = (draw/50)^2 — quân nặng đẩy quân nhẹ, chiều ngược lại gần như không.
+   - Nhường kiểu SC2: đồng minh ĐỨNG YÊN nhẹ cân x0,35 trước quân đang đi; quân GIỮ VỊ TRÍ
+     hoặc đang NGẮM (aim) nặng x3. Cùng hướng (chênh hướng < 35°, tốc lệch < 25%) bỏ qua —
+     đoàn hành quân không tự đánh nhau. Đối đầu: né sang PHẢI của mình -> thông luồng.
+   - Chỉ khi lún SÂU (< 55% tổng bán kính) mới nắn vị trí, tối đa 1,5px/tick qua cổng vách.
+   - Miễn: cặp giao chiến trực tiếp (giữ nguyên luật cũ — tách sẽ phá tầm cận chiến),
+     thợ-thợ cùng khai thác, bay-đất khác lớp. Lưới không gian ô 48px; quân ngoài khung
+     hình > 200px xử lý mỗi 2 tick với dt x2. */
+function bodyR(u){ return SPECS[u.type].draw * 0.31; }
+var _sepYield = null; /* id các quân phải NHƯỜNG tick này (đang chắn slot của quân sắp tới) */
+function sepMass(u){
+  var sp = SPECS[u.type], m = Math.pow(sp.draw / 50, 2);
+  var moving = u.order && (u.order.type === 'move' || u.order.type === 'attackmove');
+  /* đã ĐỖ (idle): neo nặng x2,2 để đội hình đã dừng không bị xô trôi — NHƯNG nếu đang chắn
+     đúng slot của một quân đang tới (trong 45px) thì vẫn phải nhường x0,35 cho nó vào */
+  if(u.order && u.order.type === 'idle' && !(u.speedNow > 6) && !(_sepYield && _sepYield.has(u.id))) m *= 2.2;
+  else if(!moving && !(u.speedNow > 6)) m *= 0.35;
+  if((u.aimT || 0) > 0 || (u.order && u.order.type === 'hold')) m *= 3;
+  return m;
+}
+var _sepTick = 0;
+function tickSeparation(dt){
+  dt = dt || (1 / 60); _sepTick++;
+  var cell = 48, grid = new Map(), i, u;
+  for(i = 0; i < S.units.length; i++){
+    u = S.units[i]; if(u.hp <= 0) continue;
+    var key = ((u.x / cell) | 0) + ((u.y / cell) | 0) * 8192;
+    var arr = grid.get(key); if(!arr){ arr = []; grid.set(key, arr); }
+    arr.push(u);
+  }
+  /* quân đang chắn slot (trong 45px) của quân có lệnh di chuyển -> đánh dấu phải nhường */
+  _sepYield = new Set();
+  for(var yi = 0; yi < S.units.length; yi++){
+    var yu = S.units[yi];
+    if(yu.hp <= 0 || !yu.order || (yu.order.type !== 'move' && yu.order.type !== 'attackmove')) continue;
+    var ycx = (yu.order.x / cell) | 0, ycy = (yu.order.y / cell) | 0;
+    for(var ygx = ycx - 1; ygx <= ycx + 1; ygx++) for(var ygy = ycy - 1; ygy <= ycy + 1; ygy++){
+      var yArr = grid.get(ygx + ygy * 8192); if(!yArr) continue;
+      for(var yci = 0; yci < yArr.length; yci++){
+        var yv = yArr[yci];
+        if(yv !== yu && Math.abs(yv.x - yu.order.x) < 45 && Math.abs(yv.y - yu.order.y) < 45 && Math.hypot(yv.x - yu.order.x, yv.y - yu.order.y) < 45) _sepYield.add(yv.id);
+      }
+    }
+  }
+  var camX = 0, camY = 0, camW = WORLD_W, camH = WORLD_H;
+  if(typeof VIEW !== 'undefined' && VIEW && VIEW.w){ camX = VIEW.x || 0; camY = VIEW.y || 0; camW = VIEW.w; camH = VIEW.h; }
+  for(var i2 = 0; i2 < S.units.length; i2++){
+    var a = S.units[i2]; if(a.hp <= 0) continue;
+    var offView = a.x < camX - 200 || a.y < camY - 200 || a.x > camX + camW + 200 || a.y > camY + camH + 200;
+    if(offView && (_sepTick + a.id) % 2 === 0) continue;
+    var dtE = offView ? dt * 2 : dt;
+    var ra = bodyR(a), ma = sepMass(a), spa = SPECS[a.type];
+    var hax = Math.cos(a.hdg || 0), hay = Math.sin(a.hdg || 0);
+    var cx = (a.x / cell) | 0, cy = (a.y / cell) | 0;
+    for(var gx = cx - 1; gx <= cx + 1; gx++) for(var gy = cy - 1; gy <= cy + 1; gy++){
+      var cellArr = grid.get(gx + gy * 8192); if(!cellArr) continue;
+      for(var ci = 0; ci < cellArr.length; ci++){
+        var b = cellArr[ci];
+        if(b === a || b.id <= a.id) continue;
+        var spb = SPECS[b.type];
+        if(!!spa.flying !== !!spb.flying) continue;
+        if(a.combatTargetId === b.id || b.combatTargetId === a.id) continue;
+        if(spa.worker && spb.worker && a.order && b.order && a.order.type === 'harvest' && b.order.type === 'harvest') continue;
+        var dx = b.x - a.x, dy = b.y - a.y;
+        var rb = bodyR(b), rr = (ra + rb) * 1.3;
+        var d2 = dx * dx + dy * dy;
+        if(d2 >= rr * rr) continue;
+        var mb = sepMass(b), mSum = ma + mb;
+        if(d2 < 0.0001){ sepStep(b, b.x + 1.5, b.y); continue; }
+        var d = Math.sqrt(d2), depth = rr - d;
+        var nx = dx / d, ny = dy / d;
+        var hbx = Math.cos(b.hdg || 0), hby = Math.sin(b.hdg || 0);
+        var hDot = hax * hbx + hay * hby;
+        var spA = Math.sqrt((a.vx || 0) * (a.vx || 0) + (a.vy || 0) * (a.vy || 0));
+        var spB = Math.sqrt((b.vx || 0) * (b.vx || 0) + (b.vy || 0) * (b.vy || 0));
+        if(hDot > 0.82 && Math.abs(spA - spB) < Math.max(spA, spB, 1) * 0.25) continue;
+        var relV = Math.min(95, depth * 4.5);
+        var pushA = relV * (mb / mSum) * dtE * 3, pushB = relV * (ma / mSum) * dtE * 3;
+        a.vx = (a.vx || 0) - nx * pushA; a.vy = (a.vy || 0) - ny * pushA;
+        b.vx = (b.vx || 0) + nx * pushB; b.vy = (b.vy || 0) + ny * pushB;
+        if(hDot < -0.5){
+          var lat = Math.min(30, depth * 1.6) * dtE * 3;
+          a.vx += -hay * lat; a.vy += hax * lat;
+          b.vx += hby * lat; b.vy += -hbx * lat;
+        }
+        var hardR = (ra + rb) * 0.55;
+        if(d < hardR){
+          var corr = Math.min(1.5, (hardR - d) * 0.5);
+          sepStep(a, a.x - nx * corr * (mb / mSum) * 2, a.y - ny * corr * (mb / mSum) * 2);
+          sepStep(b, b.x + nx * corr * (ma / mSum) * 2, b.y + ny * corr * (ma / mSum) * 2);
+        }
+      }
+    }
   }
 }
 function tick(dt){
@@ -5617,7 +5912,48 @@ function tick(dt){
        không bao giờ cãi chu kỳ bước đi theo quãng đường. drawUnit đọc idleW qua idlePoseOf. */
     var idleBusy = (S.time - (u.lastMoveAt||-9)) < 0.3 || u.speedNow > 8 || (S.time - (u.lastActAt||-9)) < 0.8 || u.recoilT > 0 || u.lungeT > 0;
     u.idleW = clamp((u.idleW||0) + (idleBusy ? -7*dt : 1.5*dt), 0, 1);
-    if(u._mvT !== S.time){ var dk = Math.max(0, 1 - 11*dt); u.vx = (u.vx||0)*dk; u.vy = (u.vy||0)*dk; }
+    if(u._mvT !== S.time){ /* V12 §3.2: quân bị ngắt lái hãm bằng BRK CỦA LỚP (bỏ tiêu mũ 1-11dt đồng nhất) */
+      var bk = brkOf(u) * dt, vv = Math.sqrt((u.vx||0)*(u.vx||0) + (u.vy||0)*(u.vy||0));
+      if(vv > 0){ var ns2 = Math.max(0, vv - bk) / vv; u.vx = (u.vx||0) * ns2; u.vy = (u.vy||0) * ns2; }
+      u._omg = 0;
+      /* V12 §4: vận tốc DƯ (lực tách đàn xô) phải thật sự dời quân đứng yên — tích phân
+         nốt qua CỔNG VÁCH như moveToward, cộng vào animDist để nhịp bước/bụi chân khớp */
+      if(vv > 0.5 && u.hp > 0){
+        var inx = u.x + u.vx * dt, iny = u.y + u.vy * dt;
+        if(elevGrid && !SPECS[u.type].flying){
+          var otx2 = tileX(u.x), oty2 = tileY(u.y);
+          if(!tilesWalkable(otx2, oty2, tileX(inx), tileY(iny))){
+            if(tilesWalkable(otx2, oty2, tileX(inx), oty2)){ iny = u.y; u.vy = 0; }
+            else if(tilesWalkable(otx2, oty2, otx2, tileY(iny))){ inx = u.x; u.vx = 0; }
+            else { inx = u.x; iny = u.y; u.vx = 0; u.vy = 0; }
+          }
+        }
+        var idx2 = clamp(inx, 16, WORLD_W - 16) - u.x, idy2 = clamp(iny, 16, WORLD_H - 16) - u.y;
+        u.x += idx2; u.y += idy2;
+        u.animDist = (u.animDist || 0) + Math.sqrt(idx2 * idx2 + idy2 * idy2);
+      }
+    }
+    /* V12 §6: BANK + PITCH quân bay là TRẠNG THÁI có quán tính riêng (không phải hàm tức thì của hướng):
+       bank đuổi theo ω·v·k/900 (roll-in 6 rad/s, trả lái 4 rad/s); pitch từ gia tốc dọc thật */
+    if(SPECS[u.type].flying){
+      var mvv = mvOf(u), bT = clamp((u._omg || 0) * inst * (mvv.bankK || 0.5) / 900, -(mvv.bankMax || 0), (mvv.bankMax || 0));
+      var bRate = Math.abs(bT) > Math.abs(u.bank || 0) ? 6 : 4;
+      u.bank = (u.bank || 0) + clamp(bT - (u.bank || 0), -bRate * dt, bRate * dt);
+      var accF = dt > 0 ? ((u._vfNow || 0) - (u._vfPrev || 0)) / dt : 0; u._vfPrev = u._vfNow || 0;
+      var pT = (MVCLASS[u.type] === 'AIRL') ? clamp(accF * 0.00035, -0.04, 0.06) : (MVCLASS[u.type] === 'AIRH' ? clamp(accF * 0.00018, -0.02, 0.03) : 0);
+      u.pitch = (u.pitch || 0) + (pT - (u.pitch || 0)) * Math.min(1, dt / 0.15);
+    }
+    /* V12 §13.3.4/6: biên độ chân route B — đuổi theo clamp(sf, 0,45..1) khi đi, về 0 khi
+       dừng, hằng số tắt dần 0,12s (chân trả về tư thế nghỉ, pha đứng nguyên) */
+    if(LEGSPEC[u.type]){
+      var laT = (u.speedNow > 8) ? clamp((u.speedNow || 0) / Math.max(1, SPECS[u.type].speed), 0.45, 1) : 0;
+      u.legAmp = (u.legAmp || 0) + (laT - (u.legAmp || 0)) * Math.min(1, dt / 0.12);
+    }
+    /* V12 §13.4: rotor heli — spool 0,8s rồi quay ~150 rad/s theo thời gian */
+    if(u.type === 'heli'){
+      u.spool = Math.min(1, (u.spool || 0) + dt / 0.8);
+      u.rotorA = ((u.rotorA || 0) + dt * 150 * u.spool) % 6.2832;
+    }
     if(u.recoilT > 0) u.recoilT = Math.max(0, u.recoilT - dt);
     if(u.atk && u.atk.phase === 'recoil'){ u.atk.t -= dt; if(u.atk.t <= 0) u.atk = null; } /* v10: pha giật đếm tại đây (nơi duy nhất) */
     /* v10: chu trình AIM mà mục tiêu đã chết/biến mất thì DỌN ngay (guard không còn gọi engage nữa) */
@@ -5664,7 +6000,7 @@ function tick(dt){
   /* Hồi phục theo tộc: Zerg tự lành mọi quân/nhà · Protoss hồi KHIÊN sau 8 giây không trúng đòn */
   S.units.forEach(function(u){ regenEntity(u, dt); });
   S.buildings.forEach(function(b){ if(!b.constructing) regenEntity(b, dt); });
-  tickSeparation();
+  tickSeparation(dt);
   tickParticles(dt);
   fogT += dt; if(fogT >= 0.25){ fogT = 0; updateFog(); }
   hudT += dt; if(hudT >= 0.25){ hudT = 0; updateHUD(); }
@@ -6907,15 +7243,19 @@ function drawFrame(im, frame, frames, x, y, w, h, flip, rot){
 }
 /* FIX v5 — Hydralisk TRƯỜN SÓNG (slice-wave): cắt sprite thành 7 lát NGANG, mỗi lát lệch x theo
    sóng sin chạy theo quãng đường; đầu (lát trên cùng) đứng yên để ngắm bắn, đuôi vung mạnh nhất */
-function drawSlither(im, x, y, w, h, flip, animDist, sf, pullX, pullY){
+function drawSlither(im, x, y, w, h, flip, animDist, sf, pullX, pullY, lambda, amp, omg){
   if(!imgReady(im)) return false;
   var N = 7, sh = imgH(im) / N;
-  var ph = (animDist||0) / 40 * 6.2832;
+  var ph = (animDist||0) / (lambda || 40) * 6.2832;
   ctx.save();
   ctx.translate(x, y); if(flip) ctx.scale(-1, 1);
   for(var i=0;i<N;i++){
     var taper = i/(N-1); /* 0 ở đầu (trên) → 1 ở đuôi (dưới) */
-    var dx = Math.sin(6.2832*(i/(N-1)) - ph) * 2.6 * taper * sf;
+    var dx = Math.sin(6.2832*(i/(N-1)) - ph) * (amp || 2.6) * taper * sf;
+    /* V12 §13.4: 2 lát ĐẦU cứng lại khi đang rẽ (hệ số x0,25 ở đỉnh cua) — đầu giữ hướng;
+       2 lát ĐUÔI +10% biên độ theo tốc độ (đuôi quẫy mạnh khi lao) */
+    if(i < 2 && omg) dx *= 1 - 0.75 * clamp(Math.abs(omg) / 4, 0, 1);
+    if(i >= N - 2) dx *= 1 + 0.1 * sf;
     var dy = 0;
     if(pullX || pullY){ var pf = i === 0 ? 1 : (i === 1 ? 0.45 : 0); dx += (pullX || 0) * pf; dy += (pullY || 0) * pf; } /* v10: 2 lát đầu thụt lại khi Hydralisk ngắm phun */
     ctx.drawImage(im, 0, i*sh, imgW(im), sh, -w/2 + dx, -h/2 + i*(h/N) + dy, w, h/N + 0.8);
@@ -6934,16 +7274,17 @@ function drawTank(u, bodyY, rot){
   /* xích cuộn (vẽ trước thân, trong cùng hệ lật/xoay của thân) */
   if(imgReady(trk)){
     var R = TANK_TRACK_RECT, bw = (R.x1-R.x0)*w, bh = (R.y1-R.y0)*h;
-    var turn = (u.turnAcc||0) * w * 0.5;
-    var offL = ((u.animDist||0) + turn) % 24, offR = ((u.animDist||0) - turn) % 24;
+    /* V12 §13.3.3: off của dải xích NHÌN THẤY = quãng đường tích lũy của ĐÚNG bên đó
+       (trkP/trkM do moveToward tích phân: v_bên = v ± omega x nửa bề ngang) — rẽ tại chỗ
+       là hai bên cuộn NGƯỢC nhau, không còn xích nào đứng yên khi xe xoay */
+    var offL = (((u.face < 0 ? u.trkM : u.trkP) || 0) % 24 + 24) % 24, offR = offL;
     ctx.save();
     ctx.translate(u.x, bodyY + h*0.30); ctx.rotate(rot||0); if(flip) ctx.scale(-1, 1);
     ctx.beginPath(); ctx.rect(R.x0*w, R.y0*h - h*0.30, bw, bh); ctx.clip();
     var tw = 24, th = bh;
     for(var sx = R.x0*w - 24 + (offL % 24); sx < R.x1*w; sx += tw) ctx.drawImage(trk, sx, R.y0*h - h*0.30, tw, th);
     ctx.restore();
-    /* góc rẽ tích lũy (offR) dành cho dải xích thứ hai khi tranh có đủ hai dải — bản 3/4 hiện tại chỉ có 1 dải xích nhìn thấy */
-    void(offR);
+    void(offR); /* dải thứ hai không nhìn thấy ở góc 3/4 này — off đã theo đúng bên nhìn thấy */
   }
   drawSpriteT(hull, u.x, bodyY, w, h, flip, rot);
   /* tháp: tâm tháp theo TANK_PIVOT (gương theo hướng thân), xoay theo u.turretA (góc thế giới), giật lùi dọc nòng khi recoilT>0 */
@@ -7516,6 +7857,70 @@ function defEnemyNear(e, range){
   for(var i = 0; i < list.length; i++){ var t = list[i]; if(t !== e && t.hp > 0 && hostileTo(e.faction, t.faction) && dist(e.x, e.y, t.x, t.y) <= range) return t; }
   return null;
 }
+/* ===== V12 §13 — LỚP CHI ROUTE B / CÁNH / ROTOR / XÍCH (asset cắt ở make_legs_v12.py) ===== */
+var LEGSPEC = {
+  scoutbot: { hipL:{x:0.33,y:0.73}, hipR:{x:0.70,y:0.73}, A:0.13, L:0.08 },
+  mech:     { hipL:{x:0.30,y:0.72}, hipR:{x:0.57,y:0.72}, A:0.11, L:0.07 },
+  robot:    { hipL:{x:0.33,y:0.66}, hipR:{x:0.61,y:0.66}, A:0.11, L:0.07 },
+  firebat:  { hipL:{x:0.31,y:0.63}, hipR:{x:0.57,y:0.63}, A:0.10, L:0.06 }
+};
+var WINGSPEC = {
+  bat:  { pvL:{x:0.30,y:0.60}, pvR:{x:0.72,y:0.60}, A:0.32, f:1.6 },
+  wasp: { pvL:{x:0.38,y:0.33}, pvR:{x:0.62,y:0.33}, A:0.15, f:2.2 }
+};
+var TRACKRECT = {
+  heavytank: { x0:0.05, y0:0.6406, x1:0.95, y1:0.875, link:26 },
+  artillery: { x0:0.05, y0:0.6992, x1:0.95, y1:0.9023, link:24 }
+};
+function frac1(v){ return v - Math.floor(v); }
+/* vẽ một lớp canvas đầy đủ XOAY quanh điểm pivot (hông/khớp/rotor) trong cùng hệ neo đất
+   của drawSpriteT: translate neo -> rotate thân -> tới pivot -> lật -> xoay lớp -> squash */
+function drawHipLayer(im, x, y, D, flip, rot, pv, th, liftK, alpha){
+  if(!imgReady(im)) return false;
+  ctx.save();
+  if(alpha !== undefined) ctx.globalAlpha = alpha;
+  ctx.translate(x, y + D * 0.30); ctx.rotate(rot || 0);
+  ctx.translate((pv.x - 0.5) * D, (pv.y - 0.8) * D);
+  if(flip) ctx.scale(-1, 1);
+  ctx.rotate(th || 0); ctx.scale(1, liftK || 1);
+  ctx.drawImage(im, -pv.x * D, -pv.y * D, D, D);
+  ctx.restore();
+  return true;
+}
+/* thân layered cắt ngang ở phân số y0f..y1f (marine: thân trên 64% khi dải chân đang chạy) */
+function drawSpriteTClip(im, x, y, w, h, flip, rot, y0f, y1f){
+  if(!imgReady(im)) return false;
+  ctx.save();
+  ctx.translate(x, y + h * 0.30); ctx.rotate(rot || 0); if(flip) ctx.scale(-1, 1);
+  ctx.beginPath(); ctx.rect(-w / 2, -h / 2 - h * 0.30 + h * y0f, w, h * (y1f - y0f)); ctx.clip();
+  ctx.drawImage(im, -w / 2, -h / 2 - h * 0.30, w, h);
+  ctx.restore();
+  return true;
+}
+/* dải chân của frame sheet đang chạy (38% dưới) — cho quân layered có sheet (marine) */
+function drawLegStrip(im, frame, frames, x, y, D, flip, rot){
+  if(!imgReady(im)) return false;
+  var fw = imgW(im) / frames; if(fw <= 0) return false;
+  ctx.save();
+  ctx.translate(x, y + D * 0.30); ctx.rotate(rot || 0); if(flip) ctx.scale(-1, 1);
+  ctx.beginPath(); ctx.rect(-D / 2, -D / 2 - D * 0.30 + D * 0.62, D, D * 0.38); ctx.clip();
+  ctx.drawImage(im, frame * fw, 0, fw, imgH(im), -D / 2, -D / 2 - D * 0.30, D, D);
+  ctx.restore();
+  return true;
+}
+/* dải xích cuộn cho heavytank/artillery — như drawTank: 1 dải nhìn thấy, off theo bên nhìn thấy */
+function drawTrackBand(u, bx, by, D, rot){
+  var R = TRACKRECT[u.type], im = IMGL[u.type + '_track'];
+  if(!R || !imgReady(im)) return;
+  var off = (((u.face < 0 ? u.trkM : u.trkP) || 0) % R.link + R.link) % R.link;
+  ctx.save();
+  ctx.translate(bx, by + D * 0.30); ctx.rotate(rot || 0); if(u.face < 0) ctx.scale(-1, 1);
+  ctx.beginPath(); ctx.rect((R.x0 - 0.5) * D, (R.y0 - 0.8) * D, (R.x1 - R.x0) * D, (R.y1 - R.y0) * D); ctx.clip();
+  var twd = R.link * 2, thd = (R.y1 - R.y0) * D;
+  for(var sx2 = (R.x0 - 0.5) * D - twd + off; sx2 < (R.x1 - 0.5) * D; sx2 += twd)
+    ctx.drawImage(im, sx2, (R.y0 - 0.8) * D, twd, thd);
+  ctx.restore();
+}
 function drawUnit(u){
   var pc = u.faction==='player', sp = SPECS[u.type];
   var an = ANIM[u.type] || {};
@@ -7524,7 +7929,9 @@ function drawUnit(u){
   var sf = clamp(spdN / Math.max(1, sp.speed), 0, 1);
   var moving = (S.time - (u.lastMoveAt||-9)) < 0.18 && spdN > 8;
   var cycPx = an.stride ? an.stride*2 : 48;
-  var phase = an.stride ? ((u.animDist||0) % cycPx) / cycPx : 0;
+  /* V12 §13.3.1: pha chi đọc từ gaitPhase (quãng đường DỌC hdg) — trượt ngang/xô đẩy
+     không còn làm chân chạy theo; animDist chỉ còn nuôi speedNow/bụi */
+  var phase = an.stride ? ((u.gaitPhase || 0) % 1 + 1) % 1 : 0;
   /* lớp procedural: nhún thân 2 nhịp/chu kỳ + lắc vai theo bước, chỉ khi đang đi */
   var bobY = 0, roll = 0;
   if(an.stride && sf > 0.02){
@@ -7544,6 +7951,10 @@ function drawUnit(u){
   var pose = idlePoseOf(u); /* v6.2 (mục E): tư thế NHÀN của khung này (w=0 khi đang đi/đánh) */
   /* bóng đổ MỀM (sprite gradient nung sẵn): neo đất, quân bay bóng nhạt + lệch theo độ cao */
   var shS = (an.hover || sp.flying) ? 1 - 0.05*(hovY/(an.amp||2.5)) : 1;
+  /* V12 §6: BANK cộng vào roll ở mọi nhánh vẽ quân bay; PITCH chúi theo gia tốc dọc.
+     Bóng NEO ĐẤT, chỉ co <= 4% theo |bank| — không lăn theo thân (luật notes.md) */
+  var flyRot = sp.flying ? (u.bank || 0) + (u.pitch || 0) * (u.face < 0 ? -1 : 1) : 0;
+  if(sp.flying) shS *= 1 - 0.13 * Math.abs(u.bank || 0);
   drawShadow(u.x + (sp.flying ? 16 : 3), u.y + sp.draw*0.34, sp.draw*0.92*shS, sp.draw*0.36*shS, sp.flying ? 0.55 : 0.9);
   /* v11 (Cường làm rõ 23:33): VÒNG CHỌN dưới đất KHÔI PHỤC — trung tính, chỉ quân đang được chọn (đơn + nhóm) */
   if(S.selectedIds.indexOf(u.id) >= 0) drawSelRing(u.x, u.y + sp.draw*0.36, sp.draw*0.47, sp.draw*0.20);
@@ -7579,24 +7990,89 @@ function drawUnit(u){
   var tiltRot = (adef && adef.tilt && inCyc) ? (adef.tilt * Math.PI / 180) * Math.sin(effAng) : 0;
   var layered = !!(adef && adef.cls === 'A' && adef.bodyN && inCyc && imgReady(IMGL[adef.bodyN]) && imgReady(IMGL[adef.layerN]));
   var sheet = UIMG(IMGW, sp.spr, u.faction);
-  if(layered){
-    drawn = drawSpriteT(IMGL[adef.bodyN], bodyX, bodyY, sp.draw, sp.draw*pose.sc*pulse, u.face<0, roll + lean + pose.roll + dipRot + tiltRot);
+  var legspec = LEGSPEC[u.type];
+  if(u.type === 'heli' && imgReady(IMGL.heli_nr)){
+    /* V12 §13.4: heli = thân xoá rotor + đĩa rotor QUAY theo thời gian (u.rotorA, spool 0,8s)
+       + bóng ma lệch 90° alpha 0,35 giả nhoè; súng cằm vẫn là lớp v10 khi giao chiến */
+    var baseH = (layered && imgReady(IMGL.heli_body_nr)) ? IMGL.heli_body_nr : IMGL.heli_nr;
+    drawn = drawSpriteT(baseH, bodyX, bodyY, sp.draw, sp.draw * pose.sc * pulse, u.face < 0, roll + lean + pose.roll + dipRot + tiltRot + flyRot);
+    if(drawn && imgReady(IMGL.heli_rotor)){
+      var rpv = { x: 0.45, y: 0.34 }, rrot = roll + lean + pose.roll;
+      drawHipLayer(IMGL.heli_rotor, bodyX, bodyY, sp.draw, u.face < 0, rrot, rpv, u.rotorA || 0, 1);
+      drawHipLayer(IMGL.heli_rotor, bodyX, bodyY, sp.draw, u.face < 0, rrot, rpv, (u.rotorA || 0) + Math.PI / 2, 1, 0.35);
+    }
+    if(drawn && layered) drawAimLayer(u, adef, bodyX, bodyY, sp.draw, effAng);
+  } else if(legspec && imgReady(IMGL[u.type + '_torso']) && imgReady(IMGL[u.type + '_legsL']) && imgReady(IMGL[u.type + '_legsR'])){
+    /* V12 §13.3: chân ROUTE B — hai lớp chân xoay quanh hông theo gaitL/gaitR (chân phải
+       lệch pha 0,5), biên độ theo u.legAmp (ngắn bước khi chậm, trả về 0 trong 0,12s khi dừng);
+       chân neo ĐẤT (không bob theo thân), thân đè lên sau — giao chiến thì dùng bodyNL
+       (thân v10 đã xoá chân) + lớp vũ khí v10 như cũ (§13.3.5) */
+    var D = sp.draw, amp = u.legAmp || 0, rotB = roll + lean + pose.roll + dipRot + tiltRot + flyRot;
+    var legY = u.y + flyY + offY + pose.dy;
+    var phL = frac1(u.gaitL || 0), phR = frac1((u.gaitR || 0) + 0.5);
+    drawHipLayer(IMGL[u.type + '_legsL'], bodyX, legY, D, u.face < 0, rotB, legspec.hipL, legspec.A * Math.sin(6.2832 * phL) * amp, 1 - legspec.L * Math.max(0, Math.cos(6.2832 * phL)) * amp);
+    drawHipLayer(IMGL[u.type + '_legsR'], bodyX, legY, D, u.face < 0, rotB, legspec.hipR, legspec.A * Math.sin(6.2832 * phR) * amp, 1 - legspec.L * Math.max(0, Math.cos(6.2832 * phR)) * amp);
+    if(layered){
+      var bn = imgReady(IMGL[u.type + '_bodyNL']) ? IMGL[u.type + '_bodyNL'] : IMGL[adef.bodyN];
+      drawn = drawSpriteT(bn, bodyX, bodyY, D, D * pose.sc * pulse, u.face < 0, rotB);
+      if(drawn) drawAimLayer(u, adef, bodyX, bodyY, D, effAng);
+    } else {
+      drawn = drawSpriteT(IMGL[u.type + '_torso'], bodyX, bodyY, D, D * pose.sc * pulse, u.face < 0, rotB);
+    }
+  } else if((u.type === 'bat' || u.type === 'wasp') && imgReady(IMGL[u.type + '_bodyNW'])){
+    /* V12 §13.4: cánh vỗ theo THỜI GIAN (pha bay), biên độ x(0,7 + 0,3 sf); đang bank thì
+       cánh phía TRONG vòng cua giảm biên độ 40%; wasp thêm lớp cánh ma lệch nửa pha */
+    var ws = WINGSPEC[u.type], D2 = sp.draw, rotW = roll + lean + pose.roll + dipRot + tiltRot + flyRot;
+    drawn = drawSpriteT(IMGL[u.type + '_bodyNW'], bodyX, bodyY, D2, D2 * pose.sc * pulse, u.face < 0, rotW);
+    if(drawn){
+      var ampSf = 0.7 + 0.3 * sf, phW = 6.2832 * ws.f * S.time + u.id * 1.71;
+      var inL = (u.bank || 0) < -0.02 ? 0.6 : 1, inR = (u.bank || 0) > 0.02 ? 0.6 : 1;
+      drawHipLayer(IMGL[u.type + '_wingL'], bodyX, bodyY, D2, u.face < 0, rotW, ws.pvL, ws.A * Math.sin(phW) * ampSf * inL, 1);
+      drawHipLayer(IMGL[u.type + '_wingR'], bodyX, bodyY, D2, u.face < 0, rotW, ws.pvR, -ws.A * Math.sin(phW) * ampSf * inR, 1);
+      if(u.type === 'wasp') drawHipLayer(IMGL.wasp_wingL, bodyX, bodyY, D2, u.face < 0, rotW, ws.pvL, ws.A * Math.sin(phW + Math.PI) * ampSf, 1, 0.4);
+    }
+  } else if((u.type === 'heavytank' || u.type === 'artillery') && adef && imgReady(IMGL[adef.bodyN])){
+    /* V12 §13.4: thân + dải xích cuộn theo bên + tháp (giao chiến: lớp v10 theo aim;
+       thường: tháp ở góc nghỉ = ghép tĩnh như tranh gốc) */
+    var D3 = sp.draw, rotT = roll + lean + pose.roll + flyRot;
+    drawn = drawSpriteT(IMGL[adef.bodyN], bodyX, bodyY, D3, D3 * pose.sc * pulse, u.face < 0, rotT);
+    if(drawn){
+      drawTrackBand(u, bodyX, bodyY, D3, rotT);
+      if(inCyc) drawAimLayer(u, adef, bodyX, bodyY, D3, effAng);
+      else drawAimLayer(u, adef, bodyX, bodyY, D3, restAngOf(adef, adef.tips[0], adef.pivot));
+    }
+  } else if(layered){
+    /* V12 §13.3.5 (sửa hồi quy v10): marine đang ĐI trong vùng giao chiến — dải chân của
+       frame sheet hiện tại vẽ ở neo đất TRƯỚC, thân layered cắt ở 64% đè lên: chân không
+       còn đóng băng khi thân trên ngắm bắn. Đứng yên bắn thì giữ thân nguyên (chân đứng) */
+    if(u.type === 'marine' && sheet && imgReady(sheet) && (u.speedNow || 0) > 8){
+      var mfr = Math.floor(phase * an.frames) % an.frames; u._lastFr = mfr;
+      drawLegStrip(sheet, mfr, an.frames, bodyX, u.y + flyY + offY + pose.dy, sp.draw, u.face < 0, roll + lean + pose.roll);
+      drawn = drawSpriteTClip(IMGL[adef.bodyN], bodyX, bodyY, sp.draw, sp.draw * pose.sc * pulse, u.face < 0, roll + lean + pose.roll + dipRot + tiltRot + flyRot, 0, 0.64);
+    } else {
+      drawn = drawSpriteT(IMGL[adef.bodyN], bodyX, bodyY, sp.draw, sp.draw*pose.sc*pulse, u.face<0, roll + lean + pose.roll + dipRot + tiltRot + flyRot);
+    }
     if(drawn) drawAimLayer(u, adef, bodyX, bodyY, sp.draw, effAng);
   } else if(sheet && an.frames && imgReady(sheet)){
     /* có sheet khung hình thật: frame do QUÃNG ĐƯỜNG chọn, bob nằm trong hình — không nhún thêm;
        lớp nhàn chỉ cộng dy/scale rất nhẹ (pose w=0 ngay khi quân di chuyển) */
-    var fr = moving ? Math.floor(phase * an.frames) % an.frames : 0;
+    /* V12 §13.8-1: DỪNG = GIỮ frame bước cuối cho tới khi idleW >= 0,45 mới về frame nghỉ
+       (bản cũ snap thẳng về frame 0 ngay khi ngừng đi -> chân "nhảy" một nhịp) */
+    var fr;
+    if(moving){ fr = Math.floor(phase * an.frames) % an.frames; u._lastFr = fr; }
+    else fr = (pose.w < 0.45 && u._lastFr !== undefined) ? u._lastFr : 0;
     drawn = drawFrame(sheet, fr, an.frames, bodyX, u.y + flyY + offY + pose.dy, sp.draw, sp.draw*pose.sc*pulse, u.face<0, roll*0.5 + lean + pose.roll*0.5);
   } else if(an.slither){
     /* Hydralisk: thân trườn theo animDist; khi nhàn, pha trườn LẠC nhẹ ±6px quanh chỗ đứng
        (đuôi uốn chậm) mà thân không hề rời vị trí — sf sàn theo idleW để sóng đuôi chạy */
     var slDist = (u.animDist||0) + Math.sin(S.time*2.0 + u.id*2.39996) * 6 * pose.w;
     var slPull = (u.type === 'hydralisk' && u.atk && u.atk.phase === 'aim') ? (1 - clamp(u.atk.t / 0.10, 0, 1)) : 0;
-    drawn = drawSlither(UIMG(IMG, sp.spr, u.faction), bodyX, bodyY, sp.draw, sp.draw, u.face<0, slDist, Math.max(sf, moving?0.7:0, pose.w*0.4), slPull ? -Math.cos(u.aimA || 0) * 3 * slPull * (u.face<0?-1:1) : 0, slPull ? -Math.sin(u.aimA || 0) * 3 * slPull : 0);
+    /* V12 §13.4: Leviathan sóng dài lambda=70 biên độ 1,6; Hydralisk giữ lambda=40 + đầu cứng khi rẽ */
+    drawn = drawSlither(UIMG(IMG, sp.spr, u.faction), bodyX, bodyY, sp.draw, sp.draw, u.face<0, slDist, Math.max(sf, moving?0.7:0, pose.w*0.4), slPull ? -Math.cos(u.aimA || 0) * 3 * slPull * (u.face<0?-1:1) : 0, slPull ? -Math.sin(u.aimA || 0) * 3 * slPull : 0, u.type === 'leviathan' ? 70 : 40, u.type === 'leviathan' ? 1.6 : 2.6, u.type === 'hydralisk' ? (u._omg || 0) : 0);
   } else if(u.type==='tank'){
     drawn = drawTank(u, bodyY, roll + lean + pose.roll) || drawSpriteT(UIMG(IMG, sp.spr, u.faction), bodyX, bodyY, sp.draw, sp.draw, u.face<0, roll + lean + pose.roll);
   } else {
-    drawn = drawSpriteT(UIMG(IMG, sp.spr, u.faction), bodyX, bodyY, sp.draw, sp.draw*pose.sc*pulse, u.face<0, roll + lean + pose.roll + dipRot + tiltRot);
+    drawn = drawSpriteT(UIMG(IMG, sp.spr, u.faction), bodyX, bodyY, sp.draw, sp.draw*pose.sc*pulse, u.face<0, roll + lean + pose.roll + dipRot + tiltRot + flyRot);
   }
   if(drawn && adef && (adef.cls === 'E' || adef.cls === 'F') && inCyc && adef.pt){
     var chg = u.atk && u.atk.phase === 'aim' ? (1 - clamp(u.atk.t / adef.wu, 0, 1)) : 0.3;
@@ -8152,7 +8628,7 @@ var MOVE_LINES = {
   drone:'Bò nhanh trên mặt đất và trên thảm nhầy.',
   zergling:'Chạy nhanh nhất game; mỗi trứng nở thành một CẶP cùng lao đi.',
   hydralisk:'Trườn tốc độ vừa, thân dài cỡ vừa.',
-  ultralisk:'Bước chậm và nặng nề, thân khổng lồ cỡ lớn.',
+  ultralisk:'Bước chậm và nặng nề, thân khổng lồ cỡ lớn. (Ngoại lệ v12: chưa có hoạt hình bước chân riêng — đang chờ duyệt tranh mới.)',
   overlord:'Bay chậm, lơ lửng cao — bóng đổ lệch hẳn xuống mặt đất; bay qua được vách đứng và nhà.',
   probe:'Lướt nhanh, thân nhỏ gọn.',
   zealot:'Chạy nhanh, lao thẳng vào cận chiến.',
@@ -8963,6 +9439,30 @@ function netGuestFrame(dt){
     var mv = dist(ox, oy, u.x, u.y);
     u.animDist = (u.animDist || 0) + mv;
     if(mv > 0.05){ if(Math.abs(u._netTX - ox) > 0.5) u.face = u._netTX > ox ? 1 : -1; u.lastMoveAt = S.time; }
+    /* V12 §10/§13.3.1: khách TỰ suy hdg (rẽ có tốc độ như host), pha chi, xích và BANK từ
+       delta vị trí snapshot — máy chủ không gửi thêm trường nào */
+    if(mv > 0.02 && dt > 0){
+      if(u.hdg === undefined || u.hdg === null) u.hdg = (u.face < 0 ? Math.PI : 0);
+      var dxg = u.x - ox, dyg = u.y - oy;
+      var nhG = turnToward(u.hdg, Math.atan2(dyg, dxg), turnOf(u) * dt * 1.6);
+      var dHg = angErr(nhG, u.hdg); u.hdg = nhG;
+      var omgG = dHg / dt;
+      u._omg = omgG;
+      var strideG = (ANIM[u.type] && ANIM[u.type].stride) || 24;
+      var dAlG = dxg * Math.cos(u.hdg) + dyg * Math.sin(u.hdg);
+      var rLG = SPECS[u.type].draw * 0.30;
+      u.gaitPhase = (u.gaitPhase || 0) + dAlG / (2 * strideG);
+      u.gaitL = (u.gaitL || 0) + (dAlG + dHg * rLG) / (2 * strideG);
+      u.gaitR = (u.gaitR || 0) + (dAlG - dHg * rLG) / (2 * strideG);
+      u.trkP = (u.trkP || 0) + dAlG + dHg * rLG;
+      u.trkM = (u.trkM || 0) + dAlG - dHg * rLG;
+      if(SPECS[u.type].flying){
+        var mvG = mvOf(u), bTG = clamp(omgG * (mv / dt) * (mvG.bankK || 0.5) / 900, -(mvG.bankMax || 0), (mvG.bankMax || 0));
+        var bRG = Math.abs(bTG) > Math.abs(u.bank || 0) ? 6 : 4;
+        u.bank = (u.bank || 0) + clamp(bTG - (u.bank || 0), -bRG * dt, bRG * dt);
+        u._vfPrev = u._vfNow || 0; u._vfNow = dAlG / dt;
+      }
+    }
   });
   S.units.forEach(function(u){
     var ad = u.animDist || 0, delta = ad - (u._adPrev || 0); u._adPrev = ad;
@@ -8972,6 +9472,14 @@ function netGuestFrame(dt){
     u.idleW = clamp((u.idleW || 0) + (idleBusy ? -7 * dt : 1.5 * dt), 0, 1);
     if(u.recoilT > 0) u.recoilT = Math.max(0, u.recoilT - dt);
     if(u.lungeT > 0) u.lungeT = Math.max(0, u.lungeT - dt);
+    if(LEGSPEC[u.type]){
+      var laT2 = (u.speedNow > 8) ? clamp((u.speedNow || 0) / Math.max(1, SPECS[u.type].speed), 0.45, 1) : 0;
+      u.legAmp = (u.legAmp || 0) + (laT2 - (u.legAmp || 0)) * Math.min(1, dt / 0.12);
+    }
+    if(u.type === 'heli'){
+      u.spool = Math.min(1, (u.spool || 0) + dt / 0.8);
+      u.rotorA = ((u.rotorA || 0) + dt * 150 * u.spool) % 6.2832;
+    }
   });
   if(!S.paused && !S.over) tickParticles(dt);
   var spd = 520 * dt / cam.z;
