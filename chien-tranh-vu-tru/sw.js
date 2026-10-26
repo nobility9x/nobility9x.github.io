@@ -2,12 +2,13 @@
    Chiến lược: HTML = network-first (bản đăng mới luôn tới được người đã cài),
    tài nguyên tĩnh (sprite/tiếng/icon/manifest) = cache-first.
    Đổi BUILD_ID mỗi lần phát hành để dọn cache cũ. */
-const BUILD_ID = 'ctvt-v3-1';
+const BUILD_ID = 'ctvt-v4-1';
 const CACHE = BUILD_ID;
 
 const CORE = [
   './',
   'index.html',
+  'assets/title-art.webp',
   'manifest.webmanifest',
   'icon-192.png',
   'icon-512.png',
