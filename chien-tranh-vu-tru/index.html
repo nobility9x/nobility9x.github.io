@@ -2748,7 +2748,7 @@ var ANIM = {
   marine:   { stride:24, frames:6, bob:1.6, roll:0.035 },
   firebat:  { stride:25, frames:6, bob:1.5, roll:0.035 },
   zealot:   { stride:26, frames:6, bob:1.8, roll:0.040 },
-  zergling: { stride:19, frames:3, bob:1.4, roll:0.045 }, /* V12 §13.5/H1: sheet có frame 3 TRÙNG frame 1 (md5 bằng nhau) -> chu kỳ 4 thực chất [A,B,C,B] khựng mỗi vòng; dùng 3 frame thật, bỏ frame trùng (frame ứng viên AI lệch phong cách — proof-v12/art/README.md) */
+  zergling: { stride:19, frames:4, bob:1.4, roll:0.045 }, /* sheet có 4 cel; cel 3 trùng cel 1 là CÓ CHỦ Ý của tranh gốc: chu kỳ bước [A,B,C,B] đối xứng (B = tư thế chuyển dùng cả đi lẫn về), KHÔNG phải lỗi khựng. frames PHẢI bằng số cel thật của sheet (4) — v12.0 từng để 3 làm drawFrame cắt cel rộng 341px tràn sang cel kề, Zergling rách làm hai mảnh trên máy Cường; v12.1 sửa lại 4. */
   ultralisk:{ stride:40, frames:8, bob:2.6, roll:0.028, dust:1 },
   mech:     { stride:30, frames:6, bob:1.0, roll:0.018, dust:1 },
   dragoon:  { stride:28, frames:6, bob:1.6, roll:0.025 },
