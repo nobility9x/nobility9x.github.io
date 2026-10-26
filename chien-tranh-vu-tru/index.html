@@ -460,6 +460,119 @@ html,body{width:100%;height:100%;height:100dvh;overflow:hidden;background:#000;c
 #upgPanel{height:28px}
 .qSlot{width:18px;height:18px}
 .selCount{line-height:1.25}
+
+/* ===== V5.2 — MÀN CHUẨN BỊ: KHUNG CƠ KHÍ + CHỮ KỸ THUẬT QUÂN SỰ (theo bản vẽ tay của người dùng) =====
+   Nguyên tắc: ÍT khung, khung nào cũng là TẤM KIM LOẠI (mặt vát + đinh tán góc + khe ghép), lặng —
+   điểm nhấn duy nhất là MÀU TỘC đang chọn (biến --acc của thẻ). Chữ tiêu đề/nhãn: phông góc cạnh
+   kỹ thuật, IN HOA, giãn chữ — không dùng phông tròn mềm mặc định cho tiêu đề. */
+#startCard{--hd:'Arial Black','Segoe UI',Arial,sans-serif;
+  background-image:
+    radial-gradient(circle 2.6px at 9px 9px, rgba(205,225,248,.85) 1.4px, rgba(5,7,10,.95) 2.3px, transparent 3px),
+    radial-gradient(circle 2.6px at calc(100% - 9px) 9px, rgba(205,225,248,.85) 1.4px, rgba(5,7,10,.95) 2.3px, transparent 3px),
+    radial-gradient(circle 2.6px at 9px calc(100% - 9px), rgba(205,225,248,.5) 1.4px, rgba(5,7,10,.95) 2.3px, transparent 3px),
+    radial-gradient(circle 2.6px at calc(100% - 9px) calc(100% - 9px), rgba(205,225,248,.5) 1.4px, rgba(5,7,10,.95) 2.3px, transparent 3px),
+    linear-gradient(165deg,#232c3c,#121826 55%,#0b101a);
+  background-repeat:no-repeat;
+  border:1px solid #05070a;border-radius:8px;
+  box-shadow:inset 0 1px 0 rgba(190,210,235,.30), inset 0 -12px 18px rgba(0,0,0,.42), 0 10px 34px rgba(0,0,0,.6);
+  padding:10px 12px 12px;display:flex;flex-direction:column;gap:6px}
+#startCard h1{font-family:var(--hd);font-size:19px;letter-spacing:.14em;text-transform:uppercase;color:#dfeaf6;text-shadow:0 2px 0 rgba(0,0,0,.8),0 0 14px rgba(120,180,230,.25)}
+#startCard .startHead{margin:0;padding:0 2px}
+#startCard .pickLbl{font-family:var(--hd);font-size:9px;letter-spacing:.22em;color:#7e93a9;margin:4px 0 3px;text-transform:uppercase}
+#startCard .setupMain{display:flex;gap:10px;flex:1;min-height:0}
+#startCard .setupCol{flex:1;min-width:0;display:flex;flex-direction:column;gap:6px}
+#startCard .setupRail{width:104px;flex:none;display:flex;flex-direction:column;gap:6px;align-items:stretch}
+#startCard .railSpacer{flex:1;min-height:2px}
+#startCard .railLbl{font-family:var(--hd);font-size:9px;letter-spacing:.22em;color:#7e93a9;text-align:center}
+/* — TAB TỘC NHỎ GỌN: chỉ tab đang chọn mang màu tộc — */
+#startCard .racePick{gap:6px;margin:0}
+#startCard .raceCard.raceTab{display:flex;align-items:center;gap:7px;padding:5px 9px;border:1px solid #05070a;border-radius:5px;text-align:left;
+  background:linear-gradient(180deg,#2a3347,#171e2b 60%,#11161f);
+  box-shadow:inset 0 1px 0 rgba(190,210,235,.28), inset 0 -6px 9px rgba(0,0,0,.35);
+  opacity:.72;filter:saturate(.55)}
+#startCard .raceCard.raceTab img{width:24px;height:24px}
+#startCard .raceCard.raceTab .rn{font-family:var(--hd);font-size:12px;letter-spacing:.10em;margin:0;color:#c9d8ea}
+#startCard .raceCard.raceTab.sel{opacity:1;filter:none;transform:none;border-color:var(--acc, #2dd4bf);
+  box-shadow:inset 0 1px 0 rgba(220,240,255,.4), inset 0 -6px 9px rgba(0,0,0,.3), 0 0 10px var(--acc, rgba(45,212,191,.45))}
+#startCard .raceCard.raceTab.sel .rn{color:#fff}
+#startCard .raceCard.raceTab.sel::after{display:none}
+/* — THANH BẢN ĐỒ MỘT HỘP HAI NỬA: CỠ | LOẠI — */
+#startCard #mapBar{position:relative;width:100%;display:flex;align-items:center;gap:9px;margin:0;padding:7px 10px;text-align:left;cursor:pointer;
+  border:1px solid #05070a;border-radius:5px;color:#d9f6ff;
+  background-image:
+    radial-gradient(circle 2.2px at 6px 6px, rgba(205,225,248,.8) 1.1px, rgba(5,7,10,.95) 1.9px, transparent 2.5px),
+    radial-gradient(circle 2.2px at calc(100% - 6px) calc(100% - 6px), rgba(205,225,248,.5) 1.1px, rgba(5,7,10,.95) 1.9px, transparent 2.5px),
+    linear-gradient(180deg,#2a3347,#171e2b 60%,#11161f);
+  background-repeat:no-repeat;
+  box-shadow:inset 0 1px 0 rgba(190,210,235,.28), inset 0 -6px 9px rgba(0,0,0,.35)}
+#startCard #mapBar .mbHalf{flex:1;display:flex;align-items:baseline;gap:7px;min-width:0}
+#startCard #mapBar .mbKey{font-family:var(--hd);font-size:9px;letter-spacing:.2em;color:#7e93a9}
+#startCard #mapBar .mbHalf b{font-family:var(--hd);font-size:13px;letter-spacing:.06em;color:#f2f8ff;white-space:nowrap}
+#startCard #mapBar .mbSep{width:1px;align-self:stretch;background:linear-gradient(180deg,transparent,rgba(190,215,240,.45),transparent)}
+#startCard #mapBar .mbCaret{position:static;transform:none;font-size:13px;color:#9fc3e8;font-weight:900}
+#startCard #mapBar[aria-expanded="true"] .mbCaret{transform:rotate(180deg)}
+#startCard #mapBar .hidden{display:none} /* span giữ dữ liệu cho test/JS — không hiển thị (file không có luật .hidden toàn cục) */
+/* — KHUNG GHI CHÚ: xem trước KIỂU bản đồ thật + mô tả — */
+#startCard .mapNote{margin:0;padding:5px 8px;border:1px solid #05070a;border-radius:5px;background:linear-gradient(180deg,#1a2231,#10151f);box-shadow:inset 0 1px 0 rgba(190,210,235,.16)}
+#startCard .mapNote canvas{border:1px solid rgba(190,215,240,.18)}
+#startCard .mapNoteTxt{font-size:10.5px;line-height:1.32;color:#b8cadd}
+/* — PANEL XỔ CỠ/LOẠI — */
+#startCard #mapPanel{margin:0}
+#startCard .mapPick{gap:6px}
+#startCard .mapCard{padding:5px 8px;border:1px solid #05070a;border-radius:5px;background:linear-gradient(180deg,#252e40,#151b27);box-shadow:inset 0 1px 0 rgba(190,210,235,.2)}
+#startCard .mapCard .mn{font-family:var(--hd);font-size:11.5px;letter-spacing:.05em}
+#startCard .mapCard .ms{font-size:9.5px;line-height:1.28;color:#93a8bf}
+#startCard .mapCard.sel{border-color:var(--acc, #2dd4bf);box-shadow:inset 0 1px 0 rgba(220,240,255,.35),0 0 8px var(--acc, rgba(45,212,191,.4))}
+/* v5.2: bỏ kẹp chữ của bản cũ (nowrap/line-clamp) — panel đã có chỗ, mô tả kiểu bản đồ phải đọc trọn */
+#startCard #mapPanel .mapCard .ms{white-space:normal;overflow:visible;text-overflow:clip}
+#startCard #mapPanel #mapPick .mapCard .ms{white-space:normal;overflow:visible;text-overflow:clip}
+#startCard #mapPanel #typePick .mapCard .ms{display:block;-webkit-line-clamp:unset}
+/* — HÀNG ĐỐI THỦ MÁY 1/2/3 — */
+#startCard #aiRows{display:flex;flex-direction:column;gap:5px;margin-top:2px}
+#startCard .aiRowHead{width:100%;display:flex;align-items:center;gap:8px;margin:0;padding:6px 10px;cursor:pointer;text-align:left;
+  border:1px solid #05070a;border-radius:5px;color:#dbe7f5;min-height:0;font-size:12px;
+  background:linear-gradient(180deg,#2a3347,#171e2b 60%,#11161f);
+  box-shadow:inset 0 1px 0 rgba(190,210,235,.26), inset 0 -6px 9px rgba(0,0,0,.35)}
+#startCard .aiRowName{font-family:var(--hd);font-size:12px;letter-spacing:.12em;color:#e6f0fa}
+#startCard .aiRowVal{margin-left:auto;font-size:11px;font-weight:700;color:#8fa6ba;letter-spacing:.03em}
+#startCard .aiRow.set .aiRowVal{color:#fff}
+#startCard .aiRowCaret{font-size:11px;color:#9fc3e8;font-weight:900}
+#startCard .aiRow.open .aiRowCaret{transform:rotate(180deg)}
+#startCard .aiRow.locked{opacity:.36;filter:grayscale(.7)}
+#startCard .aiRow.locked .aiRowHead{cursor:not-allowed}
+#startCard .aiRowOpts{display:none;gap:5px;padding:5px 1px 1px}
+#startCard .aiRow.open .aiRowOpts{display:flex}
+#startCard .aiOpt{flex:1;margin:0;padding:5px 4px;min-height:0;font-size:10.5px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;
+  color:#c9d8ea;border:1px solid #05070a;border-radius:5px;cursor:pointer;
+  background:linear-gradient(180deg,#232c3e,#141a26);box-shadow:inset 0 1px 0 rgba(190,210,235,.2)}
+#startCard .aiOpt.sel{border-color:var(--acc, #2dd4bf);color:#fff;box-shadow:inset 0 1px 0 rgba(220,240,255,.35),0 0 7px var(--acc, rgba(45,212,191,.4))}
+#startCard .aiOptOff{flex:0 0 52px;color:#7e93a9}
+#startCard .teamNote{font-size:10px;line-height:1.32;color:#8fa6ba;margin:0}
+/* — RAIL PHẢI: chip độ khó dọc + sách + nút BẮT ĐẦU TRÒN — */
+#startCard #diffPick.diffCol{display:flex;flex-direction:column;gap:5px}
+#startCard #diffPick .diffBtn{margin:0;padding:6px 2px;min-height:0;text-align:center;
+  font-family:var(--hd);font-size:11.5px;letter-spacing:.1em;color:#c9d8ea;
+  border:1px solid #05070a;border-radius:5px;background:linear-gradient(180deg,#2a3347,#171e2b 60%,#11161f);
+  box-shadow:inset 0 1px 0 rgba(190,210,235,.26), inset 0 -6px 9px rgba(0,0,0,.35)}
+#startCard #diffPick .diffBtn.sel{border-color:var(--acc, #2dd4bf);color:#fff;box-shadow:inset 0 1px 0 rgba(220,240,255,.35),0 0 8px var(--acc, rgba(45,212,191,.4))}
+#startCard #btnBook{margin:0;padding:7px 4px 5px;min-height:0;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;
+  border:1px solid #05070a;border-radius:5px;color:#cfe0f2;
+  background:linear-gradient(180deg,#2a3347,#171e2b 60%,#11161f);
+  box-shadow:inset 0 1px 0 rgba(190,210,235,.26), inset 0 -6px 9px rgba(0,0,0,.35)}
+#startCard #btnBook .bookSvg{width:42px;height:32px;filter:drop-shadow(0 2px 2px rgba(0,0,0,.6))}
+#startCard #btnBook .bookLbl{font-family:var(--hd);font-size:9px;letter-spacing:.24em;color:#9fb4cc}
+#startCard #btnStart{flex:none;width:97px;height:97px;border-radius:50%;margin:2px auto 0;padding:12px 10px;cursor:pointer;
+  font-family:var(--hd);font-size:11px;line-height:1.45;letter-spacing:.05em;color:#eafcff;text-align:center;
+  background:radial-gradient(circle at 50% 38%, #33506e 0%, #1d3249 52%, #101d2d 78%, #0a1420 100%);
+  border:2px solid #6d84a0;
+  box-shadow:0 0 0 4px #0b1017, 0 0 0 6px #46536a, inset 0 2px 3px rgba(220,245,255,.5), inset 0 -10px 16px rgba(0,0,0,.6), 0 6px 16px rgba(0,0,0,.55);
+  text-shadow:0 1px 3px rgba(0,0,0,.9)}
+#startCard #btnStart:active{transform:translateY(2px);box-shadow:0 0 0 4px #0b1017, 0 0 0 6px #46536a, inset 0 2px 3px rgba(220,245,255,.4), inset 0 -6px 12px rgba(0,0,0,.6), 0 3px 8px rgba(0,0,0,.55)}
+#startCard #btnBackSplash{border:1px solid #05070a;border-radius:5px;background:linear-gradient(180deg,#2a3347,#171e2b);box-shadow:inset 0 1px 0 rgba(190,210,235,.26)}
+/* màn chuẩn bị khi panel bản đồ đang xổ: gọt bớt chiều cao các khối khác để panel vừa khung */
+#startCard.panelOpen .mapNote{display:none}
+#startCard.panelOpen #aiRows{display:none}
+#startCard.panelOpen .teamNote{display:none !important}
 </style>
 </head>
 <body>
@@ -519,34 +632,44 @@ html,body{width:100%;height:100%;height:100dvh;overflow:hidden;background:#000;c
       <h1>CHIẾN TRANH VŨ TRỤ</h1>
       <span class="headSpacer"></span>
     </div>
-    <div class="racePick" id="racePick">
-      <div class="raceCard" data-race="terran"><img src="assets/sprites/command.png" alt=""><div class="rTxt"><div class="rn">TERRAN</div><div class="rs">Thợ xây tại chỗ · hàng đợi · Kho Tiếp Tế cấp dân số</div></div></div>
-      <div class="raceCard" data-race="zerg"><img src="assets/sprites/hatchery.png" alt=""><div class="rTxt"><div class="rn">ZERG</div><div class="rs">Drone hoá thành nhà · ấu trùng · thảm nhầy · tự hồi máu</div></div></div>
-      <div class="raceCard" data-race="protoss"><img src="assets/sprites/nexus.png" alt=""><div class="rTxt"><div class="rn">PROTOSS</div><div class="rs">Warp-in rồi thợ đi ngay · vùng điện Pylon · khiên tự hồi</div></div></div>
-    </div>
-    <button type="button" id="mapBar" aria-expanded="false"><span class="mbMain">🗺 BẢN ĐỒ — <b id="mapBarTxt">Vừa · Cao Nguyên</b></span><span class="mbName" id="mapBarName">Bản Đồ Vừa · Cao Nguyên</span><span class="mbCaret" id="mapBarCaret">▾</span></button>
-    <div class="mapNote" id="mapNote"><canvas id="mapNoteCv" width="168" height="48"></canvas><div class="mapNoteTxt" id="mapNoteTxt"></div></div>
-    <div id="mapPanel" class="hidden">
-      <div class="pickLbl">KÍCH CỠ BẢN ĐỒ</div>
-      <div class="mapPick" id="mapPick"></div>
-      <div class="pickLbl">KIỂU BẢN ĐỒ</div>
-      <div class="mapPick" id="typePick"></div>
-    </div>
-    <div class="pickLbl">ĐỐI THỦ (OFFLINE)</div>
-    <div class="teamPick">
-      <button type="button" class="teamBtn" data-teams="2">1 MÁY<small>Mình vs 1 Máy</small></button>
-      <button type="button" class="teamBtn" data-teams="3">2 MÁY<small>Mình vs 2 Máy</small></button>
-    </div>
-      <div class="teamNote" id="teamNote">Bản đồ Nhỏ chỉ đấu với 1 Máy</div>
-      <div class="pickLbl">ĐỘ KHÓ (OFFLINE)</div>
-      <div class="teamPick" id="diffPick">
-        <button type="button" class="diffBtn" data-diff="de">DỄ<small>Tiến độ chậm — để tập chơi</small></button>
-        <button type="button" class="diffBtn" data-diff="vua">VỪA<small>Tương đối gay cấn</small></button>
-        <button type="button" class="diffBtn" data-diff="kho">KHÓ<small>Thử thách để vượt qua</small></button>
+    <div class="setupMain">
+      <div class="setupCol">
+        <div class="racePick" id="racePick">
+          <div class="raceCard raceTab" data-race="terran"><img src="assets/sprites/command.png" alt=""><div class="rTxt"><div class="rn">TERRAN</div></div></div>
+          <div class="raceCard raceTab" data-race="zerg"><img src="assets/sprites/hatchery.png" alt=""><div class="rTxt"><div class="rn">ZERG</div></div></div>
+          <div class="raceCard raceTab" data-race="protoss"><img src="assets/sprites/nexus.png" alt=""><div class="rTxt"><div class="rn">PROTOSS</div></div></div>
+        </div>
+        <button type="button" id="mapBar" aria-expanded="false">
+          <span class="mbHalf"><span class="mbKey">CỠ</span><b id="mapBarSize">Vừa</b></span>
+          <span class="mbSep"></span>
+          <span class="mbHalf"><span class="mbKey">LOẠI</span><b id="mapBarType">Cao Nguyên</b></span>
+          <span class="mbCaret" id="mapBarCaret">▾</span>
+          <span id="mapBarTxt" class="hidden">Vừa · Cao Nguyên</span><span id="mapBarName" class="hidden">Bản Đồ Vừa · Cao Nguyên</span>
+        </button>
+        <div class="mapNote" id="mapNote"><canvas id="mapNoteCv" width="168" height="48"></canvas><div class="mapNoteTxt" id="mapNoteTxt"></div></div>
+        <div id="mapPanel" class="hidden">
+          <div class="pickLbl">CỠ BẢN ĐỒ</div>
+          <div class="mapPick" id="mapPick"></div>
+          <div class="pickLbl">LOẠI BẢN ĐỒ</div>
+          <div class="mapPick" id="typePick"></div>
+        </div>
+        <div id="aiRows"></div>
+        <div class="teamNote" id="teamNote"></div>
       </div>
-    <div class="startActions">
-      <button id="btnStart" type="button">▶ VÀO TRẬN</button>
-      <button id="btnBook" type="button">📖 SÁCH HƯỚNG DẪN</button>
+      <div class="setupRail">
+        <div class="railLbl">ĐỘ KHÓ</div>
+        <div class="teamPick diffCol" id="diffPick">
+          <button type="button" class="diffBtn" data-diff="de">DỄ</button>
+          <button type="button" class="diffBtn" data-diff="vua">VỪA</button>
+          <button type="button" class="diffBtn" data-diff="kho">KHÓ</button>
+        </div>
+        <div class="railSpacer"></div>
+        <button id="btnBook" type="button" aria-label="Sách hướng dẫn">
+          <svg viewBox="0 0 48 36" class="bookSvg" aria-hidden="true"><path d="M24 7 C19 3.5 11 3 4 5 L4 30 C11 28 19 28.5 24 32 C29 28.5 37 28 44 30 L44 5 C37 3 29 3.5 24 7 Z" fill="#e9dec2" stroke="#8a6a34" stroke-width="1.7"/><path d="M24 7 L24 32" stroke="#8a6a34" stroke-width="1.5"/><path d="M8 9.5 C13 8 18 8.2 21.5 10 M8 14.5 C13 13 18 13.2 21.5 15 M8 19.5 C13 18 18 18.2 21.5 20 M40 9.5 C35 8 30 8.2 26.5 10 M40 14.5 C35 13 30 13.2 26.5 15 M40 19.5 C35 18 30 18.2 26.5 20" stroke="#9a8a68" stroke-width="1.3" fill="none"/></svg>
+          <span class="bookLbl">SÁCH</span>
+        </button>
+        <button id="btnStart" type="button">▶ VÀO TRẬN — TERRAN</button>
+      </div>
     </div>
   </div>
 </div>
@@ -585,13 +708,15 @@ html,body{width:100%;height:100%;height:100dvh;overflow:hidden;background:#000;c
       <div class="bookPage" data-bpage="unit">
         <p>• <b>Quân &amp; khắc chế:</b> Lính (rẻ, đa năng) • Lính Phun Lửa (đốt đàn quái nhỏ, yếu trước quân to) • Xe Tăng (pháo xa, nổ lan, mạnh với quân to) • Robot Chiến Đấu (bắn nhanh, cơ động).</p>
         <p>• <b>Nâng cấp:</b> Doanh Trại nghiên cứu <b>Vũ Khí +1→+3</b>, Xưởng Cơ Khí nghiên cứu <b>Giáp +1→+3</b> (giá tăng dần 100/100 → 175/175 → 250/250).</p>
-        <p>• Các đội máy mang <b>hai tộc còn lại</b> và đánh nhau cả với nhau; chạm chọn bất kỳ quân/nhà nào để xem thông số trong bảng điều khiển.</p>
+        <p>• Các đội máy <b>đánh nhau cả với nhau</b> — mỗi đợt tấn công chọn ngẫu nhiên một đối thủ còn sống, không dồn hết vào bạn. Tộc của từng Máy chốt ở màn chuẩn bị (chạm vào hàng MÁY 1/2/3) hoặc để Ngẫu nhiên; chạm chọn bất kỳ quân/nhà nào để xem thông số trong bảng điều khiển.</p>
+        <p>• <b>MÀU ĐỘI:</b> chỉ cần một tộc bị <b>trùng</b> giữa các phe là cả trận bật màu phe — bạn <b>Xanh dương</b> · Máy 1 <b>Đỏ</b> · Máy 2 <b>Cam</b> · Máy 3 <b>Tím</b>: đĩa màu dưới chân quân, thanh máu, chấm bản đồ nhỏ và cả sprite đều nhuộm tông màu phe. Mọi phe khác tộc nhau thì giữ diện mạo mặc định.</p>
       </div>
       <div class="bookPage" data-bpage="map">
-        <p>• <b>Địa hình 3 tầng:</b> <b>cao nguyên</b> sáng xanh-thép (tầng 2) · mặt đất thường (tầng 1) · <b>tầng trũng</b> tối ấm (tầng 0). Quân chỉ lên/xuống qua <b>DỐC</b> (dải dốc có ray sáng, mũi tên chevron chỉ lên dốc) — mép tầng còn lại là <b>vách đứng</b> (mép sáng + mặt vách tối) không leo được; không xây nhà trên dốc.</p>
+        <p>• <b>Ba KIỂU bản đồ — ba diện mạo khác hẳn:</b> <b>Cao Nguyên</b> đất đá ĐỎ ấm, vách nâu đỏ, tảng đá rải rác, căn cứ ôm cao nguyên với chảo thấp giữ mỏ giàu ở giữa. <b>Thung Lũng</b> XANH cỏ/đất — chảo trũng rộng giữa bản đồ nhiều lối qua lại, hai vai cao bọc quanh. <b>Song Đỉnh</b> đá slate TỐI lạnh — hai đỉnh sáng băng đối mặt nhau, khe trũng phát sáng ở giữa là đường tranh chấp. Cỡ chỉ thêm NỘI DUNG (mỏ/khu vực), không phóng to hình: Nhỏ 2240×1680 (2 phe) · Vừa 2880×2160 (tối đa 3 phe) · To 3840×2880 (tối đa 4 phe ở 4 góc, mỗi góc một lãnh thổ trọn vẹn).</p>
+        <p>• <b>Địa hình 3 tầng:</b> <b>cao nguyên</b> sáng nhất (tầng 2) · mặt đất thường (tầng 1) · <b>tầng trũng</b> tối nhất (tầng 0) — ở kiểu nào cũng đọc rõ theo độ sáng. Quân chỉ lên/xuống qua <b>DỐC</b> (dải dốc có ray sáng, mũi tên chevron chỉ lên dốc) — mép tầng còn lại là <b>vách đứng</b> (mép sáng + mặt vách tối) không leo được; không xây nhà trên dốc.</p>
         <p>• <b>Lợi thế cao điểm:</b> đứng trên cao bắn xuống có lợi — quân ở dưới bắn lên <b>trượt 25%</b>; đứng thấp cũng không nhìn thấy xa trên cao nguyên.</p>
         <p>• <b>Bố cục chuẩn ladder:</b> nhà chính nép góc trên tầng cao nhất với <b>một dốc chính hẹp</b>; mỏ tự nhiên ngay dưới dốc (một đạo quân giữ cả hai); trung tâm thấp, rộng, 2–3 lối qua — không bao giờ chỉ một điểm nghẽn. Thời gian địch chạy nhà-nó-tới-nhà-mình ~33–42 giây ở mọi cỡ bản đồ.</p>
-        <p>• <b>Thắng:</b> phá hết <b>nhà chính</b> của (các) đội máy (Trung Tâm / Tổ Quái / Nexus tuỳ tộc địch). <b>Thua:</b> mất nhà chính của mình. <b>Đợt địch đầu tiên chỉ đến sau ~2 phút rưỡi</b> — kịp khai thác và dựng quân; các đợt sau cách ~80 giây, đông dần, quân hạng nặng chỉ từ ~phút 9; trước phút 5 quái đánh nhà chỉ 50% sát thương.</p>
+        <p>• <b>Thắng:</b> phá hết <b>MỌI nhà chính địch</b> (Trung Tâm / Tổ Quái / Nexus tuỳ tộc — trận 4 phe phải phá cả 3). <b>Thua:</b> mất nhà chính của mình (các phe còn lại đánh tiếp). <b>Đợt địch đầu tiên chỉ đến sau ~2 phút rưỡi</b> — kịp khai thác và dựng quân; các đợt sau cách ~80 giây, đông dần, quân hạng nặng chỉ từ ~phút 9; trước phút 5 quái đánh nhà chỉ 50% sát thương.</p>
       </div>
       <div class="bookPage" data-bpage="evo">
         <p><b>DÂN SỐ LEO THANG</b> — quân càng mạnh càng chiếm nhiều chỗ: thợ luôn <b>1</b>; Terran: Lính <b>1</b> · Giáp Lửa <b>2</b> · Cơ Giới <b>3</b> · Xe Tăng <b>4</b>. Zerg: 1 trứng Quái Nhỏ nở 2 con = <b>1</b> · Bắn Gai <b>2</b> · Khổng Lồ <b>3</b> (Overlord 0 — nó là nhà dân số bay, mỗi con +8). Protoss: Zealot <b>1</b> · Dragoon <b>2</b> · Archon <b>3</b>. Trần tối đa <b>300</b>.</p>
@@ -661,10 +786,35 @@ var MAP_SIZES = {
   'to':  { name:'Bản Đồ To',  w:3840, h:2880, teams2Only:false, note:'To · 3840×2880 · nhiều mỏ, nhiều khu vực, thêm mỏ giàu tranh chấp' }
 };
 var MAP_TYPES = {
-  'caonguyen': { name:'Cao Nguyên', desc:'Cao nguyên ôm căn cứ, chảo thấp giữa bản đồ giữ mỏ giàu, pod cao trông xuống hai trục tiến quân.' },
-  'thunglung': { name:'Thung Lũng', desc:'Thung lũng tầng 0 cắt ngang giữa — muốn sang phải qua dốc xuống rồi leo lên; căn cứ trên vai tầng 1, pod tầng 2 sau lưng.' },
-  'songdinh':   { name:'Song Đỉnh', desc:'Hai đỉnh tầng 2 trấn giữa bản đồ với yên ngựa ở giữa — giữ đỉnh là giữ thế trận; mỏ giàu nằm dưới bóng đỉnh.' }
+  'caonguyen': { name:'Cao Nguyên', desc:'Đất đá ĐỎ ấm, vách nâu đỏ, đá rải rác. Cao nguyên ôm căn cứ, chảo thấp giữa bản đồ giữ mỏ giàu, pod cao trông xuống hai trục tiến quân.' },
+  'thunglung': { name:'Thung Lũng', desc:'Thung lũng XANH cỏ/đất — chảo trũng rộng giữa bản đồ nhiều lối qua lại, hai vai cao bọc quanh. Muốn sang bờ bên kia phải xuống thung rồi leo lên; pod tầng 2 sau lưng căn cứ.' },
+  'songdinh':   { name:'Song Đỉnh', desc:'Đá slate TỐI lạnh — hai đỉnh sáng băng đối mặt nhau, khe trũng phát sáng ở giữa là đường tranh chấp. Mỏ giàu nằm dưới bóng đỉnh.' }
 };
+/* ===== TILESET theo KIỂU bản đồ (v5.2): mỗi kiểu một BỘ MÀU + chi tiết mặt đất riêng =====
+   Mốc độ sáng (luminance) bắt buộc giữ ở MỌI kiểu để địa hình 3 tầng luôn đọc được:
+   L1 (đất thường) ≈ mốc 0 · L2 (cao nguyên) sáng hơn L1 ít nhất ~+30 · L0 (trũng) tối hơn L1 ít nhất ~−28.
+   mm = màu tầng cho minimap/preview [L0, L1, L2]; css = màu nền L1 dạng hex cho khung ghi chú. */
+var TILESETS = {
+  'caonguyen': { css:'#684c36', mm:['#241a12', '#6b4e33', '#a97e52'], mmRamp:'#d8b25e', detail:'rock', decor:'rock',
+    g1:[104,76,54], g1Var:12,
+    l0:[62,44,30], l2:[150,112,78], l2Hi:'rgba(255,226,180,0.16)', l2Edge:'rgba(255,232,196,0.34)',
+    lip:'rgba(214,178,132,0.92)', cliffA:'rgba(24,16,10,0.95)', cliffB:'rgba(24,16,10,0.62)', cliffLine:'rgba(0,0,0,0.45)',
+    rampHi:'rgba(196,158,110,0.96)', rampLo:'rgba(70,50,32,0.96)', chev:'rgba(255,240,214,0.9)', rail:'rgba(240,214,170,0.92)', railIn:'rgba(20,12,6,0.55)',
+    seam:'rgba(0,0,0,0.34)', seamHi:'rgba(255,235,205,0.05)', scratch:'rgba(30,20,12,' },
+  'thunglung': { css:'#485f32', mm:['#16240f', '#47622f', '#8aa860'], mmRamp:'#c9b458', detail:'grass', decor:'flora',
+    g1:[72,95,50], g1Var:10,
+    l0:[40,58,32], l2:[116,132,76], l2Hi:'rgba(240,255,205,0.15)', l2Edge:'rgba(230,245,190,0.32)',
+    lip:'rgba(178,198,128,0.92)', cliffA:'rgba(14,20,10,0.95)', cliffB:'rgba(14,20,10,0.62)', cliffLine:'rgba(0,0,0,0.40)',
+    rampHi:'rgba(178,164,110,0.96)', rampLo:'rgba(84,66,40,0.96)', chev:'rgba(255,246,214,0.9)', rail:'rgba(226,208,150,0.9)', railIn:'rgba(24,18,8,0.5)',
+    seam:'rgba(10,16,6,0.30)', seamHi:'rgba(235,255,210,0.05)', scratch:null },
+  'songdinh': { css:'#323944', mm:['#0d1016', '#39424f', '#8fa6ba'], mmRamp:'#7fd4e8', detail:'slate', decor:'shard',
+    g1:[50,57,68], g1Var:9,
+    l0:[24,27,34], l2:[96,110,128], l2Hi:'rgba(214,236,252,0.17)', l2Edge:'rgba(205,230,250,0.36)',
+    lip:'rgba(190,216,236,0.92)', cliffA:'rgba(5,7,12,0.95)', cliffB:'rgba(5,7,12,0.62)', cliffLine:'rgba(0,0,0,0.5)',
+    rampHi:'rgba(170,198,222,0.96)', rampLo:'rgba(34,40,52,0.96)', chev:'rgba(240,250,255,0.92)', rail:'rgba(205,230,248,0.92)', railIn:'rgba(8,10,16,0.55)',
+    seam:'rgba(0,0,0,0.5)', seamHi:'rgba(255,255,255,0.055)', scratch:'rgba(0,0,0,' }
+};
+function tilesetOf(mapId){ var m = MAPS[mapId]; return TILESETS[m ? m.typeKey : 'caonguyen'] || TILESETS.caonguyen; }
 function _rotR(W, H, r){ return [W - r[2], H - r[3], W - r[0], H - r[1], r[4]]; }
 function _mirR(W, r){ return [W - r[2], r[1], W - r[0], r[3], r[4]]; }
 function _rotP(W, H, p){ return [W - p[0], H - p[1]]; }
@@ -764,19 +914,27 @@ function buildMapDef(sizeKey, typeKey){
     Xc(0.22, 0.50, true); Xc(0.78, 0.50, true); /* TO: cặp mỏ GIÀU tranh chấp hai sườn giữa bản đồ */
   }
   var baseA1 = _rotP(W, H, baseP), baseA2 = _mirP(W, baseP);
+  var baseA3 = [baseP[0], H - baseP[1]]; /* phe thứ 4 (chỉ bản To): góc Tây-Bắc = gương dọc của khung người chơi —
+     4 góc tạo thành nhóm đối xứng gương/xoay 180° hoàn chỉnh (trên lưới chữ nhật không tồn tại phép xoay 90° thật,
+     đây là bố cục 4 góc chuẩn của bản đồ RTS 4 người: mỗi góc một LÃNH THỔ trọn vẹn y hệt nhau) */
   function rotR(r){ return _rotR(W, H, r); }
   function rotRp(r){ return [W - r[2], H - r[3], W - r[0], H - r[1]]; }
   function mirR(r){ return _mirR(W, r); }
-  var eAll = cE.concat(sE, cE.map(rotR), sE.map(rotR), sE.map(mirR));
-  var rAll = cR.concat(sR, cR.map(rotRp), sR.map(rotRp), sR.map(function(r){ return [W - r[2], r[1], W - r[0], r[3]]; }));
+  function mirYR(r){ return [r[0], H - r[3], r[2], H - r[1], r[4]]; }
+  function mirYRp(r){ return [r[0], H - r[3], r[2], H - r[1]]; }
+  var eAll = cE.concat(sE, cE.map(rotR), sE.map(rotR), sE.map(mirR), sE.map(mirYR));
+  var rAll = cR.concat(sR, cR.map(rotRp), sR.map(rotRp), sR.map(function(r){ return [W - r[2], r[1], W - r[0], r[3]]; }), sR.map(mirYRp));
   function rotX(e){ var p = _rotP(W, H, [e.x, e.y]); return { x:p[0], y:p[1], rich:e.rich }; }
   function mirX(e){ return { x: W - e.x, y: e.y, rich: e.rich }; }
+  /* LƯU Ý: KHÔNG nhân bản mỏ mở rộng cho góc Tây-Bắc — danh sách mỏ theo KHU VỰC đã trải dọc cả phía Tây
+     (gồm sẵn điểm (533,799) ở nửa Bắc), phe ai3 dùng chính các điểm phía Bắc đó làm mỏ tự nhiên/chuỗi của mình.
+     Nhân bản gương dọc từng làm lòi thêm mỏ giả (533,1361) ngay vùng tự nhiên của người chơi (hồi quy test W3). */
   var exAll = sX.concat(sX.map(rotX), sX.map(mirX), cX);
   var seen = {}, exDedup = [];
   exAll.forEach(function(e){ var k = Math.round(e.x/60) + ':' + Math.round(e.y/60) + ':' + (e.rich ? 1 : 0); if(!seen[k]){ seen[k] = 1; exDedup.push(e); } });
   return { name: SZ.name + ' · ' + MAP_TYPES[typeKey].name, size: SZ.note + ' — ' + MAP_TYPES[typeKey].name,
     w: W, h: H, teams2Only: SZ.teams2Only, sizeKey: sizeKey, typeKey: typeKey,
-    bases: { player: [Math.round(baseP[0]), Math.round(baseP[1])], ai1: [Math.round(baseA1[0]), Math.round(baseA1[1])], ai2: [Math.round(baseA2[0]), Math.round(baseA2[1])] },
+    bases: { player: [Math.round(baseP[0]), Math.round(baseP[1])], ai1: [Math.round(baseA1[0]), Math.round(baseA1[1])], ai2: [Math.round(baseA2[0]), Math.round(baseA2[1])], ai3: [Math.round(baseA3[0]), Math.round(baseA3[1])] },
     extra: [], elev: eAll, ramps: rAll, expansions: exDedup };
 }
 var MAPS = {};
@@ -804,7 +962,7 @@ var MAIN_UP_COSTS = { 1:{m:200, g:100, t:60}, 2:{m:300, g:200, t:90} };
 function mapLayout(mapId, teams){
   var map = MAPS[mapId], out = { bases:[], nodes:[] }, i;
   out.bases.push({faction:'player', x:map.bases.player[0], y:map.bases.player[1]});
-  (teams===3 ? ['ai1','ai2'] : ['ai1']).forEach(function(t){ out.bases.push({faction:t, x:map.bases[t][0], y:map.bases[t][1]}); });
+  ['ai1','ai2','ai3'].slice(0, Math.max(1, teams-1)).forEach(function(t){ out.bases.push({faction:t, x:map.bases[t][0], y:map.bases[t][1]}); });
   out.bases.forEach(function(b){
     var fx = b.x > map.w*0.6 ? -1 : 1;
     [[195,-80],[255,35],[170,70],[315,105],[225,-165]].forEach(function(o){ out.nodes.push({type:'mineral', x:b.x+o[0]*fx, y:b.y+o[1], amount:1500}); });
@@ -920,7 +1078,32 @@ var IMG = {};
 ['worker','marine','firebat','tank','mech','dropship','zergling','hydralisk','ultralisk','drone','overlord','probe','zealot','dragoon','archon','command','depot','barracks','factory','turret','refinery','hatchery','extractor','spawningpool','zergden','sunkencolony','nexus','pylon','gateway','cybercore','cannon','assimilator','mineral','geyser'].forEach(function(n){
   var im = new Image(); im.src = sprImg(n); IMG[n] = im;
 });
-function imgReady(im){ return im && im.complete && im.naturalWidth > 0; }
+function imgReady(im){ if(!im) return false; if(im.tagName === 'CANVAS') return im.width > 0; return im.complete && im.naturalWidth > 0; }
+function imgW(im){ return im.naturalWidth || im.width || 0; }
+function imgH(im){ return im.naturalHeight || im.height || 0; }
+/* ===== MÀU ĐỘI (v5.2): sprite NHUỘM TÔNG màu phe — dựng lười (lazy) theo từng (sprite, phe), cache trong ván =====
+   Cách nhuộm: phủ màu phe ở chế độ 'source-atop' với alpha vừa — giữ nguyên bóng/chi tiết của tranh gốc,
+   chỉ đổi TÔNG MÀU tổng thể sang màu phe để quân trùng tộc không bao giờ lẫn nhau. */
+var TINT_CACHE = {};
+function tintedCanvas(im, hex){
+  if(!imgReady(im)) return im;
+  var key = (im.src || 'cv') + '|' + hex;
+  if(TINT_CACHE[key]) return TINT_CACHE[key];
+  try{
+    var c = document.createElement('canvas'); c.width = imgW(im); c.height = imgH(im);
+    var g = c.getContext('2d'); if(!g) return im;
+    g.drawImage(im, 0, 0);
+    g.globalCompositeOperation = 'source-atop'; g.globalAlpha = 0.34; g.fillStyle = hex; g.fillRect(0, 0, c.width, c.height);
+    g.globalAlpha = 1; g.globalCompositeOperation = 'source-over';
+    TINT_CACHE[key] = c; return c;
+  }catch(e){ return im; }
+}
+/* Lấy sprite cho một phe: khi MÀU ĐỘI bật thì trả bản nhuộm, không thì bản gốc */
+function UIMG(store, name, faction){
+  var im = store[name];
+  if(!im || !S || !S.teamColorMode) return im;
+  return tintedCanvas(im, teamColor(faction));
+}
 
 /* ============ FIX v5 — HOẠT HÌNH THEO QUÃNG ĐƯỜNG (nghiên cứu: research-animation/notes.md) ============
    Luật gốc: pha hoạt hình = f(quãng đường đã đi), KHÔNG theo đồng hồ → chân không bao giờ trượt.
@@ -1361,9 +1544,9 @@ function buildMmElev(){
   try{
     var c = document.createElement('canvas'); c.width = eCols*6; c.height = eRows*6;
     var g = c.getContext('2d'); if(!g) return;
-    var cols = ['#14161b', '#454c57', '#9db1c7'], tx, ty;
+    var TS = tilesetOf(chosenMap), cols = TS.mm, tx, ty;
     for(ty=0; ty<eRows; ty++) for(tx=0; tx<eCols; tx++){
-      g.fillStyle = rampGrid[ty*eCols+tx] ? '#8a7a3a' : cols[elevGrid[ty*eCols+tx]];
+      g.fillStyle = rampGrid[ty*eCols+tx] ? TS.mmRamp : cols[elevGrid[ty*eCols+tx]];
       g.fillRect(tx*6, ty*6, 6, 6);
     }
     mmElevCv = c;
@@ -1490,11 +1673,13 @@ function resetGame(){
   Z_MIN = WORLD_W >= 3800 ? 0.30 : 0.35; /* bản đồ To: cho thu nhỏ thêm để ôm được vùng rộng */
   FOG_COLS = Math.ceil(WORLD_W/FOG_CELL); FOG_ROWS = Math.ceil(WORLD_H/FOG_CELL);
   S = { started:false, paused:false, over:false, result:null, fsAttempted:false, time:0, wave:0,
-        map:chosenMap, teams:chosenTeams, playerRace:chosenRace, aiRaces:pickAiRaces(chosenRace, chosenTeams),
-        ai:{ ai1:{wave:0, nextAt:DIFFS[chosenDiff].first}, ai2:{wave:0, nextAt:DIFFS[chosenDiff].first+20} },
+        map:chosenMap, teams:chosenTeams, playerRace:chosenRace, aiRaces:resolveAiRaces(chosenRace),
+        ai:{ ai1:{wave:0, nextAt:DIFFS[chosenDiff].first}, ai2:{wave:0, nextAt:DIFFS[chosenDiff].first+20}, ai3:{wave:0, nextAt:DIFFS[chosenDiff].first+40} },
         minerals:50, gas:0, supplyUsed:0, supplyCap:10, upgrades:{weapon:0, armor:0}, mainLevel:1, mainUpgrade:null, diff:chosenDiff,
         units:[], buildings:[], nodes:[], projectiles:[], defendPings:{},
         selectedIds:[], selectedBuildingId:0, stats:{kills:0, losses:0, trained:0} };
+  S.teamColorMode = computeTeamColorMode();
+  TINT_CACHE = {}; /* phe đổi -> bộ sprite nhuộm màu đội phải dựng lại */
   fog = new Uint8Array(FOG_COLS*FOG_ROWS); fogT = 0;
   PARTS = []; SCORCH = []; MARKERS = [];
   var layout = mapLayout(chosenMap, chosenTeams), pb = map.bases.player, i;
@@ -1539,15 +1724,53 @@ function resetGame(){
   updateStartPickUI();
   updateHUD(); renderPanel(true);
 }
-function pickAiRaces(playerRace, teams){
-  var others = ['terran','zerg','protoss'].filter(function(r){ return r !== playerRace; });
-  var r = mulberry(9000 + teams*131 + (playerRace==='zerg' ? 17 : playerRace==='protoss' ? 34 : 0))();
-  var first = others[(r * 2)|0], second = others[0] === first ? others[1] : others[0];
-  return { ai1: first, ai2: second };
+/* ===== v5.2: HÀNG ĐỐI THỦ (Máy 1/2/3) ở màn chuẩn bị — mỗi hàng là một TUỲ CHỌN cấu hình =====
+   aiRows[i]: null = chưa cấu hình · 'random' = tộc ngẫu nhiên · 'terran'|'zerg'|'protoss' = chốt tộc cho Máy đó.
+   Số hàng MỞ theo CỠ bản đồ: Nhỏ 1 · Vừa 2 · To 3. Đối thủ của trận = các hàng ĐÃ cấu hình (theo thứ tự hàng);
+   KHÔNG hàng nào được cấu hình -> mặc định nhanh: đúng 1 Máy tộc ngẫu nhiên. */
+var aiRows = [null, null, null];
+var openRow = -1; /* hàng đang xổ bộ chọn tộc (chỉ UI) */
+function maxAiRows(){ return chosenSize==='to' ? 3 : (MAPS[chosenMap].teams2Only ? 1 : 2); }
+function configuredRows(){ var n = 0, mx = maxAiRows(); for(var i=0;i<3;i++) if(i < mx && aiRows[i]) n++; return n; }
+function syncTeamsFromRows(){ chosenTeams = 1 + Math.max(1, configuredRows()); return chosenTeams; }
+function clampRowsToSize(){ var mx = maxAiRows(); for(var i=mx;i<3;i++) aiRows[i] = null; if(openRow >= mx) openRow = -1; syncTeamsFromRows(); }
+/* Giải tộc cho từng đội máy: hàng chốt tộc thì dùng đúng tộc đó (ĐƯỢC trùng tộc — khi ấy cả trận bật MÀU ĐỘI).
+   Hàng 'random' rút từ nhóm tộc KHÁC người chơi, không trùng nhau, bằng ĐÚNG phép rút hạt giống của bản cũ
+   (mulberry(9000 + số phe*131 + lệch theo tộc người chơi), chọn 1 trong 2 tộc còn lại, đội random thứ hai lấy
+   tộc còn lại) để các trận mặc định giữ nguyên cảm giác/xác suất như trước; cạn nhóm (phe thứ 4) mới rút bất kỳ. */
+function resolveAiRaces(playerRace){
+  var picks = [], mx = maxAiRows(), i;
+  for(i=0;i<3;i++) if(i < mx && aiRows[i]) picks.push(aiRows[i]);
+  if(!picks.length) picks = ['random'];
+  var names = ['ai1','ai2','ai3'], out = { ai1:'zerg', ai2:'zerg', ai3:'zerg' };
+  var teams = picks.length + 1;
+  var rnd = mulberry(9000 + teams*131 + (playerRace==='zerg' ? 17 : playerRace==='protoss' ? 34 : 0));
+  var pool = ['terran','zerg','protoss'].filter(function(r){ return r !== playerRace; });
+  picks.forEach(function(p){ if(p && p !== 'random'){ var ix = pool.indexOf(p); if(ix >= 0) pool.splice(ix, 1); } });
+  var firstDraw = true;
+  picks.forEach(function(p, idx){
+    if(p && p !== 'random'){ out[names[idx]] = p; return; }
+    if(pool.length === 2 && firstDraw) out[names[idx]] = pool.splice((rnd()*2)|0, 1)[0];
+    else if(pool.length) out[names[idx]] = pool.shift();
+    else out[names[idx]] = ['terran','zerg','protoss'][(rnd()*3)|0];
+    firstDraw = false;
+  });
+  return out;
 }
+function aiTeamList(){ var out = []; for(var i=1;i<(S ? S.teams : chosenTeams);i++) out.push('ai' + i); return out; }
+var TEAM_NAMES = { ai1:'đội Đỏ', ai2:'đội Cam', ai3:'đội Tím' };
 function playerCC(){ return S.buildings.find(function(b){return b.faction==='player'&&!!MAIN_TYPES[b.type];}) || S.buildings.find(function(b){return b.faction==='player';}); }
 function enemyMain(){ return S.buildings.find(function(b){return b.faction!=='player'&&!!MAIN_TYPES[b.type];}); }
-function teamColor(f){ return f==='player' ? '#38bdf8' : (f==='ai2' ? '#f59e0b' : '#ef4444'); }
+function teamColor(f){ return f==='player' ? '#38bdf8' : (f==='ai2' ? '#f59e0b' : (f==='ai3' ? '#a78bfa' : '#ef4444')); }
+function teamRGB(f){ var h = teamColor(f); return parseInt(h.slice(1,3),16) + ',' + parseInt(h.slice(3,5),16) + ',' + parseInt(h.slice(5,7),16); }
+var TEAM_LIGHT = { player:'#7dd3fc', ai1:'#fca5a5', ai2:'#fcd34d', ai3:'#d8b4fe' }; /* chấm quân trên minimap */
+/* MÀU ĐỘI (v5.2): cả 4 phe khác tộc nhau -> diện mạo mặc định; chỉ cần MỘT tộc bị trùng là CẢ TRẬN
+   chuyển sang màu đội (đĩa dưới chân + thanh máu + minimap + sprite nhuộm tông màu phe). */
+function computeTeamColorMode(){
+  var seen = {}, dup = false, facs = ['player'].concat(aiTeamList());
+  facs.forEach(function(f){ var r = f==='player' ? S.playerRace : S.aiRaces[f]; if(r && seen[r]) dup = true; if(r) seen[r] = 1; });
+  return dup;
+}
 function recalcSupply(){
   var used=0, cap=0;
   S.units.forEach(function(u){ if(u.faction==='player'){ used += (SPECS[u.type].supply||0); if(u.type==='overlord') cap += 8; } }); /* Overlord bay = nhà dân số của Zerg */
@@ -1910,9 +2133,9 @@ function applyDamage(e, amount, srcFaction){
     renderPanel(true);
     if(MAIN_TYPES[e.type] && e.faction!=='player'){
       /* thắng chỉ khi MỌI nhà chính của các đội máy (CC/Hatchery/Nexus) đều bị phá */
-      var left = S.buildings.some(function(b){ return b.faction!=='player' && !!MAIN_TYPES[b.type]; });
-      if(!left) return endGame('win');
-      showMsg('Đã phá 1 căn cứ địch — còn 1 căn cứ nữa!', 3000);
+      var leftN = S.buildings.filter(function(b){ return b.faction!=='player' && !!MAIN_TYPES[b.type]; }).length;
+      if(!leftN) return endGame('win');
+      showMsg('Đã phá 1 căn cứ địch — còn ' + leftN + ' căn cứ nữa!', 3000);
     }
     if(MAIN_TYPES[e.type] && e.faction==='player') return endGame('lose');
   }
@@ -1936,7 +2159,7 @@ function endGame(result){
   Music.stop();
   if(S.over) return;
   S.over = true; S.result = result;
-  document.getElementById('endTitle').textContent = result==='win' ? 'THẮNG! Tổ Quái đã bị phá hủy' : 'THUA! Trung Tâm Chỉ Huy đã mất';
+  document.getElementById('endTitle').textContent = result==='win' ? 'THẮNG! Mọi căn cứ địch đã bị phá hủy' : 'THUA! Nhà chính của bạn đã mất';
   document.getElementById('endTitle').style.color = result==='win' ? '#4ade80' : '#f87171';
   document.getElementById('endStats').textContent =
     'Thời gian: ' + fmtTime(S.time) + '  •  Đợt địch: ' + S.wave + '  •  Đã hạ địch: ' + S.stats.kills + '  •  Mất quân: ' + S.stats.losses + '  •  Đã luyện: ' + S.stats.trained + ' quân  •  Vũ khí +' + S.upgrades.weapon + ' / Giáp +' + S.upgrades.armor;
@@ -2232,19 +2455,20 @@ function tickBuildings(dt){
   });
 }
 function tickAI(dt){
-  ['ai1','ai2'].forEach(function(team){
-    if(team==='ai2' && S.teams<3) return;
+  aiTeamList().forEach(function(team){
     var base = S.buildings.find(function(b){ return b.faction===team && !!MAIN_TYPES[b.type]; });
     if(!base) return;
     var st = S.ai[team];
+    if(!st) return;
     if(S.time >= st.nextAt && !S.over){
       st.wave++; st.nextAt += DIFFS[S.diff||'vua'].interval;
       S.wave = Math.max(S.wave, st.wave);
-      /* mục tiêu: một phe đối thủ NGẪU NHIÊN (người chơi hoặc đội máy còn lại) */
+      /* mục tiêu: một phe đối thủ NGẪU NHIÊN trong các phe CÒN SỐNG (người chơi hoặc các đội máy khác) —
+         sóng của mỗi đội máy rải đều lên mọi đối thủ, không dồn hết vào người chơi */
       var targets = [];
       var pc = playerCC(); if(pc) targets.push(pc);
-      ['ai1','ai2'].forEach(function(t2){
-        if(t2===team || (t2==='ai2' && S.teams<3)) return;
+      aiTeamList().forEach(function(t2){
+        if(t2===team) return;
         var b2 = S.buildings.find(function(b){ return b.faction===t2 && !!MAIN_TYPES[b.type]; });
         if(b2) targets.push(b2);
       });
@@ -2270,7 +2494,7 @@ function tickAI(dt){
         for(i=0;i<nLing;i++){ u = makeUnit(team, compBasic, base.x + sx*(60+(i%4)*42), base.y+105+((i/4)|0)*40); u.order={type:'attackmove',x:tgt.x,y:tgt.y,targetId:0,nodeId:0,phase:'',harvestT:0}; if(DF.hpMul!==1){ u.maxHp=Math.round(u.maxHp*DF.hpMul); u.hp=u.maxHp; if(u.shieldMax){ u.shieldMax=Math.round(u.shieldMax*DF.hpMul); u.shield=u.shieldMax; } } S.units.push(u); }
         for(i=0;i<nHyd;i++){ u = makeUnit(team, compMid, base.x + sx*(70+(i%3)*46), base.y+130+((i/3)|0)*42); u.order={type:'attackmove',x:tgt.x,y:tgt.y,targetId:0,nodeId:0,phase:'',harvestT:0}; if(DF.hpMul!==1){ u.maxHp=Math.round(u.maxHp*DF.hpMul); u.hp=u.maxHp; if(u.shieldMax){ u.shieldMax=Math.round(u.shieldMax*DF.hpMul); u.shield=u.shieldMax; } } S.units.push(u); }
         for(i=0;i<nUlt;i++){ u = makeUnit(team, compHeavy, base.x + sx*40 + i*70*(sx), base.y+185); u.order={type:'attackmove',x:tgt.x,y:tgt.y,targetId:0,nodeId:0,phase:'',harvestT:0}; if(DF.hpMul!==1){ u.maxHp=Math.round(u.maxHp*DF.hpMul); u.hp=u.maxHp; if(u.shieldMax){ u.shieldMax=Math.round(u.shieldMax*DF.hpMul); u.shield=u.shieldMax; } } S.units.push(u); }
-        if(tgt.faction==='player') showMsg('Đợt địch thứ ' + st.wave + ' (' + (team==='ai1' ? 'đội Đỏ' : 'đội Cam') + ') đang tràn đến!', 3000);
+        if(tgt.faction==='player') showMsg('Đợt địch thứ ' + st.wave + ' (' + (TEAM_NAMES[team] || team) + ') đang tràn đến!', 3000);
       }
     }
     /* lính gác của đội này: thấy kẻ lạ (bất kỳ phe khác) gần tổ thì lao ra đánh */
@@ -2407,7 +2631,7 @@ function updateHUD(){
   var rdEl = document.getElementById('resDiff'); if(rdEl) rdEl.textContent = DIFFS[S.diff||'vua'].name;
   /* Chỉ số đợt địch hiện ĐẾM NGƯỢC trung thực tới đợt kế: "Đợt 1 sau 2:30", sau đó "Đợt 2 · sau 1:15"... */
   var nx = Infinity;
-  ['ai1','ai2'].forEach(function(t){ if(t==='ai2' && S.teams<3) return; if(S.ai && S.ai[t]) nx = Math.min(nx, S.ai[t].nextAt); });
+  aiTeamList().forEach(function(t){ if(S.ai && S.ai[t]) nx = Math.min(nx, S.ai[t].nextAt); });
   var remain = isFinite(nx) ? Math.max(0, nx - S.time) : 0;
   document.getElementById('resWave').textContent = S.wave===0 ? ('1 sau ' + fmtTime(remain)) : (S.wave + ' · sau ' + fmtTime(remain));
 }
@@ -2496,7 +2720,7 @@ function renderPanel(force){
             (b ? (b.queue.map(function(q){return q.type;}).join('.') + ':' + b.constructing + ':' + (b.research?b.research.kind:'') + (GAS_TYPES[b.type] ? ':g' + gasWorkerCount(b) : '') + (b.type==='hatchery' ? ':L' + (b.larvae||0) + 'E' + ((b.eggs||[]).map(function(e2){return e2.type;}).join('.')) : '') + (b.shieldMax ? ':s' + Math.round(b.shield) : '')) : '') + '|' +
             ((b && (b.queue.length || b.research || b.constructing)) || S.buildings.some(function(x){return !!x.research;}) ? Math.round(S.time*2) : '') + '|' +
             sel.map(function(u){ return Math.ceil(u.hp); }).join('.') + '|' + S.units.length + '|' +
-            (function(){ var nx2 = Infinity; ['ai1','ai2'].forEach(function(t){ if(t==='ai2' && S.teams<3) return; if(S.ai && S.ai[t]) nx2 = Math.min(nx2, S.ai[t].nextAt); }); return isFinite(nx2) ? Math.ceil(Math.max(0, nx2 - S.time)/4) : 0; })();
+            (function(){ var nx2 = Infinity; aiTeamList().forEach(function(t){ if(S.ai && S.ai[t]) nx2 = Math.min(nx2, S.ai[t].nextAt); }); return isFinite(nx2) ? Math.ceil(Math.max(0, nx2 - S.time)/4) : 0; })();
   if(!force && sig===panelSig) return; panelSig = sig;
   var info = document.getElementById('infoPanel'), grid = document.getElementById('cmdGrid');
   /* --- thông tin giữa console --- */
@@ -2554,7 +2778,7 @@ function renderPanel(force){
   } else {
     var wkN = 0, armyN = 0;
     S.units.forEach(function(u){ if(u.faction!=='player') return; if(isWorkerType(u.type)) wkN++; else armyN++; });
-    var nxW = Infinity; ['ai1','ai2'].forEach(function(t){ if(t==='ai2' && S.teams<3) return; if(S.ai && S.ai[t]) nxW = Math.min(nxW, S.ai[t].nextAt); });
+    var nxW = Infinity; aiTeamList().forEach(function(t){ if(S.ai && S.ai[t]) nxW = Math.min(nxW, S.ai[t].nextAt); });
     var waveTxt = S.over ? '—' : (isFinite(nxW) ? fmtTime(Math.max(0, nxW - S.time)) : '—');
     var resB = S.buildings.find(function(x){ return x.faction==='player' && x.research; });
     var mid = resB ? ('Đang nghiên cứu ' + (resB.research.kind==='weapon' ? 'Vũ Khí' : 'Giáp') + ' Lv' + (S.upgrades[resB.research.kind]+1) + '<span class="resBar"><i style="width:' + Math.round(resB.research.t/resB.research.total*100) + '%"></i></span>')
@@ -2822,60 +3046,144 @@ function buildTerrain(){
   try{
     terrainCv = document.createElement('canvas'); terrainCv.width = WORLD_W; terrainCv.height = WORLD_H;
     var g = terrainCv.getContext('2d'); if(!g) { terrainCv = null; return; }
+    var TS = tilesetOf(chosenMap);
     var r = mulberry(777), T = 64, x, y, i;
-    g.fillStyle = '#33363d'; g.fillRect(0,0,WORLD_W,WORLD_H);
+    function rgbA(c, a){ return 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + a + ')'; }
+    /* ===== LỚP ĐẤT THƯỜNG (tầng 1) phủ toàn bản đồ — vân bề mặt theo TILESET của kiểu bản đồ ===== */
+    g.fillStyle = rgbA(TS.g1, 1); g.fillRect(0,0,WORLD_W,WORLD_H);
     for(y=0;y<WORLD_H;y+=T) for(x=0;x<WORLD_W;x+=T){
-      var v = (r()*14)|0;
-      g.fillStyle = 'rgb(' + (48+v) + ',' + (51+v) + ',' + (58+v) + ')';
+      var v = ((r()*2 - 1) * TS.g1Var)|0;
+      g.fillStyle = 'rgb(' + (TS.g1[0]+v) + ',' + (TS.g1[1]+v) + ',' + (TS.g1[2]+v) + ')';
       g.fillRect(x, y, T, T);
-      if(r() < 0.30){ /* tấm phụ tối hơn bên trong */
-        g.fillStyle = 'rgba(0,0,0,0.16)'; g.fillRect(x+9, y+9, T-18, T-18);
-        g.strokeStyle = 'rgba(255,255,255,0.06)'; g.lineWidth = 1; g.strokeRect(x+9.5, y+9.5, T-19, T-19);
+      if(TS.detail === 'slate'){ /* slate lạnh: tấm kỹ thuật sẫm + đinh tán (giữ chất kim loại của Song Đỉnh) */
+        if(r() < 0.30){
+          g.fillStyle = 'rgba(0,0,0,0.16)'; g.fillRect(x+9, y+9, T-18, T-18);
+          g.strokeStyle = 'rgba(255,255,255,0.06)'; g.lineWidth = 1; g.strokeRect(x+9.5, y+9.5, T-19, T-19);
+        }
+        if(r() < 0.14){
+          g.fillStyle = 'rgba(0,0,0,0.26)'; g.fillRect(x+14, y+14, T-28, T-28);
+          g.fillStyle = 'rgba(255,255,255,0.05)';
+          for(i=0;i<4;i++) g.fillRect(x+19, y+21+i*7, T-38, 3);
+        }
+        g.fillStyle = 'rgba(210,225,240,0.20)';
+        [[5,5],[T-7,5],[5,T-7],[T-7,T-7]].forEach(function(p){ g.fillRect(x+p[0], y+p[1], 2.4, 2.4); });
+        if(r() < 0.10){ /* vệt sương giá */
+          g.fillStyle = 'rgba(220,240,255,0.10)';
+          g.beginPath(); g.ellipse(x + 12 + r()*40, y + 12 + r()*40, 5 + r()*9, 3 + r()*5, r()*3, 0, 6.29); g.fill();
+        }
+      } else if(TS.detail === 'rock'){ /* đá đỏ ấm: đốm sỏi hai tông + cụm sỏi nhỏ */
+        for(i=0;i<7;i++){
+          g.fillStyle = r() < 0.5 ? 'rgba(43,28,17,' + (0.10 + r()*0.16).toFixed(3) + ')' : 'rgba(255,230,190,' + (0.06 + r()*0.12).toFixed(3) + ')';
+          g.beginPath(); g.arc(x + 4 + r()*56, y + 4 + r()*56, 1.2 + r()*2.4, 0, 6.29); g.fill();
+        }
+        if(r() < 0.16){
+          var px0 = x + 10 + r()*40, py0 = y + 10 + r()*40;
+          for(i=0;i<3;i++){
+            g.fillStyle = 'rgba(60,40,24,0.5)'; g.beginPath(); g.arc(px0 + r()*12, py0 + r()*8, 2 + r()*2.6, 0, 6.29); g.fill();
+            g.fillStyle = 'rgba(255,226,180,0.35)'; g.beginPath(); g.arc(px0 + r()*12, py0 + r()*8 - 1.5, 1 + r()*1.4, 0, 6.29); g.fill();
+          }
+        }
+      } else { /* grass: mảng đất tối mềm + túm cỏ ngắn hai tông */
+        if(r() < 0.30){
+          g.fillStyle = 'rgba(26,40,18,0.20)';
+          g.beginPath(); g.ellipse(x + 14 + r()*36, y + 14 + r()*36, 9 + r()*13, 6 + r()*8, r()*3, 0, 6.29); g.fill();
+        }
+        g.lineWidth = 1.3; g.lineCap = 'round';
+        for(i=0;i<6;i++){
+          var gx0 = x + 6 + r()*52, gy0 = y + 8 + r()*50;
+          g.strokeStyle = r() < 0.55 ? 'rgba(18,32,12,' + (0.30 + r()*0.25).toFixed(3) + ')' : 'rgba(196,226,146,' + (0.16 + r()*0.18).toFixed(3) + ')';
+          g.beginPath(); g.moveTo(gx0, gy0); g.lineTo(gx0 + (r()*4 - 2), gy0 - 3 - r()*3.5); g.stroke();
+        }
       }
-      if(r() < 0.16){ /* ô thông gió / nắp kỹ thuật */
-        g.fillStyle = 'rgba(0,0,0,0.28)'; g.fillRect(x+14, y+14, T-28, T-28);
-        g.fillStyle = 'rgba(255,255,255,0.05)';
-        for(i=0;i<4;i++) g.fillRect(x+19, y+21+i*7, T-38, 3);
-      }
-      g.fillStyle = 'rgba(210,225,240,0.20)'; /* đinh tán 4 góc */
-      [[5,5],[T-7,5],[5,T-7],[T-7,T-7]].forEach(function(p){ g.fillRect(x+p[0], y+p[1], 2.4, 2.4); });
     }
-    g.strokeStyle = 'rgba(0,0,0,0.5)'; g.lineWidth = 2; g.beginPath();
+    g.strokeStyle = TS.seam; g.lineWidth = 2; g.beginPath();
     for(x=0;x<=WORLD_W;x+=T){ g.moveTo(x,0); g.lineTo(x,WORLD_H); }
     for(y=0;y<=WORLD_H;y+=T){ g.moveTo(0,y); g.lineTo(WORLD_W,y); }
     g.stroke();
-    g.strokeStyle = 'rgba(255,255,255,0.055)'; g.lineWidth = 1; g.beginPath();
+    g.strokeStyle = TS.seamHi; g.lineWidth = 1; g.beginPath();
     for(x=T;x<=WORLD_W;x+=T){ g.moveTo(x+1,0); g.lineTo(x+1,WORLD_H); }
     for(y=T;y<=WORLD_H;y+=T){ g.moveTo(0,y+1); g.lineTo(WORLD_W,y+1); }
     g.stroke();
-    /* ===== PHÂN TẦNG ĐỊA HÌNH: phủ tông theo tầng + vẽ VÁCH đứng + ô DỐC ===== */
+    /* ===== PHÂN TẦNG ĐỊA HÌNH: phủ mặt theo tầng + TRANG TRÍ mặt đất theo kiểu + VÁCH + DỐC ===== */
     if(elevGrid){
       var etx, ety;
       for(ety=0; ety<eRows; ety++) for(etx=0; etx<eCols; etx++){
         var eL0 = elevGrid[ety*eCols+etx], eX = etx*TILE, eY = ety*TILE;
-        if(eL0===0){ /* TẦNG TRŨNG: tối hẳn, tông hơi ấm/câm, bóng trong ở các mép kề tầng cao hơn -> cảm giác LÕM xuống */
-          g.fillStyle = 'rgba(12,11,13,0.78)'; g.fillRect(eX, eY, TILE, TILE);
-          g.fillStyle = 'rgba(84,62,38,0.12)'; g.fillRect(eX, eY, TILE, TILE);
+        if(eL0===0){ /* TẦNG TRŨNG: mặt riêng tối hơn hẳn đất thường, bóng trong ở mép kề tầng cao -> cảm giác LÕM */
+          g.fillStyle = rgbA(TS.l0, 1); g.fillRect(eX, eY, TILE, TILE);
           var grd0;
           if(ety>0 && elevGrid[(ety-1)*eCols+etx] > 0){ grd0 = g.createLinearGradient(0, eY, 0, eY+14); grd0.addColorStop(0,'rgba(0,0,0,0.55)'); grd0.addColorStop(1,'rgba(0,0,0,0)'); g.fillStyle = grd0; g.fillRect(eX, eY, TILE, 14); }
           if(ety+1<eRows && elevGrid[(ety+1)*eCols+etx] > 0){ grd0 = g.createLinearGradient(0, eY+TILE, 0, eY+TILE-14); grd0.addColorStop(0,'rgba(0,0,0,0.55)'); grd0.addColorStop(1,'rgba(0,0,0,0)'); g.fillStyle = grd0; g.fillRect(eX, eY+TILE-14, TILE, 14); }
           if(etx>0 && elevGrid[ety*eCols+etx-1] > 0){ grd0 = g.createLinearGradient(eX, 0, eX+14, 0); grd0.addColorStop(0,'rgba(0,0,0,0.55)'); grd0.addColorStop(1,'rgba(0,0,0,0)'); g.fillStyle = grd0; g.fillRect(eX, eY, 14, TILE); }
           if(etx+1<eCols && elevGrid[ety*eCols+etx+1] > 0){ grd0 = g.createLinearGradient(eX+TILE, 0, eX+TILE-14, 0); grd0.addColorStop(0,'rgba(0,0,0,0.55)'); grd0.addColorStop(1,'rgba(0,0,0,0)'); g.fillStyle = grd0; g.fillRect(eX+TILE-14, eY, 14, TILE); }
-          if(r() < 0.35){ g.strokeStyle = 'rgba(0,0,0,0.35)'; g.lineWidth = 1.2; g.beginPath();
+          if(TS.detail === 'rock' && r() < 0.35){ g.strokeStyle = 'rgba(16,9,5,0.45)'; g.lineWidth = 1.2; g.beginPath();
             var kx = eX + 8 + r()*28, ky = eY + 8 + r()*28;
             g.moveTo(kx, ky); g.lineTo(kx + 8 + r()*14, ky + (r()-0.5)*8); g.lineTo(kx + 18 + r()*16, ky + (r()-0.5)*10); g.stroke(); }
-        } else if(eL0===2){ /* CAO NGUYÊN: thép xanh SÁNG hơn hẳn đất thường + panel LỚN khác hẳn (seam to, ít đinh) */
-          g.fillStyle = 'rgba(96,114,138,0.88)'; g.fillRect(eX, eY, TILE, TILE);
-          g.fillStyle = 'rgba(196,216,240,0.13)'; g.fillRect(eX, eY, TILE, 26);
-          g.strokeStyle = 'rgba(208,226,248,0.30)'; g.lineWidth = 1.6; g.strokeRect(eX+3.5, eY+3.5, TILE-7, TILE-7);
-          g.fillStyle = 'rgba(16,22,32,0.20)'; g.fillRect(eX, eY+TILE-4, TILE, 4);
-          if(((etx + ety) % 2) === 0){ g.fillStyle = 'rgba(225,238,252,0.35)'; [[7,7],[TILE-9,7],[7,TILE-9],[TILE-9,TILE-9]].forEach(function(p){ g.fillRect(eX+p[0], eY+p[1], 2.6, 2.6); }); }
+          if(TS.detail === 'grass'){ /* đáy thung ẩm tối + cỏ sẫm */
+            g.fillStyle = 'rgba(10,18,7,0.22)';
+            g.beginPath(); g.ellipse(eX + 12 + r()*36, eY + 12 + r()*36, 8 + r()*12, 5 + r()*7, r()*3, 0, 6.29); g.fill();
+            g.strokeStyle = 'rgba(12,24,9,0.5)'; g.lineWidth = 1.3; g.beginPath();
+            for(i=0;i<4;i++){ var gx1 = eX + 6 + r()*48, gy1 = eY + 8 + r()*46; g.moveTo(gx1, gy1); g.lineTo(gx1 + (r()*4-2), gy1 - 3 - r()*3); }
+            g.stroke();
+          }
+          if(TS.detail === 'slate' && r() < 0.22){ /* khe băng PHÁT SÁNG mờ — dấu ấn "khe sáng" của Song Đỉnh */
+            g.strokeStyle = 'rgba(125,211,232,0.30)'; g.lineWidth = 1.4; g.beginPath();
+            var vx0 = eX + 6 + r()*30, vy0 = eY + 6 + r()*30;
+            g.moveTo(vx0, vy0); g.lineTo(vx0 + 10 + r()*14, vy0 + (r()-0.5)*10); g.lineTo(vx0 + 22 + r()*16, vy0 + (r()-0.5)*12); g.stroke();
+            g.strokeStyle = 'rgba(190,240,255,0.20)'; g.lineWidth = 3.2; g.beginPath();
+            g.moveTo(vx0, vy0); g.lineTo(vx0 + 10 + r()*14, vy0 + (r()-0.5)*10); g.stroke();
+          }
+        } else if(eL0===2){ /* CAO NGUYÊN: mặt riêng SÁNG hơn hẳn + dải bắt sáng ở mép trên + khung mép */
+          g.fillStyle = rgbA(TS.l2, 1); g.fillRect(eX, eY, TILE, TILE);
+          g.fillStyle = TS.l2Hi; g.fillRect(eX, eY, TILE, 26);
+          g.strokeStyle = TS.l2Edge; g.lineWidth = 1.6; g.strokeRect(eX+3.5, eY+3.5, TILE-7, TILE-7);
+          g.fillStyle = 'rgba(10,10,12,0.18)'; g.fillRect(eX, eY+TILE-4, TILE, 4);
+          if(((etx + ety) % 2) === 0){
+            if(TS.detail === 'grass'){ g.strokeStyle = 'rgba(240,255,205,0.30)'; g.lineWidth = 1.3; g.beginPath();
+              for(i=0;i<4;i++){ var gx2 = eX + 8 + r()*44, gy2 = eY + 10 + r()*42; g.moveTo(gx2, gy2); g.lineTo(gx2 + (r()*4-2), gy2 - 3 - r()*3); }
+              g.stroke();
+            } else {
+              g.fillStyle = TS.detail === 'slate' ? 'rgba(235,248,255,0.32)' : 'rgba(255,240,210,0.35)';
+              [[7,7],[TILE-9,7],[7,TILE-9],[TILE-9,TILE-9]].forEach(function(p){ g.fillRect(eX+p[0], eY+p[1], 2.6, 2.6); });
+            }
+          }
+        }
+        /* TRANG TRÍ mặt đất theo kiểu (thưa, không chắn lối, tất định theo hạt giống) */
+        if(!rampGrid[ety*eCols+etx]){
+          var dcx = eX + 12 + r()*36, dcy = eY + 12 + r()*36, dr = r();
+          if(TS.decor === 'rock' && dr < 0.07){ /* tảng đá: đa giác xám-nâu, mặt trên bắt sáng */
+            var brad = 6 + r()*8, bang = r()*6.28;
+            g.fillStyle = '#5d4430'; g.beginPath();
+            for(i=0;i<6;i++){ var ba = bang + i*1.047, brr = brad * (0.75 + r()*0.4); var bpx = dcx + Math.cos(ba)*brr, bpy = dcy + Math.sin(ba)*brr*0.8; if(i===0) g.moveTo(bpx, bpy); else g.lineTo(bpx, bpy); }
+            g.closePath(); g.fill();
+            g.fillStyle = 'rgba(235,205,165,0.45)'; g.beginPath();
+            g.moveTo(dcx - brad*0.5, dcy - brad*0.28); g.lineTo(dcx + brad*0.15, dcy - brad*0.55); g.lineTo(dcx + brad*0.45, dcy - brad*0.05); g.lineTo(dcx - brad*0.1, dcy + brad*0.1); g.closePath(); g.fill();
+            g.fillStyle = 'rgba(20,12,6,0.35)'; g.beginPath(); g.ellipse(dcx, dcy + brad*0.62, brad*0.9, brad*0.3, 0, 0, 6.29); g.fill();
+          } else if(TS.decor === 'flora' && dr < 0.09){ /* bụi cỏ lạ + chấm hoa nhỏ */
+            g.strokeStyle = 'rgba(16,30,11,0.65)'; g.lineWidth = 1.6; g.lineCap = 'round'; g.beginPath();
+            for(i=0;i<6;i++){ var fa = -0.5 + i*0.42 + r()*0.2, fl = 6 + r()*6; g.moveTo(dcx, dcy); g.lineTo(dcx + Math.sin(fa)*fl, dcy - Math.cos(fa)*fl); }
+            g.stroke();
+            g.strokeStyle = 'rgba(170,215,120,0.55)'; g.lineWidth = 1.1; g.beginPath();
+            for(i=0;i<4;i++){ var fa2 = -0.4 + i*0.5, fl2 = 5 + r()*5; g.moveTo(dcx, dcy); g.lineTo(dcx + Math.sin(fa2)*fl2, dcy - Math.cos(fa2)*fl2); }
+            g.stroke();
+            if(r() < 0.35){ g.fillStyle = r() < 0.5 ? '#ffd7e8' : '#ffe066'; g.beginPath(); g.arc(dcx + (r()*10-5), dcy - 6 - r()*4, 1.8, 0, 6.29); g.fill(); }
+          } else if(TS.decor === 'shard' && dr < 0.06){ /* mảnh băng nhọn sáng */
+            var sh2 = 7 + r()*8;
+            g.fillStyle = 'rgba(198,230,250,0.85)';
+            g.beginPath(); g.moveTo(dcx, dcy - sh2); g.lineTo(dcx + sh2*0.45, dcy + sh2*0.5); g.lineTo(dcx - sh2*0.45, dcy + sh2*0.5); g.closePath(); g.fill();
+            g.strokeStyle = 'rgba(140,220,250,0.8)'; g.lineWidth = 1.1; g.stroke();
+            g.fillStyle = 'rgba(235,250,255,0.9)'; g.fillRect(dcx - 0.8, dcy - sh2*0.7, 1.6, sh2*0.9);
+          } else if(TS.decor === 'shard' && dr < 0.085 && eL0 < 2){ /* vết nứt than hồng cực thưa ở đất thấp */
+            g.strokeStyle = 'rgba(255,110,36,0.50)'; g.lineWidth = 1.6; g.beginPath();
+            g.moveTo(dcx - 8, dcy); g.lineTo(dcx - 2, dcy + (r()*6-3)); g.lineTo(dcx + 6 + r()*6, dcy + (r()*6-3)); g.stroke();
+            g.strokeStyle = 'rgba(255,196,96,0.75)'; g.lineWidth = 0.8; g.beginPath();
+            g.moveTo(dcx - 8, dcy); g.lineTo(dcx - 2, dcy); g.stroke();
+          }
         }
       }
-      /* VÁCH ĐỨNG — đủ 4 PHÍA, 3 lớp như SC2: (a) MÔI BẮT SÁNG 2.5px thép sáng #9fb6c9 ở mép trên
-         phía đất CAO; (b) MẶT VÁCH 15px (chênh 2 tầng: 22px) gần như đen xanh-xám + sọc đứng mờ,
-         treo từ môi xuống đất thấp; (c) BÓNG ĐỔ mềm lên đất thấp ngay ngoài chân vách.
-         Mép nào phía thấp là Ô DỐC thì bỏ qua — dốc tự vẽ bề mặt nghiêng của nó nối hai tầng. */
+      /* VÁCH ĐỨNG — đủ 4 PHÍA, 3 lớp như SC2: (a) MÔI BẮT SÁNG 2.5px ở mép phía đất CAO (màu theo tileset);
+         (b) MẶT VÁCH 15px (chênh 2 tầng: 22px) tối + sọc đứng mờ, treo từ môi xuống đất thấp;
+         (c) BÓNG ĐỔ mềm lên đất thấp ngay ngoài chân vách. Mép kề Ô DỐC thì bỏ qua. */
       for(ety=0; ety<eRows; ety++) for(etx=0; etx<eCols; etx++){
         var eL1 = elevGrid[ety*eCols+etx], eX1 = etx*TILE, eY1 = ety*TILE;
         if(rampGrid[ety*eCols+etx]) continue;
@@ -2889,13 +3197,13 @@ function buildTerrain(){
           var nb = nbs[ni]; if(nb.lv >= eL1) continue;
           if(nb.ri >= 0 && nb.ri < eCols*eRows && rampGrid[nb.ri]) continue;
           var fh = (eL1 - nb.lv) >= 2 ? 22 : 15, grdF, grdS, sf;
-          g.fillStyle = 'rgba(159,182,201,0.9)';
+          g.fillStyle = TS.lip;
           if(nb.d==='S'){
             g.fillRect(eX1, eY1+TILE-2.5, TILE, 2.5);
             grdF = g.createLinearGradient(0, eY1+TILE, 0, eY1+TILE+fh);
-            grdF.addColorStop(0, 'rgba(7,9,13,0.94)'); grdF.addColorStop(1, 'rgba(7,9,13,0.60)');
+            grdF.addColorStop(0, TS.cliffA); grdF.addColorStop(1, TS.cliffB);
             g.fillStyle = grdF; g.fillRect(eX1, eY1+TILE, TILE, fh);
-            g.strokeStyle = 'rgba(0,0,0,0.5)'; g.lineWidth = 1.3; g.beginPath();
+            g.strokeStyle = TS.cliffLine; g.lineWidth = 1.3; g.beginPath();
             for(sf = eX1+6; sf < eX1+TILE; sf += 9){ g.moveTo(sf, eY1+TILE+2); g.lineTo(sf-2, eY1+TILE+fh-2); }
             g.stroke();
             grdS = g.createLinearGradient(0, eY1+TILE+fh, 0, eY1+TILE+fh+11);
@@ -2904,9 +3212,9 @@ function buildTerrain(){
           } else if(nb.d==='N'){
             g.fillRect(eX1, eY1, TILE, 2.5);
             grdF = g.createLinearGradient(0, eY1, 0, eY1-fh);
-            grdF.addColorStop(0, 'rgba(7,9,13,0.94)'); grdF.addColorStop(1, 'rgba(7,9,13,0.60)');
+            grdF.addColorStop(0, TS.cliffA); grdF.addColorStop(1, TS.cliffB);
             g.fillStyle = grdF; g.fillRect(eX1, eY1-fh, TILE, fh);
-            g.strokeStyle = 'rgba(0,0,0,0.5)'; g.lineWidth = 1.3; g.beginPath();
+            g.strokeStyle = TS.cliffLine; g.lineWidth = 1.3; g.beginPath();
             for(sf = eX1+6; sf < eX1+TILE; sf += 9){ g.moveTo(sf, eY1-2); g.lineTo(sf-2, eY1-fh+2); }
             g.stroke();
             grdS = g.createLinearGradient(0, eY1-fh, 0, eY1-fh-11);
@@ -2915,9 +3223,9 @@ function buildTerrain(){
           } else if(nb.d==='E'){
             g.fillRect(eX1+TILE-2.5, eY1, 2.5, TILE);
             grdF = g.createLinearGradient(eX1+TILE, 0, eX1+TILE+fh, 0);
-            grdF.addColorStop(0, 'rgba(7,9,13,0.94)'); grdF.addColorStop(1, 'rgba(7,9,13,0.60)');
+            grdF.addColorStop(0, TS.cliffA); grdF.addColorStop(1, TS.cliffB);
             g.fillStyle = grdF; g.fillRect(eX1+TILE, eY1, fh, TILE);
-            g.strokeStyle = 'rgba(0,0,0,0.5)'; g.lineWidth = 1.3; g.beginPath();
+            g.strokeStyle = TS.cliffLine; g.lineWidth = 1.3; g.beginPath();
             for(sf = eY1+6; sf < eY1+TILE; sf += 9){ g.moveTo(eX1+TILE+2, sf); g.lineTo(eX1+TILE+fh-2, sf-2); }
             g.stroke();
             grdS = g.createLinearGradient(eX1+TILE+fh, 0, eX1+TILE+fh+11, 0);
@@ -2926,9 +3234,9 @@ function buildTerrain(){
           } else {
             g.fillRect(eX1, eY1, 2.5, TILE);
             grdF = g.createLinearGradient(eX1, 0, eX1-fh, 0);
-            grdF.addColorStop(0, 'rgba(7,9,13,0.94)'); grdF.addColorStop(1, 'rgba(7,9,13,0.60)');
+            grdF.addColorStop(0, TS.cliffA); grdF.addColorStop(1, TS.cliffB);
             g.fillStyle = grdF; g.fillRect(eX1-fh, eY1, fh, TILE);
-            g.strokeStyle = 'rgba(0,0,0,0.5)'; g.lineWidth = 1.3; g.beginPath();
+            g.strokeStyle = TS.cliffLine; g.lineWidth = 1.3; g.beginPath();
             for(sf = eY1+6; sf < eY1+TILE; sf += 9){ g.moveTo(eX1-2, sf); g.lineTo(eX1-fh+2, sf-2); }
             g.stroke();
             grdS = g.createLinearGradient(eX1-fh, 0, eX1-fh-11, 0);
@@ -2937,7 +3245,7 @@ function buildTerrain(){
           }
         }
       }
-      /* DỐC: nền sáng dốc + 3 sọc chevron chỉ hướng LÊN tầng cao + 2 ray vàng hai bên — nhìn là biết đường lên/xuống */
+      /* DỐC: mặt nghiêng LIÊN TỤC từ tông CAO xuống tông THẤP của tileset + 3 sọc chevron chỉ hướng LÊN + 2 ray sáng hai bên */
       for(ety=0; ety<eRows; ety++) for(etx=0; etx<eCols; etx++){
         if(!rampGrid[ety*eCols+etx]) continue;
         var eX2 = etx*TILE, eY2 = ety*TILE, eL2 = elevGrid[ety*eCols+etx], dir = null;
@@ -2946,15 +3254,14 @@ function buildTerrain(){
         else if(etx>0 && elevGrid[ety*eCols+etx-1] === eL2+1) dir = 'W';
         else if(etx+1<eCols && elevGrid[ety*eCols+etx+1] === eL2+1) dir = 'E';
         if(!dir) continue;
-        /* mặt dốc LIÊN TỤC: gradient SÁNG ở đầu CAO -> TỐI ở đầu THẤP phủ kín ô dốc, như mặt đường nghiêng */
         var grdR;
         if(dir==='N') grdR = g.createLinearGradient(0, eY2, 0, eY2+TILE);
         else if(dir==='S') grdR = g.createLinearGradient(0, eY2+TILE, 0, eY2);
         else if(dir==='W') grdR = g.createLinearGradient(eX2, 0, eX2+TILE, 0);
         else grdR = g.createLinearGradient(eX2+TILE, 0, eX2, 0);
-        grdR.addColorStop(0, 'rgba(186,204,226,0.95)'); grdR.addColorStop(1, 'rgba(36,42,54,0.95)');
+        grdR.addColorStop(0, TS.rampHi); grdR.addColorStop(1, TS.rampLo);
         g.fillStyle = grdR; g.fillRect(eX2, eY2, TILE, TILE);
-        g.strokeStyle = 'rgba(240,246,253,0.88)'; g.lineWidth = 3.4; g.lineCap = 'round';
+        g.strokeStyle = TS.chev; g.lineWidth = 3.4; g.lineCap = 'round';
         [14, 28, 42].forEach(function(off){
           g.beginPath();
           if(dir==='N'){ g.moveTo(eX2+16, eY2+off+8); g.lineTo(eX2+30, eY2+off-4); g.lineTo(eX2+44, eY2+off+8); }
@@ -2963,18 +3270,24 @@ function buildTerrain(){
           if(dir==='E'){ g.moveTo(eX2+off-8, eY2+16); g.lineTo(eX2+off+4, eY2+30); g.lineTo(eX2+off-8, eY2+44); }
           g.stroke();
         });
-        /* ray sáng thép chạy dọc hai mép dốc + rãnh tối ngay trong ray — dốc trông như đường đắp lên */
-        g.fillStyle = 'rgba(215,230,248,0.92)';
+        g.fillStyle = TS.rail;
         if(dir==='N' || dir==='S'){ g.fillRect(eX2+1.5, eY2, 3.5, TILE); g.fillRect(eX2+TILE-5, eY2, 3.5, TILE); }
         else { g.fillRect(eX2, eY2+1.5, TILE, 3.5); g.fillRect(eX2, eY2+TILE-5, TILE, 3.5); }
-        g.fillStyle = 'rgba(10,12,16,0.55)';
+        g.fillStyle = TS.railIn;
         if(dir==='N' || dir==='S'){ g.fillRect(eX2+5.2, eY2, 1.6, TILE); g.fillRect(eX2+TILE-6.8, eY2, 1.6, TILE); }
         else { g.fillRect(eX2, eY2+5.2, TILE, 1.6); g.fillRect(eX2, eY2+TILE-6.8, TILE, 1.6); }
       }
     }
-    for(i=0;i<900;i++){ /* vết xước / bụi kim loại */
-      g.fillStyle = 'rgba(0,0,0,' + (0.04 + r()*0.08) + ')';
-      g.fillRect(r()*WORLD_W, r()*WORLD_H, 2 + r()*26, 1.4);
+    if(TS.scratch){
+      for(i=0;i<900;i++){ /* vết xước / bụi mòn trên mặt đất */
+        g.fillStyle = TS.scratch + (0.04 + r()*0.08) + ')';
+        g.fillRect(r()*WORLD_W, r()*WORLD_H, 2 + r()*26, 1.4);
+      }
+    } else {
+      for(i=0;i<520;i++){ /* mảng đất ẩm tối mềm thay cho vết xước kim loại */
+        g.fillStyle = 'rgba(22,34,14,' + (0.05 + r()*0.07).toFixed(3) + ')';
+        g.beginPath(); g.ellipse(r()*WORLD_W, r()*WORLD_H, 6 + r()*16, 4 + r()*9, r()*3, 0, 6.29); g.fill();
+      }
     }
     /* vùng căn cứ: vạch sơn vàng đứt quanh mỗi căn cứ + dải vạch nguy hiểm ở rìa */
     if(typeof S !== 'undefined' && S && S.buildings){
@@ -2986,10 +3299,10 @@ function buildTerrain(){
           g.beginPath(); g.moveTo(bd.x-235+hz*28, bd.y+165); g.lineTo(bd.x-235+hz*28+14, bd.y+150); g.lineTo(bd.x-235+hz*28+28, bd.y+150); g.lineTo(bd.x-235+hz*28+14, bd.y+165); g.closePath(); g.fill(); }
         g.restore();
       });
-      /* vùng "creep" sẫm màu quanh Tổ Quái — mỗi đội máy một tông */
+      /* vùng "creep" sẫm màu quanh Tổ Quái — theo phe (màu đội khi bật, tông tộc khi không) */
       S.buildings.forEach(function(bd){
         if(bd.type!=='hatchery') return;
-        var tint = bd.faction==='ai2' ? '10,64,54' : '56,18,72';
+        var tint = S.teamColorMode ? teamRGB(bd.faction) : (bd.faction==='ai2' ? '10,64,54' : (bd.faction==='ai3' ? '52,30,96' : '56,18,72'));
         var gr = g.createRadialGradient(bd.x, bd.y, 40, bd.x, bd.y, 350);
         gr.addColorStop(0, 'rgba(' + tint + ',0.62)'); gr.addColorStop(1, 'rgba(' + tint + ',0)');
         g.fillStyle = gr; g.fillRect(bd.x-350, bd.y-350, 700, 700);
@@ -3025,6 +3338,7 @@ function buildTerrain(){
     g.strokeStyle = 'rgba(255,255,255,0.05)'; g.lineWidth = 2; g.strokeRect(32, 32, WORLD_W-64, WORLD_H-64);
   }catch(e){ terrainCv = null; }
 }
+
 function drawSprite(im, x, y, w, h, flip, alpha){
   if(!imgReady(im)) return false;
   ctx.save();
@@ -3047,10 +3361,10 @@ function drawSpriteT(im, x, y, w, h, flip, rot){
 /* FIX v5 — vẽ 1 Ô của sheet khung hình đi (1 hàng × N ô vuông) có xoay quanh neo đất */
 function drawFrame(im, frame, frames, x, y, w, h, flip, rot){
   if(!imgReady(im)) return false;
-  var fw = im.naturalWidth / frames; if(fw <= 0) return false;
+  var fw = imgW(im) / frames; if(fw <= 0) return false;
   ctx.save();
   ctx.translate(x, y + h*0.30); ctx.rotate(rot||0); if(flip) ctx.scale(-1, 1);
-  ctx.drawImage(im, frame*fw, 0, fw, im.naturalHeight, -w/2, -h/2 - h*0.30, w, h);
+  ctx.drawImage(im, frame*fw, 0, fw, imgH(im), -w/2, -h/2 - h*0.30, w, h);
   ctx.restore();
   return true;
 }
@@ -3058,14 +3372,14 @@ function drawFrame(im, frame, frames, x, y, w, h, flip, rot){
    sóng sin chạy theo quãng đường; đầu (lát trên cùng) đứng yên để ngắm bắn, đuôi vung mạnh nhất */
 function drawSlither(im, x, y, w, h, flip, animDist, sf){
   if(!imgReady(im)) return false;
-  var N = 7, sh = im.naturalHeight / N;
+  var N = 7, sh = imgH(im) / N;
   var ph = (animDist||0) / 40 * 6.2832;
   ctx.save();
   ctx.translate(x, y); if(flip) ctx.scale(-1, 1);
   for(var i=0;i<N;i++){
     var taper = i/(N-1); /* 0 ở đầu (trên) → 1 ở đuôi (dưới) */
     var dx = Math.sin(6.2832*(i/(N-1)) - ph) * 2.6 * taper * sf;
-    ctx.drawImage(im, 0, i*sh, im.naturalWidth, sh, -w/2 + dx, -h/2 + i*(h/N), w, h/N + 0.8);
+    ctx.drawImage(im, 0, i*sh, imgW(im), sh, -w/2 + dx, -h/2 + i*(h/N), w, h/N + 0.8);
   }
   ctx.restore();
   return true;
@@ -3074,7 +3388,7 @@ function drawSlither(im, x, y, w, h, flip, animDist, sf){
    Dải xích: ảnh dải xích lặp ngang, cuộn offset = quãng đường của TỪNG BÊN (rẽ là hai bên lệch nhau) */
 var TANK_TRACK_RECT = { x0: -0.335, y0: 0.115, x1: 0.315, y1: 0.335 }; /* vùng dải xích trong ô sprite (hệ tương đối theo draw) */
 function drawTank(u, bodyY, rot){
-  var hull = IMGP.tank_hull, tur = IMGP.tank_turret, trk = IMGP.tank_track;
+  var hull = UIMG(IMGP, 'tank_hull', u.faction), tur = UIMG(IMGP, 'tank_turret', u.faction), trk = UIMG(IMGP, 'tank_track', u.faction);
   if(!imgReady(hull) || !imgReady(tur)) return false;
   var w = SPECS.tank.draw, h = w;
   var flip = u.face < 0;
@@ -3163,9 +3477,9 @@ function drawWorld(){
       if(ca===0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
     }
     ctx.closePath();
-    ctx.fillStyle = b.faction==='player' ? 'rgba(147,51,234,0.20)' : (b.faction==='ai2' ? 'rgba(217,119,6,0.20)' : 'rgba(190,24,93,0.20)');
+    ctx.fillStyle = S.teamColorMode ? ('rgba(' + teamRGB(b.faction) + ',0.20)') : (b.faction==='player' ? 'rgba(147,51,234,0.20)' : (b.faction==='ai2' ? 'rgba(217,119,6,0.20)' : (b.faction==='ai3' ? 'rgba(124,58,237,0.20)' : 'rgba(190,24,93,0.20)')));
     ctx.fill();
-    ctx.strokeStyle = b.faction==='player' ? 'rgba(192,132,252,0.5)' : 'rgba(251,113,133,0.45)';
+    ctx.strokeStyle = S.teamColorMode ? ('rgba(' + teamRGB(b.faction) + ',0.5)') : (b.faction==='player' ? 'rgba(192,132,252,0.5)' : 'rgba(251,113,133,0.45)');
     ctx.lineWidth = 2; ctx.stroke();
   });
   /* VÙNG ĐIỆN Pylon — hiện vòng khi đang đặt nhà Protoss hoặc đang chọn 1 Pylon của mình */
@@ -3286,9 +3600,9 @@ function drawWorld(){
   }
   ctx.restore();
 }
-function hpBar(x, y, w, frac, friendly){
+function hpBar(x, y, w, frac, friendly, colOverride){
   ctx.fillStyle='rgba(0,0,0,.65)'; ctx.fillRect(x-w/2, y, w, 5);
-  ctx.fillStyle = frac>0.35 ? (friendly?'#4ade80':'#f87171') : '#ef4444';
+  ctx.fillStyle = colOverride || (frac>0.35 ? (friendly?'#4ade80':'#f87171') : '#ef4444');
   ctx.fillRect(x-w/2, y, w*clamp(frac,0,1), 5);
 }
 function shieldBar(e, x, y, w){ /* thanh KHIÊN xanh dương nằm ngay trên thanh máu (Protoss) */
@@ -3309,7 +3623,7 @@ function drawBuilding(b){
     /* ĐANG XÂY: chính SPRITE của nhà hiện dần — mờ (alpha 0.25) rồi NÉT DẦN tới 1.0 theo tiến độ,
        kèm lớp phủ màu "bản vẽ" mờ dần. KHÔNG còn khung dây vàng / dấu X / chữ % nổi trên bản đồ.
        (Zerg: sprite chỉ hiện rõ ở 40% cuối — trước đó là KÉN phủ ở khối vẽ sau.) */
-    var im = IMG[bs.spr], brace = bldRace(b.type), pr = b.progress;
+    var im = UIMG(IMG, bs.spr, b.faction), brace = bldRace(b.type), pr = b.progress;
     if(imgReady(im)){
       var aSpr = brace==='zerg' ? (pr <= 0.6 ? 0.25 : 0.25 + 0.75*(pr - 0.6)/0.4) : (0.25 + 0.75*pr);
       ctx.save(); ctx.globalAlpha = aSpr;
@@ -3322,7 +3636,7 @@ function drawBuilding(b){
     ctx.fillStyle = 'rgba(0,0,0,.65)'; ctx.fillRect(b.x-hs, b.y-hs-13, bs.size, 5);
     ctx.fillStyle = '#4ade80'; ctx.fillRect(b.x-hs, b.y-hs-13, bs.size*pr, 5);
   } else {
-    drawn = drawSprite(IMG[bs.spr], b.x, b.y, bs.draw, bs.draw, false);
+    drawn = drawSprite(UIMG(IMG, bs.spr, b.faction), b.x, b.y, bs.draw, bs.draw, false);
     if(b.faction==='player' && !!MAIN_TYPES[b.type] && S.mainUpgrade){ /* đang NÂNG CẤP nhà chính: thanh xanh trên đầu */
       var upp = clamp(S.mainUpgrade.t / S.mainUpgrade.total, 0, 1);
       ctx.fillStyle = 'rgba(0,0,0,.65)'; ctx.fillRect(b.x-hs, b.y-hs-13, bs.size, 5);
@@ -3375,8 +3689,12 @@ function drawBuilding(b){
     ctx.fillStyle = pc ? (bl ? '#14532d' : '#4ade80') : (bl ? '#450a0a' : '#f87171');
     ctx.beginPath(); ctx.arc(b.x+hs-7, b.y-hs+5, 2.6, 0, 6.29); ctx.fill();
   }
+  if(S.teamColorMode){ /* MÀU ĐỘI: dải màu phe ngay dưới chân nhà + viền góc — nhận phe từ xa */
+    ctx.fillStyle = teamColor(b.faction); ctx.fillRect(b.x-hs, b.y+hs+3, bs.size, 4);
+    ctx.fillStyle = 'rgba(' + teamRGB(b.faction) + ',0.25)'; ctx.fillRect(b.x-hs, b.y+hs+7, bs.size, 3);
+  }
   if(b.shieldMax) shieldBar(b, b.x, b.y-hs-20, bs.size);
-  hpBar(b.x, b.y-hs-14, bs.size, b.hp/b.maxHp, pc);
+  hpBar(b.x, b.y-hs-14, bs.size, b.hp/b.maxHp, pc, S.teamColorMode ? teamColor(b.faction) : null);
   ctx.fillStyle = dim ? '#9aa7b8' : '#eaf6ff'; ctx.font='bold 11px Arial'; ctx.textAlign='center';
   ctx.fillText(bs.name, b.x, b.y+hs+16);
 }
@@ -3404,6 +3722,13 @@ function drawUnit(u){
   if(an.rollA) roll += Math.sin(S.time*6.283*(an.hz||0.8) + u.id*1.71) * an.rollA;
   var pulse = an.pulse ? 1 + 0.02*Math.sin(S.time*6.283*an.hz + u.id*1.71) : 1;
   var flyY = (sp.flying ? -30 : 0) + hovY + (an.hover ? -6 : 0);
+  /* MÀU ĐỘI: đĩa màu phe dưới chân MỌI quân (kể cả khi không được chọn) — dấu hiệu nhận phe khi trùng tộc */
+  if(S.teamColorMode){
+    ctx.fillStyle = 'rgba(' + teamRGB(u.faction) + ',0.30)';
+    ctx.beginPath(); ctx.ellipse(u.x, u.y + sp.draw*0.32, sp.draw*0.46, sp.draw*0.185, 0, 0, 6.29); ctx.fill();
+    ctx.strokeStyle = teamColor(u.faction); ctx.lineWidth = 1.8;
+    ctx.beginPath(); ctx.ellipse(u.x, u.y + sp.draw*0.32, sp.draw*0.46, sp.draw*0.185, 0, 0, 6.29); ctx.stroke();
+  }
   /* bóng đổ: elip đặc lệch hướng, không blur — NEO ĐẤT, không nhún theo thân (chỉ co nhẹ khi thân ở đỉnh lơ lửng) */
   var shS = (an.hover || sp.flying) ? 1 - 0.05*(hovY/(an.amp||2.5)) : 1;
   ctx.fillStyle='rgba(0,0,0,0.36)';
@@ -3416,17 +3741,17 @@ function drawUnit(u){
   /* thân: thở nhẹ khi đứng yên (giết cảm giác tượng chết) */
   var breathe = (!moving && !an.hover && !sp.flying) ? 1 + 0.008*Math.sin(S.time*2.513 + u.id*2.3) : 1;
   var bodyY = u.y + flyY + bobY, drawn = false;
-  var sheet = IMGW[sp.spr];
+  var sheet = UIMG(IMGW, sp.spr, u.faction);
   if(sheet && an.frames && imgReady(sheet)){
     /* có sheet khung hình thật: frame do QUÃNG ĐƯỜNG chọn, bob nằm trong hình — không nhún thêm */
     var fr = moving ? Math.floor(phase * an.frames) % an.frames : 0;
     drawn = drawFrame(sheet, fr, an.frames, u.x, u.y + flyY, sp.draw, sp.draw*breathe*pulse, u.face<0, roll*0.5 + lean);
   } else if(an.slither){
-    drawn = drawSlither(IMG[sp.spr], u.x, bodyY, sp.draw, sp.draw, u.face<0, u.animDist||0, Math.max(sf, moving?0.7:0));
+    drawn = drawSlither(UIMG(IMG, sp.spr, u.faction), u.x, bodyY, sp.draw, sp.draw, u.face<0, u.animDist||0, Math.max(sf, moving?0.7:0));
   } else if(u.type==='tank'){
-    drawn = drawTank(u, bodyY, roll + lean) || drawSpriteT(IMG[sp.spr], u.x, bodyY, sp.draw, sp.draw, u.face<0, roll + lean);
+    drawn = drawTank(u, bodyY, roll + lean) || drawSpriteT(UIMG(IMG, sp.spr, u.faction), u.x, bodyY, sp.draw, sp.draw, u.face<0, roll + lean);
   } else {
-    drawn = drawSpriteT(IMG[sp.spr], u.x, bodyY, sp.draw, sp.draw*breathe*pulse, u.face<0, roll + lean);
+    drawn = drawSpriteT(UIMG(IMG, sp.spr, u.faction), u.x, bodyY, sp.draw, sp.draw*breathe*pulse, u.face<0, roll + lean);
   }
   if(!drawn){
     ctx.fillStyle = pc ? '#22d3ee' : '#f43f5e';
@@ -3442,7 +3767,7 @@ function drawUnit(u){
     }
   }
   if(u.shieldMax) shieldBar(u, u.x, u.y + flyY - sp.draw/2 - 15, 30);
-  if(u.hp < u.maxHp || S.selectedIds.indexOf(u.id)>=0) hpBar(u.x, u.y + flyY - sp.draw/2 - 9, 30, u.hp/u.maxHp, pc);
+  if(u.hp < u.maxHp || S.selectedIds.indexOf(u.id)>=0) hpBar(u.x, u.y + flyY - sp.draw/2 - 9, 30, u.hp/u.maxHp, pc, S.teamColorMode ? teamColor(u.faction) : null);
 }
 function drawMinimap(){
   var w = mmCanvas.clientWidth || 104, h = mmCanvas.clientHeight || 80, sx = w/WORLD_W, sy = h/WORLD_H;
@@ -3453,13 +3778,13 @@ function drawMinimap(){
   /* minimap nhuộm vùng thảm nhầy theo màu phe địch/ta */
   S.buildings.forEach(function(b){
     if(b.type!=='hatchery' || fogAtWorld(b.x,b.y)===0) return;
-    mmCtx.fillStyle = b.faction==='player' ? 'rgba(192,132,252,0.55)' : (b.faction==='ai2' ? 'rgba(245,158,11,0.5)' : 'rgba(239,68,68,0.5)');
+    mmCtx.fillStyle = S.teamColorMode ? ('rgba(' + teamRGB(b.faction) + ',0.5)') : (b.faction==='player' ? 'rgba(192,132,252,0.55)' : (b.faction==='ai2' ? 'rgba(245,158,11,0.5)' : (b.faction==='ai3' ? 'rgba(167,139,250,0.5)' : 'rgba(239,68,68,0.5)')));
     mmCtx.beginPath(); mmCtx.arc(b.x*sx, b.y*sy, creepR(b)*sx, 0, 6.29); mmCtx.fill();
   });
   var a, b, idx;
   S.nodes.forEach(function(n){ if(fogAtWorld(n.x,n.y)===0) return; mmCtx.fillStyle = n.type==='gas' ? '#4ade80' : '#38e1ff'; mmCtx.fillRect(n.x*sx-2, n.y*sy-2, 4, 4); });
   S.buildings.forEach(function(bb){ if(bb.faction!=='player' && fogAtWorld(bb.x,bb.y)===0) return; mmCtx.fillStyle = teamColor(bb.faction); mmCtx.fillRect(bb.x*sx-4, bb.y*sy-4, 8, 8); });
-  S.units.forEach(function(u){ if(u.faction!=='player' && fogAtWorld(u.x,u.y)!==2) return; mmCtx.fillStyle = u.faction==='player' ? '#7dd3fc' : (u.faction==='ai2' ? '#fcd34d' : '#fca5a5'); mmCtx.fillRect(u.x*sx-1, u.y*sy-1, 3, 3); });
+  S.units.forEach(function(u){ if(u.faction!=='player' && fogAtWorld(u.x,u.y)!==2) return; mmCtx.fillStyle = TEAM_LIGHT[u.faction] || '#fca5a5'; mmCtx.fillRect(u.x*sx-1, u.y*sy-1, 3, 3); });
   for(b=0;b<FOG_ROWS;b++) for(a=0;a<FOG_COLS;a++){
     idx = fog[fogIdx(a,b)];
     if(idx===2) continue;
@@ -3752,13 +4077,13 @@ function drawMapPreview(cv, mapId, teams){
   var g = cv.getContext('2d'); if(!g) return;
   var map = MAPS[mapId], lay = mapLayout(mapId, teams), W = cv.width, H = cv.height;
   var sx = W/map.w, sy = H/map.h, i;
-  g.fillStyle = '#14161c'; g.fillRect(0,0,W,H);
+  g.fillStyle = tilesetOf(mapId).css; g.fillRect(0,0,W,H);
   g.strokeStyle = 'rgba(255,255,255,0.05)'; g.lineWidth = 1;
   for(i=1;i<6;i++){ g.beginPath(); g.moveTo(W*i/6,0); g.lineTo(W*i/6,H); g.stroke(); }
   for(i=1;i<5;i++){ g.beginPath(); g.moveTo(0,H*i/5); g.lineTo(W,H*i/5); g.stroke(); }
   lay.bases.forEach(function(bb){
     if(bb.faction==='player') return;
-    g.fillStyle = bb.faction==='ai2' ? 'rgba(245,158,11,0.30)' : 'rgba(147,51,234,0.34)';
+    g.fillStyle = 'rgba(' + teamRGB(bb.faction) + ',0.30)';
     g.beginPath(); g.arc(bb.x*sx, bb.y*sy, 20, 0, 6.29); g.fill();
   });
   lay.nodes.forEach(function(nd){
@@ -3776,13 +4101,13 @@ function drawTypePreview(cv, mapId, teams){
   var map = MAPS[mapId]; if(!map) return;
   var W = cv.width, H = cv.height, sx = W/map.w, sy = H/map.h;
   var cols = 48, rows = 36, cw = W/cols, ch = H/rows, tx, ty, cx, cy, lv;
-  var tierCols = ['#191d24', '#454c57', '#9db1c7'];
+  var TS = tilesetOf(mapId), tierCols = TS.mm;
   for(ty = 0; ty < rows; ty++) for(tx = 0; tx < cols; tx++){
     cx = (tx + 0.5)*map.w/cols; cy = (ty + 0.5)*map.h/rows; lv = 1;
     (map.elev || []).forEach(function(r){ if(cx >= r[0] && cx < r[2] && cy >= r[1] && cy < r[3]) lv = r[4]; });
     g.fillStyle = tierCols[lv]; g.fillRect(tx*cw, ty*ch, cw + 0.5, ch + 0.5);
   }
-  g.fillStyle = '#e8c15a';
+  g.fillStyle = TS.mmRamp;
   (map.ramps || []).forEach(function(r){ g.fillRect(r[0]*sx, r[1]*sy, Math.max(2, (r[2]-r[0])*sx), Math.max(2, (r[3]-r[1])*sy)); });
   var lay = mapLayout(mapId, teams);
   lay.nodes.forEach(function(nd){ g.fillStyle = nd.type==='gas' ? '#4ade80' : '#67e8f9'; g.fillRect(nd.x*sx - 1.3, nd.y*sy - 1.3, 2.6, 2.6); });
@@ -3796,6 +4121,80 @@ function setMapPanel(open){
   var b = document.getElementById('mapBar'); if(b) b.setAttribute('aria-expanded', open ? 'true' : 'false');
 }
 function closeMapPanel(){ setMapPanel(false); }
+/* ===== v5.2: HÀNG ĐỐI THỦ — dựng 1 lần, đồng bộ trạng thái mỗi lần đổi lựa chọn =====
+   Mỗi hàng: thanh tóm tắt (MÁY n — tộc / Ngẫu nhiên / chưa chọn) bấm vào XỔ bộ chọn tộc cho đúng Máy đó:
+   TERRAN · ZERG · PROTOSS · NGẪU NHIÊN · (TẮT = bỏ cấu hình hàng). Hàng vượt CỠ bản đồ thì KHOÁ mờ, bấm không ăn.
+   Nghĩa của hàng: đối thủ = các hàng đã cấu hình (theo thứ tự); không cấu hình hàng nào -> 1 Máy tộc ngẫu nhiên. */
+var ROW_RACES = ['terran','zerg','protoss','random'];
+function buildAiRows(){
+  var wrap = document.getElementById('aiRows'); if(!wrap || wrap.children.length) return;
+  for(var i=0;i<3;i++){
+    (function(idx){
+      var row = document.createElement('div');
+      row.className = 'aiRow'; row.setAttribute('data-row', idx);
+      var head = document.createElement('button');
+      head.type = 'button'; head.className = 'aiRowHead';
+      head.innerHTML = '<span class="aiRowName"></span><span class="aiRowVal"></span><span class="aiRowCaret">▾</span>';
+      head.addEventListener('click', function(){
+        if(idx >= maxAiRows()){ Snd.play('error', 0.5, 60); return; }
+        var op = openRow === idx ? -1 : idx;
+        openRow = op; syncAiRowsUI(); if(op >= 0) Snd.play('ui_click', 0.6, 60);
+      });
+      row.appendChild(head);
+      var opts = document.createElement('div'); opts.className = 'aiRowOpts';
+      ROW_RACES.forEach(function(rk){
+        var b = document.createElement('button');
+        b.type = 'button'; b.className = 'aiOpt'; b.setAttribute('data-opt', rk);
+        b.textContent = rk === 'random' ? 'Ngẫu nhiên' : RACES[rk].name.toUpperCase();
+        b.addEventListener('click', function(){ setAiRowChoice(idx, rk, true); });
+        opts.appendChild(b);
+      });
+      var off = document.createElement('button');
+      off.type = 'button'; off.className = 'aiOpt aiOptOff'; off.setAttribute('data-opt', 'off');
+      off.textContent = 'Tắt';
+      off.addEventListener('click', function(){ setAiRowChoice(idx, null, true); });
+      opts.appendChild(off);
+      row.appendChild(opts);
+      wrap.appendChild(row);
+    })(i);
+  }
+}
+function syncAiRowsUI(){
+  var wrap = document.getElementById('aiRows'); if(!wrap) return;
+  buildAiRows();
+  var mx = maxAiRows();
+  wrap.querySelectorAll('.aiRow').forEach(function(row){
+    var idx = parseInt(row.getAttribute('data-row'), 10) || 0;
+    var locked = idx >= mx, v = aiRows[idx];
+    row.classList.toggle('locked', locked);
+    row.classList.toggle('open', openRow === idx && !locked);
+    row.classList.toggle('set', !!v);
+    row.querySelector('.aiRowName').textContent = 'MÁY ' + (idx + 1);
+    row.querySelector('.aiRowVal').textContent = locked ? 'KHOÁ — bản đồ nhỏ hơn' :
+      (!v ? 'Chưa chọn' : (v === 'random' ? 'Ngẫu nhiên' : RACES[v].name.toUpperCase()));
+    row.querySelectorAll('.aiOpt').forEach(function(b){
+      var ov = b.getAttribute('data-opt');
+      b.classList.toggle('sel', ov === 'off' ? !v : ov === v);
+    });
+  });
+  var tn = document.getElementById('teamNote');
+  if(tn){
+    tn.textContent = MAPS[chosenMap].teams2Only ?
+      'Bản đồ Nhỏ: chỉ MÁY 1 đấu được. Không chọn hàng nào = 1 Máy ngẫu nhiên.' :
+      (!configuredRows() ? 'Không chọn hàng nào = 1 Máy ngẫu nhiên. Chạm vào hàng để chốt tộc cho Máy đó — trùng tộc với bạn thì cả trận bật MÀU ĐỘI.' :
+      'Đang đấu ' + configuredRows() + ' Máy. Trùng tộc với bạn thì cả trận bật MÀU ĐỘI.');
+    tn.style.display = 'block';
+  }
+}
+function setAiRowChoice(idx, val, fromUI){
+  idx = parseInt(idx, 10); if(isNaN(idx) || idx < 0 || idx > 2) return;
+  if(val !== null && ROW_RACES.indexOf(val) < 0) return;
+  if(idx >= maxAiRows()){ if(fromUI) Snd.play('error', 0.5, 60); return; }
+  aiRows[idx] = val;
+  syncTeamsFromRows();
+  if(fromUI){ openRow = -1; Snd.play('ui_click', 0.7, 60); }
+  resetGame();
+}
 function updateStartPickUI(){
   var wrap = document.getElementById('mapPick'); if(!wrap) return;
   var twrap = document.getElementById('typePick');
@@ -3810,9 +4209,6 @@ function updateStartPickUI(){
       card.querySelector('.ms').textContent = sz.note;
       card.addEventListener('click', function(){ setSizeChoice(sk); });
       wrap.appendChild(card);
-    });
-    document.querySelectorAll('.teamBtn').forEach(function(btn){
-      btn.addEventListener('click', function(){ setTeamsChoice(parseInt(btn.getAttribute('data-teams'),10) || 2); });
     });
   }
   if(twrap && !twrap.children.length){
@@ -3832,9 +4228,10 @@ function updateStartPickUI(){
   if(twrap) twrap.querySelectorAll('.mapCard').forEach(function(card){
     card.classList.toggle('sel', card.getAttribute('data-type')===chosenType);
   });
-  /* v4.1 ITEM 3: thanh tóm tắt + khung ghi chú (ảnh preview kiểu bản đồ đang chọn + mô tả) luôn cập nhật theo lựa chọn */
   var mbt = document.getElementById('mapBarTxt'); if(mbt) mbt.textContent = MAP_SIZES[chosenSize].name.replace('Bản Đồ ','') + ' · ' + MAP_TYPES[chosenType].name;
   var mbn = document.getElementById('mapBarName'); if(mbn) mbn.textContent = MAPS[chosenMap].name;
+  var mbs = document.getElementById('mapBarSize'); if(mbs) mbs.textContent = MAP_SIZES[chosenSize].name.replace('Bản Đồ ','');
+  var mby = document.getElementById('mapBarType'); if(mby) mby.textContent = MAP_TYPES[chosenType].name;
   var ncv = document.getElementById('mapNoteCv'); if(ncv) drawMapPreview(ncv, chosenMap, chosenTeams);
   var ntx = document.getElementById('mapNoteTxt'); if(ntx) ntx.textContent = MAP_SIZES[chosenSize].note + ' ' + MAP_TYPES[chosenType].desc;
   var sc = document.getElementById('startCard'); if(sc) sc.setAttribute('data-acc', chosenRace);
@@ -3844,29 +4241,28 @@ function updateStartPickUI(){
   });
   syncDiffUI();
   syncStartBtn();
-  var smallOnly = !!MAPS[chosenMap].teams2Only;
-  document.querySelectorAll('.teamBtn').forEach(function(btn){
-    var n = parseInt(btn.getAttribute('data-teams'),10) || 2;
-    btn.classList.toggle('sel', n === chosenTeams);
-    if(n===3){ btn.disabled = smallOnly; btn.style.display = smallOnly ? 'none' : ''; }
-  });
-  var tn = document.getElementById('teamNote');
-  if(tn) tn.style.display = smallOnly ? 'block' : 'none';
+  syncAiRowsUI();
 }
 function applyMapChoice(){
   chosenMap = chosenSize + '-' + chosenType;
-  if(MAPS[chosenMap].teams2Only) chosenTeams = 2;
+  clampRowsToSize();
   try{ localStorage.setItem('ctvt_map', chosenMap); }catch(e){}
   resetGame();
 }
 function setSizeChoice(sk){ if(!MAP_SIZES[sk] || sk === chosenSize) { if(MAP_SIZES[sk]) updateStartPickUI(); return; } chosenSize = sk; applyMapChoice(); }
 function setTypeChoice(tk){ if(!MAP_TYPES[tk] || tk === chosenType) { if(MAP_TYPES[tk]) updateStartPickUI(); return; } chosenType = tk; applyMapChoice(); }
-function setMapChoice(id){ if(!MAPS[id]) return; chosenMap = id; chosenSize = MAPS[id].sizeKey; chosenType = MAPS[id].typeKey; if(MAPS[id].teams2Only) chosenTeams = 2; try{ localStorage.setItem('ctvt_map', id); }catch(e){} resetGame(); }
+function setMapChoice(id){ if(!MAPS[id]) return; chosenMap = id; chosenSize = MAPS[id].sizeKey; chosenType = MAPS[id].typeKey; clampRowsToSize(); try{ localStorage.setItem('ctvt_map', id); }catch(e){} resetGame(); }
 function syncDiffUI(){ document.querySelectorAll('#diffPick .diffBtn').forEach(function(x){ x.classList.toggle('sel', x.getAttribute('data-diff')===chosenDiff); }); }
 function setDiffChoice(d){ if(!DIFFS[d]) return; chosenDiff = d; try{ localStorage.setItem('ctvt_diff', d); }catch(e){} syncDiffUI(); Snd.play('ui_click', 0.7, 70); }
 document.querySelectorAll('#diffPick .diffBtn').forEach(function(x){ x.addEventListener('click', function(){ setDiffChoice(x.getAttribute('data-diff')); }); });
 function syncStartBtn(){ var bs = document.getElementById('btnStart'); if(bs) bs.textContent = '▶ VÀO TRẬN — ' + chosenRace.toUpperCase(); }
-function setTeamsChoice(n){ chosenTeams = (n===3 && !MAPS[chosenMap].teams2Only) ? 3 : 2; resetGame(); }
+function setTeamsChoice(n){ /* API tương thích (__RTS__/test): n phe = n−1 hàng đầu tiên để 'random', các hàng còn lại bỏ trống */
+  n = Math.max(2, Math.min(maxAiRows() + 1, n|0 || 2));
+  aiRows = [null, null, null];
+  for(var i=0;i<n-1;i++) aiRows[i] = 'random';
+  syncTeamsFromRows();
+  resetGame();
+}
 function setRaceChoice(r){ if(!RACES[r]) return; chosenRace = r; try{ localStorage.setItem('ctvt_race', r); }catch(e){} resetGame(); }
 
 /* ============ PWA: đăng ký Service Worker (chỉ http/https) + nút "Cài app" kín đáo ở màn bắt đầu ============ */
@@ -4081,14 +4477,17 @@ window.__RTS__ = {
   setTeams: function(n){ setTeamsChoice(n); return chosenTeams; },
   setRace: function(r){ setRaceChoice(r); return chosenRace; },
   maps: function(){ return Object.keys(MAPS); },
-  teamsInfo: function(){ return { map: chosenMap, teams: chosenTeams, races: { player: S.playerRace, ai1: S.aiRaces.ai1, ai2: S.aiRaces.ai2 }, bases: S.buildings.filter(function(b){return !!MAIN_TYPES[b.type];}).map(function(b){ return {faction:b.faction, type:b.type, hp:b.hp, maxHp:b.maxHp}; }) }; },
+  teamsInfo: function(){ return { map: chosenMap, teams: chosenTeams, teamColorMode: !!S.teamColorMode, races: { player: S.playerRace, ai1: S.aiRaces.ai1, ai2: S.aiRaces.ai2, ai3: S.aiRaces.ai3 }, bases: S.buildings.filter(function(b){return !!MAIN_TYPES[b.type];}).map(function(b){ return {faction:b.faction, type:b.type, hp:b.hp, maxHp:b.maxHp}; }) }; },
+  setupInfo: function(){ return { size: chosenSize, type: chosenType, maxRows: maxAiRows(), rows: aiRows.slice(), configured: configuredRows(), openRow: openRow, teams: chosenTeams }; },
+  setAiRow: function(i, v){ setAiRowChoice(i, v === undefined ? 'random' : v, false); return aiRows.slice(); },
+  tilesetOf: function(id){ return tilesetOf(id); },
   fx: { count: function(){ return PARTS.length; }, burst: function(x,y){ fxExplosion(x,y,false); return PARTS.length; } },
   buildAt: buildAt,
   orderMove: orderMove,
   orderAttackMove: orderAttackMove,
   orderHarvest: orderHarvest,
   orderUnitsTo: orderUnitsTo,
-  spawnEnemy: function(type,x,y,team){ var t = type==='spider' ? 'zergling' : (type==='spitter' ? 'hydralisk' : type); var u=makeUnit(team==='ai2' ? 'ai2' : 'ai1',t,x,y); S.units.push(u); return u; },
+  spawnEnemy: function(type,x,y,team){ var t = type==='spider' ? 'zergling' : (type==='spitter' ? 'hydralisk' : type); var u=makeUnit((team==='ai2' || team==='ai3' || team==='player') ? team : 'ai1',t,x,y); S.units.push(u); return u; },
   spawnUnit: function(faction,type,x,y){ var u=makeUnit(faction,type,x,y); S.units.push(u); recalcSupply(); return u; },
   damage: damageById,
   setEnemyCCHP: function(hp){ var c=enemyMain(); if(c) c.hp=hp; },
