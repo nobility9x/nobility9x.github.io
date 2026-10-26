@@ -414,6 +414,52 @@ html,body{width:100%;height:100%;height:100dvh;overflow:hidden;background:#000;c
 .selCount span{font-size:10px;font-weight:700;color:#8fa8c4}
 .qSlot{width:22px;height:22px}
 .resBar{height:6px}
+
+/* ===== V5.1 CONSOLE V2: KHỐI ĐIÊU KHẮC ĐÓNG KHUNG PHONG CÁCH SC2 (thay bản phẳng dàn thẳng v5-E) =====
+   Thanh kim loại VÁT GÓC TRÊN, bốn khối đóng khung riêng với góc phát sáng theo màu tộc:
+   [minimap trong khung riêng] [cụm portrait MENU + 3 nút phụ] [khối giữa đóng khung: hàng tóc tài
+   nguyên + thẻ chọn + nâng cấp inline] [lưới lệnh đóng khung riêng — nút CHỈ icon, nhuộm tông ẤM cho
+   lệnh tấn công/sản xuất quân đánh, tông LẠNH cho xây/nghiên cứu/nâng cấp].
+   QUY TẮC CHỮ v5.1 (lệnh của người chơi): bỏ chú thích dưới nút lệnh và mọi nhãn không mang thông tin;
+   chữ chỉ còn ở nơi cần: tên + số lượng khi chọn, nhãn Vũ Khí/Giáp, dòng trạng thái, lý do khoá lệnh
+   (hiện ở dòng giá cmdCost khi chạm nút bị khoá — không in lên nút). */
+#console{height:88px;padding:3px 8px;gap:7px;background:linear-gradient(180deg,#3d4656,#242b37 10%,#131822 48%,#0a0d12);border-top:1px solid var(--acc, rgba(45,212,191,.55));clip-path:polygon(0 12px,12px 0,calc(100% - 12px) 0,100% 12px,100% 100%,0 100%);box-shadow:inset 0 1px 0 rgba(190,215,245,.22)}
+#mmWrap{width:102px;height:78px;padding:3px;align-self:center;background:linear-gradient(165deg,#2d3647,#10141c 60%,#1c232f);border:1px solid #5a6677;border-radius:4px;box-shadow:inset 0 1px 0 rgba(180,205,240,.2),inset 0 -8px 14px rgba(0,0,0,.5)}
+#mmWrap::before{content:'';position:absolute;top:-1px;left:-1px;width:13px;height:13px;border-top:2px solid var(--acc, #2dd4bf);border-left:2px solid var(--acc, #2dd4bf);z-index:4;pointer-events:none;filter:drop-shadow(0 0 3px var(--acc, rgba(45,212,191,.8)))}
+#menuBlock{width:100px;padding:3px 4px;flex-direction:column;gap:3px;align-items:center;justify-content:center;background:linear-gradient(165deg,#2d3647,#10141c 60%,#1c232f);border:1px solid #5a6677;border-radius:4px;box-shadow:inset 0 1px 0 rgba(180,205,240,.2),inset 0 -8px 14px rgba(0,0,0,.5)}
+#menuBlock .mbLeft{flex-direction:row;gap:5px;align-items:center}
+#menuBlock img{width:30px;height:30px;border:1px solid var(--acc, #2dd4bf);border-radius:5px;box-shadow:none}
+#menuBlock .menuLbl{font-size:9.5px;letter-spacing:1.5px}
+#menuBlock .mbBtns{flex-direction:row;gap:4px}
+#console .iconBtn{width:28px;height:28px;background:#171c26;border:1px solid #454e61;border-radius:5px}
+#console .iconBtn svg{width:16px;height:16px}
+#infoCol{background:linear-gradient(165deg,#272f3d,#0e1219 55%,#161c26);border:1px solid #4a5468;border-radius:4px;padding:2px 7px 3px;box-shadow:inset 0 1px 0 rgba(180,205,240,.14),inset 0 -8px 14px rgba(0,0,0,.45)}
+#infoPanel{padding:0 1px}
+#upgPanel{padding:0 1px}
+#cmdWrap{position:relative;background:linear-gradient(165deg,#2d3647,#10141c 60%,#1c232f);border:1px solid #5a6677;border-radius:4px;padding:5px;box-shadow:inset 0 1px 0 rgba(180,205,240,.2),inset 0 -8px 14px rgba(0,0,0,.5)}
+#cmdWrap::before{content:'';position:absolute;top:-1px;left:-1px;width:13px;height:13px;border-top:2px solid var(--acc, #2dd4bf);border-left:2px solid var(--acc, #2dd4bf);z-index:4;pointer-events:none;filter:drop-shadow(0 0 3px var(--acc, rgba(45,212,191,.8)))}
+#cmdWrap::after{content:'';position:absolute;bottom:-1px;right:-1px;width:13px;height:13px;border-bottom:2px solid var(--acc, #2dd4bf);border-right:2px solid var(--acc, #2dd4bf);z-index:4;pointer-events:none;filter:drop-shadow(0 0 3px var(--acc, rgba(45,212,191,.8)))}
+.cmdBtn.tAtk{background:linear-gradient(180deg,#452a20,#2b1811);border-color:#8a5a3c}
+.cmdBtn.tCool{background:linear-gradient(180deg,#1f3646,#142430);border-color:#406a86}
+.cmdBtn.tNeu{background:linear-gradient(180deg,#232a36,#141922);border-color:#46536a}
+.cmdBtn img{max-height:80%}
+.cmdBtn svg{width:20px;height:20px}
+.selGrid{display:flex;flex-direction:row;gap:5px;width:100%;align-items:center;overflow:hidden}
+.typeCard{position:relative;width:44px;height:32px;max-width:none;flex:none;border:1px solid #4a5468;border-radius:4px;background:linear-gradient(180deg,#242d3b,#11151d);display:flex;align-items:center;justify-content:center;cursor:pointer}
+.typeCard img{width:26px;height:26px;object-fit:contain;pointer-events:none}
+.typeCard .cnt{position:absolute;top:1px;right:1px;background:#0a0e14;border:1px solid var(--acc, #2dd4bf);color:#eaf6ff;font-size:10px;font-weight:900;line-height:13px;border-radius:7px;padding:0 4px}
+.typeCard .hpMini{position:absolute;left:3px;right:3px;bottom:2px;height:3px;background:rgba(0,0,0,.75);border-radius:2px;overflow:hidden}
+.typeCard .hpMini i{display:block;height:100%}
+.typeCard.active{border-color:var(--acc, #2dd4bf);box-shadow:0 0 9px var(--acc, rgba(45,212,191,.55))}
+/* v5.1 tinh chỉnh dọc: khung console ăn mất ~12px chiều cao panel so với bản phẳng — trả lại bằng cách
+   gọt đệm console/khối giữa, hàng tóc 15px, hàng nâng cấp 28px, ô hàng đợi 18px -> panel giữa ~33px:
+   đủ portrait 32px, thẻ loại 32px và hàng đợi nhà không bị cắt. */
+#console{padding:2px 8px}
+#infoCol{padding:1px 7px}
+#topLine{height:15px}
+#upgPanel{height:28px}
+.qSlot{width:18px;height:18px}
+.selCount{line-height:1.25}
 </style>
 </head>
 <body>
@@ -428,6 +474,14 @@ html,body{width:100%;height:100%;height:100dvh;overflow:hidden;background:#000;c
 </div>
 <div id="console">
     <div id="mmWrap"><canvas id="minimap" width="208" height="160"></canvas></div>
+    <div id="menuBlock">
+      <div class="mbLeft" id="menuBtn" title="Menu / Tạm dừng"><img id="menuPortrait" src="assets/sprites/command.png" alt=""><div class="menuLbl">MENU</div></div>
+      <div class="mbBtns">
+        <button class="iconBtn" id="btnMute" type="button" aria-label="Bật / tắt tiếng"></button>
+        <button class="iconBtn" id="btnPause" type="button" aria-label="Tạm dừng"></button>
+        <button class="iconBtn" id="btnFs" type="button" aria-label="Toàn màn hình"></button>
+      </div>
+    </div>
     <div id="infoCol">
       <div id="topLine">
         <div id="statBar"><span id="resTime">00:00</span><span>·</span><span>Đợt <span id="resWave">0</span></span><span>·</span><span id="resDiff">Vừa</span></div>
@@ -439,14 +493,6 @@ html,body{width:100%;height:100%;height:100dvh;overflow:hidden;background:#000;c
       </div>
       <div id="infoPanel"><div class="infoHint">Chưa chọn gì.<br>Chạm vào quân / nhà của mình để xem thông tin tại đây — giống bảng điều khiển của chỉ huy.</div></div>
       <div id="upgPanel"></div>
-    </div>
-    <div id="menuBlock">
-      <div class="mbLeft" id="menuBtn" title="Menu / Tạm dừng"><img id="menuPortrait" src="assets/sprites/command.png" alt=""><div class="menuLbl">MENU</div></div>
-      <div class="mbBtns">
-        <button class="iconBtn" id="btnMute" type="button" aria-label="Bật / tắt tiếng"></button>
-        <button class="iconBtn" id="btnPause" type="button" aria-label="Tạm dừng"></button>
-        <button class="iconBtn" id="btnFs" type="button" aria-label="Toàn màn hình"></button>
-      </div>
     </div>
     <div id="cmdWrap">
       <div id="cmdGrid"></div>
@@ -2489,11 +2535,20 @@ function renderPanel(force){
     info.innerHTML = portraitHTML(sp.spr) + '<div class="infoMain"><div class="infoName">' + sp.name + ' <span class="hpNums">' + Math.ceil(u.hp) + ' / ' + u.maxHp + '</span>' + shT + '</div>' +
       '<div class="infoLine2">' + unitBarHTML(u) + '<div class="infoSub">' + sub + '</div></div></div>';
   } else if(sel.length>1){
-    var cells = sel.map(function(x){
-      var f = x.hp/x.maxHp, col = f>0.5 ? '#22c55e' : (f>0.25 ? '#eab308' : '#ef4444');
-      return '<div class="selCell" data-uid="' + x.id + '" style="border-color:' + col + '"><img src="' + sprImg(SPECS[x.type].spr) + '" alt=""></div>';
+    /* v5.1: THẺ THEO LOẠI QUÂN kiểu SC2 (icon + huy hiệu số lượng + vạch máu của quân yếu nhất nhóm);
+       chạm 1 thẻ = thu hẹp chọn xuống đúng loại đó; khi vùng chọn chỉ còn 1 loại, thẻ của nó phát sáng. */
+    var groups = {}, gorder = [];
+    sel.forEach(function(x){ if(!groups[x.type]){ groups[x.type] = []; gorder.push(x.type); } groups[x.type].push(x); });
+    gorder.sort(function(a2, b2){ return groups[b2].length - groups[a2].length; });
+    var oneType = gorder.length === 1;
+    var cards = gorder.map(function(t){
+      var arr = groups[t], worst = 1;
+      arr.forEach(function(x){ worst = Math.min(worst, x.hp/x.maxHp); });
+      var col = worst>0.5 ? '#22c55e' : (worst>0.25 ? '#eab308' : '#ef4444');
+      return '<div class="selCell typeCard' + (oneType ? ' active' : '') + '" data-type="' + t + '"><img src="' + sprImg(SPECS[t].spr) + '" alt="">' +
+        '<span class="cnt">×' + arr.length + '</span><span class="hpMini"><i style="width:' + Math.round(worst*100) + '%;background:' + col + '"></i></span></div>';
     }).join('');
-    info.innerHTML = '<div class="infoMain selWrap"><div class="selCount">' + sel.length + ' quân<br><span>chạm 1 ô =<br>chọn riêng</span></div><div class="selGrid">' + cells + '</div></div>';
+    info.innerHTML = '<div class="infoMain selWrap"><div class="selCount">' + sel.length + ' quân<br><span>chạm thẻ = lọc loại</span></div><div class="selGrid">' + cards + '</div></div>';
   } else if(pendingOrder){
     info.innerHTML = '<div class="infoMain"><div class="infoName">' + (pendingOrder==='attack' ? 'TẤN CÔNG' : pendingOrder==='harvest' ? 'KHAI THÁC' : 'DI CHUYỂN') + '</div><div class="infoSub">Chạm vào đích trên bản đồ.</div></div>';
   } else {
@@ -2507,27 +2562,24 @@ function renderPanel(force){
     info.innerHTML = '<div class="infoMain baseStat"><div class="infoName">CĂN CỨ — Thợ: ' + wkN + ' · Quân: ' + armyN + ' · Dân số: ' + S.supplyUsed + '/' + S.supplyCap + '</div>' +
       '<div class="infoSub">' + mid + '</div></div>';
   }
-  /* --- lưới lệnh 4×2 (v5-E: nút 34px, nhãn ngắn <= 5 ký tự để chữ đạt 10px đọc rõ trên điện thoại) --- */
+  /* --- lưới lệnh 4×2 trong khối đóng khung riêng (v5.1: nút CHỈ icon — bỏ hẳn chú thích chữ;
+     nhuộm tông theo loại lệnh: tấn công / sản xuất quân chiến đấu = ẤM, xây / nghiên cứu / nâng
+     nhà chính / chuyển trang = LẠNH, dừng / huỷ = trung tính. Tên + giá + lý do khoá hiện ở dòng
+     cmdCost khi chạm, không in lên nút — đúng quy tắc "cần thì mới hiện chữ") --- */
   var cmds = currentCommands(), gh = '';
-  var SHORT_BN = { depot:'KHO', barracks:'TRẠI', factory:'MÁY', refinery:'KHÍ', turret:'THÁP', pool:'HỒ', zergden:'HANG', sunken:'GAI', extractor:'KHÍ', hatchery:'TỔ', pylon:'PYLON', gateway:'CỔNG', cybercore:'LÕI', cannon:'PHÁO', assimilator:'HOÁ' };
-  var LBL_ORD = { move:'ĐI', attack:'ĐÁNH', harvest:'HÁI' };
   for(var i=0;i<8;i++){
     var c = cmds[i];
     if(!c){ gh += '<button class="cmdBtn" disabled aria-hidden="true"></button>'; continue; }
-    var lbl = '', prog = -1;
-    if(c.action==='build') lbl = SHORT_BN[c.b] || '';
-    else if(c.action==='order') lbl = LBL_ORD[c.mode] || '';
-    else if(c.action==='stop') lbl = 'DỪNG';
-    else if(c.action==='page') lbl = c.page==='build' ? 'XÂY' : 'LẠI';
-    else if(c.action==='research') lbl = 'N.CỨU';
-    else if(c.action==='upmain') lbl = 'NÂNG';
-    else if(c.action==='cancelPlace') lbl = 'HỦY';
+    var prog = -1;
     if(b && c.action==='research' && b.research && b.research.kind===c.kind) prog = b.research.t/b.research.total;
     if(b && c.action==='train' && b.queue && b.queue.length && b.queue[0].type===c.unit) prog = b.queue[0].t/b.queue[0].total;
+    var tint = 'tNeu';
+    if(c.action==='order' && c.mode==='attack') tint = 'tAtk';
+    else if(c.action==='train') tint = isWorkerType(c.unit) ? 'tCool' : 'tAtk';
+    else if(c.action==='build' || c.action==='research' || c.action==='upmain' || c.action==='page') tint = 'tCool';
     /* v4.1 ITEM 4: lưới lệnh KHÔNG hiện số giá nữa (◆/●/👥) — bấm là trừ ở thanh tài nguyên trên cùng */
-    gh += '<button class="cmdBtn' + (c.active ? ' active' : '') + '" data-i="' + i + '"' + (c.disabled ? ' disabled' : '') + '>' +
+    gh += '<button class="cmdBtn ' + tint + (c.active ? ' active' : '') + '" data-i="' + i + '"' + (c.disabled ? ' disabled' : '') + '>' +
       (c.img ? '<img src="' + sprImg(c.img) + '" alt="">' : IC[c.icon]) +
-      (lbl ? '<span class="clbl">' + lbl + '</span>' : '') +
       (prog >= 0 ? '<span class="cprog" style="width:' + Math.round(prog*100) + '%"></span>' : '') +
       (c.lvl ? '<span class="lvl">' + c.lvl + '</span>' : '') + '</button>';
   }
@@ -2569,6 +2621,15 @@ document.getElementById('btnCancelPlace').addEventListener('click', function(){
 });
 document.getElementById('infoPanel').addEventListener('click', function(ev){
   var cell = ev.target.closest ? ev.target.closest('.selCell') : null; if(!cell) return;
+  /* v5.1: thẻ loại quân — chạm = thu hẹp vùng chọn xuống đúng loại đó (giữ nguyên các quân đang chọn thuộc loại) */
+  var ctype = cell.getAttribute('data-type');
+  if(ctype){
+    var ids = S.units.filter(function(x){ return x.faction === 'player' && x.type === ctype && S.selectedIds.indexOf(x.id) >= 0; }).map(function(x){ return x.id; });
+    if(!ids.length) return;
+    S.selectedIds = ids; S.selectedBuildingId = 0; pendingOrder = null;
+    Snd.play('select', 0.6, 90); renderPanel(true);
+    return;
+  }
   var uid = parseInt(cell.getAttribute('data-uid'), 10);
   var u = S.units.find(function(x){ return x.id === uid && x.faction === 'player'; }); if(!u) return;
   S.selectedIds = [uid]; S.selectedBuildingId = 0; pendingOrder = null;
