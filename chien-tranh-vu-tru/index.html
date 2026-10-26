@@ -2622,11 +2622,13 @@ function tintedCanvas(im, hex){
     TINT_CACHE[key] = c; return c;
   }catch(e){ return im; }
 }
-/* Lấy sprite cho một phe: khi MÀU ĐỘI bật thì trả bản nhuộm, không thì bản gốc */
+/* Lấy sprite cho một phe.
+   v10 (Cường chốt 2026-10-26 21:53 qua ảnh chụp v9): phân biệt phe CHỈ bằng thanh ngang trên đầu —
+   BỎ viền sáng màu phe quanh sprite (tintedCanvas không còn được dùng khi vẽ), BỎ đĩa màu dưới
+   chân quân, BỎ khung/dải màu quanh nhà. Sprite luôn vẽ NGUYÊN BẢN GỐC; màu đội chỉ còn ở thanh
+   máu trên đầu (hpBar nhận colOverride) + minimap. tintedCanvas giữ lại nhưng không ai gọi nữa. */
 function UIMG(store, name, faction){
-  var im = store[name];
-  if(!im || !S || !S.teamColorMode) return im;
-  return tintedCanvas(im, teamColor(faction));
+  return store[name];
 }
 
 /* ============ FIX v5 — HOẠT HÌNH THEO QUÃNG ĐƯỜNG (nghiên cứu: research-animation/notes.md) ============
@@ -2644,7 +2646,101 @@ var IMGP = {};
   var im = new Image(); im.src = 'assets/sprites/' + n + '.png'; IMGP[n] = im;
 });
 var TANK_PIVOT = { x: 0.469, y: 0.414 }; /* tâm tháp trong ô sprite gốc (đo từ tank.png: ~(120,106)/256) */
-var TANK_ART_ANG = -1.36; /* hướng nòng trong tranh gốc (chếch lên-phải ~-78°) — trừ đi để tháp ngắm đúng góc thế giới */
+/* v10: thân KHÔNG súng + lớp vũ khí xoay quanh pivot (cắt từ tranh GỐC, cùng cỡ canvas) */
+var IMGL = {};
+['marine_body','marine_rifle','firebat_body','firebat_nozzle_r','firebat_nozzle_l','mech_body','mech_barrel_r','mech_barrel_l','robot_body','robot_barrel','heli_body','heli_chin','heavytank_hull','heavytank_turret','artillery_body','artillery_cannon','turret_base','turret_launcher'].forEach(function(n){
+  var im = new Image(); im.src = 'assets/sprites/' + n + '.png'; IMGL[n] = im;
+});
+/* v10 HIỆU CHUẨN (step 0, đo trên tranh thật tank_turret.png bằng grounded point + PIL centroid):
+   cụm điểm xa nhất khỏi pivot bám đầu nòng tại (241,16) -> góc -36,6° ≈ -0,64 rad.
+   Hằng cũ -1.36 (-78°) LỆCH +41° — tháp luôn ngắm chệch hướng bắn 41° (ảnh render chứng minh:
+   proof-v10/calib_before_east.png nòng chỉ xuống-đông thay vì đông). */
+var TANK_ART_ANG = -0.64; /* hướng nòng trong tranh gốc ≈ -37° — trừ đi để tháp ngắm đúng góc thế giới */
+var TANK_TIP = { x: 0.934, y: 0.066 }; /* đầu nòng đo trên turret png: (239,17)/256 — đạn v10 sinh TẠI ĐÂY */
+
+/* ================= v10 — CHU TRÌNH BẮN AIM/STRIKE (firing-poses-spec.md) =================
+   TRACK (lớp vũ khí quay theo mục tiêu) → AIM/wind-up (nằm TRONG cooldown — DPS không đổi)
+   → STRIKE (điểm DUY NHẤT sinh đạn/damage/flash/tiếng) → giật lùi 120ms → nghỉ.
+   Neo (pivot/tip) chuẩn hoá 0..1 trên canvas sprite gốc (quân 256, nhà 384); đổi sang thế giới:
+   local = ((p-0.5)*D); world = body + (face*local.x, local.y); lớp ngắm quay quanh pivot theo
+   (θ - hướng_nghỉ_của_tranh). Mọi toạ độ dưới đây ĐO TRÊN TRANH THẬT (spec §3/§4/§5/§6). */
+var RECOIL_TIME = 0.12;
+function windupFor(cd){ /* spec §1.2 theo lớp cooldown */
+  if(cd <= 0.65) return 0.06; if(cd <= 0.95) return 0.08; if(cd <= 1.25) return 0.10;
+  if(cd <= 1.9) return 0.14; return 0.18;
+}
+var AIMDEF = {
+  /* lớp A — lớp vũ khí xoay theo pivot (asset tách lớp ở assets/sprites/<spr>_body.png + _<layer>.png) */
+  marine:    { cls:'A', bodyN:'marine_body', layerN:'marine_rifle', pivot:{x:0.305,y:0.455}, tips:[{x:0.968,y:0.504}], wu:0.06 },
+  firebat:   { cls:'A', bodyN:'firebat_body', layerN:'firebat_nozzle_r', layerN2:'firebat_nozzle_l', pivot:{x:0.775,y:0.455}, tips:[{x:0.958,y:0.550}], pivot2:{x:0.285,y:0.635}, tips2:[{x:0.485,y:0.775}], wu:0.08 }, /* tay TRÁI vắt chéo qua thân: vai (0.285,0.635) -> nòng kép (0.485,0.775) — đã kiểm chứng bằng crop lúc tách lớp */
+  mech:      { cls:'A', bodyN:'mech_body', layerN:'mech_barrel_r', layerN2:'mech_barrel_l', pivot:{x:0.687,y:0.402}, tips:[{x:0.988,y:0.453}], pivot2:{x:0.148,y:0.508}, tips2:[{x:0.410,y:0.566}], wu:0.06 },
+  robot:     { cls:'A', bodyN:'robot_body', layerN:'robot_barrel', pivot:{x:0.690,y:0.385}, tips:[{x:0.980,y:0.445}], wu:0.06 }, /* nòng vai phải trên — đã kiểm chứng bằng alpha bbox (y 99-123 tại x 235); trống tròn tay trái là bộ phận thân */
+  heli:      { cls:'A', bodyN:'heli_body', layerN:'heli_chin', pivot:{x:0.779,y:0.881}, tips:[{x:0.912,y:0.903}], wu:0.06, dip:3 },
+  tank:      { cls:'A', pivot:{x:0.469,y:0.414}, tips:[{x:0.934,y:0.066}], wu:0.14 }, /* tháp đã tách sẵn (drawTank) — chỉ nối điểm sinh đạn về đầu nòng */
+  heavytank: { cls:'A', bodyN:'heavytank_hull', layerN:'heavytank_turret', pivot:{x:0.432,y:0.468}, tips:[{x:0.259,y:0.332},{x:0.152,y:0.406}], wu:0.14, slow:3.2 },
+  artillery: { cls:'A', bodyN:'artillery_body', layerN:'artillery_cannon', pivot:{x:0.526,y:0.507}, tips:[{x:0.822,y:0.125}], wu:0.14, slow:3.2 },
+  /* lớp E — điểm phát cố định + nạp sáng (không pivot) */
+  hydralisk: { cls:'E', pt:{x:0.662,y:0.142}, wu:0.10 },
+  bat:       { cls:'E', pt:{x:0.565,y:0.875}, wu:0.06, dip:4 },
+  wasp:      { cls:'E', pt:{x:0.738,y:0.675}, wu:0.08, dip:3 },
+  leviathan: { cls:'E', pt:{x:0.225,y:0.530}, wu:0.14, dip:1.5 },
+  dragoon:   { cls:'E', pt:{x:0.542,y:0.313}, wu:0.10 },
+  archon:    { cls:'E', pt:{x:0.498,y:0.362}, wu:0.10 },
+  scoutbot:  { cls:'E', pt:{x:0.688,y:0.470}, wu:0.06, tilt:6 },
+  colossus:  { cls:'E', pt:{x:0.665,y:0.415}, wu:0.14 },
+  carrier:   { cls:'E', pt:{x:0.402,y:0.586}, wu:0.14, dip:1.5 },
+  /* lớp F — quân bay phát xạ cố định */
+  jet:       { cls:'F', pt:{x:0.973,y:0.891}, fx:[{x:0.754,y:0.682},{x:0.914,y:0.457}], wu:0.10, dip:2 },
+  gunship:   { cls:'F', pt:{x:0.910,y:0.627}, pt2:{x:0.313,y:0.792}, wu:0.14, dip:3 },
+  scoutship: { cls:'F', pt:{x:0.962,y:0.787}, fx:[{x:0.661,y:0.552}], wu:0.06, dip:2 },
+  frigate:   { cls:'F', pt:{x:0.891,y:0.660}, fx:[{x:0.195,y:0.875}], wu:0.10, dip:2 },
+  /* cận chiến — không đạn: AIM thụt lại (pull), STRIKE lao tới đỉnh đúng khoảnh khắc damage */
+  zergling:  { cls:'M', wu:0.07, pull:2, peak:8 },
+  worker:    { cls:'M', wu:0.09, pull:2, peak:6 },
+  drone:     { cls:'M', wu:0.09, pull:2, peak:6 },
+  probe:     { cls:'M', wu:0.09, pull:2, peak:5 },
+  zealot:    { cls:'M', wu:0.11, pull:3, peak:8 },
+  ultralisk: { cls:'M', wu:0.14, pull:3, peak:10 }
+};
+var BAIMDEF = {
+  turret: { cls:'A', bodyN:'turret_base', layerN:'turret_launcher', pivot:{x:0.515,y:0.210}, tips:[{x:0.292,y:0.100},{x:0.756,y:0.110}], wu:0.06, slow:4.2 },
+  sunken: { cls:'N', pivot:{x:0.498,y:0.508}, frac:0.30, wu:0.10 }, /* ngòi MỚI chờ Cường duyệt hình — v10 chỉ nối THỜI GIAN + điểm sinh theo pivot */
+  cannon: { cls:'E', pt:{x:0.500,y:0.494}, ring:{x:0.500,y:0.514}, wu:0.10 }
+};
+function restAngOf(def, tip, pivot){ var dx = (tip.x - pivot.x), dy = (tip.y - pivot.y); return Math.atan2(dy, dx); }
+function aimLocal(def, D, flip){ /* pivot trong hệ local thân (chưa cộng vị trí thân) */
+  var pv = def.pivot || def.pt || def.ring;
+  if(!pv) return { x: 0, y: 0 };
+  return { x: (pv.x - 0.5) * D * flip, y: (pv.y - 0.5) * D };
+}
+function aimTipW(e, def, D, flip, ang, barrelIdx, bx, by){
+  /* đầu nòng THẾ GIỚI tại góc ngắm ang, đã trừ giật lùi nếu đang recoil (spec §2.2).
+     bx/by = vị trí thân dùng để đặt pivot (quân bay truyền y đã gồm flyOff); mặc định e.x/e.y.
+     Pivot lật theo mặt thân; vector pivot->đầu nòng KHÔNG lật — lớp vũ khí vẽ ở không gian thế giới. */
+  var pv = def.pivot || def.pt, tip = (def.tips && def.tips.length) ? def.tips[barrelIdx || 0] : (def.pt || pv);
+  var pl = aimLocal(def, D, flip);
+  var px = (bx != null ? bx : e.x) + pl.x, py = (by != null ? by : e.y) + pl.y;
+  var rest = restAngOf(def, tip, pv);
+  var tx = px + (tip.x - pv.x) * D, ty = py + (tip.y - pv.y) * D;
+  var c = Math.cos(ang - rest), s = Math.sin(ang - rest);
+  var rx = px + (tx - px) * c - (ty - py) * s, ry = py + (tx - px) * s + (ty - py) * c;
+  if(e.recoilT > 0){ var k = (e.recoilT / RECOIL_TIME) * recoilPxFor(e); rx -= Math.cos(ang) * k; ry -= Math.sin(ang) * k; }
+  return { x: rx, y: ry, px: px, py: py };
+}
+function recoilPxFor(e){ var cd = ((e.kind === 'building' || e.isB) ? BSPECS[e.type].cd : SPECS[e.type].cd) || 1; return cd <= 0.65 ? 2 : (cd <= 1.25 ? 2.5 : 3); }
+function flyOffYOf(u){ /* đúng công thức flyY của drawUnit (trừ pose/bob — phần trình diễn thuần) */
+  var sp = SPECS[u.type], an = ANIM[u.type] || {};
+  var hovY = 0;
+  if(an.hover || sp.flying) hovY = Math.sin(S.time*6.283*(an.hz||0.8) + u.id*1.71) * (an.amp||2);
+  return (sp.flying ? -30 : 0) + hovY + (an.hover ? -6 : 0);
+}
+function turnToward(cur, want, maxStep){
+  var d = want - cur;
+  while(d > Math.PI) d -= Math.PI*2; while(d < -Math.PI) d += Math.PI*2;
+  if(Math.abs(d) <= maxStep) return want;
+  return cur + Math.sign(d) * maxStep;
+}
+function angErr(a, b){ var d = a - b; while(d > Math.PI) d -= Math.PI*2; while(d < -Math.PI) d += Math.PI*2; return d; }
 var ANIM = {
   worker:   { stride:24, frames:6, bob:1.6, roll:0.035 },
   marine:   { stride:24, frames:6, bob:1.6, roll:0.035 },
@@ -3320,13 +3416,14 @@ function makeUnit(faction, type, x, y){
     shield: sm, shieldMax: sm, lastHurtAt: -99,
     cooldown:0, carrying:0, carryType:null, combatTargetId:0, postX:x, postY:y,
     vx:0, vy:0, speedNow:0, animDist:0, lastMoveAt:-9, lastActAt:-9, idleW:0, recoilT:0, turretA:0, turnAcc:0, dustAcc:0,
+    atk:null, aimA:0, atkLockUntil:0, atkBarrel:0, lungePeak:7, /* v10: chu trình AIM/STRIKE */
     order:{type:'idle', x:x, y:y, targetId:0, nodeId:0, phase:'', harvestT:0} };
 }
 function makeBuilding(faction, type, x, y, built){
   var bs = BSPECS[type], sm = shieldMaxFor('building', type, bs.hp);
   var b = { id:uid(), kind:'building', faction:faction, type:type, x:x, y:y, hp:bs.hp, maxHp:bs.hp,
     shield: sm, shieldMax: sm, lastHurtAt: -99,
-    queue:[], cooldown:0, constructing: !built, progress: built?1:0 };
+    queue:[], cooldown:0, constructing: !built, progress: built?1:0, atk:null, aimA:0, atkBarrel:0, recoilT:0 };
   if(MAIN_TYPES[type]) b.mainLv = 1; /* cấp RIÊNG từng Nhà Chính (chỉ nhà sản xuất mới nâng CHUNG theo loại) */
   if(type==='hatchery'){ b.larvae = 3; b.larvaT = 0; b.eggs = []; b.creepT0 = (typeof S !== 'undefined' && S) ? S.time : 0; }
   return b;
@@ -3460,7 +3557,22 @@ function showMsg(t, ms){
 
 /* ============ LỆNH & HÀNH ĐỘNG ============ */
 var lastAlarmAt = 0;
-function setOrder(u, o){ u.order = o; u.combatTargetId = 0; u.path = null; u.pathGoal = '';
+function setOrder(u, o){
+  /* v10 — luật HỦY giữa AIM (spec §1.1.5): lệnh mới HỦY chu trình ngắm (không tốn cooldown, không
+     đạn ma) TRỪ lệnh đánh sang mục tiêu KHÁC đang trong tầm+8 -> CHUYỂN chu trình sang mục tiêu đó.
+     Sau STRIKE (pha recoil) đòn không hủy được; lệnh mới bị GIỮ tới hết 120ms giật (atkLockUntil). */
+  if(u.atk){
+    if(u.atk.phase === 'recoil'){ u.atkLockUntil = S.time + u.atk.t; }
+    else if(u.atk.phase === 'aim'){
+      var transferred = false;
+      if(o.type === 'attack' && o.targetId){
+        var nt = findById(o.targetId), nsp = SPECS[u.type];
+        if(nt && nt.hp > 0 && nsp && dist(u.x, u.y, nt.x, nt.y) <= nsp.range + 8){ u.atk.targetId = nt.id; transferred = true; }
+      }
+      if(!transferred) u.atk = null;
+    }
+  }
+  u.order = o; u.combatTargetId = 0; u.path = null; u.pathGoal = '';
   if(o.type==='move' || o.type==='attackmove' || o.type==='attack') u.postX = null; /* FIX R: neo mới = điểm đến */ }
 function orderMove(ids, x, y, f){
   if(NET.role==='guest' && NET.phase==='match' && !f){ NET.sendIntent({a:'move', ids:ids.slice(), x:x, y:y}); if(ids.length){ Snd.play('move', 0.7, 300); addMarker(x, y, 'move'); } return ids.length>0; }
@@ -4067,6 +4179,7 @@ function spawnProjectile(fields){
   var p = PROJ_POOL.pop() || {};
   for(var k in fields) p[k] = fields[k];
   if(fields.fxOnly === undefined) p.fxOnly = false; /* đạn tái dùng từ hồ: reset cờ hình ảnh */
+  if(fields.visZ0 === undefined) p.visZ0 = 0; if(fields.visZ1 === undefined) p.visZ1 = 0; /* v10: độ cao hiển thị */
   p.seed = rng()*6.283; /* hạt giống RIÊNG cho hiệu ứng (đuôi lửa tên lửa, nhấp nháy) */
   p.id = uid();
   S.projectiles.push(p);
@@ -4187,63 +4300,157 @@ function playWeaponShot(type, x, y, baseVol){
   }
   Snd.playEx(pickShotVar(type), { vol: vol, combat: true });
 }
-function shoot(u, target){
-  var sp = SPECS[u.type];
-  u.cooldown = sp.cd;
-  u.lastActAt = S.time; /* v6.2 (mục E): mốc ra đòn gần nhất — lớp nhàn chỉ chạy khi thật sự không làm gì */
-  if(sp.projSpeed > 0) u.recoilT = 0.14; /* FIX v6: MỌI quân bắn xa giật lùi nhẹ khi khai hoả (trước chỉ Xe Tăng) */
-  if(Math.abs(target.x - u.x) > 2) u.face = target.x > u.x ? 1 : -1;
-  var ang = Math.atan2(target.y - u.y, target.x - u.x);
-  var dmg = combatDamage(u, target);
-  var missed = !entIsFlying(target) && elevShotMiss(u.x, u.y, target.x, target.y); /* tầng thấp bắn lên cao: 25% trượt; quân bay không tính tầng */
-  if(sp.projSpeed>0){
-    var dd0 = dist(u.x, u.y, target.x, target.y);
-    var pk = projKindFor(u.type);
-    var wp0 = wfxOf(u.type);
-    var spawned = spawnProjectile({ faction:u.faction, x:u.x, y:u.y, sx:u.x, sy:u.y, tx:target.x, ty:target.y, targetId:target.id, dmg:dmg, speed:sp.projSpeed,
-      splash: sp.splash||0, attackerType:u.type, attackerFaction:u.faction, flame: u.type==='firebat', miss: missed,
-      kind: pk, arcH: pk==='shell' ? Math.max(14, dd0*0.22) * (wp0 && wp0.arc ? wp0.arc : 1) : 0 });
-    if(!spawned){ /* trần đạn: phát này áp sát thương ngay thay vì mất đòn */
-      if(!missed){ applyDamage(target, dmg, u.faction); if(sp.splash) splashHit(u, target, target.x, target.y, sp.splash, target); }
-    } else if(wp0 && wp0.twin){ /* V6.4: quân SONG SÚNG (Robot/Mech) — thêm 1 đạn HÌNH ẢNH song song lệch 6px: trông như 2 nòng cùng khạc, 0 sát thương nên cân bằng DPS giữ nguyên */
-      var pxn = -Math.sin(ang)*6, pyn = Math.cos(ang)*6;
-      spawnProjectile({ faction:u.faction, x:u.x + pxn, y:u.y + pyn, sx:u.x + pxn, sy:u.y + pyn, tx:target.x, ty:target.y, targetId:target.id, dmg:0, speed:sp.projSpeed,
-        splash: 0, attackerType:u.type, attackerFaction:u.faction, flame: false, miss: missed, fxOnly: true,
-        kind: pk, arcH: 0 });
+/* ================= v10 — CHU TRÌNH TẤN CÔNG AIM/STRIKE =================
+   Thay shoot() cũ (bắn tức thì). begin → tick (TRACK+AIM trong cooldown) → executeStrike.
+   STRIKE→STRIKE trong trạng thái ổn định = đúng cd cũ: chu trình bắt đầu khi cooldown <= windup
+   và strike rơi ĐÚNG lúc cooldown về 0; mục tiêu bất ngờ (cooldown đã 0) mới chịu đủ windup
+   60–180ms (attack delay kiểu AoE2 — chủ đích, spec §8.7). */
+function atkDefOf(e){ return e.kind === 'building' ? BAIMDEF[e.type] : AIMDEF[e.type]; }
+function atkCdOf(e){ return e.kind === 'building' ? BSPECS[e.type].cd : SPECS[e.type].cd; }
+function atkWindupOf(e){ var d = atkDefOf(e); return (d && d.wu != null) ? d.wu : windupFor(atkCdOf(e)); }
+function beginAtk(e, target){
+  var wu = atkWindupOf(e), cdLeft = e.cooldown > 0 ? e.cooldown : 0;
+  e.atk = { phase:'aim', t: cdLeft > 0 ? cdLeft : wu, targetId: target.id };
+  if(e.aimA == null) e.aimA = Math.atan2(target.y - e.y, target.x - e.x);
+  e.lastActAt = S.time;
+}
+function strikeOrigin(e, ang){
+  /* điểm sinh đạn THẾ GIỚI tại khoảnh khắc STRIKE: {x,y} = điểm HIỂN THỊ (đã gồm độ cao bay),
+     {gx,gy} = hình chiếu mặt đất cho logic đạn (quân bay) — spec §2.2/§2.4 */
+  var def = atkDefOf(e), isB = e.kind === 'building';
+  var D = isB ? BSPECS[e.type].draw : SPECS[e.type].draw;
+  var flip = e.face < 0 ? -1 : 1;
+  if(!def) return { x: e.x, y: e.y, gx: e.x, gy: e.y };
+  if(def.cls === 'N'){ /* Sunken: ngòi vươn từ pivot theo hướng bắn, dài frac*D */
+    var pl = aimLocal(def, D, 1);
+    var px = e.x + pl.x, py = e.y + pl.y;
+    return { x: px + Math.cos(ang) * def.frac * D, y: py + Math.sin(ang) * def.frac * D, gx: px + Math.cos(ang) * def.frac * D, gy: py + Math.sin(ang) * def.frac * D };
+  }
+  var flying = !isB && SPECS[e.type].flying;
+  var by = flying ? e.y + flyOffYOf(e) : e.y;
+  var tip = aimTipW(e, def, D, flip, ang, e.atkBarrel || 0, e.x, by);
+  var gip = flying ? aimTipW(e, def, D, flip, ang, e.atkBarrel || 0, e.x, e.y) : tip;
+  return { x: tip.x, y: tip.y, gx: gip.x, gy: gip.y };
+}
+function secondBarrelOrigin(e, ang){
+  var def = atkDefOf(e); if(!def || !def.pivot2) return null;
+  var def2 = { pivot: def.pivot2, tips: def.tips2 };
+  var isB = e.kind === 'building', D = isB ? BSPECS[e.type].draw : SPECS[e.type].draw, flip = e.face < 0 ? -1 : 1;
+  return aimTipW(e, def2, D, flip, ang, 0);
+}
+function tickAtk(e, dt){
+  var a = e.atk; if(!a) return;
+  if(a.phase === 'recoil') return; /* đếm giật nằm ở vòng tick của quân/nhà (mỗi nơi đúng 1 chỗ) */
+  var sp = e.kind === 'building' ? BSPECS[e.type] : SPECS[e.type];
+  var target = findById(a.targetId);
+  if(!target || target.hp <= 0){ e.atk = null; return; }
+  var edge = target.kind === 'building' ? BSPECS[target.type].size / 2 : 0;
+  if(dist(e.x, e.y, target.x, target.y) - edge > sp.range + 8){ e.atk = null; return; }
+  if(e.kind === 'building' && e.type === 'cannon' && !isPowered(e)){ e.atk = null; return; }
+  var want = Math.atan2(target.y - e.y, target.x - e.x);
+  var def = atkDefOf(e);
+  if(e.type === 'tank'){ e.aimA = e.turretA || 0; }
+  else if(e.kind === 'building'){ /* nhà không có vòng TRACK riêng: quay ngay trong tickAtk */
+    var rate = def && def.slow ? def.slow : 12;
+    e.aimA = turnToward(e.aimA == null ? want : e.aimA, want, rate * dt);
+  }
+  /* quân: aimA do TRACK ở hậu xử lý tick() bám liên tục (cả ngoài AIM) — tới lúc vào AIM tháp đã
+     gần khớp hướng; snap 70ms cuối CHỈ cho lớp nhanh (lớp chậm giữ tốc độ quay thật + cổng góc). */
+  if(!(def && def.slow) && a.t <= 0.07) e.aimA = turnToward(e.aimA == null ? want : e.aimA, want, 20 * dt);
+  a.t -= dt;
+  if(a.t <= 0){
+    if(dist(e.x, e.y, target.x, target.y) - edge > sp.range + 2){ a.t = 0; return; } /* mục tiêu lùi khỏi tầm hiệu dụng: giữ ngắm, chưa bắn */
+    var gate = def && def.slow ? Math.abs(angErr(e.aimA, want)) : 0;
+    if(gate > 0.052){ a.t = 0; return; } /* tháp chậm chưa khớp góc: CHỜ, không tốn cooldown (spec §8.3) */
+    executeStrike(e, target);
+    e.atk = { phase:'recoil', t: RECOIL_TIME, targetId: 0 };
+  }
+}
+function executeStrike(e, target){
+  var isB = e.kind === 'building';
+  var sp = isB ? BSPECS[e.type] : SPECS[e.type];
+  e.cooldown = sp.cd;
+  e.lastActAt = S.time;
+  if(sp.projSpeed > 0) e.recoilT = RECOIL_TIME;
+  if(Math.abs(target.x - e.x) > 2) e.face = target.x > e.x ? 1 : -1;
+  var ang = e.type === 'tank' ? (e.turretA || 0) : (e.aimA != null ? e.aimA : Math.atan2(target.y - e.y, target.x - e.x));
+  var dmg = isB ? Math.max(1, sp.dmg) : combatDamage(e, target);
+  var missed = !entIsFlying(target) && elevShotMiss(e.x, e.y, target.x, target.y);
+  var org = sp.projSpeed > 0 ? strikeOrigin(e, ang) : { x: e.x, y: e.y, gx: e.x, gy: e.y }; /* cận chiến không cần điểm sinh đạn */
+  var def = atkDefOf(e);
+  var altBarrels = def && def.tips && def.tips.length > 1 && !def.pivot2; /* heavytank/turret/gunship: nòng LUÂN PHIÊN mang sát thương */
+  if(sp.projSpeed > 0){
+    var dd0 = dist(org.gx, org.gy, target.x, target.y);
+    var pk = projKindFor(e.type);
+    var wp0 = wfxOf(e.type);
+    var spawned = spawnProjectile({ faction: e.faction, x: org.gx, y: org.gy, sx: org.x, sy: org.y, tx: target.x, ty: target.y, targetId: target.id, dmg: dmg, speed: sp.projSpeed,
+      splash: sp.splash || 0, attackerType: e.type, attackerFaction: e.faction, flame: e.type === 'firebat', miss: missed,
+      kind: pk, arcH: pk === 'shell' ? Math.max(14, dd0 * 0.22) * (wp0 && wp0.arc ? wp0.arc : 1) : 0,
+      visZ0: (!isB && SPECS[e.type].flying) ? -flyOffYOf(e) : 0, visZ1: entIsFlying(target) ? -flyOffYOf(target) : 0 });
+    if(!spawned){ /* trần đạn: áp sát thương ngay tại STRIKE thay vì mất đòn (giữ nguyên luật cũ) */
+      if(!missed){ applyDamage(target, dmg, e.faction); if(sp.splash) splashHit(e, target, target.x, target.y, sp.splash, target); }
+    } else if(def && def.pivot2){ /* 2 nòng THẬT (Firebat/Mech): đạn chính nòng trước + đạn fxOnly nòng sau từ ĐÚNG đầu nòng của nó */
+      var o2 = secondBarrelOrigin(e, ang);
+      spawnProjectile({ faction: e.faction, x: o2.x, y: o2.y, sx: o2.x, sy: o2.y, tx: target.x, ty: target.y, targetId: target.id, dmg: 0, speed: sp.projSpeed,
+        splash: 0, attackerType: e.type, attackerFaction: e.faction, flame: e.type === 'firebat', miss: missed, fxOnly: true,
+        kind: pk, arcH: 0, visZ0: (!isB && SPECS[e.type].flying) ? -flyOffYOf(e) : 0, visZ1: entIsFlying(target) ? -flyOffYOf(target) : 0 });
+    } else if(wp0 && wp0.twin){ /* song súng 1 nòng trong tranh (Robot): đạn đôi fxOnly từ CÙNG đầu nòng ±3px vuông góc */
+      var pxn = -Math.sin(ang) * 3, pyn = Math.cos(ang) * 3;
+      spawnProjectile({ faction: e.faction, x: org.gx + pxn, y: org.gy + pyn, sx: org.x + pxn, sy: org.y + pyn, tx: target.x, ty: target.y, targetId: target.id, dmg: 0, speed: sp.projSpeed,
+        splash: 0, attackerType: e.type, attackerFaction: e.faction, flame: false, miss: missed, fxOnly: true,
+        kind: pk, arcH: 0, visZ0: (!isB && SPECS[e.type].flying) ? -flyOffYOf(e) : 0, visZ1: entIsFlying(target) ? -flyOffYOf(target) : 0 });
     }
-    fxMuzzle(u.x + Math.cos(ang)*sp.draw*0.42, u.y + Math.sin(ang)*sp.draw*0.30, ang, u.type==='firebat', pk, wp0);
-    if(onScreen(u.x,u.y)) playWeaponShot(u.type, u.x, u.y, 0.30);
-    if(S.netOnline) NET.evShot(u.faction, u.type, u.x, u.y);
+    if(altBarrels) e.atkBarrel = ((e.atkBarrel || 0) + 1) % def.tips.length;
+    fxMuzzle(org.x, org.y, ang, e.type === 'firebat', pk, wp0);
+    if(isB){ if(e.faction === 'player' && onScreen(e.x, e.y)) playWeaponShot(e.type, e.x, e.y, 0.25); else if(S.netOnline) NET.evShot(e.faction, e.type, e.x, e.y); }
+    else { if(onScreen(e.x, e.y)) playWeaponShot(e.type, e.x, e.y, 0.30); if(S.netOnline) NET.evShot(e.faction, e.type, e.x, e.y); }
   } else {
-    /* CẬN CHIẾN: lao người tới + vệt chém loé tại mục tiêu */
-    var ld = Math.max(1, dist(u.x, u.y, target.x, target.y));
-    u.lungeT = 0.18; u.lungeDx = (target.x - u.x)/ld; u.lungeDy = (target.y - u.y)/ld;
-    /* V6.4: nhát chém RIÊNG — Zealot = LƯỠI PSI xanh kép; Quái Khổng Lồ = vòng cung TO + bụi đất + rung nhẹ; còn lại giữ vệt trắng */
-    var slashC = u.type==='zealot' ? [150,240,255] : (u.type==='ultralisk' ? [255,190,120] : null);
-    var slashSize = Math.max(10, (sp.draw||40) * (u.type==='ultralisk' ? 0.44 : 0.34));
-    spawnP({kind:'slash', x:target.x, y:target.y - 4, vx:0, vy:0, life:0.16, max:0.16, size: slashSize, seed: ang, c: slashC});
-    if(u.type==='zealot') spawnP({kind:'slash', x:target.x, y:target.y - 4, vx:0, vy:0, life:0.14, max:0.14, size: slashSize*0.68, seed: ang + 0.65, c: slashC});
-    if(u.type==='ultralisk'){ for(var udi=0;udi<3;udi++) spawnP({kind:'dust', x:target.x + (rng()-0.5)*22, y:target.y + (rng()-0.5)*10, vx:(rng()-0.5)*36, vy:-10-rng()*16, life:0.34, max:0.34, size:5+rng()*4, seed:rng()*6}); addShake(target.x, target.y, 1.2); }
-    if(missed){
-      fxFizzle(target.x, target.y); /* đòn cận chiến vung lên dốc trượt mục tiêu */
-    } else {
-      applyDamage(target, dmg, u.faction);
+    /* CẬN CHIẾN tại STRIKE: lao tới ĐỈNH đúng khoảnh khắc damage (lungeT đếm NGƯỢC từ đỉnh, decay 150ms) */
+    var ld = Math.max(1, dist(e.x, e.y, target.x, target.y));
+    e.lungePeak = def && def.peak ? def.peak : 7;
+    e.lungeT = 0.15; e.lungeDx = (target.x - e.x) / ld; e.lungeDy = (target.y - e.y) / ld;
+    var slashC = e.type === 'zealot' ? [150,240,255] : (e.type === 'ultralisk' ? [255,190,120] : null);
+    var slashSize = Math.max(10, (sp.draw || 40) * (e.type === 'ultralisk' ? 0.44 : 0.34));
+    spawnP({ kind:'slash', x: target.x, y: target.y - 4, vx:0, vy:0, life:0.16, max:0.16, size: slashSize, seed: ang, c: slashC });
+    if(e.type === 'zealot') spawnP({ kind:'slash', x: target.x, y: target.y - 4, vx:0, vy:0, life:0.14, max:0.14, size: slashSize * 0.68, seed: ang + 0.65, c: slashC });
+    if(e.type === 'ultralisk'){ for(var udi = 0; udi < 3; udi++) spawnP({ kind:'dust', x: target.x + (rng()-0.5)*22, y: target.y + (rng()-0.5)*10, vx:(rng()-0.5)*36, vy:-10-rng()*16, life:0.34, max:0.34, size:5+rng()*4, seed:rng()*6 }); addShake(target.x, target.y, 1.2); }
+    if(missed){ fxFizzle(target.x, target.y); }
+    else {
+      applyDamage(target, dmg, e.faction);
       fxImpact(target.x, target.y, target);
-      if(sp.splash) splashHit(u, target, target.x, target.y, sp.splash, target);
-      if(onScreen(u.x,u.y)) Snd.playEx('hit_tick', { vol: 0.17, throttleMs: 90, combat: true }); /* cận chiến: tiếng va chạm khi chạm mục tiêu */
+      if(sp.splash) splashHit(e, target, target.x, target.y, sp.splash, target);
+      if(onScreen(e.x, e.y)) Snd.playEx('hit_tick', { vol: 0.17, throttleMs: 90, combat: true });
     }
   }
 }
 function engageTarget(u, target, dt){
   var sp = SPECS[u.type];
-  var edge = target.kind==='building' ? BSPECS[target.type].size/2 : 0;
-  var d = dist(u.x,u.y,target.x,target.y) - edge;
-  if(d > sp.range){ steerMove(u, target.x, target.y, sp.range + edge - 2, dt); }
-  else if(u.cooldown<=0){ shoot(u, target); }
+  var edge = target.kind === 'building' ? BSPECS[target.type].size / 2 : 0;
+  var d = dist(u.x, u.y, target.x, target.y) - edge;
+  if(u.atk && u.atk.phase === 'aim' && u.atk.targetId !== target.id){
+    if(d <= sp.range + 8) u.atk.targetId = target.id; /* chuyển mục tiêu trong tầm: giữ chu trình */
+    else u.atk = null;
+  }
+  var aiming = u.atk && u.atk.phase === 'aim';
+  if(d > sp.range + 2){
+    if(aiming) u.atk = null; /* mục tiêu thoát tầm giữa AIM: hủy ngắm, áp sát lại (không tốn cooldown) */
+    if(!u.atk || u.atk.phase !== 'recoil') steerMove(u, target.x, target.y, sp.range + edge - 2, dt);
+    if(u.atk) tickAtk(u, dt); /* pha recoil vẫn đếm hết */
+  } else if(d > sp.range){
+    if(aiming) tickAtk(u, dt); /* sát mép tầm: giữ ngắm tại chỗ, strike gate trong tickAtk chặn bắn xa */
+    else steerMove(u, target.x, target.y, sp.range + edge - 2, dt);
+  } else {
+    var hadAtk = !!u.atk;
+    if(!u.atk && u.speedNow <= 8 && u.cooldown <= atkWindupOf(u)) beginAtk(u, target);
+    if(u.atk && hadAtk) tickAtk(u, dt); /* chu trình MỚI bắt đầu không bị trừ dt ngay tick này —
+      cooldown đã bị trừ ở đầu tickUnit rồi; trừ nữa là rò 1 tick/chu trình, DPS lệch ~3% */
+  }
+  if(u.atk) u.lastActAt = S.time;
 }
 function tickUnit(u, dt){
   var sp = SPECS[u.type], o = u.order;
   if(u.cooldown>0) u.cooldown -= dt;
+  if(u.atkLockUntil && S.time < u.atkLockUntil) return; /* v10: lệnh mới sau STRIKE chờ hết 120ms giật mới thi hành */
   if(o.type==='harvest' && isWorkerType(u.type)){
     var node = S.nodes.find(function(n){return n.id===o.nodeId;});
     if(!node && u.carrying<=0){ setOrder(u,{type:'idle',x:u.x,y:u.y,targetId:0,nodeId:0,phase:'',harvestT:0}); return; }
@@ -4365,22 +4572,22 @@ function tickBuildings(dt){
         }
       }
     }
+    if(b.atk && b.atk.phase === 'recoil'){ b.atk.t -= dt; if(b.atk.t <= 0) b.atk = null; } /* v10: đếm pha giật của tháp */
+    if(b.recoilT > 0) b.recoilT = Math.max(0, b.recoilT - dt);
     if(DEF_TYPES[b.type] && isPowered(b)){ /* mất điện (Protoss) = pháo im lặng · v8: tháp của MỌI phe đều bắn phe thù (offline phe máy không có tháp nên hành vi cũ nguyên vẹn) */
       if(b.cooldown>0) b.cooldown -= dt;
       var dsp = BSPECS[b.type];
       var tgt = null, bd = dsp.range;
       S.units.forEach(function(e){ if(hostileTo(b.faction, e.faction)){ if(SPECS[e.type].flying && b.type==='sunken') return; var d=dist(b.x,b.y,e.x,e.y); if(d<bd){ bd=d; tgt=e; } } });
-      if(tgt && b.cooldown<=0){
-        b.cooldown = dsp.cd;
-        var dpk = projKindFor(b.type);
-        fxMuzzle(b.x, b.y - 16, Math.atan2(tgt.y-b.y, tgt.x-b.x), false, dpk, wfxOf(b.type)); /* V6.4: chớp nòng theo tháp */
-        spawnProjectile({ faction:b.faction, x:b.x, y:b.y-14, sx:b.x, sy:b.y-14, tx:tgt.x, ty:tgt.y, targetId:tgt.id,
-          dmg: Math.max(1, dsp.dmg), speed:dsp.projSpeed, splash:0, attackerType:b.type, attackerFaction:b.faction, flame:false,
-          kind: dpk, arcH: 0, miss: !entIsFlying(tgt) && elevShotMiss(b.x, b.y, tgt.x, tgt.y) });
-        if(b.faction==='player' && onScreen(b.x,b.y)) playWeaponShot(b.type, b.x, b.y, 0.25); /* V6.4: tiếng RIÊNG từng tháp */
-        else if(S.netOnline) NET.evShot(b.faction, b.type, b.x, b.y);
+      /* v10: tháp cũng chạy AIM/STRIKE — Turret: bệ phóng xoay + nòng luân phiên (chậm 4.2 rad/s, cổng góc);
+         pháo sáng mất điện GIỮA AIM sẽ bị tickAtk hủy (gate isPowered chạy mỗi tick khi có atk). */
+      if(b.atk && b.atk.phase === 'aim' && (!tgt || b.atk.targetId !== tgt.id)){
+        if(tgt && dist(b.x, b.y, tgt.x, tgt.y) <= dsp.range + 8) b.atk.targetId = tgt.id; else b.atk = null;
       }
-    }
+      var bHad = !!b.atk;
+      if(tgt && !b.atk && b.cooldown <= atkWindupOf(b)) beginAtk(b, tgt);
+      if(b.atk && bHad) tickAtk(b, dt); /* cùng luật rò-tick như engageTarget */
+    } else if(DEF_TYPES[b.type] && b.atk) b.atk = null; /* mất điện hẳn: hủy ngắm */
     var bst = facStore(b.faction);
     if(b.queue.length && isPowered(b) && !(isHumanF(b.faction) && bst.mainUpgrade && bst.mainUpgrade.bid === b.id) && !(isHumanF(b.faction) && bst.bldUp && bst.bldUp[b.type])){ /* nhà chính đang nâng RIÊNG / loại nhà đang nâng CHUNG: tạm dừng sản xuất */
       var q = b.queue[0]; q.t += dt;
@@ -4508,6 +4715,18 @@ function tick(dt){
     u.idleW = clamp((u.idleW||0) + (idleBusy ? -7*dt : 1.5*dt), 0, 1);
     if(u._mvT !== S.time){ var dk = Math.max(0, 1 - 11*dt); u.vx = (u.vx||0)*dk; u.vy = (u.vy||0)*dk; }
     if(u.recoilT > 0) u.recoilT = Math.max(0, u.recoilT - dt);
+    if(u.atk && u.atk.phase === 'recoil'){ u.atk.t -= dt; if(u.atk.t <= 0) u.atk = null; } /* v10: pha giật đếm tại đây (nơi duy nhất) */
+    /* v10: chu trình AIM mà mục tiêu đã chết/biến mất thì DỌN ngay (guard không còn gọi engage nữa) */
+    if(u.atk && u.atk.phase === 'aim'){ var av10 = findById(u.atk.targetId); if(!av10 || av10.hp <= 0) u.atk = null; }
+    /* v10 TRACK: lớp vũ khí của MỌI quân luôn quay bám mục tiêu giao chiến ở tốc độ của lớp —
+       kể cả khi đang di chuyển áp sát/chưa vào AIM (đúng pha TRACK của spec §1.1.1) */
+    if(u.type !== 'tank'){
+      var ct10 = null;
+      if(u.atk && u.atk.phase === 'aim') ct10 = findById(u.atk.targetId);
+      if(!ct10 && u.combatTargetId) ct10 = findById(u.combatTargetId);
+      if(ct10 && ct10.hp > 0){ var ad10 = AIMDEF[u.type], rt10 = ad10 && ad10.slow ? ad10.slow : 12, wa10 = Math.atan2(ct10.y - u.y, ct10.x - u.x);
+        u.aimA = turnToward(u.aimA == null ? wa10 : u.aimA, wa10, rt10 * dt); }
+    }
     if(u.lungeT > 0) u.lungeT = Math.max(0, u.lungeT - dt); /* FIX v6: nhịp lao chém cận chiến */
     var an = ANIM[u.type];
     if(an && an.dust && inst > 26){
@@ -5783,7 +6002,7 @@ function drawFrame(im, frame, frames, x, y, w, h, flip, rot){
 }
 /* FIX v5 — Hydralisk TRƯỜN SÓNG (slice-wave): cắt sprite thành 7 lát NGANG, mỗi lát lệch x theo
    sóng sin chạy theo quãng đường; đầu (lát trên cùng) đứng yên để ngắm bắn, đuôi vung mạnh nhất */
-function drawSlither(im, x, y, w, h, flip, animDist, sf){
+function drawSlither(im, x, y, w, h, flip, animDist, sf, pullX, pullY){
   if(!imgReady(im)) return false;
   var N = 7, sh = imgH(im) / N;
   var ph = (animDist||0) / 40 * 6.2832;
@@ -5792,7 +6011,9 @@ function drawSlither(im, x, y, w, h, flip, animDist, sf){
   for(var i=0;i<N;i++){
     var taper = i/(N-1); /* 0 ở đầu (trên) → 1 ở đuôi (dưới) */
     var dx = Math.sin(6.2832*(i/(N-1)) - ph) * 2.6 * taper * sf;
-    ctx.drawImage(im, 0, i*sh, imgW(im), sh, -w/2 + dx, -h/2 + i*(h/N), w, h/N + 0.8);
+    var dy = 0;
+    if(pullX || pullY){ var pf = i === 0 ? 1 : (i === 1 ? 0.45 : 0); dx += (pullX || 0) * pf; dy += (pullY || 0) * pf; } /* v10: 2 lát đầu thụt lại khi Hydralisk ngắm phun */
+    ctx.drawImage(im, 0, i*sh, imgW(im), sh, -w/2 + dx, -h/2 + i*(h/N) + dy, w, h/N + 0.8);
   }
   ctx.restore();
   return true;
@@ -5824,7 +6045,7 @@ function drawTank(u, bodyY, rot){
   var ta = u.turretA || 0;
   var pvx = u.x + (TANK_PIVOT.x - 0.5) * w * (flip ? -1 : 1);
   var pvy = bodyY + (TANK_PIVOT.y - 0.5) * h;
-  var rec = (u.recoilT > 0) ? (u.recoilT/0.14) * 3 : 0;
+  var rec = (u.recoilT > 0) ? (u.recoilT/RECOIL_TIME) * 3 : 0;
   ctx.save();
   ctx.translate(pvx - Math.cos(ta)*rec, pvy - Math.sin(ta)*rec*0.6);
   ctx.rotate(ta - TANK_ART_ANG);
@@ -5967,6 +6188,9 @@ function drawWorld(){
   S.projectiles.forEach(function(p){
     var dx = p.tx - p.sx, dy = p.ty - p.sy, dd = Math.max(1, Math.sqrt(dx*dx + dy*dy));
     var ux = dx/dd, uy = dy/dd;
+    var _vz = 0, _gy = p.y;
+    if(p.visZ0 || p.visZ1){ var _pr = clamp(1 - (dist(p.x, p.y, p.tx, p.ty) / dd), 0, 1); _vz = (p.visZ0 || 0) * (1 - _pr) + (p.visZ1 || 0) * _pr; p.y = _gy - _vz; }
+    try {
     var wp = wfxOf(p.attackerType);
     var pc = wp ? wp.c : null;
     var col = pc ? wcolCss(pc) : (p.faction==='player' ? '#fde047' : '#f0abfc');
@@ -5975,7 +6199,7 @@ function drawWorld(){
       var z = 4 * p.arcH * f2 * (1 - f2);
       var sr = wp ? wp.rad : 3.4;
       ctx.fillStyle = 'rgba(0,0,0,0.28)';
-      ctx.beginPath(); ctx.ellipse(p.x, p.y, sr + 1.1, (sr + 1.1)*0.58, 0, 0, 6.29); ctx.fill(); /* bóng của đầu đạn trên mặt đất */
+      ctx.beginPath(); ctx.ellipse(p.x, _gy, sr + 1.1, (sr + 1.1)*0.58, 0, 0, 6.29); ctx.fill(); /* bóng của đầu đạn TRÊN MẶT ĐẤT (không theo độ cao hiển thị) */
       ctx.fillStyle = col;
       ctx.beginPath(); ctx.arc(p.x, p.y - z, sr, 0, 6.29); ctx.fill();
       ctx.fillStyle = 'rgba(255,255,255,0.9)';
@@ -6043,6 +6267,7 @@ function drawWorld(){
     ctx.beginPath(); ctx.moveTo(p.x - ux*(wp ? wp.len : 11), p.y - uy*(wp ? wp.len : 11)); ctx.lineTo(p.x, p.y); ctx.stroke();
     ctx.fillStyle = p.flame ? '#fb923c' : col;
     ctx.beginPath(); ctx.arc(p.x, p.y, p.flame ? 5 : (wp ? wp.rad : 2.6), 0, 6.29); ctx.fill();
+    } finally { p.y = _gy; }
   });
   /* hạt hiệu ứng (vẽ dưới sương mù để vùng chưa khám phá vẫn che được) */
   PARTS.forEach(function(p){
@@ -6148,10 +6373,14 @@ function drawWorld(){
   }
   ctx.restore();
 }
-function hpBar(x, y, w, frac, friendly, colOverride){
-  ctx.fillStyle='rgba(0,0,0,.65)'; ctx.fillRect(x-w/2, y, w, 5);
+function hpBar(x, y, w, frac, friendly, colOverride, sel){
+  /* v10: khi ĐƯỢC CHỌN, dấu chọn nằm NGAY Ở THANH NÀY (viền trắng + dày hơn + nền đậm) — không còn
+     vòng/đĩa chọn dưới đất (Cường: "làm cả dưới chân lúc chọn quân rất khó nhìn"). */
+  var h = sel ? 6.5 : 5;
+  ctx.fillStyle = sel ? 'rgba(0,0,0,.85)' : 'rgba(0,0,0,.65)'; ctx.fillRect(x-w/2, y, w, h);
   ctx.fillStyle = colOverride || (frac>0.35 ? (friendly?'#4ade80':'#f87171') : '#ef4444');
-  ctx.fillRect(x-w/2, y, w*clamp(frac,0,1), 5);
+  ctx.fillRect(x-w/2, y, w*clamp(frac,0,1), h);
+  if(sel){ ctx.strokeStyle = 'rgba(255,255,255,.95)'; ctx.lineWidth = 1.4; ctx.strokeRect(x-w/2, y, w, h); }
 }
 function shieldBar(e, x, y, w){ /* thanh KHIÊN xanh dương nằm ngay trên thanh máu (Protoss) */
   if(!e.shieldMax) return;
@@ -6163,7 +6392,7 @@ function drawBuilding(b){
   var dim = (b.faction!=='player' && fogAtWorld(b.x,b.y)===1);
   /* bóng đổ MỀM dưới nhà (sprite gradient nung sẵn — mép tan, không còn elip đặc) */
   drawShadow(b.x + 5, b.y + hs*0.94, hs*2.3, hs*0.68, 0.95);
-  if(S.selectedBuildingId===b.id){ ctx.strokeStyle='#4ade80'; ctx.lineWidth=3; ctx.strokeRect(b.x-hs-6,b.y-hs-6,bs.size+12,bs.size+12); }
+  /* v10: KHÔNG còn khung chọn quanh nhà — nhà được chọn => thanh máu trên đầu nhấn viền trắng (hpBar sel). */
   ctx.save(); if(dim) ctx.globalAlpha = 0.55;
   var drawn = false;
   if(b.constructing && b.faction==='player'){
@@ -6183,7 +6412,18 @@ function drawBuilding(b){
     ctx.fillStyle = 'rgba(0,0,0,.65)'; ctx.fillRect(b.x-hs, b.y-hs-13, bs.size, 5);
     ctx.fillStyle = '#4ade80'; ctx.fillRect(b.x-hs, b.y-hs-13, bs.size*pr, 5);
   } else {
-    drawn = drawSprite(UIMG(IMG, bs.spr, b.faction), b.x, b.y, bs.draw, bs.draw, false);
+    var turLayered = b.type === 'turret' && imgReady(IMGL.turret_base) && imgReady(IMGL.turret_launcher) && (!!b.atk || !!defEnemyNear(b, BSPECS.turret.range * 1.15));
+    drawn = turLayered ? drawSprite(IMGL.turret_base, b.x, b.y, bs.draw, bs.draw, false) : drawSprite(UIMG(IMG, bs.spr, b.faction), b.x, b.y, bs.draw, bs.draw, false);
+    if(turLayered) drawAimLayer(b, BAIMDEF.turret, b.x, b.y, bs.draw, b.aimA || 0);
+    if(b.type === 'cannon' && b.atk && b.atk.phase === 'aim'){ /* v10: 2 vòng sáng QUAY quanh lõi + lõi nạp sáng dần */
+      var cdef = BAIMDEF.cannon, chg2 = 1 - clamp(b.atk.t / cdef.wu, 0, 1);
+      var rpx = b.x + (cdef.ring.x - 0.5) * bs.draw, rpy = b.y + (cdef.ring.y - 0.5) * bs.draw;
+      ctx.save(); ctx.strokeStyle = 'rgba(125,225,252,' + (0.35 + 0.5 * chg2).toFixed(3) + ')'; ctx.lineWidth = 2;
+      for(var ri = 0; ri < 2; ri++){ var rr = bs.draw * (0.13 + ri * 0.05) + Math.sin(S.time * 3 + ri * 2) * 1.5, ra0 = S.time * (1.5 + chg2 * 2.5) + ri * 2.1;
+        ctx.beginPath(); ctx.arc(rpx, rpy, rr, ra0, ra0 + 4.2); ctx.stroke(); }
+      ctx.restore();
+      fxChargeGlow(b.x + (cdef.pt.x - 0.5) * bs.draw, b.y + (cdef.pt.y - 0.5) * bs.draw, 6 + 7 * chg2, 0.3 + 0.7 * chg2, '125,225,252');
+    }
     if(b.faction==='player' && !!MAIN_TYPES[b.type] && S.mainUpgrade && S.mainUpgrade.bid===b.id){ /* nhà này đang NÂNG CẤP: thanh xanh trên đầu */
       var upp = clamp(S.mainUpgrade.t / S.mainUpgrade.total, 0, 1);
       ctx.fillStyle = 'rgba(0,0,0,.65)'; ctx.fillRect(b.x-hs, b.y-hs-13, bs.size, 5);
@@ -6241,10 +6481,7 @@ function drawBuilding(b){
     ctx.fillStyle = pc ? (bl ? '#14532d' : '#4ade80') : (bl ? '#450a0a' : '#f87171');
     ctx.beginPath(); ctx.arc(b.x+hs-7, b.y-hs+5, 2.6, 0, 6.29); ctx.fill();
   }
-  if(S.teamColorMode){ /* MÀU ĐỘI: dải màu phe ngay dưới chân nhà + viền góc — nhận phe từ xa */
-    ctx.fillStyle = teamColor(b.faction); ctx.fillRect(b.x-hs, b.y+hs+3, bs.size, 4);
-    ctx.fillStyle = 'rgba(' + teamRGB(b.faction) + ',0.25)'; ctx.fillRect(b.x-hs, b.y+hs+7, bs.size, 3);
-  }
+  /* v10: BỎ dải/viền màu đội dưới chân nhà (Cường 21:53) — nhà nhận phe bằng thanh máu trên đầu. */
   /* FIX v6 — VIỀN VÀNG + CHẤM CẤP cho nhà sản xuất/nhà chính đạt Lv2+: vẽ phủ lên sprite (không sửa ảnh gốc) */
   var lvShow = TRAIN_FROM[b.type] ? typeLevel(b.faction, b.type) : (!!MAIN_TYPES[b.type] ? (b.faction==='player' ? (b.mainLv||1) : factionMainLevel(b.faction)) : 1);
   if(!b.constructing && lvShow >= 2){
@@ -6263,7 +6500,7 @@ function drawBuilding(b){
     }
   }
   if(b.shieldMax) shieldBar(b, b.x, b.y-hs-20, bs.size);
-  hpBar(b.x, b.y-hs-14, bs.size, b.hp/b.maxHp, pc, S.teamColorMode ? teamColor(b.faction) : null);
+  hpBar(b.x, b.y-hs-14, bs.size, b.hp/b.maxHp, pc, S.teamColorMode ? teamColor(b.faction) : null, S.selectedBuildingId===b.id);
   ctx.fillStyle = dim ? '#9aa7b8' : '#eaf6ff'; ctx.font='bold 11px Arial'; ctx.textAlign='center';
   ctx.fillText(bs.name, b.x, b.y+hs+16);
 }
@@ -6284,6 +6521,36 @@ function idlePoseOf(u){
   else if(k === 'protoss'){ dy = Math.sin(t*2.1 + ph) * 1.0 * w; sc = 1 + 0.010 * Math.sin(t*2.1 + ph + 1.3) * w; glow = (0.5 + 0.5 * Math.sin(t*2.6 + ph)) * w; }
   else { dy = Math.sin(t*1.9 + ph) * 0.7 * w; sc = 1 + 0.012 * Math.sin(t*2.4 + ph) * w; roll = 0.006 * Math.sin(t*1.3 + ph*2.1) * w; }
   return { w:w, dy:dy, sc:sc, roll:roll, glow:glow };
+}
+function drawAimLayer(e, def, bx, by, D, ang){
+  /* lớp vũ khí vẽ trong KHÔNG GIAN THẾ GIỚI quanh pivot (không làm con của phép lật thân):
+     translate(pivot) -> rotate(ang - góc nghỉ của tranh) -> giật lùi dọc trục -> vẽ canvas lớp
+     sao cho pivot của lớp trùng điểm neo. */
+  var flip = e.face < 0 ? -1 : 1;
+  function one(name, pv, tip){
+    var im = IMGL[name]; if(!im || !imgReady(im)) return;
+    var px = bx + (pv.x - 0.5) * D * flip, py = by + (pv.y - 0.5) * D;
+    var rest = restAngOf(def, tip, pv);
+    ctx.save(); ctx.translate(px, py); ctx.rotate(ang - rest);
+    if(e.recoilT > 0) ctx.translate(-(e.recoilT / RECOIL_TIME) * recoilPxFor(e), 0);
+    ctx.drawImage(im, -pv.x * D, -pv.y * D, D, D);
+    ctx.restore();
+  }
+  if(def.layerN) one(def.layerN, def.pivot, def.tips[0]);
+  if(def.layerN2 && def.pivot2) one(def.layerN2, def.pivot2, def.tips2[0]);
+}
+function fxChargeGlow(x, y, r, frac, col){
+  var g = ctx.createRadialGradient(x, y, 0, x, y, r);
+  g.addColorStop(0, 'rgba(' + col + ',' + (0.55 * frac).toFixed(3) + ')');
+  g.addColorStop(1, 'rgba(' + col + ',0)');
+  ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, r, 0, 6.29); ctx.fill();
+  ctx.fillStyle = 'rgba(255,255,255,' + (0.75 * frac).toFixed(3) + ')';
+  ctx.beginPath(); ctx.arc(x, y, Math.max(1.2, r * 0.22), 0, 6.29); ctx.fill();
+}
+function defEnemyNear(e, range){
+  var list = e.kind === 'building' ? S.units : S.units.concat(S.buildings);
+  for(var i = 0; i < list.length; i++){ var t = list[i]; if(t !== e && t.hp > 0 && hostileTo(e.faction, t.faction) && dist(e.x, e.y, t.x, t.y) <= range) return t; }
+  return null;
 }
 function drawUnit(u){
   var pc = u.faction==='player', sp = SPECS[u.type];
@@ -6309,13 +6576,7 @@ function drawUnit(u){
   if(an.rollA) roll += Math.sin(S.time*6.283*(an.hz||0.8) + u.id*1.71) * an.rollA;
   var pulse = an.pulse ? 1 + 0.02*Math.sin(S.time*6.283*an.hz + u.id*1.71) : 1;
   var flyY = (sp.flying ? -30 : 0) + hovY + (an.hover ? -6 : 0);
-  /* MÀU ĐỘI: đĩa màu phe dưới chân MỌI quân (kể cả khi không được chọn) — dấu hiệu nhận phe khi trùng tộc */
-  if(S.teamColorMode){
-    ctx.fillStyle = 'rgba(' + teamRGB(u.faction) + ',0.30)';
-    ctx.beginPath(); ctx.ellipse(u.x, u.y + sp.draw*0.32, sp.draw*0.46, sp.draw*0.185, 0, 0, 6.29); ctx.fill();
-    ctx.strokeStyle = teamColor(u.faction); ctx.lineWidth = 1.8;
-    ctx.beginPath(); ctx.ellipse(u.x, u.y + sp.draw*0.32, sp.draw*0.46, sp.draw*0.185, 0, 0, 6.29); ctx.stroke();
-  }
+  /* v10: BỎ đĩa màu đội dưới chân quân (Cường 21:53) — nhận phe bằng thanh ngang trên đầu. */
   var pose = idlePoseOf(u); /* v6.2 (mục E): tư thế NHÀN của khung này (w=0 khi đang đi/đánh) */
   /* bóng đổ MỀM (sprite gradient nung sẵn): neo đất, quân bay bóng nhạt + lệch theo độ cao */
   var shS = (an.hover || sp.flying) ? 1 - 0.05*(hovY/(an.amp||2.5)) : 1;
@@ -6325,20 +6586,37 @@ function drawUnit(u){
     ctx.fillStyle = 'rgba(125,225,252,' + (0.13 * pose.glow).toFixed(3) + ')';
     ctx.beginPath(); ctx.ellipse(u.x, u.y + sp.draw*0.32, sp.draw*0.55, sp.draw*0.22, 0, 0, 6.29); ctx.fill();
   }
-  if(S.selectedIds.indexOf(u.id)>=0){
-    var pu = 0.65 + 0.35*Math.sin(S.time*5);
-    ctx.strokeStyle='rgba(74,222,128,' + pu.toFixed(3) + ')'; ctx.lineWidth=2.5;
-    ctx.beginPath(); ctx.ellipse(u.x, u.y + sp.draw*0.32, sp.draw*0.42, sp.draw*0.17, 0, 0, 6.29); ctx.stroke();
-  }
+  /* v10: BỎ vòng chọn dưới chân — quân được chọn => thanh máu trên đầu viền trắng dày (hpBar sel). */
   /* (nhịp "thở" scale 0.8% cũ đã THAY bằng lớp nhàn idlePoseOf ở trên — biên độ rõ hơn, theo tộc) */
   /* FIX v6 — GIẬT LÙI khi bắn (mọi quân bắn xa) + LAO TỚI khi chém cận chiến: lệch vị trí VẼ, không đổi vị trí thật */
   var offX = 0, offY = 0;
-  if(u.recoilT > 0) offX = -(u.face < 0 ? -1 : 1) * (u.recoilT / 0.14) * 2.2;
-  if(u.lungeT > 0){ var lsin = Math.sin((u.lungeT / 0.18) * Math.PI); offX += (u.lungeDx||0) * lsin * 7; offY += (u.lungeDy||0) * lsin * 7; }
+  /* v10: giật lùi DỌC TRỤC BẮN (aimA) 1.5px cho lớp có neo; chưa có aimA thì giữ kiểu cũ theo mặt */
+  if(u.recoilT > 0){ var rk = u.recoilT / RECOIL_TIME;
+    if(AIMDEF[u.type] && u.aimA != null){ offX += -Math.cos(u.aimA) * rk * 1.5; offY += -Math.sin(u.aimA) * rk * 1.5; }
+    else offX = -(u.face < 0 ? -1 : 1) * rk * 2.2; }
+  /* v10: lao chém — lungeT đếm ngược TỪ ĐỈNH (strike) decay tuyến tính 150ms, không còn sin qua 0 lúc chạm */
+  if(u.lungeT > 0){ var lk = u.lungeT / 0.15; offX += (u.lungeDx||0) * lk * (u.lungePeak||7); offY += (u.lungeDy||0) * lk * (u.lungePeak||7); }
+  /* v10: cận chiến khi AIM thụt người lại (anticipation) sâu dần theo tiến trình ngắm */
+  if(u.atk && u.atk.phase === 'aim'){ var mdef = AIMDEF[u.type];
+    if(mdef && mdef.cls === 'M'){ var pu2 = 1 - clamp(u.atk.t / mdef.wu, 0, 1); offX += -Math.cos(u.aimA||0) * mdef.pull * pu2; offY += -Math.sin(u.aimA||0) * mdef.pull * pu2; } }
   var bodyX = u.x + offX;
   var bodyY = u.y + flyY + bobY + offY + pose.dy, drawn = false;
+  /* v10: trạng thái "đang giao chiến" cho lớp vũ khí/glow — trong chu trình AIM/STRIKE hoặc có mục
+     tiêu giao chiến trong tầm x1.15 (khách online: _guestPhase>0 do snapshot gắn). */
+  var adef = AIMDEF[u.type];
+  var aTgt = null;
+  if(u.atk && u.atk.phase === 'aim') aTgt = findById(u.atk.targetId);
+  if(!aTgt && u.combatTargetId) aTgt = findById(u.combatTargetId);
+  var inCyc = !!u.atk || (aTgt && aTgt.hp > 0 && dist(u.x, u.y, aTgt.x, aTgt.y) <= sp.range * 1.15) || (u._guestPhase || 0) > 0;
+  var effAng = u.atk || u.aimA == null ? (u.aimA || 0) : (aTgt ? Math.atan2(aTgt.y - u.y, aTgt.x - u.x) : (u.aimA || 0));
+  var dipRot = (adef && adef.dip && inCyc) ? (adef.dip * Math.PI / 180) * Math.sin(effAng) : 0; /* chúi mũi theo hướng bắn (bay) */
+  var tiltRot = (adef && adef.tilt && inCyc) ? (adef.tilt * Math.PI / 180) * Math.sin(effAng) : 0;
+  var layered = !!(adef && adef.cls === 'A' && adef.bodyN && inCyc && imgReady(IMGL[adef.bodyN]) && imgReady(IMGL[adef.layerN]));
   var sheet = UIMG(IMGW, sp.spr, u.faction);
-  if(sheet && an.frames && imgReady(sheet)){
+  if(layered){
+    drawn = drawSpriteT(IMGL[adef.bodyN], bodyX, bodyY, sp.draw, sp.draw*pose.sc*pulse, u.face<0, roll + lean + pose.roll + dipRot + tiltRot);
+    if(drawn) drawAimLayer(u, adef, bodyX, bodyY, sp.draw, effAng);
+  } else if(sheet && an.frames && imgReady(sheet)){
     /* có sheet khung hình thật: frame do QUÃNG ĐƯỜNG chọn, bob nằm trong hình — không nhún thêm;
        lớp nhàn chỉ cộng dy/scale rất nhẹ (pose w=0 ngay khi quân di chuyển) */
     var fr = moving ? Math.floor(phase * an.frames) % an.frames : 0;
@@ -6347,11 +6625,17 @@ function drawUnit(u){
     /* Hydralisk: thân trườn theo animDist; khi nhàn, pha trườn LẠC nhẹ ±6px quanh chỗ đứng
        (đuôi uốn chậm) mà thân không hề rời vị trí — sf sàn theo idleW để sóng đuôi chạy */
     var slDist = (u.animDist||0) + Math.sin(S.time*2.0 + u.id*2.39996) * 6 * pose.w;
-    drawn = drawSlither(UIMG(IMG, sp.spr, u.faction), bodyX, bodyY, sp.draw, sp.draw, u.face<0, slDist, Math.max(sf, moving?0.7:0, pose.w*0.4));
+    var slPull = (u.type === 'hydralisk' && u.atk && u.atk.phase === 'aim') ? (1 - clamp(u.atk.t / 0.10, 0, 1)) : 0;
+    drawn = drawSlither(UIMG(IMG, sp.spr, u.faction), bodyX, bodyY, sp.draw, sp.draw, u.face<0, slDist, Math.max(sf, moving?0.7:0, pose.w*0.4), slPull ? -Math.cos(u.aimA || 0) * 3 * slPull * (u.face<0?-1:1) : 0, slPull ? -Math.sin(u.aimA || 0) * 3 * slPull : 0);
   } else if(u.type==='tank'){
     drawn = drawTank(u, bodyY, roll + lean + pose.roll) || drawSpriteT(UIMG(IMG, sp.spr, u.faction), bodyX, bodyY, sp.draw, sp.draw, u.face<0, roll + lean + pose.roll);
   } else {
-    drawn = drawSpriteT(UIMG(IMG, sp.spr, u.faction), bodyX, bodyY, sp.draw, sp.draw*pose.sc*pulse, u.face<0, roll + lean + pose.roll);
+    drawn = drawSpriteT(UIMG(IMG, sp.spr, u.faction), bodyX, bodyY, sp.draw, sp.draw*pose.sc*pulse, u.face<0, roll + lean + pose.roll + dipRot + tiltRot);
+  }
+  if(drawn && adef && (adef.cls === 'E' || adef.cls === 'F') && inCyc && adef.pt){
+    var chg = u.atk && u.atk.phase === 'aim' ? (1 - clamp(u.atk.t / adef.wu, 0, 1)) : 0.3;
+    var gpx = bodyX + (adef.pt.x - 0.5) * sp.draw * (u.face<0?-1:1), gpy = bodyY + (adef.pt.y - 0.5) * sp.draw;
+    fxChargeGlow(gpx, gpy, 5 + 8 * chg, 0.3 + 0.7 * chg, u.type === 'archon' || u.type === 'dragoon' || u.type === 'cannon' ? '125,225,252' : (u.faction === 'player' ? '147,197,253' : '253,186,116'));
   }
   if(!drawn){
     ctx.fillStyle = pc ? '#22d3ee' : '#f43f5e';
@@ -6367,7 +6651,8 @@ function drawUnit(u){
     }
   }
   if(u.shieldMax) shieldBar(u, u.x, u.y + flyY - sp.draw/2 - 15, 30);
-  if(u.hp < u.maxHp || S.selectedIds.indexOf(u.id)>=0) hpBar(u.x, u.y + flyY - sp.draw/2 - 9, 30, u.hp/u.maxHp, pc, S.teamColorMode ? teamColor(u.faction) : null);
+  var uSel = S.selectedIds.indexOf(u.id)>=0;
+  if(u.hp < u.maxHp || uSel) hpBar(u.x, u.y + flyY - sp.draw/2 - 9, 30, u.hp/u.maxHp, pc, S.teamColorMode ? teamColor(u.faction) : null, uSel);
 }
 function drawMinimap(){
   var w = mmCanvas.clientWidth || 104, h = mmCanvas.clientHeight || 80, sx = w/WORLD_W, sy = h/WORLD_H;
@@ -7460,19 +7745,22 @@ NET.buildSnap = function(c){
   S.units.forEach(function(u){
     if(!alliedF(gf, u.faction) && fogAtArr(sfog, u.x, u.y) !== 2) return;
     units.push([u.id, u.type, rm[u.faction] || u.faction, R1(u.x), R1(u.y), R1(u.hp), R1(u.maxHp), R1(u.shield || 0), R1(u.shieldMax || 0),
-      u.face || 1, u.carrying || 0, u.carryType || 0, u.order ? u.order.type : 'idle', u.order ? (u.order.nodeId || 0) : 0]);
+      u.face || 1, u.carrying || 0, u.carryType || 0, u.order ? u.order.type : 'idle', u.order ? (u.order.nodeId || 0) : 0,
+      Math.round((u.aimA || 0) * 57.3), u.atk ? (u.atk.phase === 'aim' ? 1 : 2) : 0, Math.round((u.recoilT || 0) * 100)]); /* v10: góc ngắm + pha (gắn CUỐI hàng, tương thích ngược) */
   });
   S.buildings.forEach(function(b){
     if(!alliedF(gf, b.faction) && fogAtArr(sfog, b.x, b.y) === 0) return;
     buildings.push([b.id, b.type, rm[b.faction] || b.faction, R1(b.x), R1(b.y), R1(b.hp), R1(b.maxHp), R1(b.shield || 0), R1(b.shieldMax || 0),
       b.constructing ? 1 : 0, Math.round((b.progress || 0) * 100) / 100, b.mainLv || 0,
       (b.queue || []).map(function(q){ return q.type; }), b.queue && b.queue[0] ? Math.round(b.queue[0].t * 10) / 10 : 0,
-      b.larvae || 0, (b.eggs || []).map(function(q){ return q.type; }), Math.round((b.creepT0 || 0) * 10) / 10]);
+      b.larvae || 0, (b.eggs || []).map(function(q){ return q.type; }), Math.round((b.creepT0 || 0) * 10) / 10,
+      Math.round((b.aimA || 0) * 57.3), b.atk ? (b.atk.phase === 'aim' ? 1 : 2) : 0]); /* v10: góc ngắm tháp + pha */
   });
   S.projectiles.forEach(function(p){
     if(!alliedF(gf, p.attackerFaction || p.faction) && fogAtArr(sfog, p.x, p.y) !== 2) return;
     projs.push([p.id, R1(p.x), R1(p.y), R1(p.sx), R1(p.sy), R1(p.tx), R1(p.ty), p.kind, R1(p.arcH || 0), p.flame ? 1 : 0,
-      rm[p.attackerFaction || p.faction] || p.faction, p.attackerType, p.fxOnly ? 1 : 0, Math.round((p.seed || 0) * 100) / 100]);
+      rm[p.attackerFaction || p.faction] || p.faction, p.attackerType, p.fxOnly ? 1 : 0, Math.round((p.seed || 0) * 100) / 100,
+      R1(p.visZ0 || 0), R1(p.visZ1 || 0)]); /* v10: độ cao hiển thị 2 đầu đạn */
   });
   var nodes = S.nodes.map(function(n){ return [n.id, n.amount, n.buildingId || 0]; });
   NET.evQ.forEach(function(ev){
@@ -7597,7 +7885,15 @@ NET.shadowUnit = function(row){
   u.face = row[9] || 1; u.carrying = row[10] || 0; u.carryType = row[11] || null;
   u.order = { type: row[12] || 'idle', x: row[3], y: row[4], targetId: 0, nodeId: row[13] || 0, phase: '', harvestT: 0 };
   u._netTX = row[3]; u._netTY = row[4];
+  NET.applyAimRow(u, row, 14); /* v10 */
   return u;
+};
+NET.applyAimRow = function(e, row, off){ /* v10: khôi phục tư thế ngắm từ snapshot (chỉ trình diễn phía khách) */
+  if(row.length <= off) return;
+  e.aimA = (row[off] || 0) / 57.3;
+  e._guestPhase = row[off + 1] || 0;
+  e.atk = e._guestPhase ? { phase: e._guestPhase === 1 ? 'aim' : 'recoil', t: 0.05, targetId: 0 } : null;
+  if(row.length > off + 2 && row[off + 2]) e.recoilT = row[off + 2] / 100;
 };
 NET.shadowBuilding = function(row){
   var b = makeBuilding(row[2], row[1], row[3], row[4], !row[9]);
@@ -7605,6 +7901,7 @@ NET.shadowBuilding = function(row){
   b.constructing = !!row[9]; b.progress = row[10]; if(row[11]) b.mainLv = row[11];
   b.queue = (row[12] || []).map(function(t, ix){ return { type: t, t: ix === 0 ? (row[13] || 0) : 0, total: (COSTS[t] || {}).t || 10 }; });
   if(b.type === 'hatchery'){ b.larvae = row[14] || 0; b.eggs = (row[15] || []).map(function(t){ return { type: t, t: 0, total: (COSTS[t] || {}).t || 10 }; }); b.creepT0 = row[16] || 0; }
+  NET.applyAimRow(b, row, 17); /* v10: góc ngắm tháp phía khách */
   return b;
 };
 NET.applySnap = function(m){
@@ -7636,6 +7933,7 @@ NET.applySnap = function(m){
     u.hp = row[5]; u.maxHp = row[6]; u.shield = row[7]; u.shieldMax = row[8];
     u.carrying = row[10] || 0; u.carryType = row[11] || null;
     u.order = { type: row[12] || 'idle', x: u.x, y: u.y, targetId: 0, nodeId: row[13] || 0, phase: '', harvestT: 0 };
+    NET.applyAimRow(u, row, 14); /* v10 */
     if(Math.abs(u.x - row[3]) > 130 || Math.abs(u.y - row[4]) > 130){ u.x = row[3]; u.y = row[4]; }
   });
   S.units = S.units.filter(function(u){ return seenU[u.id]; });
@@ -7647,6 +7945,7 @@ NET.applySnap = function(m){
     b.constructing = !!row[9]; b.progress = row[10]; if(row[11]) b.mainLv = row[11];
     b.queue = (row[12] || []).map(function(t, ix){ return { type: t, t: ix === 0 ? (row[13] || 0) : 0, total: (COSTS[t] || {}).t || 10 }; });
     if(b.type === 'hatchery'){ b.larvae = row[14] || 0; b.eggs = (row[15] || []).map(function(t){ return { type: t, t: 0, total: (COSTS[t] || {}).t || 10 }; }); b.creepT0 = row[16] || 0; }
+    NET.applyAimRow(b, row, 17); /* v10 */
   });
   S.buildings = S.buildings.filter(function(b){ return seenB[b.id]; });
   if(S.selectedBuildingId && !seenB[S.selectedBuildingId]) S.selectedBuildingId = 0;
@@ -7657,7 +7956,8 @@ NET.applySnap = function(m){
   });
   S.projectiles = m.projectiles.map(function(row){
     return { id: row[0], x: row[1], y: row[2], sx: row[3], sy: row[4], tx: row[5], ty: row[6], kind: row[7], arcH: row[8],
-      flame: !!row[9], faction: row[10], attackerFaction: row[10], attackerType: row[11], fxOnly: !!row[12], seed: row[13], targetId: 0 };
+      flame: !!row[9], faction: row[10], attackerFaction: row[10], attackerType: row[11], fxOnly: !!row[12], seed: row[13], targetId: 0,
+      visZ0: row[14] || 0, visZ1: row[15] || 0 }; /* v10 */
   });
   (m.events || []).forEach(function(ev){
     if(ev.kind === 'die'){
