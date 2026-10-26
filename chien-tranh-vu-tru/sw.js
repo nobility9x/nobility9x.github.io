@@ -2,7 +2,7 @@
    Chiến lược: HTML = network-first (bản đăng mới luôn tới được người đã cài),
    tài nguyên tĩnh (sprite/tiếng/icon/manifest) = cache-first.
    Đổi BUILD_ID mỗi lần phát hành để dọn cache cũ. */
-const BUILD_ID = 'ctvt-v4-2';
+const BUILD_ID = 'ctvt-v5-1';
 const CACHE = BUILD_ID;
 
 const CORE = [
@@ -19,7 +19,9 @@ const SPRITES = ['worker','marine','firebat','tank','mech','dropship','zergling'
   'drone','overlord','probe','zealot','dragoon','archon',
   'command','depot','barracks','factory','turret','refinery','hatchery',
   'extractor','spawningpool','zergden','sunkencolony','nexus','pylon','gateway','cybercore','cannon','assimilator',
-  'mineral','geyser'].map(function (n) { return 'assets/sprites/' + n + '.png'; });
+  'mineral','geyser',
+  /* FIX v5: sheet khung hình đi + bộ phận Xe Tăng */
+  'marine_walk','worker_walk','zergling_walk','zealot_walk','tank_hull','tank_turret','tank_track'].map(function (n) { return 'assets/sprites/' + n + '.png'; });
 const SOUNDS = ['alarm','ambient','attack','build_done','error','explosion_big','explosion_small','harvest',
   'hit_tick','move','select','shoot_cannon','shoot_flame','shoot_laser','shoot_laser2','shoot_laser3','shoot_laser4',
   'shoot_spit','train_done','ui_click'].map(function (n) { return 'assets/sounds/' + n + '.ogg'; });

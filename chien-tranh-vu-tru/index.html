@@ -74,7 +74,7 @@ html,body{width:100%;height:100%;height:100dvh;overflow:hidden;background:#000;c
 #btnCancelPlace{position:absolute;left:10px;bottom:46px;z-index:8;width:48px;height:48px;border-radius:50%;border:2px solid #f87171;background:rgba(127,29,29,.94);color:#fff;font-size:24px;font-weight:700;line-height:1;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 2px 10px rgba(0,0,0,.55);touch-action:manipulation;padding:0}
 #btnCancelPlace:active{transform:scale(.94)}
 #btnCancelPlace.hidden{display:none}
-/* ===== CONSOLE NGANG Ở ĐÁY KHUNG (kiểu StarCraft): minimap | thông tin + nâng cấp | MENU | lưới lệnh 3x3 ===== */
+/* ===== CONSOLE NGANG Ở ĐÁY KHUNG (kiểu StarCraft): minimap | thông tin + nâng cấp | MENU | lưới lệnh (v5-E: 4x2 phẳng) ===== */
 #console{flex:none;height:100px;display:flex;flex-direction:row;gap:6px;padding:1px 6px;background:linear-gradient(180deg,#232833,#0c0e13 30%,#141821);border-top:2px solid var(--acc, rgba(45,212,191,.55));box-shadow:inset 0 2px 0 #59637a,0 -1px 10px rgba(45,212,191,.16);align-items:stretch}
 #mmWrap{flex:none;width:104px;height:80px;align-self:center;display:flex;flex-direction:column;background:#05070c;border:2px solid #39404f;border-radius:4px;overflow:hidden;position:relative}
 #infoCol{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
@@ -358,6 +358,62 @@ html,body{width:100%;height:100%;height:100dvh;overflow:hidden;background:#000;c
 .selCell{width:26px;height:26px;cursor:pointer}
 .selCell:active{outline:2px solid #7dd7ff}
 .shieldNums{color:#7dd7ff;font-weight:700;font-size:11px}
+
+/* ===== FIX V5-E: CONSOLE PHẲNG TỐI GIẢN KIỂU SC2 + TIẾT KIỆM KHÔNG GIAN CHO ĐIỆN THOẠI =====
+   Một dải kim loại tối THỐNG NHẤT cao 88px (trước 100px): hàng tóc 16px chứa giờ/đợt + tài nguyên
+   (cụm tài nguyên rời khỏi góc bản đồ, vào thẳng hàng tóc này); minimap viền mảnh; thông tin giữa
+   PHẲNG không thẻ/viền; nâng cấp = 2 hàng inline mảnh, nút NÂNG cao 28px; lưới lệnh 4x2 nút 34px
+   cách nhau 4px ở cuối phải khung (tầm ngón cái); mọi chữ >= 10px; không phần tử bấm nào < 28px. */
+#console{height:88px;gap:6px;padding:1px 6px;background:linear-gradient(180deg,#1e242f,#0b0d12 42%,#12161e);border-top:1px solid var(--acc, rgba(45,212,191,.55));box-shadow:inset 0 1px 0 rgba(160,190,225,.18)}
+#mmWrap,#infoPanel,#upgPanel,#menuBlock{background:transparent;background-image:none;border:none;border-radius:0;box-shadow:none}
+#mmWrap{width:96px;height:72px;align-self:center;border:1px solid #39424f;border-radius:3px;background:#05070c}
+#infoCol{gap:2px}
+#topLine{flex:none;height:16px;display:flex;align-items:center;gap:8px;padding:0 2px}
+#statBar{height:auto;padding:0;font-size:10.5px;gap:5px}
+#resCluster{position:static;margin-left:auto;display:flex;flex-direction:row;gap:11px;z-index:auto}
+#resCluster .res{min-height:0;background:transparent;border:none;border-radius:0;padding:0;gap:4px;font-size:12.5px;font-weight:800}
+#resCluster .res svg{width:13px;height:13px}
+#resCluster .res.alert{animation:v5ResAlert .5s ease-in-out 4}
+@keyframes v5ResAlert{0%,100%{text-shadow:none}50%{text-shadow:0 0 9px #ef4444;color:#fecaca}}
+#infoPanel{padding:0 4px;align-items:center}
+.portraitBox{width:32px;height:32px;border:1px solid #54492c;border-radius:3px;background:#0a0f16}
+.portraitBox svg{width:24px;height:24px}
+.infoMain{gap:1px}
+.infoName{font-size:12px;line-height:1.2}
+.infoSub{font-size:10.5px;line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.infoLine2{display:flex;align-items:center;gap:8px;min-width:0}
+.infoLine2 .infoSub{flex:1;min-width:0}
+.hpSegs{display:block;flex:none;width:118px;height:8px;background:#10161f;border:1px solid #000;border-radius:2px;overflow:hidden}
+.hpSegs i{display:block;float:left;height:100%}
+.hpSegs i.on-g{background:#22c55e}.hpSegs i.on-y{background:#eab308}.hpSegs i.on-r{background:#ef4444}
+.hpSegs i.sh{background:#38bdf8}
+#upgPanel{height:30px;flex:none;padding:0 2px;gap:14px;align-items:center}
+.upgRow{background:transparent;border:none;border-radius:0;box-shadow:none;padding:0;overflow:visible;font-size:11px}
+.upgRow button{height:28px;min-height:28px;min-width:54px;font-size:11.5px;border-width:1px;border-radius:5px;box-shadow:none}
+.upgRow .upgProg{height:2.5px;bottom:-3px}
+.upgStat{font-size:10px}
+#menuBlock{width:108px;padding:2px 4px;flex-direction:column;gap:3px;align-items:center;justify-content:center;background:#0b0f16;border:1px solid #2b3342;border-radius:4px}
+#menuBlock .mbLeft{flex-direction:row;gap:6px}
+#menuBlock img{width:34px;height:34px;border:1px solid var(--acc, #2dd4bf);border-radius:5px;box-shadow:none}
+#menuBlock .menuLbl{font-size:10px;letter-spacing:1.5px}
+#menuBlock .mbBtns{flex-direction:row;gap:4px}
+#console .iconBtn{width:32px;height:32px;background:#171c26;border:1px solid #454e61;border-radius:5px}
+#console .iconBtn svg{width:18px;height:18px}
+#cmdGrid{grid-template-columns:repeat(4,34px);grid-template-rows:repeat(2,34px);gap:4px}
+.cmdBtn{background:#151a24;border:1px solid #3c465a;border-radius:5px;box-shadow:none}
+.cmdBtn svg{width:18px;height:18px}
+.cmdBtn img{max-height:58%}
+.cmdBtn .clbl{font-size:10px;margin-top:1px}
+.cmdBtn .lvl{font-size:10px;bottom:auto;top:1px;right:3px}
+.cmdBtn:disabled{opacity:.42;filter:saturate(.25) brightness(.75)}
+.cmdBtn.active{border-color:var(--acc, #22d3ee);box-shadow:0 0 8px var(--acc, rgba(34,211,238,.5))}
+.selGrid{grid-template-columns:repeat(12,minmax(0,1fr));gap:3px;width:100%}
+.selCell{width:100%;max-width:28px;height:28px;border-width:1px;border-radius:3px}
+.selWrap{flex-direction:row;align-items:center;gap:8px}
+.selCount{flex:none;font-size:11px;font-weight:900;color:#aee6ff;line-height:1.3;white-space:nowrap}
+.selCount span{font-size:10px;font-weight:700;color:#8fa8c4}
+.qSlot{width:22px;height:22px}
+.resBar{height:6px}
 </style>
 </head>
 <body>
@@ -369,16 +425,18 @@ html,body{width:100%;height:100%;height:100dvh;overflow:hidden;background:#000;c
     <div id="msg"></div>
     <div id="cmdCost"></div>
     <button id="btnCancelPlace" class="hidden" type="button" aria-label="Hủy đặt nhà">✕</button>
-    <div id="resCluster">
-      <div class="res min" data-res="min"></div>
-      <div class="res gas" data-res="gas"></div>
-      <div class="res sup" data-res="sup"></div>
-    </div>
 </div>
 <div id="console">
     <div id="mmWrap"><canvas id="minimap" width="208" height="160"></canvas></div>
     <div id="infoCol">
-      <div id="statBar"><span id="resTime">00:00</span><span>·</span><span>Đợt <span id="resWave">0</span></span><span>·</span><span id="resDiff">Vừa</span></div>
+      <div id="topLine">
+        <div id="statBar"><span id="resTime">00:00</span><span>·</span><span>Đợt <span id="resWave">0</span></span><span>·</span><span id="resDiff">Vừa</span></div>
+        <div id="resCluster">
+          <div class="res min" data-res="min"></div>
+          <div class="res gas" data-res="gas"></div>
+          <div class="res sup" data-res="sup"></div>
+        </div>
+      </div>
       <div id="infoPanel"><div class="infoHint">Chưa chọn gì.<br>Chạm vào quân / nhà của mình để xem thông tin tại đây — giống bảng điều khiển của chỉ huy.</div></div>
       <div id="upgPanel"></div>
     </div>
@@ -817,6 +875,39 @@ var IMG = {};
   var im = new Image(); im.src = sprImg(n); IMG[n] = im;
 });
 function imgReady(im){ return im && im.complete && im.naturalWidth > 0; }
+
+/* ============ FIX v5 — HOẠT HÌNH THEO QUÃNG ĐƯỜNG (nghiên cứu: research-animation/notes.md) ============
+   Luật gốc: pha hoạt hình = f(quãng đường đã đi), KHÔNG theo đồng hồ → chân không bao giờ trượt.
+   frame = floor(animDist / (chu_kỳ_px / số_frame)) % số_frame · chu_kỳ_px = 2 × stride.
+   Quân có sheet *_walk.png thì dùng frame thật; còn lại chạy lớp procedural (bob/roll/lean/hover/trườn).
+   Thiếu sheet → tự rơi về sprite tĩnh + procedural, không vỡ game. */
+var IMGW = {};
+['marine','worker','zergling','zealot'].forEach(function(n){
+  var im = new Image(); im.src = 'assets/sprites/' + n + '_walk.png'; IMGW[n] = im;
+});
+/* bộ phận Xe Tăng (đường b): thân (đã bỏ tháp + dải xích) · tháp xoay độc lập · dải xích cuộn theo quãng đường */
+var IMGP = {};
+['tank_hull','tank_turret','tank_track'].forEach(function(n){
+  var im = new Image(); im.src = 'assets/sprites/' + n + '.png'; IMGP[n] = im;
+});
+var TANK_PIVOT = { x: 0.469, y: 0.414 }; /* tâm tháp trong ô sprite gốc (đo từ tank.png: ~(120,106)/256) */
+var TANK_ART_ANG = -1.36; /* hướng nòng trong tranh gốc (chếch lên-phải ~-78°) — trừ đi để tháp ngắm đúng góc thế giới */
+var ANIM = {
+  worker:   { stride:24, frames:6, bob:1.6, roll:0.035 },
+  marine:   { stride:24, frames:6, bob:1.6, roll:0.035 },
+  firebat:  { stride:25, frames:6, bob:1.5, roll:0.035 },
+  zealot:   { stride:26, frames:6, bob:1.8, roll:0.040 },
+  zergling: { stride:19, frames:4, bob:1.4, roll:0.045 },
+  ultralisk:{ stride:40, frames:8, bob:2.6, roll:0.028, dust:1 },
+  mech:     { stride:30, frames:6, bob:1.0, roll:0.018, dust:1 },
+  dragoon:  { stride:28, frames:6, bob:1.6, roll:0.025 },
+  tank:     { dust:1 },
+  hydralisk:{ slither:1 },
+  drone:    { hover:1, hz:2.0, amp:1.5 },
+  probe:    { hover:1, hz:2.2, amp:1.5 },
+  archon:   { hover:1, hz:1.2, amp:2.0, pulse:1 },
+  overlord: { hz:0.8, amp:2.5, rollA:0.026 }
+};
 
 /* ============ ÂM THANH: file OGG (xem assets/sounds/MAPPING.md) + WebAudio cho thắng/thua ============ */
 var Snd = (function(){
@@ -1262,7 +1353,7 @@ function tickParticles(dt){
   for(i=PARTS.length-1;i>=0;i--){ p = PARTS[i]; p.life -= dt;
     if(p.life<=0){ PARTS.splice(i,1); continue; }
     p.x += p.vx*dt; p.y += p.vy*dt;
-    if(p.kind==='smoke' || p.kind==='steam'){ p.vx += Math.sin(S.time*2 + p.seed)*4*dt; p.size += 7*dt; }
+    if(p.kind==='smoke' || p.kind==='steam' || p.kind==='dust'){ p.vx += Math.sin(S.time*2 + p.seed)*4*dt; p.size += 7*dt; }
     if(p.kind==='spark') p.vy += 130*dt;
   }
   for(i=SCORCH.length-1;i>=0;i--){ SCORCH[i].life -= dt/26; if(SCORCH[i].life<=0) SCORCH.splice(i,1); }
@@ -1333,6 +1424,7 @@ function makeUnit(faction, type, x, y){
   return { id:uid(), kind:'unit', faction:faction, type:type, x:x, y:y, hp:sp.hp, maxHp:sp.hp, face:1,
     shield: sm, shieldMax: sm, lastHurtAt: -99,
     cooldown:0, carrying:0, carryType:null, combatTargetId:0, postX:x, postY:y,
+    vx:0, vy:0, speedNow:0, animDist:0, lastMoveAt:-9, recoilT:0, turretA:0, turnAcc:0, dustAcc:0,
     order:{type:'idle', x:x, y:y, targetId:0, nodeId:0, phase:'', harvestT:0} };
 }
 function makeBuilding(faction, type, x, y, built){
@@ -1809,21 +1901,39 @@ function fmtTime(sec){ var m=(sec/60)|0, s=(sec|0)%60; return (m<10?'0':'')+m+':
 
 /* ============ DI CHUYỂN & GIAO CHIẾN ============ */
 function moveToward(u, tx, ty, stopDist, dt){
-  var d = dist(u.x,u.y,tx,ty);
-  if(d > 1 && Math.abs(tx-u.x) > 2) u.face = tx > u.x ? 1 : -1;
-  if(d <= stopDist + 0.6) return true;
-  var sp = SPECS[u.type].speed, step = Math.min(sp*dt, d-stopDist);
-  var nx = u.x + (tx-u.x)/d*step, ny = u.y + (ty-u.y)/d*step;
+  var sp = SPECS[u.type];
+  var dx = tx-u.x, dy = ty-u.y, d = Math.sqrt(dx*dx + dy*dy);
+  if(d > 1 && Math.abs(dx) > 2) u.face = dx > 0 ? 1 : -1;
+  if(u.vx === undefined){ u.vx = 0; u.vy = 0; }
+  u._mvT = S.time;
+  /* vận tốc mong muốn: hướng tới đích, ARRIVE = hãm tốc tuyến tính trong 48px cuối trước vòng dừng */
+  var dvx = 0, dvy = 0;
+  if(d > stopDist + 0.6){
+    var sf = (d - stopDist < 48) ? clamp((d - stopDist)/48, 0.3, 1) : 1;
+    dvx = dx/d * sp.speed * sf; dvy = dy/d * sp.speed * sf;
+  }
+  /* STEERING: vận tốc thật đuổi theo vận tốc mong muốn với GIA TỐC giới hạn —
+     tăng tốc mượt từ 0, rẽ cong theo quán tính thay vì bẻ góc tức thì (lớp flingy kiểu SC1) */
+  var heavy = sp.size==='large' || u.type==='tank' || u.type==='mech';
+  var acc = sp.speed * (heavy ? 5 : 7.5), cap = acc * Math.max(dt, 0.001);
+  var mx = dvx - u.vx, my = dvy - u.vy, ml = Math.sqrt(mx*mx + my*my);
+  if(ml > cap && ml > 0){ mx = mx/ml*cap; my = my/ml*cap; }
+  u.vx += mx; u.vy += my;
+  var ox = u.x, oy = u.y;
+  var nx = u.x + u.vx*dt, ny = u.y + u.vy*dt;
   /* VÁCH ĐỨNG: bước sang ô khác tầng mà không qua DỐC thì bị chặn (trượt theo trục còn lại nếu được) */
-  if(elevGrid && !SPECS[u.type].flying){
+  if(elevGrid && !sp.flying){
     var otx = tileX(u.x), oty = tileY(u.y);
     if(!tilesWalkable(otx, oty, tileX(nx), tileY(ny))){
-      if(tilesWalkable(otx, oty, tileX(nx), oty)) ny = u.y;
-      else if(tilesWalkable(otx, oty, otx, tileY(ny))) nx = u.x;
-      else { nx = u.x; ny = u.y; }
+      if(tilesWalkable(otx, oty, tileX(nx), oty)){ ny = u.y; u.vy = 0; }
+      else if(tilesWalkable(otx, oty, otx, tileY(ny))){ nx = u.x; u.vx = 0; }
+      else { nx = u.x; ny = u.y; u.vx = 0; u.vy = 0; }
     }
   }
   u.x = clamp(nx,16,WORLD_W-16); u.y = clamp(ny,16,WORLD_H-16);
+  var moved = dist(ox, oy, u.x, u.y);
+  u.animDist = (u.animDist||0) + moved;           /* pha hoạt hình chạy theo QUÃNG ĐƯỜNG — không theo đồng hồ */
+  if(moved > 0.05) u.lastMoveAt = S.time;
   return dist(u.x,u.y,tx,ty) <= stopDist + 0.6;
 }
 function nearestEnemyEntity(u, maxD){
@@ -1917,6 +2027,7 @@ function playWeaponShot(type, x, y, baseVol){
 function shoot(u, target){
   var sp = SPECS[u.type];
   u.cooldown = sp.cd;
+  if(u.type==='tank') u.recoilT = 0.14; /* FIX v5: nòng Xe Tăng giật lùi khi bắn */
   if(Math.abs(target.x - u.x) > 2) u.face = target.x > u.x ? 1 : -1;
   var ang = Math.atan2(target.y - u.y, target.x - u.x);
   fxMuzzle(u.x + Math.cos(ang)*sp.draw*0.42, u.y + Math.sin(ang)*sp.draw*0.30, ang, u.type==='firebat');
@@ -2130,7 +2241,14 @@ function tickSeparation(){
   var us = S.units, i, j;
   for(i=0;i<us.length;i++) for(j=i+1;j<us.length;j++){
     var a=us[i], b=us[j], d=dist(a.x,a.y,b.x,b.y);
-    if(d>0 && d<22){ var push=(22-d)/2, dx=(b.x-a.x)/d, dy=(b.y-a.y)/d; a.x-=dx*push; a.y-=dy*push; b.x+=dx*push; b.y+=dy*push; }
+    /* cặp đang giao chiến TRỰC TIẾP với nhau thì KHÔNG tách: bán kính tách theo cỡ (tới 29-46px)
+       có thể lớn hơn tầm cận chiến (26-27px) — tách cả cặp đang đánh sẽ làm quân cận chiến
+       không bao giờ vào được tầm ra đòn (đo thực tế: zealot bị giữ ở 29,4px > tầm 27px, Q2 TTK fail) */
+    if(a.combatTargetId===b.id || b.combatTargetId===a.id) continue;
+    /* bán kính tách theo CỠ quân: quân nhỏ giữ 22 như cũ, quân to không còn chồng lấp thành cục */
+    var rr = clamp((SPECS[a.type].draw + SPECS[b.type].draw)*0.30, 22, 46);
+    if(d>0 && d<rr){ var push=(rr-d)/2, dx=(b.x-a.x)/d, dy=(b.y-a.y)/d; a.x-=dx*push; a.y-=dy*push; b.x+=dx*push; b.y+=dy*push; }
+    else if(d===0){ b.x += 1.5; } /* trùng khít tâm: đẩy nhẹ một phía cho tách dần */
   }
 }
 function tick(dt){
@@ -2139,6 +2257,42 @@ function tick(dt){
   tickAI(dt);
   tickMainUpgrade(dt);
   S.units.slice().forEach(function(u){ if(findById(u.id)) tickUnit(u, dt); });
+  /* FIX v5 — hậu xử lý HOẠT HÌNH: tốc độ thật suy từ quãng đường vừa đi (không phải lệnh),
+     vận tốc dư thừa tiêu dần khi quân không còn được moveToward gọi (đang bắn/đang đứng),
+     tháp Xe Tăng bám mục tiêu, bụi chân cho quân nặng */
+  S.units.forEach(function(u){
+    var ad = u.animDist||0, delta = ad - (u._adPrev||0); u._adPrev = ad;
+    var inst = dt > 0 ? delta/dt : 0;
+    u.speedNow = (u.speedNow||0)*0.5 + inst*0.5;
+    if(u._mvT !== S.time){ var dk = Math.max(0, 1 - 11*dt); u.vx = (u.vx||0)*dk; u.vy = (u.vy||0)*dk; }
+    if(u.recoilT > 0) u.recoilT = Math.max(0, u.recoilT - dt);
+    var an = ANIM[u.type];
+    if(an && an.dust && inst > 26){
+      u.dustAcc = (u.dustAcc||0) + delta;
+      var strideGap = u.type==='tank' ? 17 : 26;
+      if(u.dustAcc >= strideGap){ u.dustAcc = 0;
+        spawnP({kind:'dust', x:u.x + (rng()-0.5)*SPECS[u.type].draw*0.5, y:u.y + SPECS[u.type].draw*0.30, vx:(rng()-0.5)*12, vy:-5-rng()*7, life:0.3+rng()*0.12, max:0.42, size:3.4+rng()*2.6, seed:rng()*6});
+      }
+    }
+    if(u.type==='tank'){
+      var tgt = u.combatTargetId ? findById(u.combatTargetId) : null;
+      if(!tgt && u.order && u.order.type==='attack' && u.order.targetId) tgt = findById(u.order.targetId);
+      var des;
+      if(tgt) des = Math.atan2(tgt.y-u.y, tgt.x-u.x);
+      else if(inst > 8 && (u.vx || u.vy)) des = Math.atan2(u.vy, u.vx);
+      else des = (u.face < 0 ? Math.PI : 0);
+      if(u.turretA === undefined) u.turretA = des;
+      var da = des - u.turretA;
+      while(da > Math.PI) da -= 6.2832; while(da < -Math.PI) da += 6.2832;
+      var mxr = 4.2*dt;
+      u.turretA += clamp(da, -mxr, mxr);
+      if(inst > 8 && (u.vx || u.vy)){
+        var hd = Math.atan2(u.vy, u.vx);
+        if(u._hd !== undefined){ var dh = hd - u._hd; while(dh > Math.PI) dh -= 6.2832; while(dh < -Math.PI) dh += 6.2832; u.turnAcc = (u.turnAcc||0) + dh; }
+        u._hd = hd;
+      }
+    }
+  });
   tickProjectiles(dt);
   tickBuildings(dt);
   /* Hồi phục theo tộc: Zerg tự lành mọi quân/nhà · Protoss hồi KHIÊN sau 8 giây không trúng đòn */
@@ -2213,9 +2367,17 @@ function updateHUD(){
 }
 function selectedUnits(){ return S.units.filter(function(u){ return S.selectedIds.indexOf(u.id)>=0; }); }
 function segBarHTML(hp, maxHp, segs){
-  var frac = clamp(hp/Math.max(1,maxHp), 0, 1), on = Math.round(frac*segs);
-  var cls = frac>0.5 ? 'on-g' : (frac>0.25 ? 'on-y' : 'on-r'), h = '<div class="hpSegs">';
-  for(var i=0;i<segs;i++) h += '<i class="' + (i<on ? cls : '') + '"></i>';
+  /* v5-E: thanh máu LIỀN một dải (thay kiểu chia đoạn) — tham số segs giữ cho tương thích lời gọi cũ */
+  var frac = clamp(hp/Math.max(1,maxHp), 0, 1);
+  var cls = frac>0.5 ? 'on-g' : (frac>0.25 ? 'on-y' : 'on-r');
+  return '<div class="hpSegs"><i class="' + cls + '" style="width:' + Math.round(frac*100) + '%"></i></div>';
+}
+function unitBarHTML(u){
+  /* v5-E: MỘT thanh duy nhất cho quân — máu (xanh/vàng/đỏ) + khiên (xanh dương) xếp nối tiếp trên cùng dải, tỉ lệ theo tổng máu+khiên */
+  var tot = Math.max(1, u.maxHp + (u.shieldMax || 0));
+  var frac = clamp(u.hp/Math.max(1,u.maxHp), 0, 1), cls = frac>0.5 ? 'on-g' : (frac>0.25 ? 'on-y' : 'on-r');
+  var h = '<div class="hpSegs"><i class="' + cls + '" style="width:' + Math.round(u.hp/tot*100) + '%"></i>';
+  if(u.shieldMax) h += '<i class="sh" style="width:' + Math.round((u.shield||0)/tot*100) + '%"></i>';
   return h + '</div>';
 }
 function portraitHTML(spr){
@@ -2223,7 +2385,7 @@ function portraitHTML(spr){
   if(imgReady(im)) return '<div class="portraitBox"><img src="' + sprImg(spr) + '" alt=""></div>';
   return '<div class="portraitBox">' + IC.crystal + '</div>';
 }
-/* Lưới lệnh: trả về mảng tối đa 9 ô {icon|img, action, unit|b|kind, cost, disabled, lvl, active} */
+/* Lưới lệnh: trả về mảng lệnh của trang hiện tại (tối đa 6 lệnh — lưới hiển thị 4x2 từ v5-E) {icon|img, action, unit|b|kind, cost, disabled, lvl, active} */
 function currentCommands(){
   var cells = [], sel = selectedUnits(), b = S.selectedBuildingId ? findById(S.selectedBuildingId) : null;
   /* Đang đặt nhà: lưới lệnh KHÔNG chết — hiện đúng ô nhà đang đặt (đang active), chạm lại ô này = HỦY đặt nhà */
@@ -2294,41 +2456,44 @@ function renderPanel(force){
   /* --- thông tin giữa console --- */
   if(placing){
     info.innerHTML = '<div class="infoMain"><div class="infoName">Đang đặt: ' + BSPECS[placing.type].name + '</div>' +
-      '<div class="infoSub">Kéo-thả hoặc chạm lên bản đồ để đặt nhà: khung XANH = đặt được, ĐỎ = không (có ghi lý do). Nút ✕ đỏ (góc dưới-trái bản đồ) để hủy.' + (GAS_TYPES[placing.type] ? '<br>' + BSPECS[placing.type].name + ' chỉ đặt được trên mạch khí — các mạch khí đang được khoanh sáng.' : '') + (S.playerRace==='zerg' && placing.type!=='hatchery' && !GAS_TYPES[placing.type] ? '<br>Nhà Zerg chỉ xây được trên thảm nhầy quanh Tổ Quái.' : '') + (S.playerRace==='protoss' && placing.type!=='pylon' && !GAS_TYPES[placing.type] ? '<br>Nhà Protoss phải nằm trong vùng năng lượng của Pylon.' : '') + '</div></div>';
+      '<div class="infoSub">Kéo-thả hoặc chạm lên bản đồ để đặt nhà: khung XANH = đặt được, ĐỎ = không (có ghi lý do). Nút ✕ đỏ (góc dưới-trái bản đồ) để hủy.' + (GAS_TYPES[placing.type] ? ' ' + BSPECS[placing.type].name + ' chỉ đặt được trên mạch khí — các mạch khí đang được khoanh sáng.' : '') + (S.playerRace==='zerg' && placing.type!=='hatchery' && !GAS_TYPES[placing.type] ? ' Nhà Zerg chỉ xây được trên thảm nhầy quanh Tổ Quái.' : '') + (S.playerRace==='protoss' && placing.type!=='pylon' && !GAS_TYPES[placing.type] ? ' Nhà Protoss phải nằm trong vùng năng lượng của Pylon.' : '') + '</div></div>';
   } else if(b && b.faction==='player'){
+    /* v5-E: panel nhà nén còn 2 dòng — tên+máu, rồi MỘT dòng gộp: thanh máu · các dòng phụ nối bằng ' · ' (ưu tiên việc đang diễn ra) · ô hàng đợi */
     var h = portraitHTML(BSPECS[b.type].spr) + '<div class="infoMain">' +
-      '<div class="infoName">' + BSPECS[b.type].name + (!!MAIN_TYPES[b.type] ? ' Lv' + S.mainLevel : '') + ' <span class="hpNums">' + Math.ceil(b.hp) + ' / ' + b.maxHp + '</span></div>' + segBarHTML(b.hp, b.maxHp, 18);
-    if(!!MAIN_TYPES[b.type]) h += '<div class="infoSub">Cấp Nhà Chính: ' + '●'.repeat(S.mainLevel) + '○'.repeat(3 - S.mainLevel) + (S.mainUpgrade ? ' • Đang nâng lên Lv' + S.mainUpgrade.to + ': ' + Math.round(S.mainUpgrade.t/S.mainUpgrade.total*100) + '%' : ' • Nâng cấp ở lưới lệnh để mở khoá nhà/quân mới') + '</div>';
-    if(BSPECS[b.type].dmg) h += '<div class="infoSub">Sát thương: ' + BSPECS[b.type].dmg + (b.type==='turret' ? ' ×2 phát nhanh' : '') + '</div>';
-    if(b.constructing) h += '<div class="infoSub">Đang xây: ' + Math.round(b.progress*100) + '%</div>';
+      '<div class="infoName">' + BSPECS[b.type].name + (!!MAIN_TYPES[b.type] ? ' Lv' + S.mainLevel : '') + ' <span class="hpNums">' + Math.ceil(b.hp) + ' / ' + b.maxHp + '</span></div>';
+    var subs = [];
+    if(b.constructing) subs.push('Đang xây: ' + Math.round(b.progress*100) + '%');
+    if(!!MAIN_TYPES[b.type]) subs.push('Cấp Nhà Chính: ' + '●'.repeat(S.mainLevel) + '○'.repeat(3 - S.mainLevel) + (S.mainUpgrade ? ' • Đang nâng lên Lv' + S.mainUpgrade.to + ': ' + Math.round(S.mainUpgrade.t/S.mainUpgrade.total*100) + '%' : ' • Nâng cấp ở lưới lệnh để mở khoá nhà/quân mới'));
+    if(b.shieldMax) subs.push('Khiên: ' + Math.round(b.shield) + '/' + b.shieldMax + (isPowered(b) ? '' : ' • <b>MẤT ĐIỆN</b> — nhà tê liệt, cần Pylon gần hơn'));
+    if(BSPECS[b.type].dmg) subs.push('Sát thương: ' + BSPECS[b.type].dmg + (b.type==='turret' ? ' ×2 phát nhanh' : ''));
     /* tiến độ nghiên cứu chỉ hiện ở khung Nâng cấp (upgStat) — không lặp lại ở đây để panel gầy không bị tràn */
+    if(GAS_TYPES[b.type]) subs.push('Thợ đang hút khí: ' + gasWorkerCount(b) + ' • chạm Thợ vào trạm để thêm người hút');
+    if(b.type==='hatchery') subs.push('Ấu Trùng: ' + (b.larvae||0) + '/3 (12s thêm 1) • Trứng đang nở: ' + ((b.eggs||[]).length) + ' • Thảm nhầy (Creep) đang lan — chỉ xây nhà Zerg trên thảm');
+    if(b.type==='cc') subs.push('Cung cấp dân số +10 • Luyện Robot Thợ tại đây');
+    h += '<div class="infoLine2">' + segBarHTML(b.hp, b.maxHp, 18) +
+      (subs.length ? '<div class="infoSub">' + subs.join(' · ') + '</div>' : '');
     if(b.queue.length){
       h += '<div class="queueRow">' + b.queue.map(function(q,i){
         var pct = i===0 ? Math.round(q.t/q.total*100) : 0;
         return '<div class="qSlot"><img src="' + sprImg(SPECS[q.type].spr) + '" alt="">' + (i===0 ? '<div class="bar" style="width:' + pct + '%"></div>' : '') + '</div>';
       }).join('') + '</div>';
     }
-    if(GAS_TYPES[b.type]) h += '<div class="infoSub">Thợ đang hút khí: ' + gasWorkerCount(b) + ' • chạm Thợ vào trạm để thêm người hút</div>';
-    if(b.type==='hatchery') h += '<div class="infoSub">Ấu Trùng: ' + (b.larvae||0) + '/3 (12s thêm 1) • Trứng đang nở: ' + ((b.eggs||[]).length) + ' • Thảm nhầy (Creep) đang lan — chỉ xây nhà Zerg trên thảm</div>';
-    if(b.shieldMax) h += '<div class="infoSub">Khiên: ' + Math.round(b.shield) + '/' + b.shieldMax + (isPowered(b) ? '' : ' • <b>MẤT ĐIỆN</b> — nhà tê liệt, cần Pylon gần hơn') + '</div>';
-    if(b.type==='cc') h += '<div class="infoSub">Cung cấp dân số +10 • Luyện Robot Thợ tại đây</div>';
-    info.innerHTML = h + '</div>';
+    info.innerHTML = h + '</div></div>';
   } else if(sel.length===1){
     var u = sel[0], sp = SPECS[u.type];
     var sub = 'Sát thương: ' + Math.round(unitDamage(u.type) * 10)/10 + (sp.splash ? ' · diện rộng' : '') + ' • Dân số: ' + sp.supply + (u.carrying>0 ? ' • Đang mang ' + u.carrying + ' ' + (u.carryType==='gas' ? 'khí' : 'khoáng') : '');
     var act = '';
     if(u.order){ act = u.order.type==='harvest' ? 'Đang khai thác' : u.order.type==='attack' ? 'Đang chiến đấu' : u.order.type==='move' ? 'Đang di chuyển' : u.order.type==='build' ? 'Đang xây' : ''; }
     if(act) sub += ' • ' + act;
-    var shH = u.shieldMax ? '<div class="infoSub"><span class="shieldNums">Khiên: ' + Math.round(u.shield) + ' / ' + u.shieldMax + '</span></div>' : '';
-    info.innerHTML = portraitHTML(sp.spr) + '<div class="infoMain"><div class="infoName">' + sp.name + ' <span class="hpNums">' + Math.ceil(u.hp) + ' / ' + u.maxHp + '</span></div>' +
-      segBarHTML(u.hp, u.maxHp, 14) + shH +
-      '<div class="infoSub">' + sub + '</div></div>';
+    var shT = u.shieldMax ? ' · <span class="shieldNums">Khiên ' + Math.round(u.shield) + '/' + u.shieldMax + '</span>' : '';
+    info.innerHTML = portraitHTML(sp.spr) + '<div class="infoMain"><div class="infoName">' + sp.name + ' <span class="hpNums">' + Math.ceil(u.hp) + ' / ' + u.maxHp + '</span>' + shT + '</div>' +
+      '<div class="infoLine2">' + unitBarHTML(u) + '<div class="infoSub">' + sub + '</div></div></div>';
   } else if(sel.length>1){
     var cells = sel.map(function(x){
       var f = x.hp/x.maxHp, col = f>0.5 ? '#22c55e' : (f>0.25 ? '#eab308' : '#ef4444');
       return '<div class="selCell" data-uid="' + x.id + '" style="border-color:' + col + '"><img src="' + sprImg(SPECS[x.type].spr) + '" alt=""></div>';
     }).join('');
-    info.innerHTML = '<div class="infoMain"><div class="infoName">Đã chọn ' + sel.length + ' quân — chạm 1 ô để chọn riêng quân đó</div><div class="selGrid">' + cells + '</div></div>';
+    info.innerHTML = '<div class="infoMain selWrap"><div class="selCount">' + sel.length + ' quân<br><span>chạm 1 ô =<br>chọn riêng</span></div><div class="selGrid">' + cells + '</div></div>';
   } else if(pendingOrder){
     info.innerHTML = '<div class="infoMain"><div class="infoName">' + (pendingOrder==='attack' ? 'TẤN CÔNG' : pendingOrder==='harvest' ? 'KHAI THÁC' : 'DI CHUYỂN') + '</div><div class="infoSub">Chạm vào đích trên bản đồ.</div></div>';
   } else {
@@ -2340,24 +2505,23 @@ function renderPanel(force){
     var mid = resB ? ('Đang nghiên cứu ' + (resB.research.kind==='weapon' ? 'Vũ Khí' : 'Giáp') + ' Lv' + (S.upgrades[resB.research.kind]+1) + '<span class="resBar"><i style="width:' + Math.round(resB.research.t/resB.research.total*100) + '%"></i></span>')
                    : ('Đợt địch kế: <b style="color:#f3d27a">' + waveTxt + '</b> · Vũ Khí +' + S.upgrades.weapon + ' · Giáp +' + S.upgrades.armor);
     info.innerHTML = '<div class="infoMain baseStat"><div class="infoName">CĂN CỨ — Thợ: ' + wkN + ' · Quân: ' + armyN + ' · Dân số: ' + S.supplyUsed + '/' + S.supplyCap + '</div>' +
-      '<div class="infoSub">' + mid + '</div>' +
-      '<div class="infoSub">Chạm quân/nhà để xem chi tiết · chạm 2 lần vào 1 quân = chọn cả loại đang thấy trên màn hình</div></div>';
+      '<div class="infoSub">' + mid + '</div></div>';
   }
-  /* --- lưới lệnh 3×3 --- */
+  /* --- lưới lệnh 4×2 (v5-E: nút 34px, nhãn ngắn <= 5 ký tự để chữ đạt 10px đọc rõ trên điện thoại) --- */
   var cmds = currentCommands(), gh = '';
-  var SHORT_BN = { depot:'KHO', barracks:'TRẠI', factory:'XƯỞNG', refinery:'LỌC KHÍ', turret:'THÁP CANH', pool:'HỒ SINH', zergden:'HANG', sunken:'THÁP GAI', extractor:'CHIẾT KHÍ', hatchery:'TỔ QUÁI', pylon:'PYLON', gateway:'CỔNG', cybercore:'LÕI', cannon:'PHÁO', assimilator:'ĐỒNG HOÁ' };
+  var SHORT_BN = { depot:'KHO', barracks:'TRẠI', factory:'MÁY', refinery:'KHÍ', turret:'THÁP', pool:'HỒ', zergden:'HANG', sunken:'GAI', extractor:'KHÍ', hatchery:'TỔ', pylon:'PYLON', gateway:'CỔNG', cybercore:'LÕI', cannon:'PHÁO', assimilator:'HOÁ' };
   var LBL_ORD = { move:'ĐI', attack:'ĐÁNH', harvest:'HÁI' };
-  for(var i=0;i<9;i++){
+  for(var i=0;i<8;i++){
     var c = cmds[i];
     if(!c){ gh += '<button class="cmdBtn" disabled aria-hidden="true"></button>'; continue; }
     var lbl = '', prog = -1;
     if(c.action==='build') lbl = SHORT_BN[c.b] || '';
     else if(c.action==='order') lbl = LBL_ORD[c.mode] || '';
     else if(c.action==='stop') lbl = 'DỪNG';
-    else if(c.action==='page') lbl = c.page==='build' ? 'XÂY' : '← LẠI';
+    else if(c.action==='page') lbl = c.page==='build' ? 'XÂY' : 'LẠI';
     else if(c.action==='research') lbl = 'N.CỨU';
-    else if(c.action==='upmain') lbl = 'LÊN CẤP';
-    else if(c.action==='cancelPlace') lbl = 'HỦY ĐẶT';
+    else if(c.action==='upmain') lbl = 'NÂNG';
+    else if(c.action==='cancelPlace') lbl = 'HỦY';
     if(b && c.action==='research' && b.research && b.research.kind===c.kind) prog = b.research.t/b.research.total;
     if(b && c.action==='train' && b.queue && b.queue.length && b.queue[0].type===c.unit) prog = b.queue[0].t/b.queue[0].total;
     /* v4.1 ITEM 4: lưới lệnh KHÔNG hiện số giá nữa (◆/●/👥) — bấm là trừ ở thanh tài nguyên trên cùng */
@@ -2809,6 +2973,77 @@ function drawSprite(im, x, y, w, h, flip, alpha){
   ctx.restore();
   return true;
 }
+/* FIX v5 — biến thể có XOAY quanh NEO ĐẤT (điểm giữa hai chân, y + h*0.30): lắc thân/nghiêng gia tốc
+   phải xoay quanh chân, xoay quanh tâm là chân quét đất ngay */
+function drawSpriteT(im, x, y, w, h, flip, rot){
+  if(!imgReady(im)) return false;
+  ctx.save();
+  ctx.translate(x, y + h*0.30); ctx.rotate(rot||0); if(flip) ctx.scale(-1, 1);
+  ctx.drawImage(im, -w/2, -h/2 - h*0.30, w, h);
+  ctx.restore();
+  return true;
+}
+/* FIX v5 — vẽ 1 Ô của sheet khung hình đi (1 hàng × N ô vuông) có xoay quanh neo đất */
+function drawFrame(im, frame, frames, x, y, w, h, flip, rot){
+  if(!imgReady(im)) return false;
+  var fw = im.naturalWidth / frames; if(fw <= 0) return false;
+  ctx.save();
+  ctx.translate(x, y + h*0.30); ctx.rotate(rot||0); if(flip) ctx.scale(-1, 1);
+  ctx.drawImage(im, frame*fw, 0, fw, im.naturalHeight, -w/2, -h/2 - h*0.30, w, h);
+  ctx.restore();
+  return true;
+}
+/* FIX v5 — Hydralisk TRƯỜN SÓNG (slice-wave): cắt sprite thành 7 lát NGANG, mỗi lát lệch x theo
+   sóng sin chạy theo quãng đường; đầu (lát trên cùng) đứng yên để ngắm bắn, đuôi vung mạnh nhất */
+function drawSlither(im, x, y, w, h, flip, animDist, sf){
+  if(!imgReady(im)) return false;
+  var N = 7, sh = im.naturalHeight / N;
+  var ph = (animDist||0) / 40 * 6.2832;
+  ctx.save();
+  ctx.translate(x, y); if(flip) ctx.scale(-1, 1);
+  for(var i=0;i<N;i++){
+    var taper = i/(N-1); /* 0 ở đầu (trên) → 1 ở đuôi (dưới) */
+    var dx = Math.sin(6.2832*(i/(N-1)) - ph) * 2.6 * taper * sf;
+    ctx.drawImage(im, 0, i*sh, im.naturalWidth, sh, -w/2 + dx, -h/2 + i*(h/N), w, h/N + 0.8);
+  }
+  ctx.restore();
+  return true;
+}
+/* FIX v5 — Xe Tăng theo BỘ PHẬN: thân + tháp xoay độc lập về phía mục tiêu + nòng giật khi bắn.
+   Dải xích: ảnh dải xích lặp ngang, cuộn offset = quãng đường của TỪNG BÊN (rẽ là hai bên lệch nhau) */
+var TANK_TRACK_RECT = { x0: -0.335, y0: 0.115, x1: 0.315, y1: 0.335 }; /* vùng dải xích trong ô sprite (hệ tương đối theo draw) */
+function drawTank(u, bodyY, rot){
+  var hull = IMGP.tank_hull, tur = IMGP.tank_turret, trk = IMGP.tank_track;
+  if(!imgReady(hull) || !imgReady(tur)) return false;
+  var w = SPECS.tank.draw, h = w;
+  var flip = u.face < 0;
+  /* xích cuộn (vẽ trước thân, trong cùng hệ lật/xoay của thân) */
+  if(imgReady(trk)){
+    var R = TANK_TRACK_RECT, bw = (R.x1-R.x0)*w, bh = (R.y1-R.y0)*h;
+    var turn = (u.turnAcc||0) * w * 0.5;
+    var offL = ((u.animDist||0) + turn) % 24, offR = ((u.animDist||0) - turn) % 24;
+    ctx.save();
+    ctx.translate(u.x, bodyY + h*0.30); ctx.rotate(rot||0); if(flip) ctx.scale(-1, 1);
+    ctx.beginPath(); ctx.rect(R.x0*w, R.y0*h - h*0.30, bw, bh); ctx.clip();
+    var tw = 24, th = bh;
+    for(var sx = R.x0*w - 24 + (offL % 24); sx < R.x1*w; sx += tw) ctx.drawImage(trk, sx, R.y0*h - h*0.30, tw, th);
+    ctx.restore();
+    /* góc rẽ tích lũy (offR) dành cho dải xích thứ hai khi tranh có đủ hai dải — bản 3/4 hiện tại chỉ có 1 dải xích nhìn thấy */
+    void(offR);
+  }
+  drawSpriteT(hull, u.x, bodyY, w, h, flip, rot);
+  /* tháp: tâm tháp theo TANK_PIVOT (gương theo hướng thân), xoay theo u.turretA (góc thế giới), giật lùi dọc nòng khi recoilT>0 */
+  var ta = u.turretA || 0;
+  var pvx = u.x + (TANK_PIVOT.x - 0.5) * w * (flip ? -1 : 1);
+  var pvy = bodyY + (TANK_PIVOT.y - 0.5) * h;
+  var rec = (u.recoilT > 0) ? (u.recoilT/0.14) * 3 : 0;
+  ctx.save();
+  ctx.translate(pvx - Math.cos(ta)*rec, pvy - Math.sin(ta)*rec*0.6);
+  ctx.rotate(ta - TANK_ART_ANG);
+  ctx.drawImage(tur, -TANK_PIVOT.x*w, -TANK_PIVOT.y*h, w, h);
+  ctx.restore();
+  return true;
+}
 function drawWorld(){
   var vw = viewW(), vh = viewH();
   /* biến đổi nền: 1 đơn vị vẽ = 1 PIXEL CSS, backing store lo phần DPR — mọi vẽ phía dưới giữ nguyên hệ CSS */
@@ -2909,6 +3144,7 @@ function drawWorld(){
     if(p.x<cam.x-70||p.x>cam.x+vw+70||p.y<cam.y-70||p.y>cam.y+vh+70) return;
     var a = clamp(p.life/p.max, 0, 1), i;
     if(p.kind==='smoke'){ ctx.fillStyle='rgba(96,96,108,' + (0.34*a).toFixed(3) + ')'; ctx.beginPath(); ctx.arc(p.x,p.y,p.size,0,6.29); ctx.fill(); }
+    else if(p.kind==='dust'){ ctx.fillStyle='rgba(172,150,108,' + (0.30*a).toFixed(3) + ')'; ctx.beginPath(); ctx.arc(p.x,p.y,p.size,0,6.29); ctx.fill(); }
     else if(p.kind==='steam'){ ctx.fillStyle='rgba(126,196,150,' + (0.30*a).toFixed(3) + ')'; ctx.beginPath(); ctx.arc(p.x,p.y,p.size,0,6.29); ctx.fill();
       ctx.fillStyle='rgba(190,220,200,' + (0.16*a).toFixed(3) + ')'; ctx.beginPath(); ctx.arc(p.x-p.size*0.25,p.y-p.size*0.25,p.size*0.55,0,6.29); ctx.fill(); }
     else if(p.kind==='spark'){ ctx.fillStyle='rgba(' + p.c[0] + ',' + p.c[1] + ',' + p.c[2] + ',' + (0.9*a).toFixed(3) + ')'; ctx.beginPath(); ctx.arc(p.x,p.y,p.size*a+0.4,0,6.29); ctx.fill(); }
@@ -3085,16 +3321,53 @@ function drawBuilding(b){
 }
 function drawUnit(u){
   var pc = u.faction==='player', sp = SPECS[u.type];
-  var flyY = sp.flying ? -30 : 0; /* quân bay lơ lửng: bóng LỆCH hẳn khỏi thân — dấu hiệu độ cao */
-  /* bóng đổ: elip đặc lệch hướng, không blur */
+  var an = ANIM[u.type] || {};
+  /* FIX v5 — trạng thái chuyển động THẬT của khung này: tốc độ suy từ quãng đường, pha từ animDist */
+  var spdN = u.speedNow || 0;
+  var sf = clamp(spdN / Math.max(1, sp.speed), 0, 1);
+  var moving = (S.time - (u.lastMoveAt||-9)) < 0.18 && spdN > 8;
+  var cycPx = an.stride ? an.stride*2 : 48;
+  var phase = an.stride ? ((u.animDist||0) % cycPx) / cycPx : 0;
+  /* lớp procedural: nhún thân 2 nhịp/chu kỳ + lắc vai theo bước, chỉ khi đang đi */
+  var bobY = 0, roll = 0;
+  if(an.stride && sf > 0.02){
+    bobY = Math.cos(phase*12.566) * (an.bob||1.5) * sf;
+    roll = Math.sin(phase*6.283) * (an.roll||0.03) * sf;
+  }
+  /* nghiêng theo gia tốc ngang (bán quán tính của steering ra hình ảnh) */
+  var accX = (u.vx||0) - (u._pvx||0); u._pvx = u.vx||0;
+  var lean = clamp(accX * 0.0016, -0.045, 0.045) * (u.face < 0 ? -1 : 1);
+  /* lơ lửng/bay: bob theo THỜI GIAN (chúng lướt kể cả khi đứng yên) + Archon phập phồng sáng */
+  var hovY = 0;
+  if(an.hover || sp.flying) hovY = Math.sin(S.time*6.283*(an.hz||0.8) + u.id*1.71) * (an.amp||2);
+  if(an.rollA) roll += Math.sin(S.time*6.283*(an.hz||0.8) + u.id*1.71) * an.rollA;
+  var pulse = an.pulse ? 1 + 0.02*Math.sin(S.time*6.283*an.hz + u.id*1.71) : 1;
+  var flyY = (sp.flying ? -30 : 0) + hovY + (an.hover ? -6 : 0);
+  /* bóng đổ: elip đặc lệch hướng, không blur — NEO ĐẤT, không nhún theo thân (chỉ co nhẹ khi thân ở đỉnh lơ lửng) */
+  var shS = (an.hover || sp.flying) ? 1 - 0.05*(hovY/(an.amp||2.5)) : 1;
   ctx.fillStyle='rgba(0,0,0,0.36)';
-  ctx.beginPath(); ctx.ellipse(u.x + (sp.flying ? 16 : 3), u.y + sp.draw*0.34, sp.draw*0.40, sp.draw*0.15, 0, 0, 6.29); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(u.x + (sp.flying ? 16 : 3), u.y + sp.draw*0.34, sp.draw*0.40*shS, sp.draw*0.15*shS, 0, 0, 6.29); ctx.fill();
   if(S.selectedIds.indexOf(u.id)>=0){
     var pu = 0.65 + 0.35*Math.sin(S.time*5);
     ctx.strokeStyle='rgba(74,222,128,' + pu.toFixed(3) + ')'; ctx.lineWidth=2.5;
     ctx.beginPath(); ctx.ellipse(u.x, u.y + sp.draw*0.32, sp.draw*0.42, sp.draw*0.17, 0, 0, 6.29); ctx.stroke();
   }
-  if(!drawSprite(IMG[sp.spr], u.x, u.y + flyY, sp.draw, sp.draw, u.face<0)){
+  /* thân: thở nhẹ khi đứng yên (giết cảm giác tượng chết) */
+  var breathe = (!moving && !an.hover && !sp.flying) ? 1 + 0.008*Math.sin(S.time*2.513 + u.id*2.3) : 1;
+  var bodyY = u.y + flyY + bobY, drawn = false;
+  var sheet = IMGW[sp.spr];
+  if(sheet && an.frames && imgReady(sheet)){
+    /* có sheet khung hình thật: frame do QUÃNG ĐƯỜNG chọn, bob nằm trong hình — không nhún thêm */
+    var fr = moving ? Math.floor(phase * an.frames) % an.frames : 0;
+    drawn = drawFrame(sheet, fr, an.frames, u.x, u.y + flyY, sp.draw, sp.draw*breathe*pulse, u.face<0, roll*0.5 + lean);
+  } else if(an.slither){
+    drawn = drawSlither(IMG[sp.spr], u.x, bodyY, sp.draw, sp.draw, u.face<0, u.animDist||0, Math.max(sf, moving?0.7:0));
+  } else if(u.type==='tank'){
+    drawn = drawTank(u, bodyY, roll + lean) || drawSpriteT(IMG[sp.spr], u.x, bodyY, sp.draw, sp.draw, u.face<0, roll + lean);
+  } else {
+    drawn = drawSpriteT(IMG[sp.spr], u.x, bodyY, sp.draw, sp.draw*breathe*pulse, u.face<0, roll + lean);
+  }
+  if(!drawn){
     ctx.fillStyle = pc ? '#22d3ee' : '#f43f5e';
     ctx.beginPath(); ctx.arc(u.x,u.y,11,0,6.29); ctx.fill();
   }
