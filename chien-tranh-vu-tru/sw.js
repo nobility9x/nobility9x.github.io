@@ -2,7 +2,7 @@
    Chiến lược: HTML = network-first (bản đăng mới luôn tới được người đã cài),
    tài nguyên tĩnh (sprite/tiếng/icon/manifest) = cache-first.
    Đổi BUILD_ID mỗi lần phát hành để dọn cache cũ. */
-const BUILD_ID = 'ctvt-v10-1';
+const BUILD_ID = 'ctvt-v11-1';
 const CACHE = BUILD_ID;
 
 const CORE = [
@@ -24,11 +24,10 @@ const SPRITES = ['worker','marine','firebat','tank','mech','dropship','zergling'
   'marine_walk','worker_walk','zergling_walk','zealot_walk','tank_hull','tank_turret','tank_track',
   /* FIX v6: quân bay + quân/nhà mới */
   'robot','heavytank','heli','jet','gunship','bat','wasp','leviathan','scoutbot','artillery','colossus','scoutship','frigate','carrier','airfac','spire','stargate',
-  /* v10: thân không súng + lớp vũ khí xoay (KHÔNG có sunken_spine — ngòi chờ duyệt, chưa ship) */
-  'marine_body','marine_rifle','firebat_body','firebat_nozzle_r','firebat_nozzle_l','mech_body','mech_barrel_r','mech_barrel_l','robot_body','robot_barrel','heli_body','heli_chin','heavytank_hull','heavytank_turret','artillery_body','artillery_cannon','turret_base','turret_launcher'].map(function (n) { return 'assets/sprites/' + n + '.png'; });
-const SOUNDS = ['alarm','ambient','attack','build_done','error','explosion_big','explosion_small','harvest',
-  'hit_tick','move','select','shoot_cannon','shoot_flame','shoot_laser','shoot_laser2','shoot_laser3','shoot_laser4',
-  'shoot_spit','train_done','ui_click'].map(function (n) { return 'assets/sounds/' + n + '.ogg'; });
+  /* v10: thân không súng + lớp vũ khí xoay · v11: sunken_spine (ngòi Sunken — Cường duyệt 2026-10-26 23:09) */
+  'marine_body','marine_rifle','firebat_body','firebat_nozzle_r','firebat_nozzle_l','mech_body','mech_barrel_r','mech_barrel_l','robot_body','robot_barrel','heli_body','heli_chin','heavytank_hull','heavytank_turret','artillery_body','artillery_cannon','turret_base','turret_launcher','sunken_spine'].map(function (n) { return 'assets/sprites/' + n + '.png'; });
+/* v11: âm thanh TỔNG HỢP WebAudio toàn diện — không còn file tiếng nào để precache */
+const SOUNDS = [];
 const PRECACHE = CORE.concat(SPRITES, SOUNDS);
 
 self.addEventListener('install', function (e) {

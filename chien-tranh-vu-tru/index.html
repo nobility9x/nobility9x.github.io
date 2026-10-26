@@ -2648,7 +2648,7 @@ var IMGP = {};
 var TANK_PIVOT = { x: 0.469, y: 0.414 }; /* tâm tháp trong ô sprite gốc (đo từ tank.png: ~(120,106)/256) */
 /* v10: thân KHÔNG súng + lớp vũ khí xoay quanh pivot (cắt từ tranh GỐC, cùng cỡ canvas) */
 var IMGL = {};
-['marine_body','marine_rifle','firebat_body','firebat_nozzle_r','firebat_nozzle_l','mech_body','mech_barrel_r','mech_barrel_l','robot_body','robot_barrel','heli_body','heli_chin','heavytank_hull','heavytank_turret','artillery_body','artillery_cannon','turret_base','turret_launcher'].forEach(function(n){
+['marine_body','marine_rifle','firebat_body','firebat_nozzle_r','firebat_nozzle_l','mech_body','mech_barrel_r','mech_barrel_l','robot_body','robot_barrel','heli_body','heli_chin','heavytank_hull','heavytank_turret','artillery_body','artillery_cannon','turret_base','turret_launcher','sunken_spine'].forEach(function(n){
   var im = new Image(); im.src = 'assets/sprites/' + n + '.png'; IMGL[n] = im;
 });
 /* v10 HIỆU CHUẨN (step 0, đo trên tranh thật tank_turret.png bằng grounded point + PIL centroid):
@@ -2702,6 +2702,8 @@ var AIMDEF = {
   zealot:    { cls:'M', wu:0.11, pull:3, peak:8 },
   ultralisk: { cls:'M', wu:0.14, pull:3, peak:10 }
 };
+/* v11 §5.4: loại vũ khí có tiếng AIM (nạp/ngắm) — windup >= 120ms + Sunken */
+var AIM_SND = { tank: 1, heavytank: 1, artillery: 1, sunken: 1, colossus: 1, leviathan: 1 };
 var BAIMDEF = {
   turret: { cls:'A', bodyN:'turret_base', layerN:'turret_launcher', pivot:{x:0.515,y:0.210}, tips:[{x:0.292,y:0.100},{x:0.756,y:0.110}], wu:0.06, slow:4.2 },
   sunken: { cls:'N', pivot:{x:0.498,y:0.508}, frac:0.30, wu:0.10 }, /* ngòi MỚI chờ Cường duyệt hình — v10 chỉ nối THỜI GIAN + điểm sinh theo pivot */
@@ -2773,240 +2775,1127 @@ var ANIM = {
   carrier:  { hz:0.9, amp:2.2, rollA:0.020 }
 };
 
-/* ============ ÂM THANH: file OGG (xem assets/sounds/MAPPING.md) + WebAudio cho thắng/thua ============ */
-var Snd = (function(){
-  var base = {}, played = {}, lastPlay = {}, muted = false, ambientEl = null;
-  function el(name){
-    if(!base[name]){ try{ var a = new Audio('assets/sounds/' + name + '.ogg'); a.preload = 'auto'; base[name] = a; }catch(e){ return null; } }
-    return base[name];
+/* ============ v11 — ÂM THANH TỔNG HỢP TOÀN DIỆN (sound-redesign-spec.md) ============
+   Một AudioContext DUY NHẤT cho SFX + nhạc + stinger. Toàn bộ âm = tổng hợp thủ tục WebAudio
+   (KHÔNG file mẫu, KHÔNG lớp nhiễu broadband liên tục — luật cứng §0). Kiến trúc: bus phân cấp
+   (ALERT>ACK>WEAPON>IMPACT>UI/WORLD/STING, MUSIC dưới cùng + ducking) · biến thể theo TỔ HỢP LỚP
+   (cấm lặp chính xác) · mô hình khoảng cách: âm lượng + lowpass + pan. Hai thành phần gần-nhiễu
+   ⚠EAR (crunch nổ §6.3 + kích thích dây Karplus–Strong §2.1) MẶC ĐỊNH TẮT trong Snd.cfg —
+   bản osc/FM thuần là bản ship; chỉ bật khi render mẫu A/B cho Cường nghe quyết (E1). */
+var AU = (function(){
+  var ctx = null, G = null;
+  function ac(){
+    if(!ctx){ var C = window.AudioContext || window.webkitAudioContext; if(!C) return null; try{ ctx = new C(); }catch(e){ return null; } }
+    if(ctx.state === 'suspended'){ try{ ctx.resume(); }catch(e){} }
+    return ctx;
   }
-  function play(name, vol, throttleMs){
-    if(muted) return false;
-    var now = Date.now();
-    if(throttleMs && lastPlay[name] && now - lastPlay[name] < throttleMs) return false;
-    var b = el(name); if(!b) return false;
-    try{
-      lastPlay[name] = now; played[name] = (played[name]||0) + 1;
-      var a = (name==='ambient') ? b : b.cloneNode();
-      a.volume = clamp(vol==null ? 0.8 : vol, 0, 1);
-      if(name==='shoot_laser' || name==='explosion_small' || name==='shoot_flame'){ try{ a.playbackRate = 0.92 + Math.random()*0.16; }catch(e2){} }
-      var p = a.play(); if(p && p.catch) p.catch(function(){});
-      return true;
-    }catch(e){ return false; }
+  function graph(){
+    var c = ac(); if(!c) return null;
+    if(G) return G;
+    var master = c.createGain(); master.gain.value = 0.9;
+    var comp = c.createDynamicsCompressor();
+    comp.threshold.value = -12; comp.ratio.value = 4; comp.attack.value = 0.002; comp.release.value = 0.18;
+    master.connect(comp); comp.connect(c.destination);
+    var duckAll = c.createGain(); duckAll.gain.value = 1; duckAll.connect(master);
+    function bus(v){ var g = c.createGain(); g.gain.value = v; g.connect(duckAll); return g; }
+    var wpre = c.createGain(); wpre.gain.value = 0.8;
+    var wcomp = c.createDynamicsCompressor(); /* limiter mềm riêng cho họ vũ khí */
+    wcomp.threshold.value = -9; wcomp.ratio.value = 8; wcomp.attack.value = 0.001; wcomp.release.value = 0.12;
+    wpre.connect(wcomp); wcomp.connect(duckAll);
+    var mduck = c.createGain(); mduck.gain.value = 1;
+    var mbus = c.createGain(); mbus.gain.value = 0.42; mduck.connect(mbus); mbus.connect(duckAll);
+    var wduck = c.createGain(); wduck.gain.value = 1; wduck.connect(wpre);
+    var stingBus = c.createGain(); stingBus.gain.value = 1.0; stingBus.connect(master); /* sting KHÔNG qua duckAll — nó là nguồn duck các bus khác */
+    G = { master: master, duckAll: duckAll, musicDuck: mduck, weaponDuck: wduck,
+          buses: { alert: bus(1.0), ack: bus(0.9), weapon: wduck, impact: bus(0.7), ui: bus(0.55), world: bus(0.65), sting: stingBus, music: mbus } };
+    return G;
   }
-  function playAmbient(){
-    /* FIX S (phán quyết người chơi trên v3): vòng lặp ambient = ù trầm broadband liên tục
-       ("ồ ồ như rò radio, điếc cả tai") -> BỎ HẲN. Không còn lớp nhiễu/nền liên tục nào;
-       nền khi chơi = nhạc thủ tục có cao độ (Music). Tiếng nổ xa điểm xuyết theo sự kiện vẫn giữ. */
-    return false;
+  /* ducking theo §3.2 — gọi bằng giây ctx */
+  var duckTimers = {};
+  function duck(node, toDb, sec, backTau){
+    var c = ac(); if(!c || !node) return;
+    var t = c.currentTime, g = node.gain;
+    g.cancelScheduledValues(t); g.setTargetAtTime(Math.pow(10, toDb / 20), t, 0.03);
+    var key = node === (G && G.musicDuck) ? 'm' : (node === (G && G.duckAll) ? 'a' : 'w');
+    if(duckTimers[key]) clearTimeout(duckTimers[key]);
+    duckTimers[key] = setTimeout(function(){ if(ctx) g.setTargetAtTime(1, ctx.currentTime, backTau || 0.25); }, sec * 1000);
   }
-  function toggleMute(){
-    muted = !muted;
-    try{ if(ambientEl){ if(muted) ambientEl.pause(); else if(S && S.started && !S.over) ambientEl.play().catch(function(){}); } }catch(e){}
-    return muted;
-  }
-  /* ===== Âm thanh CHIẾN ĐẤU giàu biến thể (playEx) =====
-     - jitter playbackRate 0.85–1.25 + volume ±25% mỗi phát -> không phát nào giống hệt phát nào
-     - trần ~10 tiếng súng đồng thời (trận gần camera to hơn được ưu tiên), chống rè/ồn khi giao tranh lớn
-     - "lớp nền trận đánh": ≥6 phát súng trong 2s -> thỉnh thoảng điểm 1 tiếng nổ xa nhỏ (0.1–0.2), cách nhau ≥1.2s */
-  var COMBAT_NAMES = { shoot_laser:1, shoot_laser2:1, shoot_laser3:1, shoot_laser4:1, shoot_cannon:1, shoot_spit:1, shoot_flame:1, hit_tick:1 };
-  var activeCombat = 0, shotTimes = [], lastBed = 0, sctx = null;
-  function panCtx(){
-    if(!sctx){ try{ var C = window.AudioContext || window.webkitAudioContext; if(C) sctx = new C(); }catch(e){} }
-    if(sctx && sctx.state === 'suspended'){ try{ sctx.resume(); }catch(e){} }
-    return (sctx && sctx.state === 'running' && sctx.createStereoPanner) ? sctx : null;
-  }
-  function playEx(name, o){
-    o = o || {};
-    if(muted) return false;
-    var now = Date.now();
-    var thr = o.throttleMs || 0;
-    if(thr && lastPlay[name] && now - lastPlay[name] < thr) return false;
-    var combat = o.combat != null ? !!o.combat : !!COMBAT_NAMES[name];
-    var vol = o.vol == null ? 0.8 : o.vol;
-    if(combat){
-      if(activeCombat >= 10 && vol < 0.45) return false;   /* đã đủ ồn: chỉ nhường chỗ cho trận thật gần */
-      if(activeCombat >= 14) return false;
-    }
-    var b = el(name); if(!b) return false;
-    try{
-      lastPlay[name] = now; played[name] = (played[name]||0) + 1;
-      var a = b.cloneNode();
-      a.volume = clamp(combat ? vol * (0.75 + Math.random()*0.5) : vol, 0, 1);
-      try{ a.playbackRate = o.rate != null ? o.rate : (combat ? 0.85 + Math.random()*0.40 : 1); }catch(e2){}
-      var settled = false;
-      function done(){ if(!settled){ settled = true; if(combat) activeCombat = Math.max(0, activeCombat-1); } }
-      if(combat){ activeCombat++; a.addEventListener('ended', done); }
-      if(o.pan){ var pc = panCtx(); if(pc){ try{ var src = pc.createMediaElementSource(a); var pn = pc.createStereoPanner(); pn.pan.value = clamp(o.pan, -1, 1); src.connect(pn); pn.connect(pc.destination); }catch(e3){} } }
-      var p = a.play(); if(p && p.catch) p.catch(done);
-      if(combat){
-        shotTimes.push(now); shotTimes = shotTimes.filter(function(t){ return now - t < 2000; });
-        if(shotTimes.length >= 6 && now - lastBed >= 1200){
-          lastBed = now;
-          setTimeout(function(){ playEx('explosion_small', { vol: 0.10 + Math.random()*0.10, rate: 0.7 + Math.random()*0.2 }); }, 40);
-        }
-      }
-      return true;
-    }catch(e){ return false; }
-  }
-  return { play: play, playEx: playEx, playAmbient: playAmbient, toggleMute: toggleMute,
-           state: function(){ return { muted: muted, played: played, activeCombat: activeCombat, recentShots: shotTimes.length }; } };
+  return { ac: ac, graph: graph, duck: duck, get ctx(){ return ctx; } };
 })();
-/* beep WebAudio cũ — chỉ dùng cho nhạc thắng/thua (pack không có jingle) */
-var AC = null, lastBeep = 0;
-function beep(freq, dur, type, delay){
-  try{
-    var now = Date.now(); if(!delay && now-lastBeep < 45) return; lastBeep = now;
-    if(!AC){ var Ctx = window.AudioContext || window.webkitAudioContext; if(!Ctx) return; AC = new Ctx(); }
-    if(AC.state === 'suspended') AC.resume();
-    var t0 = AC.currentTime + (delay||0);
-    var o = AC.createOscillator(), g = AC.createGain();
-    o.type = type||'triangle'; o.frequency.value = freq||440;
-    g.gain.setValueAtTime(0.06, t0);
-    g.gain.exponentialRampToValueAtTime(0.001, t0 + (dur||0.12));
-    o.connect(g); g.connect(AC.destination); o.start(t0); o.stop(t0 + (dur||0.12));
-  }catch(e){}
+AU._oscs = new Set(); AU.curVoice = null; /* v11 QA [E]: registry osc theo giọng — cướp giọng thì stop thật (§9.4) */
+
+/* ---------- tiện ích tổng hợp (dùng được cả ctx thật lẫn OfflineAudioContext) ---------- */
+function db2lin(db){ return Math.pow(10, db / 20); }
+function auClamp(v, a, b){ return v < a ? a : (v > b ? b : v); }
+function auOsc(c, type, f){ var o = c.createOscillator(); o.type = type; o.frequency.value = f; o.__scope = (typeof AU !== 'undefined' && AU.scope) || 'sfx';
+  if(typeof AU !== 'undefined' && AU._oscs){ o.__voice = AU.curVoice || null; AU._oscs.add(o); o.addEventListener('ended', function(){ AU._oscs.delete(o); }); }
+  return o; }
+function auGain(c, v){ var g = c.createGain(); g.gain.value = v == null ? 1 : v; return g; }
+function auEnv(g, t, peak, a, d){ /* công kích a giây -> đỉnh -> tắt dần mũ trong d giây */
+  var gn = g.gain; gn.setValueAtTime(0.0001, t);
+  gn.exponentialRampToValueAtTime(Math.max(0.0002, peak), t + Math.max(0.002, a));
+  gn.exponentialRampToValueAtTime(0.0001, t + a + d);
 }
-function jingle(win){
-  if(Snd.state().muted) return;
-  if(win){ [523,659,784,1046].forEach(function(f,i){ beep(f, 0.16, 'triangle', i*0.15); }); }
-  else { [280,200,150].forEach(function(f,i){ beep(f, 0.22, 'triangle', i*0.25); }); }
+function auFilter(c, type, f, q){ var x = c.createBiquadFilter(); x.type = type; x.frequency.value = f; if(q != null) x.Q.value = q; return x; }
+/* chirp có cao độ: quét mũ f0->f1 */
+function hChirp(c, out, t, o){
+  var _j = Snd.jit(0.02); o = Object.assign({}, o, { f0: o.f0 * _j, f1: o.f1 * _j });
+  var os = auOsc(c, o.type || 'sine', o.f0), g = auGain(c, 0);
+  os.frequency.setValueAtTime(Math.max(20, o.f0), t);
+  os.frequency.exponentialRampToValueAtTime(Math.max(20, o.f1), t + o.dur);
+  auEnv(g, t, o.vol, o.a || 0.004, o.dur);
+  os.connect(g); g.connect(out); os.start(t); os.stop(t + o.dur + 0.03);
 }
-/* ================= FIX L — NHẠC NỀN THỦ TỤC (WebAudio, không file nhạc) =================
-   Lớp NỀN luôn chạy trong trận: đệm tối 2-3 dao động lệch tông trên hợp âm thứ qua lọc thông thấp,
-   tiến triển i–VI–III–VII (Am–F–C–G), nhịp bass sâu đầu ô nhịp. FIX S: KHÔNG lớp nhiễu/gió —
-   mọi lớp đều CÓ CAO ĐỘ và mềm; quy tắc cứng: không kết cấu nhiễu broadband trong âm thanh game.
-   GIAI ĐIỆU THƯA: nốt pluck ngẫu nhiên có hạt giống từ thang thứ, nhiều khoảng nghỉ.
-   Lớp CĂNG THẲNG: đếm phát súng gần đây (Snd.state().recentShots — cùng bộ đếm của "lớp nền trận đánh"):
-   >= 6 phát/2s thì mờ vào (dây cao nghịch tai + ticks + nhịp tim), rút sau ~9s yên. Đè nhỏ khi còi báo động căn cứ.
-   Sắc tộc: Terran công nghiệp (đệm thấp, ticks kim loại) · Zerg hữu cơ (phồng chậm, nhịp tim, blip thấp) ·
-   Protoss sáng (hài cao, quãng 5 lấp lánh, attack chậm). Âm lượng luôn DƯỚI SFX (master 0.5, đệm rất nhỏ),
-   tôn trọng nút tắt tiếng, dừng khi kết trận. Lập lịch nhìn-trước (lookahead) — không trôi, không khe im. */
-var Music = (function(){
-  var CH = 8; /* giây cho mỗi hợp âm = 2 ô nhịp 4s */
-  var PROG = [ [110.00, 164.81, 261.63], [87.31, 174.61, 220.00], [130.81, 196.00, 261.63], [98.00, 146.83, 246.94] ]; /* Am · F · C · G */
-  var SCALE = [0, 3, 5, 7, 10, 12, 15];
-  var PAL = {
-    terran:  { wave:'sawtooth', cut:620,  pluck:0.55, bright:1.0,  atk:1.4 },
-    zerg:    { wave:'triangle', cut:470,  pluck:0.35, bright:0.92, atk:2.2 },
-    protoss: { wave:'triangle', cut:1250, pluck:0.65, bright:1.3,  atk:2.6 }
+/* crack: saw rớt cao độ qua lowpass quét (transient súng/pháo) */
+function hCrack(c, out, t, o){
+  var os = auOsc(c, 'sawtooth', o.f0), g = auGain(c, 0);
+  os.frequency.setValueAtTime(o.f0, t); os.frequency.exponentialRampToValueAtTime(Math.max(30, o.f1), t + o.dur);
+  var f = auFilter(c, 'lowpass', o.lp || 3200, 0.5); f.frequency.setValueAtTime(o.lp || 3200, t);
+  f.frequency.exponentialRampToValueAtTime(Math.max(80, (o.lp || 3200) * 0.25), t + o.dur);
+  auEnv(g, t, o.vol, 0.002, o.dur);
+  os.connect(f); f.connect(g); g.connect(out); os.start(t); os.stop(t + o.dur + 0.03);
+}
+/* thân saw xếp chồng qua bandpass (súng cơ khí/năng lượng) */
+function hBody(c, out, t, o){
+  var bp = auFilter(c, 'bandpass', o.bp, o.q || 0.9), g = auGain(c, 0);
+  bp.connect(g); g.connect(out); auEnv(g, t, o.vol, o.a || 0.004, o.dur);
+  [1, 1.006, 0.5].forEach(function(m, i){
+    if(i === 2 && !o.sub8) return;
+    var os = auOsc(c, o.type || 'sawtooth', o.f * m);
+    if(o.f1) { os.frequency.setValueAtTime(o.f * m, t); os.frequency.exponentialRampToValueAtTime(Math.max(24, o.f1 * m), t + o.dur); }
+    var og = auGain(c, i === 0 ? 0.62 : (i === 1 ? 0.38 : 0.3));
+    os.connect(og); og.connect(bp); os.start(t); os.stop(t + o.dur + 0.03);
+  });
+}
+/* thụp trầm sine rớt + "bóng hài" 2x/3x để loa điện thoại vẫn cảm được sức nặng (L4) */
+function hSub(c, out, t, o){
+  var _j = Snd.jit(0.012); o = Object.assign({}, o, { f0: o.f0 * _j, f1: o.f1 * _j });
+  var os = auOsc(c, 'sine', o.f0), g = auGain(c, 0);
+  os.frequency.setValueAtTime(o.f0, t); os.frequency.exponentialRampToValueAtTime(Math.max(24, o.f1), t + o.dur);
+  auEnv(g, t, o.vol, 0.004, o.dur);
+  os.connect(g); g.connect(out); os.start(t); os.stop(t + o.dur + 0.03);
+  if(o.ghost !== 0){
+    [2, 3].forEach(function(m, i){
+      var gs = auOsc(c, 'sine', o.f1 * m), gg = auGain(c, 0);
+      gs.frequency.setValueAtTime(o.f0 * m, t); gs.frequency.exponentialRampToValueAtTime(Math.max(30, o.f1 * m), t + o.dur * 0.8);
+      auEnv(gg, t, o.vol * (i ? 0.16 : 0.32), 0.004, o.dur * 0.8);
+      gs.connect(gg); gg.connect(out); gs.start(t); gs.stop(t + o.dur + 0.03);
+    });
+  }
+}
+/* FM 2 toán tử: chuông/zap/gầm tuỳ tỉ lệ + quét carrier */
+function hFM(c, out, t, o){
+  var _j = Snd.jit(0.015); o = Object.assign({}, o, { car: o.car * _j, carEnd: o.carEnd ? o.carEnd * _j : o.carEnd });
+  var car = auOsc(c, o.type || 'sine', o.car), mod = auOsc(c, 'sine', o.car * o.ratio);
+  var mg = auGain(c, o.idx * o.car);
+  if(o.idxEnd != null){ mg.gain.setValueAtTime(o.idx * o.car, t); mg.gain.exponentialRampToValueAtTime(Math.max(1, o.idxEnd * o.car), t + o.dur); }
+  if(o.carEnd){ car.frequency.setValueAtTime(o.car, t); car.frequency.exponentialRampToValueAtTime(Math.max(24, o.carEnd), t + o.dur); }
+  var g = auGain(c, 0); auEnv(g, t, o.vol, o.a || 0.003, o.dur);
+  mod.connect(mg); mg.connect(car.frequency); car.connect(g); g.connect(out);
+  mod.start(t); mod.stop(t + o.dur + 0.03); car.start(t); car.stop(t + o.dur + 0.03);
+}
+/* gõ kim loại có cao độ — MẶC ĐỊNH = FM hài lẻ (osc-only); cfg.ks=true mới dùng dây Karplus–Strong */
+var KS_CACHE = {};
+function ksBuffer(c, freq, dur, noiseExc){
+  var sr = c.sampleRate, key = freq + '|' + dur + '|' + (noiseExc ? 'n' : 'p');
+  if(KS_CACHE[key]) return KS_CACHE[key];
+  var len = Math.max(1, Math.round(sr * dur)), buf = c.createBuffer(1, len, sr), d = buf.getChannelData(0);
+  var N = Math.max(2, Math.round(sr / freq)), i;
+  for(i = 0; i < N && i < len; i++) d[i] = noiseExc ? (Math.random() * 2 - 1) : Math.sin(i / N * 6.283 * 2) * (1 - i / N); /* ⚠EAR: xung ≤5ms trong dây */
+  var prev = 0;
+  for(i = N; i < len; i++){ var v = 0.996 * 0.5 * (d[i - N] + prev); prev = d[i - N]; d[i] = v; }
+  KS_CACHE[key] = buf; return buf;
+}
+function hMetal(c, out, t, o){
+  if(Snd.cfg.ks){
+    var src = c.createBufferSource(); src.buffer = ksBuffer(c, o.f, o.dur || 0.3, true); Snd._noiseN++;
+    var g0 = auGain(c, 0); auEnv(g0, t, o.vol, 0.002, (o.dur || 0.3) * 0.9);
+    src.connect(g0); g0.connect(out); src.start(t); return;
+  }
+  o = Object.assign({}, o, { f: o.f * Snd.jit(0.02) });
+  [1, 2.76].forEach(function(m, i){
+    var os = auOsc(c, 'sine', o.f * m), g = auGain(c, 0);
+    auEnv(g, t, o.vol * (i === 0 ? 1 : (i === 1 ? 0.45 : 0.22)), 0.002, (o.dur || 0.3) * (i === 0 ? 1 : 0.55));
+    os.connect(g); g.connect(out); os.start(t); os.stop(t + (o.dur || 0.3) + 0.03);
+  });
+}
+/* ratchet/servo: chuỗi xung vuông qua bandpass, cao độ trượt */
+function hRatchet(c, out, t, o){
+  var bp = auFilter(c, 'bandpass', o.bp || 2400, 1.1), g = auGain(c, 0);
+  bp.connect(g); g.connect(out);
+  var n = o.n || 2, gap = o.gap || 0.03;
+  for(var i = 0; i < n; i++){
+    var tt = t + i * gap, os = auOsc(c, 'square', (o.f0 || 180) * (o.slide ? (1 + o.slide * i / Math.max(1, n - 1)) : 1));
+    var og = auGain(c, 0); auEnv(og, tt, o.vol, 0.002, o.pw || 0.016);
+    os.connect(og); og.connect(bp); os.start(tt); os.stop(tt + 0.06);
+  }
+  auEnv(g, t, 1, 0.002, n * gap + 0.05);
+}
+/* formant hữu cơ: nguồn (sine/saw) quét cao độ -> 2 bandpass song song quét tần (giọng sinh vật) */
+function hFormant(c, out, t, o){
+  var _j = Snd.jit(0.02); o = Object.assign({}, o, { f0: o.f0 * _j, f1: o.f1 * _j });
+  var src = auOsc(c, o.type || 'sine', o.f0), g = auGain(c, 0);
+  src.frequency.setValueAtTime(Math.max(24, o.f0), t);
+  src.frequency.exponentialRampToValueAtTime(Math.max(24, o.f1), t + o.dur);
+  if(o.vib){ var lfo = auOsc(c, 'sine', o.vib), lg = auGain(c, o.f0 * 0.03); lfo.connect(lg); lg.connect(src.frequency); lfo.start(t); lfo.stop(t + o.dur + 0.03); }
+  auEnv(g, t, o.vol, o.a || 0.02, o.dur);
+  src.connect(g);
+  (o.fms || [{ a: 800, b: 400, q: 2, g: 1 }]).forEach(function(fm){
+    var bp = auFilter(c, 'bandpass', fm.a, fm.q || 2);
+    bp.frequency.setValueAtTime(fm.a, t); bp.frequency.exponentialRampToValueAtTime(Math.max(40, fm.b), t + o.dur);
+    var fg = auGain(c, fm.g == null ? 0.8 : fm.g);
+    g.connect(bp); bp.connect(fg); fg.connect(out);
+  });
+  var dry = auGain(c, o.dry == null ? 0.35 : o.dry); g.connect(dry); dry.connect(out);
+  src.start(t); src.stop(t + o.dur + 0.03);
+}
+/* đuôi không gian: delay feedback ngắn có lowpass trong vòng (thay reverb — rẻ CPU) */
+function hTail(c, out, t, o){
+  var dl = c.createDelay(0.6); dl.delayTime.value = o.dt || 0.15;
+  var fb = auGain(c, o.fb || 0.3), lp = auFilter(c, 'lowpass', o.lp || 2600, 0.4);
+  var wet = auGain(c, 0); auEnv(wet, t, o.vol, 0.004, o.dur || 0.5);
+  out.connect(dl); dl.connect(lp); lp.connect(fb); fb.connect(dl); dl.connect(wet); wet.connect(out);
+  /* wet quay lại out (điểm trộn của giọng) — vòng kín an toàn vì fb<1 và wet có envelope tắt hẳn */
+}
+/* ⚠EAR E1: xung crunch lọc băng 1–3kHz ≤60ms — CHỈ chạy khi Snd.cfg.crunch=true (mặc định TẮT) */
+function hCrunch(c, out, t, o){
+  var sr = c.sampleRate, len = Math.round(sr * 0.06), buf = c.createBuffer(1, len, sr), d = buf.getChannelData(0);
+  for(var i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / len);
+  Snd._noiseN++;
+  var src = c.createBufferSource(); src.buffer = buf;
+  var bp = auFilter(c, 'bandpass', 1000 + Math.random() * 2000, 0.8), g = auGain(c, 0);
+  auEnv(g, t, o.vol, 0.002, 0.06);
+  src.connect(bp); bp.connect(g); g.connect(out); src.start(t);
+}
+
+/* ---------- động cơ sự kiện: bus + trần giọng + biến thể tổ hợp lớp ---------- */
+var Snd = (function(){
+  var muted = false, played = {}, varHist = {}, lastCombo = {}, lastEvAt = {};
+  var voices = [], maxVoices = 0, maxNodes = 0, shotTimes = [], ackBlocked = 0, ackTotal = 0;
+  var cfg = { crunch: false, ks: false };
+  var noiseN = 0;
+  var CAPS = { alert: 2, ack: 2, weaponNear: 10, weaponFar: 4, impact: 6, ui: 3, world: 6, sting: 4, aimq: 4 }; /* v11 QA [E]: trần giọng siết nhẹ để đỉnh osc đồng thời <= 60 ở pha clash 30v30 */
+  function nowS(){ var c = AU.ctx; return c ? c.currentTime : performance.now() / 1000; }
+  function combo(key, pools){
+    var last = lastCombo[key], sig = '', pick = {}, tries = 0, k;
+    do { sig = ''; for(k in pools){ pick[k] = (Math.random() * pools[k]) | 0; sig += k + pick[k] + '.'; } tries++; } while(sig === last && tries < 5);
+    lastCombo[key] = sig;
+    var h = varHist[key] || (varHist[key] = []); h.push(sig); if(h.length > 80) h.shift();
+    return pick;
+  }
+  function jit(pct){ return 1 + (Math.random() * 2 - 1) * pct; }
+  function jitV(){ return 1 + (Math.random() * 2 - 1) * 0.15; }
+  /* mô hình khoảng cách §3.3: vol giữ đường cong cũ, thêm lowpass xa + pan theo vị trí */
+  function distModel(x, y){
+    if(x == null || typeof cam === 'undefined') return { vol: 1, lp: 9000, pan: 0, far: false };
+    var cx = cam.x + viewW() / 2, cy = cam.y + gViewH() / 2;
+    var d = Math.hypot(x - cx, y - cy);
+    var vol = auClamp(1.12 - d / 950, 0.30, 1);
+    var lp = d <= 450 ? 9000 : (d <= 1100 ? 9000 - (d - 450) / 650 * 6800 : 900);
+    var pan = auClamp((x - cx) / Math.max(1, viewW() / 2), -0.7, 0.7);
+    return { vol: vol, lp: lp, pan: pan, far: d > 1100 };
+  }
+  function voiceCount(cls){ var n = 0; for(var i = 0; i < voices.length; i++) if(voices[i].cls === cls) n++; return n; }
+  function beginVoice(busName, cls, dm, estNodes){
+    var G = AU.graph(); if(!G) return null;
+    var c = AU.ctx, cap = CAPS[cls] == null ? 99 : CAPS[cls];
+    if(voiceCount(cls) >= cap){
+      if(cls === 'ack' || cls === 'ui'){ return null; } /* chặn mới: facade ack tự đếm ackBlocked qua _ackCount, tránh đếm trùng */
+      /* cướp giọng yếu nhất/cũ nhất cùng lớp */
+      var victim = null;
+      for(var i = 0; i < voices.length; i++){ var v = voices[i]; if(v.cls !== cls) continue; if(!victim || v.gain < victim.gain || (v.gain === victim.gain && v.t0 < victim.t0)) victim = v; }
+      if(victim) endVoice(victim, true);
+      if(voiceCount(cls) >= cap) return null;
+    }
+    /* ngân sách node CỨNG §9.4: tổng est các giọng đang sống + giọng mới <= 56 osc (alert/sting được vượt — hiếm và ngắn) */
+    if(cls !== 'alert' && cls !== 'sting' && cls !== 'ack' && cls !== 'ui'){ /* lớp ưu tiên (báo động/ack/UI/sting) không bao giờ bị ngân sách node nuốt — phản hồi người chơi phải luôn có tiếng */
+      var totNow = 0; for(var k = 0; k < voices.length; k++) totNow += voices[k].est;
+      if(totNow + (estNodes || 8) > 36) return null;
+    }
+    var inG = auGain(c, 1), lp = auFilter(c, 'lowpass', dm.lp, 0.4), pn = null;
+    inG.connect(lp);
+    if(c.createStereoPanner && dm.pan){ pn = c.createStereoPanner(); pn.pan.value = dm.pan; lp.connect(pn); pn.connect(G.buses[busName]); }
+    else lp.connect(G.buses[busName]);
+    var v = { cls: cls, bus: busName, in: inG, gain: 0, t0: c.currentTime, est: estNodes || 8, dead: false };
+    voices.push(v);
+    if(voices.length > maxVoices) maxVoices = voices.length;
+    var tot = 14; for(var j = 0; j < voices.length; j++) tot += voices[j].est;
+    if(tot > maxNodes) maxNodes = tot;
+    return v;
+  }
+  function endVoice(v, fade){
+    if(!v || v.dead) return; v.dead = true;
+    var ix = voices.indexOf(v); if(ix >= 0) voices.splice(ix, 1);
+    try{ var t = AU.ctx.currentTime; v.in.gain.cancelScheduledValues(t);
+      if(fade){ v.in.gain.setTargetAtTime(0.0001, t, 0.03);
+        setTimeout(function(){ /* cướp giọng = DỪNG THẬT osc của giọng đó (ngân sách §9.4 tính osc đang sống) */
+          if(AU._oscs) AU._oscs.forEach(function(o){ if(o.__voice === v){ try{ o.stop(); }catch(e){} } });
+          try{ v.in.disconnect(); }catch(e){}
+        }, 60);
+      } else v.in.disconnect(); }catch(e){}
+  }
+  function scheduleEnd(v, dur){ setTimeout(function(){ endVoice(v, false); }, (dur + (v.cls === 'ack' ? 0.1 : 0.12)) * 1000); } /* đuôi giữ giọng 0.12s sau khi tiếng đã câm hẳn — đủ cho env/stop-pad, không giữ ngân sách node quá lâu */
+  /* phát một sự kiện: id -> EV[id]; opts: {x,y,vol,race,arg,throttleMs,throttleKey,barrel,t0} */
+  function ev(id, opts){
+    opts = opts || {};
+    var def = EVENTS[id]; if(!def) return false;
+    if(muted) return false;
+    var c = AU.ac(); if(!c) return false;
+    var now = Date.now();
+    var tk = opts.throttleKey || id;
+    if(opts.throttleMs && lastEvAt[tk] && now - lastEvAt[tk] < opts.throttleMs) return false;
+    if(def.throttleMs && lastEvAt[tk] && now - lastEvAt[tk] < def.throttleMs) return false;
+    lastEvAt[tk] = now;
+    var dm = distModel(opts.x, opts.y);
+    if(opts.panAdd) dm.pan = auClamp(dm.pan + opts.panAdd, -0.85, 0.85); /* nòng luân phiên mech/robot */
+    var cls = def.cls || def.bus;
+    if(def.bus === 'weapon' && cls === 'weapon') cls = dm.far ? 'weaponFar' : 'weaponNear'; /* cls riêng (vd aimq) thắng */
+    var v = beginVoice(def.bus, cls, dm, def.nodes);
+    if(!v) return false;
+    var t0 = opts.t0 != null ? opts.t0 : c.currentTime + 0.001;
+    var vol = (opts.vol == null ? 1 : opts.vol) * dm.vol * (def.trim || 1);
+    v.gain = vol;
+    v.in.gain.value = vol;
+    played[id] = (played[id] || 0) + 1;
+    if(opts.legacy) played[opts.legacy] = (played[opts.legacy] || 0) + 1; /* cầu nối tên cũ cho test/khớp sổ played[] */
+    if(def.bus === 'alert') AU.duck(AU.graph().musicDuck, -8, 2.5, 0.25), AU.duck(AU.graph().weaponDuck, -2, 2.5, 0.25);
+    if(def.bus === 'sting') AU.duck(AU.graph().duckAll, -6, Math.min(2.6, def.dur || 1.2), 0.3);
+    AU.curVoice = v;
+    try{ def.fn(c, v.in, t0, opts, v); }catch(e){}
+    AU.curVoice = null;
+    scheduleEnd(v, Math.max(0, t0 - c.currentTime) + (def.hold != null ? def.hold : (def.dur || 0.3))); /* hold = độ dài NGHE THẬT (ngắn hơn dur của các tiếng spam) — nhả ngân sách node đúng nhịp */
+    return true;
+  }
+  /* biến thể tổ hợp lớp dùng chung cho công thức (trả về pick + áp jitter) */
+  function pick(key, pools){ return combo(key, pools); }
+  return {
+    cfg: cfg,
+    get _noiseN(){ return noiseN; }, set _noiseN(v){ noiseN = v; },
+    ev: ev, pick: pick, jit: jit, jitV: jitV, distModel: distModel,
+    /* nhịp giao tranh cho NHẠC (tension): đếm MỌI strike của host-sim + sự kiện shot phía khách —
+       KHÔNG lệ thuộc onScreen (tiếng bắn chỉ phát khi trong khung hình, nhưng giao tranh ngoài
+       khung vẫn là giao tranh; đây là cách bản cũ đạt tension ở test L3). */
+    noteShot: function(){ var nw = Date.now(); shotTimes.push(nw); shotTimes = shotTimes.filter(function(tt){ return nw - tt < 2000; }); },
+    state: function(){
+      var now = Date.now(); shotTimes = shotTimes.filter(function(tt){ return now - tt < 2000; });
+      return { muted: muted, played: played, varHist: varHist, activeCombat: voiceCount('weaponNear') + voiceCount('weaponFar'),
+               recentShots: shotTimes.length, voices: voices.length, maxVoices: maxVoices, maxNodes: maxNodes,
+               ackBlocked: ackBlocked, ackTotal: ackTotal, noiseSources: noiseN };
+    },
+    toggleMute: function(){
+      muted = !muted;
+      var G = AU.graph(); if(G) G.master.gain.value = muted ? 0 : 0.9;
+      return muted;
+    },
+    _ackCount: function(ok){ ackTotal++; if(!ok) ackBlocked++; }
   };
-  var ctx = null, master = null, padBus = null, tensBus = null, timer = null;
-  var playing = false, race = 'terran', nextT = 0, chordI = 0, tension = 0, lastCombatT = -99, duckUntil = 0;
-  function clamp2(v, a, b){ return v < a ? a : (v > b ? b : v); }
-  function rng(seed){ var s = (seed >>> 0) || 1; return function(){ s = (s * 1664525 + 1013904223) >>> 0; return s / 4294967296; }; }
-  function env(g, t, atk, peak, dur){
-    g.gain.setValueAtTime(0.0001, t);
-    g.gain.exponentialRampToValueAtTime(peak, t + atk);
-    g.gain.setValueAtTime(peak, t + Math.max(atk, dur - 1.8));
-    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+})();
+
+/* ---------- MẪU SỰ KIỆN (điền vào EVENTS ở phần công thức dưới) ---------- */
+var EVENTS = {};
+function defEv(id, bus, dur, nodes, fn, extra){
+  var d = { bus: bus, cls: bus, dur: dur, nodes: nodes, fn: fn };
+  if(extra) for(var k in extra) d[k] = extra[k];
+  EVENTS[id] = d;
+}
+
+/* ================= §5 VŨ KHÍ — mỗi vũ khí một công thức lớp riêng ================= */
+function wEv(type, dur, nodes, fn, extra){ defEv('w:' + type, 'weapon', dur, nodes, fn, extra); }
+function aimEv(type, fn){ defEv('aim:' + type, 'weapon', 0.3, 5, fn, { cls: 'aimq' }); }
+
+/* --- Terran --- */
+wEv('marine', 0.4, 7, function(c, out, t, o){ /* hold 0.2: tiếng thật ~0.15s */
+  var R = (o.rate || 1) * Snd.jit(0.05), V = Snd.jitV(), pk = Snd.pick('w:marine', { T: 3, B: 3, M: 2 });
+  hCrack(c, out, t, { f0: [1430, 1560, 1320][pk.T] * R, f1: 380 * R, dur: 0.05, vol: 0.72 * V }); /* f1 380: quét không chìm xuống dưới sàn loa */
+  hBody(c, out, t, { f: 220 * R, bp: [1180, 1080, 1280][pk.B] * R, dur: 0.09, vol: 0.35 * V });
+  hRatchet(c, out, t + 0.025 + (Math.random() * 0.008), { n: 1, f0: 200, bp: 2800, vol: 0.12 * V, pw: 0.012 });
+  hRatchet(c, out, t + 0.055, { n: 1, f0: 170, bp: 2300, vol: 0.11 * V, pw: 0.012 });
+  if(pk.M === 1) hRatchet(c, out, t + 0.085, { n: 1, f0: 150, bp: 1900, vol: 0.05 * V, pw: 0.010 });
+}, { hold: 0.2 });
+wEv('firebat', 0.45, 6, function(c, out, t, o){
+  var R = (o.rate || 1) * Snd.jit(0.04), V = Snd.jitV(), pk = Snd.pick('w:firebat', { B: 3 });
+  hChirp(c, out, t, { type: 'sine', f0: 500 * R, f1: 120 * R, dur: 0.10, vol: 0.30 * V });
+  hFormant(c, out, t, { type: 'sawtooth', f0: 90 * R, f1: 88 * R, dur: 0.35, vol: 0.42 * V, a: 0.03,
+    fms: [{ a: [300, 340, 280][pk.B], b: 1100, q: 1.6, g: 1 }, { a: 700, b: 1700, q: 2.4, g: 0.5 }], dry: 0.15 });
+  hFormant(c, out, t + 0.13, { type: 'sawtooth', f0: 84 * R, f1: 80 * R, dur: 0.18, vol: 0.16 * V, a: 0.04,
+    fms: [{ a: 500, b: 900, q: 1.8, g: 1 }], dry: 0.1 });
+});
+wEv('mech', 0.42, 8, function(c, out, t, o){
+  var R = (o.rate || 1) * Snd.jit(0.05), V = Snd.jitV(), pk = Snd.pick('w:mech', { T: 3, B: 2, M: 2 });
+  hCrack(c, out, t, { f0: [1150, 1240, 1060][pk.T] * R, f1: 240 * R, dur: 0.055, vol: 0.52 * V });
+  hBody(c, out, t, { f: 196 * R, bp: [650, 590][pk.B] * R, dur: 0.10, vol: 0.36 * V });
+  hSub(c, out, t, { f0: 95, f1: 70, dur: 0.08, vol: 0.16 * V, ghost: 0 });
+  hRatchet(c, out, t + 0.03, { n: pk.M + 2, gap: 0.028, f0: 190, bp: 2300, vol: 0.09 * V, pw: 0.012 });
+});
+wEv('robot', 0.42, 9, function(c, out, t, o){
+  var R = (o.rate || 1) * Snd.jit(0.05), V = Snd.jitV(), pk = Snd.pick('w:robot', { T: 3, B: 3, M: 2 });
+  hCrack(c, out, t, { f0: [1250, 1360, 1160][pk.T] * R, f1: 260 * R, dur: 0.05, vol: 0.48 * V });
+  hBody(c, out, t, { f: 233 * R, bp: [980, 900, 1060][pk.B] * R, dur: 0.09, vol: 0.30 * V });
+  hFM(c, out, t, { car: 1500 * R, carEnd: 650 * R, ratio: 3, idx: 1.6, idxEnd: 0.2, dur: 0.11, vol: 0.16 * V });
+  hRatchet(c, out, t + 0.04, { n: 1, f0: 420, slide: 0.5, bp: 2800, vol: 0.08 * V, pw: 0.03 });
+});
+function tankLayers(c, out, t, o, heavy){
+  var R = (o.rate || 1) * Snd.jit(0.03), V = Snd.jitV(), pk = Snd.pick('w:tankFam', { T: 2, B: 3, M: 2, S: 3 });
+  hCrack(c, out, t, { f0: [900, 790][pk.T] * R, f1: 150 * R, dur: 0.07, vol: 0.82 * V, lp: 3400 });
+  hMetal(c, out, t, { f: [980, 1240][pk.M] * R, dur: 0.22, vol: 0.46 * V }); /* kênh kim loại — phần nghe được qua loa điện thoại (tần pool theo biến thể) */
+  hBody(c, out, t, { f: 110 * R, bp: [560, 610, 520][pk.B] * R, q: 0.5, dur: 0.16, vol: 0.38 * V, sub8: 1 });
+  hBody(c, out, t, { f: 95 * R, bp: [345, 430, 535][pk.B] * R, q: 0.8, dur: 0.38, vol: 0.30 * V }); /* thân cơ khí bền 400Hz — qua được loa điện thoại */
+  hSub(c, out, t, { f0: (heavy ? [100, 84, 118] : [120, 98, 147])[pk.S] * R, f1: heavy ? 30 : 38, dur: heavy ? 0.6 : 0.40, vol: 0.44 * V }); /* f0 pool: lớp trội phải biến thiên thì phổ mới phân biệt được */
+  if(heavy) hFM(c, out, t, { car: 110, ratio: 1.5, idx: 2.2, idxEnd: 0.3, dur: 0.3, vol: 0.18 * V });
+  hRatchet(c, out, t + 0.18, { n: heavy ? 3 : 2, gap: 0.05, f0: 140, bp: 1700, vol: 0.10 * V, pw: 0.02 });
+  hTail(c, out, t, { dt: heavy ? 0.19 : 0.14, fb: 0.26, vol: 0.10 * V, dur: 0.5, lp: 1800 });
+}
+wEv('tank', 0.8, 9, function(c, out, t, o){ tankLayers(c, out, t, o, false); }, { hold: 0.55 });
+wEv('heavytank', 1.0, 10, function(c, out, t, o){ tankLayers(c, out, t, o, true); });
+wEv('artillery', 1.1, 10, function(c, out, t, o){
+  tankLayers(c, out, t, o, true);
+  hTail(c, out, t, { dt: 0.26, fb: 0.3, vol: 0.08 * Snd.jitV(), dur: 0.8, lp: 1500 });
+});
+wEv('turret', 0.5, 6, function(c, out, t, o){
+  var R = (o.rate || 1) * Snd.jit(0.04), V = Snd.jitV(), pk = Snd.pick('w:turret', { T: 3, B: 2 });
+  hChirp(c, out, t, { type: 'sawtooth', f0: [400, 430, 370][pk.T] * R, f1: 2400 * R, dur: 0.12, vol: 0.20 * V });
+  hFM(c, out, t, { car: 1900 * R, carEnd: 900 * R, ratio: 2, idx: 1.2, idxEnd: 0.2, dur: 0.1, vol: 0.14 * V });
+  hChirp(c, out, t + 0.2, { type: 'sine', f0: 1800 * R, f1: 700 * R, dur: 0.16, vol: 0.07 * V });
+});
+wEv('heli', 0.4, 7, function(c, out, t, o){
+  var R = (o.rate || 1) * Snd.jit(0.05), V = Snd.jitV(), pk = Snd.pick('w:heli', { T: 2, B: 3 });
+  for(var i = 0; i < 3; i++){
+    var tt = t + i * 0.055, rr = R * (1 - i * 0.02);
+    hCrack(c, out, tt, { f0: [1300, 1400][pk.T] * rr, f1: 300 * rr, dur: 0.04, vol: 0.34 * V });
+    hBody(c, out, tt, { f: 220 * rr, bp: [880, 950, 810][pk.B] * rr, dur: 0.06, vol: 0.20 * V });
   }
-  function thump(c, dest, t, fr, vol){
-    var o = c.createOscillator(); o.type = 'sine';
-    o.frequency.setValueAtTime(fr * 1.7, t); o.frequency.exponentialRampToValueAtTime(fr, t + 0.16);
-    var g = c.createGain(); g.gain.setValueAtTime(0.0001, t);
-    g.gain.exponentialRampToValueAtTime(vol, t + 0.03); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.5);
-    o.connect(g); g.connect(dest); o.start(t); o.stop(t + 0.55);
+  hRatchet(c, out, t + 0.19, { n: 2, gap: 0.036, f0: 300, bp: 2600, vol: 0.05 * V, pw: 0.03 }); /* tick cánh quạt có cao độ — chỉ trong phát bắn */
+});
+wEv('jet', 0.4, 6, function(c, out, t, o){
+  var R = (o.rate || 1) * Snd.jit(0.05), V = Snd.jitV(), pk = Snd.pick('w:jet', { T: 2, B: 2 });
+  for(var i = 0; i < 2; i++){
+    var tt = t + i * 0.07, rr = R * (1 - i * 0.08); /* Doppler: tông tổng thể tụt cuối phát */
+    hCrack(c, out, tt, { f0: [1380, 1280][pk.T] * rr, f1: 320 * rr, dur: 0.045, vol: 0.40 * V });
+    hBody(c, out, tt, { f: 240 * rr, bp: [1050, 960][pk.B] * rr, dur: 0.07, vol: 0.24 * V });
   }
-  function pluck(c, dest, t, fr, wave, vol){
-    var o = c.createOscillator(); o.type = wave; o.frequency.value = fr;
-    var g = c.createGain(); g.gain.setValueAtTime(0.0001, t);
-    g.gain.exponentialRampToValueAtTime(vol, t + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, t + 1.5);
-    o.connect(g); g.connect(dest); o.start(t); o.stop(t + 1.6);
+});
+wEv('gunship', 0.6, 9, function(c, out, t, o){
+  var R = (o.rate || 1) * Snd.jit(0.04), V = Snd.jitV(), pk = Snd.pick('w:gunship', { T: 2, B: 2, M: 2 });
+  hCrack(c, out, t, { f0: [980, 900][pk.T] * R, f1: 170 * R, dur: 0.06, vol: 0.50 * V, lp: 2800 });
+  hBody(c, out, t, { f: 130 * R, bp: [540, 490][pk.B] * R, q: 0.6, dur: 0.13, vol: 0.32 * V, sub8: 1 });
+  hSub(c, out, t, { f0: 90, f1: 40, dur: 0.3, vol: 0.34 * V });
+  hRatchet(c, out, t + 0.12, { n: 2, gap: 0.04, f0: 160, bp: 1900, vol: 0.08 * V, pw: 0.016 });
+});
+
+/* --- Zerg --- */
+wEv('hydralisk', 0.4, 6, function(c, out, t, o){
+  var R = (o.rate || 1) * Snd.jit(0.06), V = Snd.jitV(), pk = Snd.pick('w:hydralisk', { T: 3, B: 3 });
+  hChirp(c, out, t, { type: 'sine', f0: [700, 760, 640][pk.T] * R, f1: 180 * R, dur: 0.09, vol: 0.34 * V });
+  hFormant(c, out, t, { type: 'sine', f0: 520 * R, f1: 240 * R, dur: 0.22, vol: 0.40 * V, vib: 28,
+    fms: [{ a: [900, 980, 830][pk.B], b: 450, q: 2.2, g: 1 }, { a: 1400, b: 500, q: 2.6, g: 0.55 }], dry: 0.25 });
+  hChirp(c, out, t + 0.09, { type: 'sine', f0: 900 * R, f1: 300 * R, dur: 0.07, vol: 0.10 * V }); /* giọt axit trễ */
+});
+wEv('sunken', 0.5, 7, function(c, out, t, o){
+  var R = (o.rate || 1) * Snd.jit(0.05), V = Snd.jitV(), pk = Snd.pick('w:sunken', { B: 2, T: 2 });
+  hFormant(c, out, t, { type: 'sine', f0: 300 * R, f1: 90 * R, dur: 0.3, vol: 0.46 * V, vib: 14,
+    fms: [{ a: [300, 340][pk.B], b: 170, q: 1.8, g: 1 }, { a: 520, b: 240, q: 2.2, g: 0.5 }], dry: 0.3 });
+  hSub(c, out, t, { f0: 110, f1: 55, dur: 0.3, vol: 0.34 * V });
+  hChirp(c, out, t + 0.02, { type: 'sine', f0: [620, 560][pk.T] * R, f1: 200 * R, dur: 0.08, vol: 0.14 * V });
+});
+wEv('bat', 0.3, 5, function(c, out, t, o){
+  var R = (o.rate || 1) * Snd.jit(0.06), V = Snd.jitV(), pk = Snd.pick('w:bat', { T: 3, B: 2 });
+  var os = auOsc(c, 'sine', [500, 540, 460][pk.T] * R), g = auGain(c, 0), lfo = auOsc(c, 'sine', 30), lg = auGain(c, 0.12 * V);
+  auEnv(g, t, 0.26 * V, 0.01, 0.08); lfo.connect(lg); lg.connect(g.gain);
+  os.connect(g); g.connect(out); os.start(t); os.stop(t + 0.2); lfo.start(t); lfo.stop(t + 0.2);
+  hFormant(c, out, t, { type: 'sine', f0: 420 * R, f1: 200 * R, dur: 0.12, vol: 0.20 * V, fms: [{ a: 800, b: 380, q: 2, g: 0.9 }], dry: 0.2 });
+});
+wEv('wasp', 0.3, 5, function(c, out, t, o){
+  var R = (o.rate || 1) * Snd.jit(0.06), V = Snd.jitV(), pk = Snd.pick('w:wasp', { T: 3, B: 2 });
+  var f0 = [900, 960, 840][pk.T] * R;
+  hChirp(c, out, t, { type: 'sine', f0: f0, f1: f0 * 1.78, dur: 0.045, vol: 0.26 * V });
+  hChirp(c, out, t + 0.045, { type: 'sine', f0: f0 * 1.78, f1: f0 * 0.78, dur: 0.045, vol: 0.24 * V });
+  hFormant(c, out, t, { type: 'sawtooth', f0: 300 * R, f1: 210 * R, dur: 0.09, vol: 0.10 * V, fms: [{ a: 1500, b: 800, q: 3, g: 0.8 }], dry: 0.1 });
+});
+wEv('leviathan', 0.7, 8, function(c, out, t, o){
+  var R = (o.rate || 1) * Snd.jit(0.05), V = Snd.jitV(), pk = Snd.pick('w:leviathan', { B: 2, T: 2 });
+  hFormant(c, out, t, { type: 'sine', f0: 240 * R, f1: 55 * R, dur: 0.4, vol: 0.5 * V, vib: 9, a: 0.03,
+    fms: [{ a: [420, 380][pk.B], b: 150, q: 1.6, g: 1 }, { a: 700, b: 220, q: 2, g: 0.5 }], dry: 0.3 });
+  hSub(c, out, t, { f0: 96, f1: 48, dur: 0.4, vol: 0.36 * V });
+  for(var i = 0; i < 3; i++) hChirp(c, out, t + 0.1 + i * 0.09 + Math.random() * 0.03, { type: 'sine', f0: 130 + Math.random() * 60, f1: 70, dur: 0.07, vol: 0.08 * V }); /* bọt hữu cơ */
+});
+
+/* --- Protoss --- */
+wEv('dragoon', 0.55, 6, function(c, out, t, o){
+  var R = (o.rate || 1) * Snd.jit(0.05), V = Snd.jitV(), pk = Snd.pick('w:dragoon', { T: 3, B: 2 });
+  hFM(c, out, t, { car: [1600, 1720, 1480][pk.T] * R, carEnd: 500 * R, ratio: 3, idx: 2.6, idxEnd: 0.3, dur: 0.2, vol: 0.34 * V });
+  hChirp(c, out, t, { type: 'sine', f0: 990 * R, f1: 495 * R, dur: 0.3, vol: 0.13 * V });
+  hTail(c, out, t, { dt: 0.16, fb: 0.32, vol: 0.07 * V, dur: 0.45, lp: 3200 });
+});
+wEv('archon', 0.7, 7, function(c, out, t, o){
+  var R = (o.rate || 1) * Snd.jit(0.05), V = Snd.jitV(), pk = Snd.pick('w:archon', { B: 2, T: 2 });
+  hFM(c, out, t, { car: [700, 660][pk.B] * R, ratio: 2.4, idx: 3.2, idxEnd: 0.6, dur: 0.5, vol: 0.36 * V });
+  hSub(c, out, t, { f0: 180, f1: 45, dur: 0.35, vol: 0.34 * V });
+  hTail(c, out, t, { dt: 0.13, fb: 0.3, vol: 0.08 * V, dur: 0.6, lp: 2800 });
+});
+wEv('cannon', 0.55, 6, function(c, out, t, o){
+  var R = (o.rate || 1) * Snd.jit(0.05), V = Snd.jitV(), pk = Snd.pick('w:cannon', { T: 3, B: 2 });
+  hFM(c, out, t, { car: [1850, 1980, 1720][pk.T] * R, carEnd: 620 * R, ratio: 3.9, idx: 2.2, idxEnd: 0.3, dur: 0.18, vol: 0.32 * V });
+  hChirp(c, out, t, { type: 'sine', f0: 1180 * R, f1: 590 * R, dur: 0.26, vol: 0.11 * V });
+  hTail(c, out, t, { dt: 0.15, fb: 0.3, vol: 0.06 * V, dur: 0.4, lp: 3400 });
+});
+wEv('scoutbot', 0.25, 4, function(c, out, t, o){
+  var R = (o.rate || 1) * Snd.jit(0.06), V = Snd.jitV(), pk = Snd.pick('w:scoutbot', { T: 4 });
+  hChirp(c, out, t, { type: 'sine', f0: [1800, 1920, 1680, 1860][pk.T] * R, f1: 900 * R, dur: 0.07, vol: 0.26 * V });
+  hBody(c, out, t, { f: 1400 * R, bp: 2400 * R, dur: 0.04, vol: 0.08 * V });
+});
+wEv('colossus', 0.7, 8, function(c, out, t, o){
+  var R = (o.rate || 1) * Snd.jit(0.04), V = Snd.jitV(), pk = Snd.pick('w:colossus', { B: 2, T: 2 });
+  [0, 0.06].forEach(function(off, i){
+    var rr = R * (i ? 1.07 : 1), g = auGain(c, 1), lfo = auOsc(c, 'sine', 14), lg = auGain(c, 0.05 * V);
+    auEnv(g, t + off, 1, 0.01, 0.42); lfo.connect(lg); lg.connect(g.gain); g.connect(out);
+    hFM(c, g, t + off, { car: 1500 * rr, carEnd: 420 * rr, ratio: 2.2, idx: 2.4, idxEnd: 0.4, dur: 0.45, vol: 0.30 * V });
+    lfo.start(t + off); lfo.stop(t + off + 0.5);
+  });
+  hSub(c, out, t, { f0: 130, f1: 65, dur: 0.4, vol: 0.20 * V, ghost: 0 });
+});
+wEv('scoutship', 0.45, 5, function(c, out, t, o){
+  var R = (o.rate || 1) * Snd.jit(0.05), V = Snd.jitV(), pk = Snd.pick('w:scoutship', { T: 3, B: 2 });
+  hFM(c, out, t, { car: [1750, 1880, 1620][pk.T] * R, carEnd: 560 * R, ratio: 3.9, idx: 2.0, idxEnd: 0.3, dur: 0.16, vol: 0.28 * V });
+  hChirp(c, out, t, { type: 'sine', f0: 1100 * R, f1: 560 * R, dur: 0.22, vol: 0.09 * V });
+});
+wEv('frigate', 0.55, 7, function(c, out, t, o, v){
+  var R = (o.rate || 1) * Snd.jit(0.05), V = Snd.jitV(), pk = Snd.pick('w:frigate', { T: 2, B: 2 });
+  [0, 0.07].forEach(function(off, i){
+    hFM(c, out, t + off, { car: [1500, 1420][pk.T] * R * (i ? 1.05 : 1), carEnd: 480 * R, ratio: 3, idx: 2.2, idxEnd: 0.3, dur: 0.17, vol: 0.26 * V });
+  });
+  hTail(c, out, t, { dt: 0.14, fb: 0.28, vol: 0.06 * V, dur: 0.4, lp: 3000 });
+});
+wEv('carrier', 0.9, 8, function(c, out, t, o){
+  var R = (o.rate || 1) * Snd.jit(0.04), V = Snd.jitV(), pk = Snd.pick('w:carrier', { B: 2, T: 2 });
+  hFM(c, out, t, { car: [920, 860][pk.B] * R, ratio: 2.4, idx: 3.4, idxEnd: 0.5, dur: 0.8, vol: 0.36 * V });
+  hSub(c, out, t, { f0: 150, f1: 60, dur: 0.5, vol: 0.22 * V });
+  hTail(c, out, t, { dt: 0.18, fb: 0.34, vol: 0.09 * V, dur: 0.8, lp: 3000 });
+});
+
+/* ---------- §5.4 tiếng pha AIM (windup >= 120ms + Sunken) — BUS_WEAPON, −10dB qua trim ---------- */
+aimEv('tank', function(c, out, t, o){ hRatchet(c, out, t, { n: 3, gap: 0.06, f0: 150, bp: 1800, vol: 0.32, pw: 0.02 }); });
+aimEv('heavytank', function(c, out, t, o){ hRatchet(c, out, t, { n: 3, gap: 0.07, f0: 130, bp: 1600, vol: 0.22, pw: 0.024 }); hChirp(c, out, t + 0.05, { type: 'square', f0: 220, f1: 330, dur: 0.12, vol: 0.05 }); });
+aimEv('artillery', function(c, out, t, o){ hRatchet(c, out, t, { n: 2, gap: 0.06, f0: 140, bp: 1700, vol: 0.2, pw: 0.02 }); hChirp(c, out, t + 0.02, { type: 'sawtooth', f0: 300, f1: 720, dur: 0.16, vol: 0.07 }); });
+aimEv('sunken', function(c, out, t, o){ hFormant(c, out, t, { type: 'sine', f0: 140, f1: 260, dur: 0.15, vol: 0.24, a: 0.06, fms: [{ a: 300, b: 520, q: 2, g: 1 }], dry: 0.25 }); });
+aimEv('colossus', function(c, out, t, o){ hFM(c, out, t, { car: 500, carEnd: 1250, ratio: 2.2, idx: 1.2, idxEnd: 2.2, dur: 0.15, vol: 0.14 }); });
+aimEv('leviathan', function(c, out, t, o){ hFormant(c, out, t, { type: 'sine', f0: 120, f1: 210, dur: 0.16, vol: 0.22, a: 0.06, fms: [{ a: 260, b: 430, q: 1.8, g: 1 }], dry: 0.25 }); });
+['tank', 'heavytank', 'artillery', 'sunken', 'colossus', 'leviathan'].forEach(function(k){ EVENTS['aim:' + k].trim = 0.32; });
+
+/* ================= §6.1 TRÚNG ĐẠN THEO BỀ MẶT ================= */
+defEv('imp:flesh', 'impact', 0.25, 5, function(c, out, t, o){
+  var R = Snd.jit(0.07), V = Snd.jitV(), pk = Snd.pick('imp:flesh', { A: 3 });
+  hSub(c, out, t, { f0: [300, 330, 270][pk.A] * R, f1: 90, dur: 0.07, vol: 0.5 * V, ghost: 0 });
+  hFormant(c, out, t, { type: 'sine', f0: 400 * R, f1: 200 * R, dur: 0.08, vol: 0.22 * V, fms: [{ a: 700, b: 350, q: 1.6, g: 0.9 }], dry: 0.2 });
+});
+defEv('imp:metal', 'impact', 0.25, 5, function(c, out, t, o){
+  var R = Snd.jit(0.05), V = Snd.jitV(), pk = Snd.pick('imp:metal', { A: 3, B: 2 });
+  hMetal(c, out, t, { f: (o.freq || 1600) * [0.82, 1, 1.22][pk.A] * R, dur: 0.16, vol: 0.30 * V }); /* pool >= x1.22/bước: hẹp hơn 1 dải log thì phổ không phân biệt được */
+  hRatchet(c, out, t, { n: 1, f0: 300, bp: [2900, 3500][pk.B], vol: 0.08 * V, pw: 0.008 });
+});
+defEv('imp:shield', 'impact', 0.3, 5, function(c, out, t, o){
+  var R = Snd.jit(0.05), V = Snd.jitV(), pk = Snd.pick('imp:shield', { A: 3 });
+  hFM(c, out, t, { car: [1500, 1620, 1390][pk.A] * R, ratio: 2.4, idx: 3, idxEnd: 0.4, dur: 0.09, vol: 0.34 * V });
+  hTail(c, out, t, { dt: 0.09, fb: 0.22, vol: 0.05 * V, dur: 0.2, lp: 3600 });
+});
+defEv('imp:parmor', 'impact', 0.25, 5, function(c, out, t, o){
+  var R = Snd.jit(0.05), V = Snd.jitV();
+  hFM(c, out, t, { car: 800 * R, ratio: 1.5, idx: 2.4, idxEnd: 0.4, dur: 0.1, vol: 0.30 * V });
+  hSub(c, out, t, { f0: 200, f1: 70, dur: 0.08, vol: 0.22 * V, ghost: 0 });
+});
+defEv('imp:miss', 'impact', 0.2, 4, function(c, out, t, o){
+  var V = Snd.jitV();
+  hFormant(c, out, t, { type: 'sine', f0: 900, f1: 300, dur: 0.15, vol: 0.30 * V, fms: [{ a: 1200, b: 500, q: 2.4, g: 0.9 }], dry: 0.1 });
+}, { trim: 0.2 });
+
+/* ================= §6.2 CẬN CHIẾN — tiếng VUNG ================= */
+defEv('sw:zergling', 'impact', 0.15, 4, function(c, out, t, o){ hChirp(c, out, t, { type: 'sawtooth', f0: 2100, f1: 500, dur: 0.06, vol: 0.16 * Snd.jitV() }); });
+defEv('sw:zealot', 'impact', 0.2, 5, function(c, out, t, o){
+  var pk = Snd.pick('sw:zealot', { A: 3, M: 3 }), cs = [[760, 1600], [900, 1900], [1080, 2300]][pk.A];
+  hFM(c, out, t, { car: cs[0], carEnd: cs[1], ratio: 2.4, idx: [1.8, 2.4, 3.0][pk.M], idxEnd: 0.4, dur: 0.12, vol: 0.20 * Snd.jitV() });
+  hTail(c, out, t, { dt: 0.08, fb: 0.2, vol: 0.05, dur: 0.2, lp: 3400 });
+});
+defEv('sw:ultralisk', 'impact', 0.3, 5, function(c, out, t, o){ hFormant(c, out, t, { type: 'sawtooth', f0: 160, f1: 70, dur: 0.25, vol: 0.34 * Snd.jitV(), fms: [{ a: 500, b: 180, q: 1.6, g: 1 }, { a: 900, b: 300, q: 2, g: 0.5 }], dry: 0.25 }); });
+defEv('sw:worker', 'impact', 0.15, 4, function(c, out, t, o){ hRatchet(c, out, t, { n: 3, gap: 0.022, f0: 260, bp: 2900, vol: 0.25 * Snd.jitV(), pw: 0.012 }); });
+defEv('sw:drone', 'impact', 0.15, 4, function(c, out, t, o){ hFormant(c, out, t, { type: 'sine', f0: 500, f1: 260, dur: 0.09, vol: 0.18 * Snd.jitV(), fms: [{ a: 800, b: 400, q: 2, g: 0.9 }], dry: 0.2 }); });
+defEv('sw:probe', 'impact', 0.15, 4, function(c, out, t, o){ hFM(c, out, t, { car: 1300, carEnd: 800, ratio: 3, idx: 1.6, idxEnd: 0.3, dur: 0.08, vol: 0.15 * Snd.jitV() }); });
+defEv('sw:air', 'impact', 0.15, 4, function(c, out, t, o){ hChirp(c, out, t, { type: 'sine', f0: 1350, f1: 480, dur: 0.09, vol: 0.11 * Snd.jitV() }); }); /* §5.4: quân bay — whoosh có cao độ tại STRIKE */
+/* extras khi TRÚNG của cận chiến */
+defEv('mh:zealot', 'impact', 0.2, 4, function(c, out, t, o){ hFM(c, out, t, { car: 1750, ratio: 2.4, idx: 2.4, idxEnd: 0.2, dur: 0.07, vol: 0.20 * Snd.jitV() }); });
+defEv('mh:ultralisk', 'impact', 0.35, 5, function(c, out, t, o){ hSub(c, out, t, { f0: 120, f1: 60, dur: 0.22, vol: 0.4 * Snd.jitV() }); hChirp(c, out, t, { type: 'sine', f0: 240, f1: 60, dur: 0.18, vol: 0.16 * Snd.jitV() }); });
+defEv('mh:zergling', 'impact', 0.12, 4, function(c, out, t, o){ hMetal(c, out, t, { f: 2600, dur: 0.07, vol: 0.16 * Snd.jitV() }); });
+
+/* ================= §6.3 NỔ & CHẾT theo cỡ × tộc ================= */
+function boomLayers(c, out, t, o, size){
+  var V = Snd.jitV(), big = size === 'huge', med = size === 'med';
+  var pk = Snd.pick('boom:' + size, { T: 3, S: 3, F: 3, D: 3 });
+  var dur = (big ? 1.1 : (med ? 0.6 : 0.35)) * [0.82, 1, 1.2][pk.D], f0 = (big ? 90 : (med ? 100 : 130)) * [0.84, 1, 1.2][pk.S], f1 = (big ? [22, 28, 36] : (med ? [29, 32, 36] : [42, 45, 49]))[pk.D];
+  hCrack(c, out, t, { f0: (big ? [700, 640, 770] : [800, 690, 920])[pk.T], f1: 120, dur: 0.06, vol: (big ? 0.5 : 0.42) * V, lp: 2400 });
+  hSub(c, out, t, { f0: f0, f1: f1, dur: dur, vol: (big ? 0.62 : 0.5) * V });
+  hFM(c, out, t, { car: 130 * [0.92, 1, 1.13][pk.F], ratio: 1.5, idx: 2.4, idxEnd: 0.3, dur: dur * 0.6, vol: 0.20 * V }); /* thân "gừ" FM — thay nhiễu */
+  if(Snd.cfg.crunch && size !== 'small') hCrunch(c, out, t, { vol: 0.30 * V }); /* ⚠EAR E1 — mặc định TẮT */
+  if(o.bigBuf){ var bsx = c.createBufferSource(); bsx.buffer = o.bigBuf; var bgx = auGain(c, 0.5); bsx.connect(bgx); bgx.connect(out); bsx.start(t + 0.02); } /* CHỈ mẫu nghe thử E2-B */
+  if(o.race === 'zerg') hFormant(c, out, t + 0.03, { type: 'sine', f0: 380, f1: 70, dur: 0.3, vol: 0.26 * V, fms: [{ a: 600, b: 160, q: 1.8, g: 1 }], dry: 0.2 }); /* xẹp hữu cơ */
+  else if(o.race === 'protoss') hFM(c, out, t + 0.02, { car: 1250, carEnd: 280, ratio: 2.4, idx: 2.6, idxEnd: 0.4, dur: 0.5, vol: 0.20 * V }); /* chuông vỡ */
+  else if(o.race === 'terran') hRatchet(c, out, t + 0.12, { n: 3, gap: 0.05, f0: 150, bp: 1500, vol: 0.12 * V, pw: 0.02 }); /* mảnh vỡ cơ khí trễ */
+  if(big || med) hTail(c, out, t, { dt: (big ? 0.35 : 0.2) * [0.8, 1, 1.22][pk.F], fb: 0.3, vol: 0.10 * V, dur: big ? 0.9 : 0.5, lp: 1600 });
+}
+defEv('boom:small', 'impact', 0.5, 8, function(c, out, t, o){ boomLayers(c, out, t, o, 'small'); });
+defEv('boom:med', 'impact', 0.8, 9, function(c, out, t, o){ boomLayers(c, out, t, o, 'med'); });
+defEv('boom:huge', 'impact', 1.4, 10, function(c, out, t, o){ boomLayers(c, out, t, o, 'huge'); });
+defEv('boom:fall', 'impact', 1.1, 9, function(c, out, t, o){
+  hChirp(c, out, t, { type: 'sine', f0: 1200, f1: 200, dur: 0.5, vol: 0.20 * Snd.jitV() }); /* xé gió có cao độ lao xuống */
+  boomLayers(c, out, t + 0.45, o, 'med');
+});
+
+/* ================= §8.3/§8.4 MOTIF THEO TỘC (dùng chung: stinger thắng/thua + nhạc + cue xong việc) ================= */
+var RACE_MOTIFS = {
+  terran:  { win: [220, 261.63, 329.63, 440, 659.25] },
+  zerg:    { win: [110, 130.81, 155.56, 196, 293.66] },
+  protoss: { win: [440, 554.37, 659.25, 880, 1318.51] }
+};
+function motifNote(c, out, t, race, f, dur, vol){
+  if(race === 'zerg') hFormant(c, out, t, { type: 'sine', f0: f, f1: f * 0.94, dur: dur, vol: vol * 1.6, a: 0.02,
+    fms: [{ a: f * 3.2, b: f * 2.8, q: 2.4, g: 1 }, { a: f * 5.1, b: f * 4.6, q: 2.8, g: 0.5 }], dry: 0.3 });
+  else if(race === 'protoss') hFM(c, out, t, { car: f, ratio: 2.4, idx: [1.9, 2.4, 2.9][Snd.pick('motif:protoss', { I: 3 }).I], idxEnd: 0.4, dur: dur, vol: vol }); /* pool chỉ số FM: phổ chuông biến thiên thật giữa các lần phát */
+  else { hMetal(c, out, t, { f: f, dur: Math.max(0.28, dur), vol: vol * 0.85 }); /* Terran: gõ kim loại FM (phương án osc-only của E1) */
+    hFM(c, out, t, { car: f * 2, ratio: 2, idx: 1.4, idxEnd: 0.3, dur: Math.max(0.24, dur * 0.8), vol: vol * 0.4 }); } /* hài 2f: giai điệu trầm vẫn "bắt" loa điện thoại */
+}
+function playMotif(c, out, t, race, notes, step, vol, noteDur){
+  notes.forEach(function(f, i){ motifNote(c, out, t + i * step, race, f, noteDur || 0.34, vol); });
+}
+['terran', 'zerg', 'protoss'].forEach(function(race){
+  defEv('st:win:' + race, 'sting', 2.0, 14, function(c, out, t, o){
+    var m = RACE_MOTIFS[race].win; playMotif(c, out, t, race, m, 0.16, 0.30);
+    motifNote(c, out, t + 5 * 0.16, race, m[4], 0.7, 0.30);
+  });
+  defEv('st:lose:' + race, 'sting', 2.0, 12, function(c, out, t, o){
+    var m = RACE_MOTIFS[race].win.slice().reverse(); playMotif(c, out, t, race, m, 0.24, 0.26, 0.4);
+  });
+  defEv('st:down:' + race, 'sting', 1.2, 10, function(c, out, t, o){ /* nhà chính địch sập: motif rơi 3 nốt */
+    var m = RACE_MOTIFS[race].win; playMotif(c, out, t, race, [m[4], m[2], m[0]], 0.18, 0.28, 0.36);
+  });
+  defEv('st:motif:' + race, 'sting', 0.9, 8, function(c, out, t, o){ /* nâng cấp nhà chính xong: motif ngắn đi lên */
+    var m = RACE_MOTIFS[race].win; playMotif(c, out, t, race, [m[0], m[2], m[4]], 0.12, 0.24, 0.3);
+  });
+});
+
+/* ================= §8.1 UI ================= */
+defEv('ui:tick', 'ui', 0.12, 4, function(c, out, t, o){
+  var pk = Snd.pick('ui:tick', { A: 3, D: 3 });
+  hMetal(c, out, t, { f: [1350, 1900, 2650][pk.A] * Snd.jit(0.02), dur: [0.035, 0.058, 0.085][pk.D], vol: 0.30 * [1.28, 1, 0.83][pk.D] * Snd.jitV() }); /* vol bù theo độ dài (RMS ~ sqrt(dur)) — các biến thể ngang độ lớn */
+});
+defEv('ui:confirm', 'ui', 0.3, 6, function(c, out, t, o){
+  var R = Snd.jit(0.02), V = Snd.jitV();
+  hFM(c, out, t, { car: 880 * R, ratio: 2, idx: 1.6, idxEnd: 0.3, dur: 0.1, vol: 0.26 * V });
+  hFM(c, out, t + 0.07, { car: 1318 * R, ratio: 2, idx: 1.6, idxEnd: 0.3, dur: 0.14, vol: 0.26 * V });
+});
+defEv('ui:back', 'ui', 0.3, 6, function(c, out, t, o){
+  var R = Snd.jit(0.02), V = Snd.jitV();
+  hFM(c, out, t, { car: 880 * R, ratio: 2, idx: 1.6, idxEnd: 0.3, dur: 0.1, vol: 0.24 * V });
+  hFM(c, out, t + 0.07, { car: 659 * R, ratio: 2, idx: 1.6, idxEnd: 0.3, dur: 0.14, vol: 0.24 * V });
+});
+defEv('ui:toggle', 'ui', 0.2, 4, function(c, out, t, o){
+  if(o.off) hChirp(c, out, t, { type: 'square', f0: 900, f1: 620, dur: 0.09, vol: 0.14 * Snd.jitV() });
+  else hChirp(c, out, t, { type: 'square', f0: 620, f1: 920, dur: 0.09, vol: 0.14 * Snd.jitV() });
+});
+defEv('ui:page', 'ui', 0.3, 6, function(c, out, t, o){ /* mở sách: 2 tick + đuôi nhỏ */
+  hMetal(c, out, t, { f: 1700, dur: 0.04, vol: 0.20 });
+  hMetal(c, out, t + 0.055, { f: 1480, dur: 0.04, vol: 0.16 });
+  hTail(c, out, t, { dt: 0.07, fb: 0.2, vol: 0.05, dur: 0.22, lp: 3000 });
+});
+defEv('ui:error', 'ui', 0.3, 5, function(c, out, t, o){ /* buzz vuông 140Hz qua lowpass — khác hẳn 2 cue blocked */
+  var lp = auFilter(c, 'lowpass', 420, 0.5), g = auGain(c, 0);
+  auEnv(g, t, 0.30 * Snd.jitV(), 0.006, 0.18);
+  [140, 147].forEach(function(f){ var os = auOsc(c, 'square', f); os.connect(lp); os.start(t); os.stop(t + 0.24); });
+  lp.connect(g); g.connect(out);
+});
+defEv('ui:blocked_res', 'alert', 0.35, 6, function(c, out, t, o){ /* thiếu tài nguyên: 2 nốt FM đi xuống */
+  var V = Snd.jitV();
+  hFM(c, out, t, { car: 660, ratio: 2, idx: 1.8, idxEnd: 0.3, dur: 0.1, vol: 0.26 * V });
+  hFM(c, out, t + 0.1, { car: 523, ratio: 2, idx: 1.8, idxEnd: 0.3, dur: 0.14, vol: 0.26 * V });
+}, { cls: 'ui' });
+defEv('ui:blocked_sup', 'alert', 0.3, 4, function(c, out, t, o){ /* thiếu supply: đúng 1 nốt — phân biệt được với res */
+  hFM(c, out, t, { car: 440, ratio: 2, idx: 1.8, idxEnd: 0.3, dur: 0.16, vol: 0.28 * Snd.jitV() });
+}, { cls: 'ui' });
+defEv('ui:count', 'ui', 0.15, 4, function(c, out, t, o){ /* tick đếm ngược — opts.f cho nấc cao dần */
+  hMetal(c, out, t, { f: o.f || 1300, dur: 0.06, vol: 0.32 });
+});
+defEv('ui:go', 'sting', 0.7, 8, function(c, out, t, o){ /* GO: hợp âm hệ thống 3 nốt */
+  [523.25, 659.25, 783.99].forEach(function(f){ hFM(c, out, t, { car: f, ratio: 2, idx: 1.8, idxEnd: 0.4, dur: 0.45, vol: 0.20 }); });
+  hMetal(c, out, t, { f: 1560, dur: 0.2, vol: 0.14 });
+});
+
+/* ================= §8.2 SẢNH / ONLINE ================= */
+defEv('lb:open', 'ui', 0.5, 7, function(c, out, t, o){ /* mở phòng: confirm + motif kênh mở FM */
+  hFM(c, out, t, { car: 660, carEnd: 990, ratio: 2, idx: 1.8, idxEnd: 0.4, dur: 0.22, vol: 0.24 });
+  hFM(c, out, t + 0.14, { car: 990, ratio: 2.4, idx: 1.6, idxEnd: 0.3, dur: 0.2, vol: 0.18 });
+});
+defEv('lb:join', 'ui', 0.4, 5, function(c, out, t, o){ hFM(c, out, t, { car: 880, carEnd: 1320, ratio: 2, idx: 1.8, idxEnd: 0.3, dur: 0.2, vol: 0.24 }); });
+defEv('lb:leave', 'ui', 0.4, 5, function(c, out, t, o){ hFM(c, out, t, { car: 1320, carEnd: 880, ratio: 2, idx: 1.8, idxEnd: 0.3, dur: 0.2, vol: 0.22 }); });
+defEv('lb:ready', 'ui', 0.5, 7, function(c, out, t, o){
+  [784, 988, 1175].forEach(function(f, i){ hFM(c, out, t + i * 0.08, { car: f, ratio: 2, idx: 1.6, idxEnd: 0.3, dur: 0.14, vol: 0.22 }); });
+});
+defEv('lb:lost', 'ui', 0.7, 7, function(c, out, t, o){ /* mất kết nối/tiếp quản: motif FM gãy dần */
+  hFM(c, out, t, { car: 880, carEnd: 840, ratio: 2.4, idx: 2.2, idxEnd: 0.6, dur: 0.14, vol: 0.24 });
+  hFM(c, out, t + 0.16, { car: 740, carEnd: 660, ratio: 2.4, idx: 2.6, idxEnd: 0.8, dur: 0.16, vol: 0.22 });
+  hFM(c, out, t + 0.34, { car: 520, carEnd: 390, ratio: 2.4, idx: 3, idxEnd: 1, dur: 0.24, vol: 0.20 });
+});
+
+/* ================= §7.1 ACK — "giọng" tổng hợp theo tộc ================= */
+function ackTerran(kind){
+  return function(c, out, t, o){
+    var pk = Snd.pick('ack:terran', { V: 3, M: 3 }), f = [1050, 1330, 1680][pk.V] * Snd.jit(0.02), V = Snd.jitV();
+    function blip(tt, ff, d){ hChirp(c, out, tt, { type: 'square', f0: ff, f1: ff, dur: d || 0.032, vol: 0.16 * V }); }
+    hRatchet(c, out, t, { n: 1, f0: 300, bp: [2800, 3200, 3650][pk.M], vol: 0.10 * V, pw: 0.008 }); /* click radio */
+    if(kind === 'select') blip(t + 0.015, f);
+    else if(kind === 'move'){ blip(t + 0.015, f); blip(t + 0.075, f * 1.2); }
+    else if(kind === 'attack'){ blip(t + 0.015, f); blip(t + 0.065, f * 1.12); blip(t + 0.115, f * 1.26); }
+    else { blip(t + 0.015, f * 0.8, 0.05); blip(t + 0.1, f * 0.68, 0.06); } /* grumble: trầm, đi xuống */
+  };
+}
+function ackZerg(kind){
+  return function(c, out, t, o){
+    var pk = Snd.pick('ack:zerg', { V: 3, S: 2, F: 2, G: 2 }), base = [248, 300, 362][pk.V] * Snd.jit(0.02), V = Snd.jitV();
+    function sq(tt, f0, f1, d){
+      var fmK = [2.6, 3.05][pk.F || 0];
+      var fms = [{ a: f0 * fmK, b: f1 * (fmK - 0.2), q: 2.2, g: 1 }, { a: f0 * (fmK + 1.5), b: f1 * (fmK + 1.2), q: 2.6, g: 0.5 }];
+      if(o.f3) fms.push({ a: f0 * 6.4, b: f1 * 5.8, q: 3, g: 0.35 }); /* ⚠EAR E3: formant thứ 3 — chỉ bản B của mẫu nghe, game không truyền f3 */
+      hFormant(c, out, tt, { type: 'sine', f0: f0, f1: f1, dur: d, vol: 0.32 * [1.24, 1][pk.G || 0] * V, a: 0.015, fms: fms, dry: [0.18, 0.30][pk.G || 0] }); /* pool cân bằng dry/formant: đổi hẳn dáng phổ ngay cả khi trùng cao độ · vol bù theo cụm (G0 vốn nhỏ hơn ~1.8dB — đo 30 render) */
+    }
+    if(kind === 'select') sq(t, base, base * [1.45, 1.62][pk.S], 0.09);
+    else if(kind === 'move'){ sq(t, base, base * [1.3, 1.47][pk.S], 0.08); sq(t + 0.1, base * 1.15, base * [1.6, 1.78][pk.S], 0.08); }
+    else if(kind === 'attack'){ sq(t, base, base * 1.5, 0.1); hSub(c, out, t + 0.02, { f0: 170, f1: 70, dur: 0.12, vol: 0.22 * V, ghost: 0 }); sq(t + 0.12, base * 1.2, base * 1.75, 0.09); }
+    else sq(t, base * 1.1, base * 0.55, 0.24); /* grumble: è è trầm dài */
+  };
+}
+function ackProtoss(kind){
+  return function(c, out, t, o){
+    var pk = Snd.pick('ack:protoss', { V: 3 }), f = [880, 932, 830][pk.V] * Snd.jit(0.02), V = Snd.jitV();
+    function note(tt, ff, d, idx){ hFM(c, out, tt, { car: ff, ratio: 2.4, idx: idx || 2, idxEnd: 0.4, dur: d || 0.16, vol: 0.24 * V }); }
+    if(kind === 'select') note(t, f);
+    else if(kind === 'move'){ note(t, f); note(t + 0.09, f * 1.335); }
+    else if(kind === 'attack'){ note(t, f); note(t + 0.08, f * 1.26); note(t + 0.16, f * 1.5, 0.22); }
+    else { note(t, f, 0.2, 2.8); note(t + 0.14, f * 0.84, 0.24, 2.8); } /* grumble: 2 nốt xuống, tối hơn */
+  };
+}
+['terran', 'zerg', 'protoss'].forEach(function(race){
+  var mk = race === 'terran' ? ackTerran : (race === 'zerg' ? ackZerg : ackProtoss);
+  ['select', 'move', 'attack', 'grumble'].forEach(function(kind){
+    defEv('ack:' + race + ':' + kind, 'ack', kind === 'attack' ? 0.45 : 0.35, 3, mk(kind), { hold: kind === 'attack' ? 0.24 : 0.18 }); /* hold = độ dài nghe thật của ack (~0.1-0.2s) — nhả trần giọng sớm, lệnh đúng nhịp không bị nuốt */
+  });
+});
+
+/* ================= §7.2 CẢNH BÁO ================= */
+defEv('al:base:terran', 'alert', 0.9, 7, function(c, out, t, o){ /* còi 2 tông cơ khí — pool cặp tông + hài phụ để không render nào giống hệt nhau */
+  var pk = Snd.pick('al:base:terran', { A: 3, B: 2 }), pr = [[740, 988], [698, 932], [784, 1046]][pk.A];
+  var os = auOsc(c, 'square', pr[0]), lp = auFilter(c, 'lowpass', 1800, 0.5), g = auGain(c, 0);
+  for(var i = 0; i < 4; i++) os.frequency.setValueAtTime((i + pk.B) % 2 ? pr[1] : pr[0], t + i * 0.12);
+  auEnv(g, t, 0.20 * Snd.jitV(), 0.008, 0.5);
+  os.connect(lp); lp.connect(g); g.connect(out); os.start(t); os.stop(t + 0.55);
+  var os2 = auOsc(c, 'triangle', pr[0] * 2.02), g2 = auGain(c, 0);
+  for(var j = 0; j < 4; j++) os2.frequency.setValueAtTime((j + pk.B) % 2 ? pr[1] * 2.02 : pr[0] * 2.02, t + j * 0.12);
+  auEnv(g2, t, 0.07 * Snd.jitV(), 0.008, 0.5);
+  os2.connect(g2); g2.connect(out); os2.start(t); os2.stop(t + 0.55);
+});
+defEv('al:base:zerg', 'alert', 0.9, 7, function(c, out, t, o){ /* tiếng rít hữu cơ ×2 */
+  [0, 0.36].forEach(function(off){
+    hFormant(c, out, t + off, { type: 'sawtooth', f0: 300, f1: 920, dur: 0.3, vol: 0.48 * Snd.jitV(), a: 0.02,
+      fms: [{ a: 800, b: 2100, q: 2, g: 1 }, { a: 1300, b: 2900, q: 2.4, g: 0.5 }], dry: 0.15 });
+  });
+});
+defEv('al:base:protoss', 'alert', 0.9, 7, function(c, out, t, o){ /* chuông FM 3 nhịp rơi */
+  [1318, 1174, 988].forEach(function(f, i){ hFM(c, out, t + i * 0.16, { car: f * Snd.jit(0.01), ratio: 2.4, idx: 2.4, idxEnd: 0.4, dur: 0.2, vol: 0.24 * Snd.jitV() }); });
+});
+['terran', 'zerg', 'protoss'].forEach(function(race){
+  defEv('al:wave:' + race, 'alert', 0.7, 8, function(c, out, t, o){ /* đợt tấn công tới: motif căng theo tộc KẺ TẤN CÔNG */
+    if(race === 'zerg'){ for(var i = 0; i < 3; i++) hFormant(c, out, t + i * 0.13, { type: 'sine', f0: 190, f1: 260, dur: 0.11, vol: 0.46, a: 0.015, fms: [{ a: 620, b: 800, q: 2.2, g: 1 }], dry: 0.25 }); }
+    else if(race === 'protoss'){ [659.25, 622.25, 659.25].forEach(function(f, i){ hFM(c, out, t + i * 0.13, { car: f, ratio: 2.4, idx: 2.2, idxEnd: 0.4, dur: 0.16, vol: 0.22 }); }); } /* quãng 2 thứ — chỉ ở cue căng thẳng */
+    else { [196, 220, 196].forEach(function(f, i){ hMetal(c, out, t + i * 0.13, { f: f, dur: 0.2, vol: 0.22 }); }); }
+  });
+  defEv('al:done:' + race, 'alert', 0.7, 8, function(c, out, t, o){ /* nghiên cứu xong: 3 nốt lên bằng giọng tộc */
+    var m = RACE_MOTIFS[race].win; playMotif(c, out, t, race, [m[0], m[2], m[4]], 0.11, 0.24, 0.3);
+  });
+});
+defEv('al:ally', 'alert', 0.5, 6, function(c, out, t, o){ /* đồng minh bị đánh: biến thể ngắn, −4dB qua trim */
+  hFM(c, out, t, { car: 988, ratio: 2, idx: 2, idxEnd: 0.4, dur: 0.14, vol: 0.26 });
+  hFM(c, out, t + 0.15, { car: 784, ratio: 2, idx: 2, idxEnd: 0.4, dur: 0.18, vol: 0.26 });
+}, { trim: 0.63 });
+defEv('al:depleted', 'world', 0.5, 5, function(c, out, t, o){ /* mỏ cạn: cue trung tính 2 nốt xuống */
+  hMetal(c, out, t, { f: 1180, dur: 0.16, vol: 0.18 });
+  hMetal(c, out, t + 0.14, { f: 880, dur: 0.2, vol: 0.16 });
+});
+
+/* ================= §6.4/§6.5 NHÀ + VÒNG ĐỜI ================= */
+defEv('bd:place:terran', 'world', 0.5, 7, function(c, out, t, o){
+  hMetal(c, out, t, { f: 240, dur: 0.22, vol: 0.36 * Snd.jitV() });
+  hRatchet(c, out, t + 0.02, { n: 2, gap: 0.05, f0: 150, bp: 1700, vol: 0.12, pw: 0.018 });
+  hSub(c, out, t, { f0: 95, f1: 50, dur: 0.16, vol: 0.28, ghost: 0 });
+});
+defEv('bd:place:zerg', 'world', 0.5, 6, function(c, out, t, o){
+  hFormant(c, out, t, { type: 'sine', f0: 420, f1: 120, dur: 0.26, vol: 0.36 * Snd.jitV(), a: 0.02, fms: [{ a: 700, b: 220, q: 1.8, g: 1 }], dry: 0.25 });
+  hSub(c, out, t, { f0: 105, f1: 45, dur: 0.26, vol: 0.32, ghost: 0 });
+});
+defEv('bd:place:protoss', 'world', 0.6, 7, function(c, out, t, o){
+  hFM(c, out, t, { car: 300, carEnd: 1500, ratio: 2.4, idx: 1.2, idxEnd: 2.4, dur: 0.36, vol: 0.24 * Snd.jitV() });
+  hTail(c, out, t, { dt: 0.12, fb: 0.3, vol: 0.07, dur: 0.5, lp: 3200 });
+});
+defEv('bd:loop:terran', 'world', 0.2, 4, function(c, out, t, o){ hRatchet(c, out, t, { n: 1, f0: 170, bp: 2000, vol: 0.24, pw: 0.016 }); });
+defEv('bd:loop:zerg', 'world', 0.25, 4, function(c, out, t, o){ hFormant(c, out, t, { type: 'sine', f0: 200, f1: 300, dur: 0.14, vol: 0.22, a: 0.03, fms: [{ a: 550, b: 750, q: 2, g: 0.9 }], dry: 0.2 }); });
+defEv('bd:loop:protoss', 'world', 0.3, 4, function(c, out, t, o){ hFM(c, out, t, { car: 1560, ratio: 2.4, idx: 1.4, idxEnd: 0.3, dur: 0.2, vol: 0.13 }); });
+['terran', 'zerg', 'protoss'].forEach(function(race){
+  defEv('bd:done:' + race, 'world', 0.6, 8, function(c, out, t, o){ /* xây xong: chạm đất + nốt hoàn tất của tộc */
+    if(race === 'terran'){ hMetal(c, out, t, { f: 240, dur: 0.18, vol: 0.26 }); motifNote(c, out, t + 0.1, race, 392, 0.3, 0.2); motifNote(c, out, t + 0.22, race, 523.25, 0.36, 0.2); }
+    else if(race === 'zerg'){ hFormant(c, out, t, { type: 'sine', f0: 180, f1: 380, dur: 0.22, vol: 0.44, a: 0.02, fms: [{ a: 500, b: 950, q: 2, g: 1 }], dry: 0.25 }); }
+    else { hFM(c, out, t, { car: 880, ratio: 2.4, idx: 2, idxEnd: 0.4, dur: 0.2, vol: 0.2 }); hFM(c, out, t + 0.12, { car: 1174, ratio: 2.4, idx: 2, idxEnd: 0.4, dur: 0.26, vol: 0.2 }); }
+  });
+  defEv('bd:research_start:' + race, 'world', 0.5, 7, function(c, out, t, o){
+    var m = RACE_MOTIFS[race].win; playMotif(c, out, t, race, [m[0], m[2]], 0.11, 0.22, 0.3);
+  });
+  defEv('bd:research_done:' + race, 'world', 0.8, 9, function(c, out, t, o){
+    var m = RACE_MOTIFS[race].win; playMotif(c, out, t, race, [m[0], m[2], m[4]], 0.11, 0.24, 0.32);
+  });
+  defEv('tr:done:' + race, 'world', 0.4, 6, function(c, out, t, o){ /* huấn luyện xong */
+    if(race === 'terran') hChirp(c, out, t, { type: 'square', f0: 1180, f1: 1180, dur: 0.05, vol: 0.32 });
+    else if(race === 'zerg') hFormant(c, out, t, { type: 'sine', f0: 260, f1: 430, dur: 0.12, vol: 0.42, a: 0.015, fms: [{ a: 700, b: 1050, q: 2.2, g: 1 }], dry: 0.25 });
+    else hFM(c, out, t, { car: 1174, ratio: 2.4, idx: 2, idxEnd: 0.4, dur: 0.18, vol: 0.2 });
+  });
+});
+defEv('bd:powerdown', 'world', 0.6, 6, function(c, out, t, o){ /* Protoss mất điện: FM rơi */
+  hFM(c, out, t, { car: 1200, carEnd: 240, ratio: 2.4, idx: 2.4, idxEnd: 0.6, dur: 0.4, vol: 0.22 });
+  hSub(c, out, t, { f0: 160, f1: 50, dur: 0.3, vol: 0.16, ghost: 0 });
+});
+defEv('bd:shieldup', 'world', 0.3, 4, function(c, out, t, o){ /* khiên hồi lại: FM nhích lên rất nhỏ */
+  hFM(c, out, t, { car: 900, carEnd: 1500, ratio: 2.4, idx: 1.2, idxEnd: 0.5, dur: 0.18, vol: 0.13 });
+}, { trim: 0.5 });
+defEv('wk:mine', 'world', 0.15, 4, function(c, out, t, o){ /* cuốc khoáng: gõ kim loại ngắn */
+  var pk = Snd.pick('wk:mine', { A: 3 });
+  hMetal(c, out, t, { f: [2350, 2180, 2540][pk.A] * Snd.jit(0.03), dur: 0.05, vol: 0.15 * Snd.jitV() });
+});
+
+/* ================= TRIM BAN ĐẦU (hiệu chuẩn §9 sẽ ghi đè bằng bảng đo) ================= */
+var TRIM_TABLE = {"w:marine":1.27,"w:firebat":1.11,"w:mech":1.297,"w:robot":1.42,"w:tank":0.487,"w:heavytank":0.497,"w:artillery":0.478,"w:turret":2.29,"w:heli":1.276,"w:jet":1.178,"w:gunship":0.8,"w:hydralisk":0.756,"w:sunken":0.386,"w:bat":0.467,"w:wasp":0.975,"w:leviathan":0.595,"w:dragoon":0.918,"w:archon":0.61,"w:cannon":1.053,"w:scoutbot":0.894,"w:colossus":0.782,"w:scoutship":1.116,"w:frigate":0.876,"w:carrier":0.688,"aim:tank":1.697,"aim:heavytank":1.65,"aim:artillery":1.697,"aim:sunken":1.897,"aim:colossus":2.4,"aim:leviathan":1.942,"imp:flesh":0.744,"imp:metal":0.794,"imp:shield":1.035,"imp:parmor":0.895,"imp:miss":1.576,"sw:zergling":2.364,"sw:zealot":0.952,"sw:ultralisk":1.049,"sw:worker":1.513,"sw:drone":1.864,"sw:probe":1.484,"sw:air":1.911,"mh:zealot":1.677,"mh:ultralisk":0.564,"mh:zergling":1.94,"boom:small":0.885,"boom:med":1.14,"boom:huge":1.291,"boom:fall":1.147,"st:win:terran":1.442,"st:lose:terran":1.619,"st:down:terran":1.512,"st:motif:terran":1.326,"st:win:zerg":2.203,"st:lose:zerg":2.494,"st:down:zerg":2.283,"st:motif:zerg":1.99,"st:win:protoss":1.32,"st:lose:protoss":1.497,"st:down:protoss":1.395,"st:motif:protoss":1.227,"ui:tick":2.51,"ui:confirm":2.194,"ui:back":1.516,"ui:toggle":2.117,"ui:page":2.663,"ui:error":0.888,"ui:blocked_res":1.979,"ui:blocked_sup":2.328,"ui:count":2.486,"ui:go":1.454,"lb:open":2.106,"lb:join":2.485,"lb:leave":2.276,"lb:ready":1.778,"lb:lost":2.341,"ack:terran:select":3.441,"ack:terran:move":3.019,"ack:terran:attack":2.397,"ack:terran:grumble":2.32,"ack:zerg:select":3.255,"ack:zerg:move":3.032,"ack:zerg:attack":1.678,"ack:zerg:grumble":2.504,"ack:protoss:select":1.765,"ack:protoss:move":1.277,"ack:protoss:attack":1.092,"ack:protoss:grumble":1.306,"al:base:terran":2.106,"al:base:zerg":2.436,"al:base:protoss":1.883,"al:wave:terran":1.644,"al:done:terran":1.302,"al:wave:zerg":3.365,"al:done:zerg":1.953,"al:wave:protoss":1.938,"al:done:protoss":1.202,"al:ally":1.861,"al:depleted":1.65,"bd:place:terran":1.169,"bd:place:zerg":1.283,"bd:place:protoss":1.907,"bd:loop:terran":1.513,"bd:loop:zerg":0.944,"bd:loop:protoss":0.515,"bd:done:terran":1.798,"bd:research_start:terran":1.665,"bd:research_done:terran":1.71,"tr:done:terran":2.051,"bd:done:zerg":3.272,"bd:research_start:zerg":2.459,"bd:research_done:zerg":2.574,"tr:done:zerg":3.45,"bd:done:protoss":2.1,"bd:research_start:protoss":1.557,"bd:research_done:protoss":1.585,"tr:done:protoss":2.374,"bd:powerdown":1.663,"bd:shieldup":3.25,"wk:mine":2.93};
+for(var _tk in TRIM_TABLE) if(EVENTS[_tk]) EVENTS[_tk].trim = TRIM_TABLE[_tk];
+
+/* ================= FACADE + CẦU NỐI TÊN CŨ ================= */
+function playerRaceSafe(){ try{ return (typeof S !== 'undefined' && S && S.playerRace) || 'terran'; }catch(e){ return 'terran'; } }
+Snd.weapon = function(type, x, y, vol, o){ o = o || {}; o.x = x; o.y = y; o.vol = vol; return Snd.ev('w:' + type, o); };
+Snd.aimCue = function(type, x, y, key){ return Snd.ev('aim:' + type, { x: x, y: y, throttleMs: 100, throttleKey: 'aim:' + type + ':' + key }); };
+var SWING_OF = { zergling: 'sw:zergling', zealot: 'sw:zealot', ultralisk: 'sw:ultralisk', worker: 'sw:worker', drone: 'sw:drone', probe: 'sw:probe' };
+Snd.swing = function(type, x, y){ var id = SWING_OF[type]; if(!id) return false; return Snd.ev(id, { x: x, y: y, throttleMs: 55, throttleKey: id }); };
+Snd.impact = function(kind, x, y, o){ o = o || {}; o.x = x; o.y = y; if(o.vol == null) o.vol = 1; return Snd.ev('imp:' + kind, o); };
+Snd.meleeHit = function(type, kind, x, y, o){
+  var r = Snd.impact(kind, x, y, o);
+  if(type === 'zealot') Snd.ev('mh:zealot', { x: x, y: y });
+  else if(type === 'ultralisk') Snd.ev('mh:ultralisk', { x: x, y: y });
+  else if(type === 'zergling') Snd.ev('mh:zergling', { x: x, y: y });
+  return r;
+};
+Snd.boom = function(size, race, x, y, vol){ return Snd.ev('boom:' + size, { x: x, y: y, race: race, vol: vol }); };
+Snd.boomFall = function(race, x, y, vol){ return Snd.ev('boom:fall', { x: x, y: y, race: race, vol: vol }); };
+Snd.cue = function(id, o){ return Snd.ev(id, o || {}); };
+var _ackSelTrack = {};
+Snd.ack = function(race, kind, o){
+  o = o || {}; race = race || 'terran';
+  var useKind = kind;
+  if(kind === 'select' && o.unitKey != null){
+    var now = Date.now(), tr = _ackSelTrack[o.unitKey] || (_ackSelTrack[o.unitKey] = []);
+    tr.push(now); while(tr.length && now - tr[0] > 2000) tr.shift();
+    if(tr.length > 3) useKind = 'grumble'; /* spam chọn cùng 1 quân >3 lần/2s -> càu nhàu */
   }
-  function tickS(c, dest, t, fr, vol){
-    var o = c.createOscillator(); o.type = 'square'; o.frequency.value = fr;
-    var f = c.createBiquadFilter(); f.type = 'highpass'; f.frequency.value = 1300;
-    var g = c.createGain(); g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.05);
-    o.connect(f); f.connect(g); g.connect(dest); o.start(t); o.stop(t + 0.06);
+  var ok = Snd.ev('ack:' + race + ':' + useKind, { x: o.x, y: o.y, vol: o.vol, legacy: o.legacy, f3: o.f3,
+    throttleMs: kind === 'select' ? 90 : 250, throttleKey: 'ack:' + race + ':' + kind });
+  Snd._ackCount(ok);
+  return ok;
+};
+Snd.alertBase = function(race, o){ return Snd.ev('al:base:' + (race || 'terran'), o || {}); };
+/* đếm ngược 3-2-1-GO (§8.1): lập lịch bằng t0 trên đồng hồ ctx — không setTimeout (luật §11) */
+Snd.countdown = function(){
+  var c = AU.ac(); if(!c) return;
+  var t0 = c.currentTime + 0.03;
+  [1175, 1318, 1568].forEach(function(fr, i){ Snd.ev('ui:count', { f: fr, t0: t0 + i * 0.22 }); });
+  Snd.ev('ui:go', { t0: t0 + 3 * 0.22 });
+};
+/* bảng pool biến thể theo vũ khí — weaponSamples() đọc từ đây (báo cáo cho test, không phải dữ liệu mẫu) */
+Snd.pools = {
+  marine: { T: 3, B: 3, M: 2 }, firebat: { B: 3 }, mech: { T: 3, B: 2, M: 2 }, robot: { T: 3, B: 3, M: 2 },
+  tank: { T: 2, B: 3, M: 2 }, heavytank: { T: 2, B: 3, M: 2 }, artillery: { T: 2, B: 3, M: 2 },
+  turret: { T: 3, B: 2 }, heli: { T: 2, B: 3 }, jet: { T: 2, B: 2 }, gunship: { T: 2, B: 2, M: 2 },
+  hydralisk: { T: 3, B: 3 }, sunken: { B: 2, T: 2 }, bat: { T: 3, B: 2 }, wasp: { T: 3, B: 2 }, leviathan: { B: 2, T: 2 },
+  dragoon: { T: 3, B: 2 }, archon: { B: 2, T: 2 }, cannon: { T: 3, B: 2 }, scoutbot: { T: 4 },
+  colossus: { B: 2, T: 2 }, scoutship: { T: 3, B: 2 }, frigate: { T: 2, B: 2 }, carrier: { B: 2, T: 2 }
+};
+/* cầu nối API cũ: play(name, vol, throttleMs) — mọi tên cũ đều có sự kiện mới tương ứng (kể cả 2 tên CHẾT research/upgrade_done) */
+Snd.play = function(name, vol, thr){
+  var v = vol == null ? 1 : vol, pr = playerRaceSafe();
+  function E(id, extra){ var o = { vol: v, legacy: name, throttleMs: thr || 0, throttleKey: 'legacy:' + name }; if(extra) for(var k in extra) o[k] = extra[k]; return Snd.ev(id, o); }
+  switch(name){
+    case 'ui_click': return E('ui:tick');
+    case 'select': return Snd.ack(pr, 'select', { vol: v, legacy: 'select' });
+    case 'move': return Snd.ack(pr, 'move', { vol: v, legacy: 'move' });
+    case 'attack': return Snd.ack(pr, 'attack', { vol: v, legacy: 'attack' });
+    case 'error': return E('ui:error');
+    case 'research': return E('bd:research_start:' + pr);
+    case 'upgrade_done': return E('bd:research_done:' + pr);
+    case 'train_done': return E('tr:done:' + pr);
+    case 'build_done': return E('bd:done:' + pr);
+    case 'harvest': return E('wk:mine');
+    case 'alarm': return E('al:base:' + pr);
+    case 'explosion_small': return E('boom:small', { race: pr });
+    case 'explosion_big': return E('boom:huge', { race: pr });
   }
-  function scheduleChord(c, padDest, tensDest, t0, seed, tens, rk, ci){
-    var pal = PAL[rk] || PAL.terran, ch = PROG[ci % 4], r = rng(seed);
-    var f = c.createBiquadFilter(); f.type = 'lowpass'; f.frequency.value = pal.cut; f.Q.value = 0.6; f.connect(padDest);
-    ch.forEach(function(fr, i){
-      [-6, 0, 5].forEach(function(det){
-        var o = c.createOscillator(); o.type = pal.wave; o.frequency.value = fr * pal.bright; o.detune.value = det + i * 2;
-        var g = c.createGain(); o.connect(g); g.connect(f);
-        env(g, t0, pal.atk, 0.05, CH + 0.4);
-        o.start(t0); o.stop(t0 + CH + 0.5);
-      });
+  return false;
+};
+Snd.playEx = function(name, o){
+  o = o || {};
+  var oo = { x: o.x, y: o.y, vol: (o.vol == null ? 0.8 : o.vol) / 0.8, legacy: name, rate: o.rate,
+             throttleMs: o.throttleMs || 0, throttleKey: 'legacyx:' + name, panAdd: o.pan ? o.pan * 0.5 : 0 };
+  if(name === 'hit_tick') return Snd.ev('imp:metal', oo);
+  if(name === 'explosion_small') return Snd.ev('boom:small', oo);
+  if(name === 'explosion_big') return Snd.ev('boom:huge', oo);
+  if(name === 'shoot_cannon') return Snd.ev('w:tank', oo);
+  if(name.indexOf('shoot_') === 0) return Snd.ev('w:marine', oo);
+  return false;
+};
+/* jingle thắng/thua cũ -> stinger motif theo tộc người chơi (§8.3) */
+function jingle(win){
+  var race = playerRaceSafe();
+  Snd.ev(win ? 'st:win:' + race : 'st:lose:' + race, {});
+}
+
+/* ================= §9 QA — render offline đo lường ================= */
+function auWavB64(buf){ /* WAV 16-bit mono -> base64 (mẫu nghe thử ⚠EAR + before/after) */
+  var d = buf.getChannelData(0), n = d.length, sr = buf.sampleRate;
+  var ab = new ArrayBuffer(44 + n * 2), v = new DataView(ab);
+  function ws(off, s){ for(var i = 0; i < s.length; i++) v.setUint8(off + i, s.charCodeAt(i)); }
+  ws(0, 'RIFF'); v.setUint32(4, 36 + n * 2, true); ws(8, 'WAVE'); ws(12, 'fmt ');
+  v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true);
+  v.setUint32(24, sr, true); v.setUint32(28, sr * 2, true); v.setUint16(32, 2, true); v.setUint16(34, 16, true);
+  ws(36, 'data'); v.setUint32(40, n * 2, true);
+  for(var i = 0; i < n; i++){ var s = Math.max(-1, Math.min(1, d[i])); v.setInt16(44 + i * 2, Math.round(s * 32767), true); }
+  var bytes = new Uint8Array(ab), bin = '';
+  for(var j = 0; j < bytes.length; j += 8192) bin += String.fromCharCode.apply(null, bytes.subarray(j, j + 8192));
+  return btoa(bin);
+}
+function auAnalyze(buf, hpFirst, winSec){
+  var d = buf.getChannelData(0), sr = buf.sampleRate, i, v;
+  if(hpFirst){ /* loa điện thoại: highpass 250Hz 1 cực + mono (đã mono) */
+    var a = Math.exp(-2 * Math.PI * 250 / sr), pi = 0, po = 0, out = new Float32Array(d.length);
+    for(i = 0; i < d.length; i++){ var y = a * (po + d[i] - pi); pi = d[i]; po = y; out[i] = y; }
+    d = out;
+  }
+  var peak = 0, lastAct = 0;
+  for(i = 0; i < d.length; i++){ v = Math.abs(d[i]); if(v > peak) peak = v; if(v > 0.0032) lastAct = i; }
+  var actEnd = Math.min(d.length, lastAct + Math.round(sr * 0.02)), sum = 0, n = 0;
+  if(winSec) actEnd = Math.min(actEnd, Math.round(sr * 0.04) + Math.round(sr * winSec)); /* cửa sổ transient: onset ở 0.05s, chừa 0.04 */
+  for(i = 0; i < actEnd; i++){ sum += d[i] * d[i]; n++; }
+  var rms = n ? Math.sqrt(sum / n) : 0;
+  /* phổ 32 dải log 60Hz–10kHz (Goertzel trên tối đa 0.6s đầu vùng hoạt động) */
+  var bands = [], NB = 32, lim = Math.min(actEnd, Math.round(sr * 0.6)), csum = 0, cw = 0;
+  for(var b = 0; b < NB; b++){
+    var f = 60 * Math.pow(10000 / 60, b / (NB - 1)), w = 2 * Math.PI * f / sr, cw2 = Math.cos(w), coef = 2 * cw2;
+    var s1 = 0, s2 = 0;
+    for(i = 0; i < lim; i++){ var s0 = d[i] + coef * s1 - s2; s2 = s1; s1 = s0; }
+    var p = Math.sqrt(Math.max(0, s1 * s1 + s2 * s2 - coef * s1 * s2)) / Math.max(1, lim);
+    bands.push(p); csum += p * f; cw += p;
+  }
+  return { peak: peak, rmsDb: rms > 0 ? 20 * Math.log10(rms) : -99, bands: bands, centroid: cw ? csum / cw : 0, dur: buf.duration };
+}
+Snd.qa = {
+  list: function(){ return Object.keys(EVENTS); },
+  renderEvent: function(id, opts, hpFirst){
+    opts = opts || {};
+    var def = EVENTS[id]; if(!def) return Promise.resolve(null);
+    var sr = 22050, dur = Math.min(2.6, (def.dur || 0.3) + 0.4);
+    var oc = new OfflineAudioContext(1, Math.ceil(sr * dur), sr);
+    var inG = auGain(oc, (opts.vol == null ? 1 : opts.vol) * (def.trim || 1));
+    var lp = auFilter(oc, 'lowpass', 9000, 0.4);
+    var busG = auGain(oc, { alert: 1.0, ack: 0.9, weapon: 0.8, impact: 0.7, ui: 0.55, world: 0.65, sting: 1.0 }[def.bus] || 0.8);
+    if(def.bus === 'weapon'){ var wc = oc.createDynamicsCompressor(); wc.threshold.value = -9; wc.ratio.value = 8; wc.attack.value = 0.001; wc.release.value = 0.12; busG.connect(wc); busG = wc; }
+    var master = auGain(oc, 0.9), comp = oc.createDynamicsCompressor();
+    comp.threshold.value = -12; comp.ratio.value = 4; comp.attack.value = 0.002; comp.release.value = 0.18;
+    inG.connect(lp); lp.connect(busG); busG.connect(master); master.connect(comp); comp.connect(oc.destination);
+    try{ def.fn(oc, inG, 0.05, opts, { in: inG }); }catch(e){}
+    if(hpFirst === 'buf') return oc.startRendering();
+    if(hpFirst === 'phone150') return oc.startRendering().then(function(buf){ return auAnalyze(buf, true, 0.15); }); /* §9.1: RMS/đỉnh phổ của TRANSIENT 150ms qua HP250 */
+    return oc.startRendering().then(function(buf){ return auAnalyze(buf, hpFirst); });
+  },
+  /* xuất WAV nghe thử: cfg {crunch, ks} áp tạm trong lúc dựng đồ thị (đồng bộ) rồi trả lại;
+     cfg.bigSample + window.__bigB64 (ogg bản cũ) -> giải mã, trộn làm 1 lớp (mẫu E2-B). */
+  renderWav: function(id, opts, cfg){
+    opts = opts || {}; cfg = cfg || {};
+    var prep = Promise.resolve(null);
+    if(cfg.bigSample && typeof window !== 'undefined' && window.__bigB64 && AU.ac()){
+      var raw = Uint8Array.from(atob(window.__bigB64), function(ch){ return ch.charCodeAt(0); });
+      prep = AU.ac().decodeAudioData(raw.buffer).catch(function(){ return null; });
+    }
+    var self = this;
+    return prep.then(function(bigBuf){
+      if(bigBuf) opts.bigBuf = bigBuf;
+      var c0 = Snd.cfg.crunch, k0 = Snd.cfg.ks;
+      if(cfg.crunch != null) Snd.cfg.crunch = cfg.crunch;
+      if(cfg.ks != null) Snd.cfg.ks = cfg.ks;
+      var p = self.renderEvent(id, opts, 'buf');
+      Snd.cfg.crunch = c0; Snd.cfg.ks = k0;
+      return p.then(function(buf){ return buf ? auWavB64(buf) : null; });
     });
-    if(rk === 'protoss'){ /* quãng 5 lấp lánh trên nốt gốc */
-      var o5 = c.createOscillator(); o5.type = 'sine'; o5.frequency.value = ch[0] * 3;
-      var g5 = c.createGain(); o5.connect(g5); g5.connect(padDest); env(g5, t0, 3.0, 0.015, CH + 0.4);
-      o5.start(t0); o5.stop(t0 + CH + 0.5);
-    }
-    for(var bar = 0; bar < 2; bar++){
-      var bt = t0 + bar * 4;
-      if(rk === 'zerg'){ thump(c, padDest, bt, 52, 0.13); thump(c, padDest, bt + 0.34, 45, 0.10); } /* nhịp tim */
-      else thump(c, padDest, bt, rk === 'terran' ? 55 : 49, 0.13);
-    }
-    var n = r() < pal.pluck ? (1 + (r() * 3 | 0)) : 0;
-    for(var k = 0; k < n; k++){
-      var semi = SCALE[(r() * SCALE.length) | 0];
-      pluck(c, padDest, t0 + 0.5 + r() * 7, 220 * Math.pow(2, semi / 12) * (rk === 'protoss' ? 1.5 : 1), rk === 'zerg' ? 'sine' : 'triangle', 0.06);
-    }
-    if(rk === 'zerg' && r() < 0.5) pluck(c, padDest, t0 + 1 + r() * 6, 62 + r() * 30, 'sine', 0.06); /* blip hữu cơ */
-    if(tens > 0.25){
-      for(var s2 = 0; s2 < 8; s2++) if(r() < 0.3 + tens * 0.45) tickS(c, tensDest, t0 + s2 * (CH / 8), rk === 'terran' ? 2400 : 1500, 0.010 + tens * 0.012);
-      if(tens > 0.45) for(var hb = 0; hb < 4; hb++) thump(c, tensDest, t0 + hb * 2, 58, 0.05);
-    }
   }
-  function sched(){
-    if(!playing || !ctx) return;
-    var now = performance.now() / 1000, shots = 0;
-    try{ shots = Snd.state().recentShots; }catch(e){}
-    if(shots >= 6) lastCombatT = now;
-    var tgt = (now - lastCombatT < 9) ? 1 : 0;
-    tension = clamp2(tension + clamp2(tgt - tension, -0.06, 0.13), 0, 1);
-    if(tensBus) tensBus.gain.setTargetAtTime(tension * 0.42, ctx.currentTime, 0.4);
-    if(master) master.gain.setTargetAtTime(Snd.state().muted ? 0 : (now < duckUntil ? 0.24 : 0.6), ctx.currentTime, 0.3);
-    while(nextT < ctx.currentTime + 3){ scheduleChord(ctx, padBus, tensBus, nextT, chordI * 7919 + 13, tension, race, chordI); nextT += CH; chordI++; }
-  }
-  function start(r){
-    stop();
-    race = PAL[r] ? r : 'terran';
-    var C = window.AudioContext || window.webkitAudioContext; if(!C) return;
-    try{ ctx = new C(); }catch(e){ return; }
-    if(ctx.state === 'suspended') ctx.resume();
-    master = ctx.createGain(); master.gain.value = Snd.state().muted ? 0 : 0.6; master.connect(ctx.destination);
-    padBus = ctx.createGain(); padBus.gain.value = 0.7; padBus.connect(master);
-    tensBus = ctx.createGain(); tensBus.gain.value = 0; tensBus.connect(master);
-    /* FIX S: không lớp gió nhiễu (noise) — quy tắc cứng: không kết cấu nhiễu broadband trong nhạc. */
-    [587.33, 622.25].forEach(function(fr){ /* dây cao nghịch tai — chỉ nghe khi lớp căng thẳng mở */
-      var o = ctx.createOscillator(); o.type = 'sine'; o.frequency.value = fr;
-      var g = ctx.createGain(); g.gain.value = 0.14; o.connect(g); g.connect(tensBus); o.start();
+};
+
+/* ================= §8.4 NHẠC THÍCH ỨNG — 1 context chung với SFX (AU) =================
+   Trạng thái dọc (vertical layers): MENU (đệm + motif thưa, không bass) · BUILD (đệm + bass + motif)
+   · COMBAT (căng > 0.35 giữ > 4s: thêm gõ có cao độ + pluck dày + tiến triển B) · CLIMAX (nhà chính
+   < 35% HP / wave cuối: thêm lead FM + gõ dày hơn + đệm sáng +30% + nhịp tim chỉ ở CLIMAX).
+   Chuyển trạng thái CHỈ ở biên khối 8s (4 hợp âm × 2s) kèm hysteresis. ĐÃ XOÁ 2 sine đứng nghịch
+   D5/D#5 của bản cũ (nguồn mệt tai chính); quãng 2 thứ chỉ trong thang, thưa, chỉ COMBAT.
+   KHÔNG lớp nhiễu nào (luật §0) — Music.state().noiseBed === false luôn. */
+var Music = (function(){
+  var CH = 2; /* 1 hợp âm = 2s; khối chuyển trạng thái = 4 hợp âm = 8s */
+  var PROG_A = [ /* Am – F – C – G */
+    { root: 110.00, tones: [220.00, 261.63, 329.63] },
+    { root: 87.31,  tones: [174.61, 220.00, 261.63] },
+    { root: 130.81, tones: [261.63, 329.63, 392.00] },
+    { root: 98.00,  tones: [196.00, 246.94, 293.66] } ];
+  var PROG_B = [ /* Am – Am/G – F – E */
+    { root: 110.00, tones: [220.00, 261.63, 329.63] },
+    { root: 98.00,  tones: [220.00, 261.63, 329.63] },
+    { root: 87.31,  tones: [174.61, 220.00, 261.63] },
+    { root: 82.41,  tones: [164.81, 207.65, 246.94] } ];
+  /* motif = MẪU NHỊP + bậc thang theo tộc (nốt lấy từ tông hợp âm hiện tại — luôn trong thang) */
+  var PATTERNS = {
+    terran:  [ [[0, 0, 0.5], [1, 1.0, 0.5]], [[2, 0.5, 0.4], [1, 1.5, 0.4]], [[0, 0, 0.6], [2, 1.25, 0.5]] ],
+    zerg:    [ [[0, 0, 0.9]], [[1, 0.75, 0.8]], [[0, 0, 0.7], [1, 1.25, 0.6]] ],
+    protoss: [ [[2, 0, 0.8], [1, 1.25, 0.7]], [[0, 0.5, 0.9]], [[1, 0, 0.6], [2, 1.0, 0.8]] ]
+  };
+  var playing = false, mode = 'off', race = 'terran', mstate = 'BUILD';
+  var tension = 0, aboveSince = 0, timer = null, nextT = 0, chordIx = 0, inNode = null, patIx = 0;
+
+  function padCutoff(r){ return r === 'protoss' ? 1500 : (r === 'zerg' ? 520 : 640); }
+  function emitPad(c, out, t, r, chord, bright){
+    var lp = auFilter(c, 'lowpass', padCutoff(r) * (bright || 1), 0.4), g = auGain(c, 0);
+    auEnv(g, t, 0.088, 0.4, CH + 0.1);
+    lp.connect(g); g.connect(out);
+    chord.tones.forEach(function(f, i){
+      var os = auOsc(c, r === 'zerg' ? 'sawtooth' : 'sine', f * (i === 1 ? 1.003 : 1));
+      os.connect(lp); os.start(t); os.stop(t + CH + 0.6);
     });
-    chordI = 0; nextT = ctx.currentTime + 0.06; tension = 0; lastCombatT = -99;
-    playing = true;
-    timer = setInterval(sched, 500); sched();
+    var sub = auOsc(c, 'sine', chord.root); /* gốc trầm nhẹ giữ nền */
+    var sg = auGain(c, 0); auEnv(sg, t, 0.042, 0.4, CH + 0.1);
+    sub.connect(sg); sg.connect(out); sub.start(t); sub.stop(t + CH + 0.6);
   }
-  function stop(){
-    if(timer){ clearInterval(timer); timer = null; }
-    if(ctx){ try{ ctx.close(); }catch(e){} ctx = null; }
-    playing = false; tension = 0;
+  function emitPerc(c, out, t, r, chord, dense){
+    var steps = dense ? [0, 0.5, 1.0, 1.5] : [0, 1.0];
+    steps.forEach(function(off, i){
+      if(!dense && i > 0 && Math.random() < 0.4) return;
+      var tt = t + off;
+      if(r === 'terran') hMetal(c, out, tt, { f: chord.root * 8, dur: 0.07, vol: 0.028 });
+      else if(r === 'zerg') hSub(c, out, tt, { f0: 95, f1: 62, dur: 0.12, vol: 0.05, ghost: 0 });
+      else hFM(c, out, tt, { car: chord.tones[2] * 2, ratio: 2.4, idx: 1.2, idxEnd: 0.3, dur: 0.08, vol: 0.022 });
+    });
   }
-  function duck(){ duckUntil = performance.now() / 1000 + 2.5; }
-  function state(){ return { playing: playing, tension: Math.round(tension * 100) / 100, race: race, wind: false, noiseBed: false }; }
-  function probe(sec, rk){
-    var C = window.OfflineAudioContext || window.webkitOfflineAudioContext; if(!C) return Promise.resolve(null);
-    var sr = 22050, oc = new C(1, sr * sec, sr);
-    var m = oc.createGain(); m.gain.value = 0.6; m.connect(oc.destination);
-    var pb = oc.createGain(); pb.gain.value = 0.7; pb.connect(m);
-    var tb = oc.createGain(); tb.gain.value = 0; tb.connect(m);
-    for(var t = 0, ci = 0; t < sec; t += CH, ci++) scheduleChord(oc, pb, tb, t, ci * 7919 + 13, 0, rk || race, ci);
-    return oc.startRendering().then(function(buf){
-      var d = buf.getChannelData(0), sum = 0, peak = 0, i;
-      for(i = 0; i < d.length; i++){ var a = Math.abs(d[i]); if(a > peak) peak = a; sum += d[i] * d[i]; }
-      var win = (sr * 0.25) | 0, maxGap = 0, gap = 0;
-      for(var w0 = 0; w0 + win <= d.length; w0 += win){
-        var s2 = 0; for(i = w0; i < w0 + win; i++) s2 += d[i] * d[i];
-        if(Math.sqrt(s2 / win) < 0.002){ gap += 0.25; if(gap > maxGap) maxGap = gap; } else gap = 0;
+  function emitChord(c, out, t, r, st, chord, gIx){
+    var sg = st === 'CLIMAX' ? 1.45 : (st === 'COMBAT' ? 1.22 : (st === 'MENU' ? 0.9 : 1.0)); /* bậc độ lớn theo trạng thái (§9.2: BUILD<COMBAT<CLIMAX, bước <=3dB) */
+    if(sg !== 1){ var cg = auGain(c, sg); cg.connect(out); out = cg; }
+    var bright = st === 'CLIMAX' ? 1.3 : 1;
+    emitPad(c, out, t, r, chord, bright);
+    if(st !== 'MENU'){
+      hSub(c, out, t, { f0: chord.root, f1: chord.root, dur: 0.5, vol: st === 'BUILD' ? 0.115 : 0.14 }); /* bass đầu ô nhịp */
+    }
+    var pats = PATTERNS[r] || PATTERNS.terran;
+    var pat = pats[gIx % pats.length];
+    var density = st === 'MENU' ? 0.45 : (st === 'BUILD' ? 0.75 : 1);
+    pat.forEach(function(n){
+      if(Math.random() > density) return;
+      var f = chord.tones[Math.min(2, n[0])] * (n[0] === 2 ? 1 : 2); /* pluck ở quãng 8 trên */
+      motifNote(c, out, t + n[1], r, f, n[2] + 0.35, st === 'MENU' ? 0.06 : 0.08);
+    });
+    if(st === 'COMBAT' || st === 'CLIMAX'){
+      emitPerc(c, out, t, r, chord, st === 'CLIMAX');
+      if(Math.random() < 0.3) motifNote(c, out, t + 1.5, r, chord.tones[1], 0.3, 0.05); /* nốt căng thưa trong thang */
+    }
+    if(st === 'CLIMAX'){
+      var leadF = chord.tones[gIx % 3] * 2;
+      motifNote(c, out, t, r, leadF, 1.7, 0.055); /* lead dài theo tộc */
+      hSub(c, out, t, { f0: 58, f1: 40, dur: 0.16, vol: 0.10 }); /* nhịp tim — CHỈ climax */
+      hSub(c, out, t + 1.0, { f0: 55, f1: 38, dur: 0.14, vol: 0.08 });
+    }
+  }
+  function desiredState(){
+    if(mode === 'menu') return 'MENU';
+    var climax = false;
+    try{
+      if(typeof S !== 'undefined' && S && S.buildings){
+        for(var i = 0; i < S.buildings.length; i++){ var b = S.buildings[i]; if(typeof MAIN_TYPES !== 'undefined' && MAIN_TYPES[b.type] && b.hp > 0 && b.hp / b.maxHp < 0.35){ climax = true; break; } }
+        if(S.finalWave) climax = true;
       }
-      return { rms: Math.round(Math.sqrt(sum / d.length) * 1000) / 1000, peak: Math.round(peak * 1000) / 1000, maxGap: maxGap, sec: sec };
-    });
+    }catch(e){}
+    if(climax) return 'CLIMAX';
+    if(tension > 0.35 && aboveSince && (performance.now() - aboveSince > 4000)) return 'COMBAT';
+    if(mstate === 'COMBAT' && tension > 0.2) return 'COMBAT'; /* hysteresis: giữ combat tới khi căng < 0.2 */
+    return 'BUILD';
   }
-  return { start: start, stop: stop, duck: duck, state: state, probe: probe };
+  function tickSched(){
+    var c = AU.ac(); if(!c || !inNode) return;
+    var st = Snd.state();
+    var target = Math.min(1, st.recentShots / 6);
+    if(target > tension) tension += (target - tension) * 0.26;
+    else tension += (target - tension) * 0.05;
+    if(tension > 0.35){ if(!aboveSince) aboveSince = performance.now(); } else aboveSince = 0;
+    AU.scope = 'music';
+    while(nextT < c.currentTime + 3){
+      if(chordIx % 4 === 0) mstate = desiredState(); /* chuyển trạng thái chỉ ở biên 8s */
+      var prog = (mstate === 'COMBAT' || mstate === 'CLIMAX') ? PROG_B : PROG_A;
+      if(!st.muted) emitChord(c, inNode, nextT, race, mstate, prog[chordIx % 4], chordIx);
+      nextT += CH; chordIx++;
+    }
+    AU.scope = 'sfx';
+  }
+  function startCommon(r, md){
+    var c = AU.ac(); if(!c) return;
+    var G = AU.graph(); if(!G) return;
+    race = r || race || 'terran'; mode = md;
+    if(playing && inNode){ if(md === 'menu') mstate = 'MENU'; else if(mstate === 'MENU') mstate = 'BUILD'; return; }
+    inNode = auGain(c, 0.9); inNode.connect(G.buses.music);
+    playing = true; chordIx = 0; patIx = 0;
+    mstate = md === 'menu' ? 'MENU' : 'BUILD';
+    nextT = c.currentTime + 0.06;
+    if(timer) clearInterval(timer);
+    timer = setInterval(tickSched, 500); tickSched();
+  }
+  function probeAnalyze(buf){
+    var d = buf.getChannelData(0), peak = 0, sum = 0, gap = 0, maxGap = 0;
+    for(var i = 0; i < d.length; i++){
+      var v = Math.abs(d[i]); if(v > peak) peak = v; sum += d[i] * d[i];
+      if(v < 0.001){ gap++; if(gap > maxGap) maxGap = gap; } else gap = 0;
+    }
+    return { rms: Math.sqrt(sum / Math.max(1, d.length)), peak: peak, maxGap: maxGap / buf.sampleRate, sec: buf.duration };
+  }
+  function renderOffline(sec, r, st){
+    var sr = 22050, oc = new OfflineAudioContext(1, Math.ceil(sr * sec), sr);
+    var bus = auGain(oc, 0.42), master = auGain(oc, 0.9), comp = oc.createDynamicsCompressor();
+    comp.threshold.value = -12; comp.ratio.value = 4; comp.attack.value = 0.002; comp.release.value = 0.18;
+    bus.connect(master); master.connect(comp); comp.connect(oc.destination);
+    var prog = (st === 'COMBAT' || st === 'CLIMAX') ? PROG_B : PROG_A;
+    var n = Math.floor(sec / CH);
+    AU.scope = 'music';
+    for(var i = 0; i < n; i++) emitChord(oc, bus, 0.05 + i * CH, r, st, prog[i % 4], i);
+    AU.scope = 'sfx';
+    return oc.startRendering();
+  }
+  return {
+    start: function(r){ startCommon(r, 'match'); },
+    startMenu: function(r){ startCommon(r, 'menu'); },
+    setRace: function(r){ if(r && mode === 'menu') race = r; }, /* chỉ menu mới đổi tộc nhạc theo lựa chọn setup */
+    stop: function(){
+      playing = false; mode = 'off';
+      if(timer){ clearInterval(timer); timer = null; }
+      if(inNode){ var n = inNode; inNode = null; try{ var c = AU.ac(); if(c){ n.gain.setTargetAtTime(0.0001, c.currentTime, 0.06); setTimeout(function(){ try{ n.disconnect(); }catch(e){} }, 400); } }catch(e){} }
+    },
+    duck: function(){ var G = AU.graph(); if(G) AU.duck(G.musicDuck, -8, 2.5, 0.25); }, /* engine đã duck theo bus ALERT — hàm này giữ tương thích lời gọi cũ */
+    probe: function(sec, rk){ return renderOffline(sec || 20, rk || 'terran', 'BUILD').then(probeAnalyze); },
+    qa: function(sec, rk, st){ return renderOffline(sec || 32, rk || 'terran', st || 'BUILD').then(function(buf){ var a = auAnalyze(buf, false); a.maxGap = probeAnalyze(buf).maxGap; return a; }); },
+    qaWav: function(sec, rk, st){ return renderOffline(sec || 32, rk || 'terran', st || 'BUILD').then(function(buf){ return auWavB64(buf); }); },
+    state: function(){ return { playing: playing, mode: mode, mstate: mstate, tension: Math.round(tension * 100) / 100, race: race, wind: false, noiseBed: false }; }
+  };
 })();
 
 
@@ -3025,7 +3914,7 @@ function isHumanF(f){ return f === 'player' || !!(S && S.fac && S.fac[f]); }
 function sideOf(f){ if(!S || !S.sides) return 'F:' + f; return S.sides[f] || ('F:' + f); }
 function hostileTo(a, b){ if(a === b) return false; if(!S || !S.sides) return true; return sideOf(a) !== sideOf(b); }
 function alliedF(a, b){ return !hostileTo(a, b); }
-function failMsgF(t){ if(QUIET_ACT) return; failMsg(t); }
+function failMsgF(t, sndId){ if(QUIET_ACT) return; failMsg(t, sndId); }
 function findFactionMain(f){ return S.buildings.find(function(b){ return b.faction===f && !!MAIN_TYPES[b.type]; }) || S.buildings.find(function(b){ return b.faction===f; }); }
 var Z_MIN = 0.35, Z_MAX = 2.2;
 var cam = {x:0, y:WORLD_H-620, z:1};
@@ -3267,6 +4156,26 @@ function drawShadow(x, y, w, h, alpha){
   ctx.save(); ctx.globalAlpha = clamp(alpha, 0, 1);
   ctx.drawImage(c, x - w/2, y - h/2, w, h);
   ctx.restore();
+}
+/* v11 (Cường 23:33): ĐẾ NỀN dưới nhà theo TỘC — vệt màu phai dần ra ngoài footprint để nhà
+   "hoà vào nền": Terran = đệm đất/kim loại mòn · Zerg = vệt nhầy tiệp màu creep · Protoss = quầng năng lượng mờ.
+   Canvas gradient nung sẵn theo tộc, vẽ kéo giãn theo footprint (rẻ như drawShadow). */
+var APRON_CV = {};
+function apronCanvas(race){
+  if(APRON_CV[race]) return APRON_CV[race];
+  var c = document.createElement('canvas'); c.width = 160; c.height = 160;
+  var g = c.getContext('2d');
+  var rgb = race === 'zerg' ? '96,44,120' : (race === 'protoss' ? '34,96,120' : '78,60,36');
+  var gr = g.createRadialGradient(80, 80, 8, 80, 80, 79);
+  gr.addColorStop(0, 'rgba(' + rgb + ',0.52)');
+  gr.addColorStop(0.58, 'rgba(' + rgb + ',0.26)');
+  gr.addColorStop(1, 'rgba(' + rgb + ',0)');
+  g.fillStyle = gr; g.fillRect(0, 0, 160, 160);
+  APRON_CV[race] = c; return c;
+}
+function drawApron(x, y, w, h, race){
+  var c = apronCanvas(race); if(!c) return;
+  ctx.save(); ctx.globalAlpha = 0.8; ctx.drawImage(c, x - w/2, y - h/2, w, h); ctx.restore();
 }
 function spawnP(p){ if(PARTS.length >= PART_CAP) PARTS.shift(); PARTS.push(p); }
 function fxExplosion(x, y, big){
@@ -3659,7 +4568,7 @@ function orderUnitsToF(ids, wx, wy, f, fogArr, dry){
 }
 function canAfford(c, f){ var st = facStore(f || 'player'); return st.minerals>=c.m && st.gas>=c.g; }
 function pay(c, f){ var st = facStore(f || 'player'); st.minerals-=c.m; st.gas-=c.g; }
-function failMsg(t){ showMsg(t); Snd.play('error', 0.7, 150); }
+function failMsg(t, sndId){ showMsg(t); if(sndId) Snd.cue(sndId, { vol: 0.95 }); else Snd.play('error', 0.7, 150); } /* v11: sndId tuỳ chọn — cue blocked_res/blocked_sup PHÂN BIỆT ĐƯỢC (§7.2) */
 var TRAIN_FROM = { cc:['worker'], barracks:['marine','firebat','robot'], factory:['mech','tank','heavytank'], airfac:['heli','jet','gunship'],
   hatchery:['drone','zergling','hydralisk','ultralisk','overlord'], spire:['bat','wasp','leviathan'],
   nexus:['probe'], gateway:['zealot','dragoon','archon'], cybercore:['scoutbot','artillery','colossus'], stargate:['scoutship','frigate','carrier'] };
@@ -3743,10 +4652,10 @@ function train(buildingId, unitType){
   if(prod && typeLevel(b.faction, b.type) < prod.lv){ failMsgF('Cần ' + BSPECS[b.type].name + ' Lv' + prod.lv + ' mới sản xuất được ' + SPECS[unitType].name + ' — bấm nút ⬆ dưới hình nhà để nâng cấp!'); return false; }
   var req = REQ_BUILDING[unitType];
   if(req && !hasBuilt(req, f)){ failMsgF('Cần ' + BSPECS[req].name + ' trước mới sản xuất được ' + SPECS[unitType].name + '!'); return false; }
-  var c = COSTS[unitType]; if(!canAfford(c, f)){ failMsgF('Không đủ tài nguyên để luyện ' + SPECS[unitType].name); return false; }
+  var c = COSTS[unitType]; if(!canAfford(c, f)){ failMsgF('Không đủ tài nguyên để luyện ' + SPECS[unitType].name, 'ui:blocked_res'); return false; }
   recalcSupply();
   var needSup = (SPECS[unitType].supply||0) * (unitType==='zergling' ? 2 : 1); /* 1 trứng Zergling nở 2 con */
-  if(st.supplyUsed + needSup > st.supplyCap){ failMsgF(st.supplyCap >= 300 ? 'Đã đạt tối đa 300 quân — không luyện thêm được!' : ('Hết dân số! ' + (raceOfFaction(f)==='zerg' ? 'Nở thêm Overlord (+8)' : raceOfFaction(f)==='protoss' ? 'Xây thêm Pylon (+8)' : 'Xây thêm Kho Tiếp Tế (+8)') + '!')); if(f==='player') flashSupply(); return false; }
+  if(st.supplyUsed + needSup > st.supplyCap){ failMsgF(st.supplyCap >= 300 ? 'Đã đạt tối đa 300 quân — không luyện thêm được!' : ('Hết dân số! ' + (raceOfFaction(f)==='zerg' ? 'Nở thêm Overlord (+8)' : raceOfFaction(f)==='protoss' ? 'Xây thêm Pylon (+8)' : 'Xây thêm Kho Tiếp Tế (+8)') + '!'), 'ui:blocked_sup'); if(f==='player') flashSupply(); return false; }
   if(b.type==='hatchery'){ /* ZERG: biến hình từ Ấu Trùng — không có hàng đợi nhà máy */
     if((b.larvae||0) <= 0){ failMsgF('Tổ chưa có Ấu Trùng — đợi khoảng 12 giây!'); return false; }
     pay(c, f); b.larvae--; b.eggs.push({type:unitType, t:0, total:c.t}); recalcSupply(); if(f==='player'){ Snd.play('ui_click', 0.7, 80); renderPanel(true); }
@@ -3797,7 +4706,7 @@ function tickMainUpgrade(dt){
       if(mb) mb.mainLv = to;
       st.mainUpgrade = null;
       recalcMainLevel(f);
-      if(f === 'player'){ Snd.play('upgrade_done', 0.9, 130);
+      if(f === 'player'){ Snd.play('upgrade_done', 0.9, 130); Snd.cue('st:motif:' + S.playerRace, {}); /* v11 §6.4: nâng nhà chính + motif sting ngắn */
         showMsg('Nhà Chính đã lên Lv' + to + '! ' + ((MAIN_UNLOCK_TXT[S.playerRace] || {})[to] || ''), 3600);
         renderPanel(true); }
       else if(S.netOnline) NET.sendTo(f, { k:'msg', text:'Nhà Chính đã lên Lv' + to + '!' });
@@ -3948,7 +4857,7 @@ function buildAt(type, x, y, f){
   if(type==='stargate' && !hasBuilt('cybercore', f)){ failMsgF('Cần xây Xưởng Cơ Giới trước mới mở Cảng Hàng Không!'); return false; }
   if(type==='zergden' && !hasBuilt('pool', f)){ failMsgF('Cần Hồ Sinh Sản trước mới mở Hang Hydralisk!'); return false; }
   if(type==='sunken' && !hasBuilt('pool', f)){ failMsgF('Cần Hồ Sinh Sản trước mới xây Ổ Sunken!'); return false; }
-  if(!canAfford(c, f)){ failMsgF('Không đủ tài nguyên để xây ' + BSPECS[type].name); return false; }
+  if(!canAfford(c, f)){ failMsgF('Không đủ tài nguyên để xây ' + BSPECS[type].name, 'ui:blocked_res'); return false; }
   if(GAS_TYPES[type]){
     var g = nearestGeyser(x, y, 110);
     if(!g){ failMsgF(BSPECS[type].name + ' phải đặt ngay trên mạch khí xanh lá!'); return false; }
@@ -3957,7 +4866,7 @@ function buildAt(type, x, y, f){
     rb.builderId = pickBuilder(g.x, g.y, f);
     if(race==='zerg') consumeBuilderDrone(rb); /* Extractor cũng nuốt 1 Drone */
     S.buildings.push(rb); g.buildingId = rb.id;
-    if(f === 'player'){ Snd.play('ui_click', 0.7, 80); renderPanel(true); }
+    if(f === 'player'){ Snd.cue('bd:place:' + bldRace(type), { x: g.x, y: g.y }); renderPanel(true); } /* v11 §6.4: tiếng đặt nhà theo tộc */
     return true;
   }
   if(!placementOK(type,x,y)){ failMsgF('Vị trí bị chặn, chọn chỗ trống khác!'); return false; }
@@ -3968,7 +4877,7 @@ function buildAt(type, x, y, f){
   nb.builderId = pickBuilder(x, y, f);
   if(race==='zerg') consumeBuilderDrone(nb); /* Drone biến mất thành kén nhà */
   S.buildings.push(nb);
-  if(f === 'player'){ Snd.play('ui_click', 0.7, 80); renderPanel(true); }
+  if(f === 'player'){ Snd.cue('bd:place:' + bldRace(type), { x: x, y: y }); renderPanel(true); } /* v11 §6.4: tiếng đặt nhà theo tộc */
   return true;
 }
 function unitDamage(type){
@@ -3998,14 +4907,24 @@ function damageById(id, amount){
 function regenEntity(e, dt){
   var race = e.kind==='unit' ? unitRace(e.type) : bldRace(e.type);
   if(race==='zerg' && e.hp > 0 && e.hp < e.maxHp) e.hp = Math.min(e.maxHp, e.hp + 1.6*dt);
-  if(race==='protoss' && e.shieldMax > 0 && e.shield < e.shieldMax && S.time - (e.lastHurtAt||-99) > 8)
+  if(race==='protoss' && e.shieldMax > 0 && e.shield < e.shieldMax && S.time - (e.lastHurtAt||-99) > 8){
+    var shWas = e.shield;
     e.shield = Math.min(e.shieldMax, e.shield + Math.max(4, e.shieldMax*0.08) * dt);
+    /* v11 §6.5: khiên bắt đầu hồi lại (từ 0) — cue FM rất nhỏ, chỉ quân nhà + trên màn hình, khóa 4s/quân */
+    if(shWas <= 0 && e.shield > 0 && e.faction === 'player' && onScreen(e.x, e.y) && S.time - (e._shCueAt || -99) > 4){ e._shCueAt = S.time; Snd.cue('bd:shieldup', { x: e.x, y: e.y, vol: 0.8 }); }
+  }
 }
 function applyDamage(e, amount, srcFaction){
   if(S.over) return;
   if(amount > 0 && srcFaction && srcFaction !== e.faction){
     if(!S.defendPings) S.defendPings = {};
     S.defendPings[e.faction] = { x: e.x, y: e.y, t: S.time, src: srcFaction }; /* FIX R: điểm bị đánh -> quân rảnh quanh đó đến cứu */
+    /* v11 §7.2: đồng minh ONLINE bị đánh — chủ phòng báo cho khách đó (biến thể ally −4dB), khóa 30s/phe */
+    if(S.netOnline && NET.role === 'host' && isHumanF(e.faction) && e.faction !== 'player'){
+      if(!S._allyWarnAt) S._allyWarnAt = {};
+      var awNow = Date.now();
+      if(awNow - (S._allyWarnAt[e.faction] || 0) > 30000){ S._allyWarnAt[e.faction] = awNow; NET.sendTo(e.faction, { k: 'allywarn' }); }
+    }
   }
   if(amount > 0){
     e.lastHurtAt = S.time;
@@ -4033,7 +4952,9 @@ function applyDamage(e, amount, srcFaction){
     CORPSES.push({ type:e.type, spr:SPECS[e.type].spr, x:e.x, y:e.y, face:e.face||0, faction:e.faction,
       t:0, flying:!!SPECS[e.type].flying, zerg: unitRace(e.type)==='zerg', draw: SPECS[e.type].draw||48 });
     fxExplosion(e.x, e.y, false);
-    Snd.play('explosion_small', 0.5, 120);
+    /* v11 §6.3: chết theo tộc — quân bay có tiếng rơi có cao độ rồi mới nổ; mặt đất nổ nhỏ theo tộc */
+    if(SPECS[e.type].flying) Snd.boomFall(unitRace(e.type), e.x, e.y, 0.85);
+    else Snd.boom('small', unitRace(e.type), e.x, e.y, 0.85);
   } else {
     S.buildings = S.buildings.filter(function(b){ return b.id!==e.id; });
     if(S.selectedBuildingId===e.id) S.selectedBuildingId = 0;
@@ -4045,7 +4966,9 @@ function applyDamage(e, amount, srcFaction){
       spawnP({kind:'debris', x:e.x, y:e.y - 8, vx:Math.cos(da)*dsp, vy:Math.sin(da)*dsp - 90, life:0.5+rng()*0.4, max:0.9, size:3+rng()*3.4, seed:rng()*6}); }
     BOOMS.push({ x:e.x, y:e.y, t:0, total:1.2, emit:0 });
     addShake(e.x, e.y, !!MAIN_TYPES[e.type] ? 3 : 2);
-    Snd.play('explosion_big', 0.8, 200);
+    /* v11 §6.3: nhà sập theo cỡ x tộc; nhà chính = huge + motif tang lễ của tộc nhà đó */
+    Snd.boom(!!MAIN_TYPES[e.type] ? 'huge' : 'med', bldRace(e.type), e.x, e.y, 0.95);
+    if(MAIN_TYPES[e.type]) Snd.cue('st:down:' + bldRace(e.type), {});
     renderPanel(true);
     if(MAIN_TYPES[e.type] && S.netOnline){ NET.evBoom(e); NET.onMainDestroyed(e); }
     else if(MAIN_TYPES[e.type] && e.faction!=='player'){
@@ -4064,8 +4987,8 @@ function maybeAlarm(e){
   var now = Date.now();
   if(now - lastAlarmAt < 10000) return;
   lastAlarmAt = now;
-  Snd.play('alarm', 0.8, 0);
-  Music.duck(); /* nhạc tự né nhỏ xuống dưới còi báo động */
+  Snd.alertBase(S.playerRace, { vol: 0.95 }); /* v11 §7.2/E4: còi theo TỘC NGƯỜI CHƠI; engine tự duck nhạc khi bus ALERT phát */
+  Music.duck(); /* giữ lời gọi cũ — duck thật do engine xử lý ở bus ALERT */
   var mw = document.getElementById('mmWrap');
   if(mw){ mw.classList.add('alert'); setTimeout(function(){ mw.classList.remove('alert'); }, 1600); }
   showMsg('Căn cứ đang bị tấn công!', 2600);
@@ -4235,70 +5158,27 @@ function splashHit(attacker, mainTarget, cx, cy, radius, baseTarget){
     if(dist(cx,cy,e.x,e.y) <= radius + 12) applyDamage(e, combatDamage(attacker, e) * 0.5, attacker.faction);
   });
 }
-/* ===== GIỌNG SÚNG THEO VŨ KHÍ — mỗi loại quân một tiếng riêng, luân phiên biến thể ===== */
-var SHOT_SETS = {
-  marine:    ['shoot_laser','shoot_laser2','shoot_laser3','shoot_laser4'],  /* xoay 4 biến thể, không trùng 2 phát liền nhau */
-  turret:    ['shoot_laser','shoot_laser3'],
-  mech:      ['shoot_laser2','shoot_laser4'],                               /* 2 nòng luân phiên (xem playWeaponShot) */
-  tank:      ['shoot_cannon'],
-  hydralisk: ['shoot_spit'],
-  firebat:   ['shoot_flame'],
-  dragoon:   ['shoot_laser3','shoot_laser2'],
-  archon:    ['shoot_laser3','shoot_laser4'], /* V6.4: Archon là đòn TÂM LINH — bỏ tiếng pháo Terran, thêm lớp trầm năng lượng ở playWeaponShot */
-  sunken:    ['shoot_spit'],
-  cannon:    ['shoot_laser3','shoot_laser4'],
-  /* FIX v6 — quân mới dùng lại bộ mẫu sẵn có (không thêm lớp nhiễu nào) */
-  robot:     ['shoot_laser2','shoot_laser4'],
-  heavytank: ['shoot_cannon'],
-  heli:      ['shoot_laser','shoot_laser4'],
-  jet:       ['shoot_cannon'],
-  gunship:   ['shoot_cannon'],
-  bat:       ['shoot_spit'],
-  wasp:      ['shoot_spit'],
-  leviathan: ['shoot_spit','shoot_cannon'],
-  scoutbot:  ['shoot_laser2','shoot_laser3'],
-  artillery: ['shoot_cannon'],
-  colossus:  ['shoot_laser3','shoot_cannon'],
-  scoutship: ['shoot_laser','shoot_laser2'],
-  frigate:   ['shoot_laser3','shoot_laser4'],
-  carrier:   ['shoot_laser4','shoot_cannon']
-};
-var lastShotVar = {}, mechBarrelFlip = false;
-function weaponSamples(type){ var s = SHOT_SETS[type]; return s ? s.slice() : ['shoot_laser']; }
-function pickShotVar(type){
-  var set = SHOT_SETS[type] || ['shoot_laser'];
-  if(set.length===1){ lastShotVar[type] = set[0]; return set[0]; }
-  var v = set[0], guard = 0;
-  do { v = set[(Math.random()*set.length)|0]; guard++; } while(v === lastShotVar[type] && guard < 8);
-  lastShotVar[type] = v; return v;
-}
-function camVol(x, y, base){ /* âm lượng giảm nhẹ theo khoảng cách tới tâm khung nhìn: trận gần nghe rõ, trận xa nghe nhỏ */
-  var cx = cam.x + viewW()/2, cy = cam.y + gViewH()/2; /* v6.3: tâm nghe = tâm vùng BẢO ĐẢM */
-  return base * clamp(1.12 - Math.hypot(x-cx, y-cy)/950, 0.35, 1);
+/* ===== v11 — TIẾNG VŨ KHÍ TỔNG HỢP THEO CÔNG THỨC LỚP (sound-redesign-spec §5) =====
+   Mỗi loại quân = 1 sự kiện 'w:<type>' trong động cơ Snd: lớp Transient/Body/Sub/Mech/Tail
+   với pool biến thể theo lớp + jitter — không còn file mẫu dùng chung. weaponSamples() trả
+   MÔ TẢ pool (vd ['T3','B3','M2']) phục vụ test/audit, không phải tên file. */
+var mechBarrelFlip = false;
+function weaponSamples(type){
+  var p = (typeof Snd !== 'undefined' && Snd.pools && Snd.pools[type]) || null;
+  if(!p) return [];
+  var out = []; for(var k in p) out.push(k + p[k]);
+  return out;
 }
 function playWeaponShot(type, x, y, baseVol){
-  var vol = camVol(x, y, baseVol==null ? 0.30 : baseVol);
-  if(type==='turret'){ /* V6.4: Tháp TÊN LỬA phóng rocket — tiếng pháo nén cao (vút) thay vì tia laze */
-    Snd.playEx('shoot_cannon', { vol: vol*0.55, rate: 1.7, combat: true });
-    return;
-  }
-  if(type==='archon'){ /* V6.4: đòn tâm linh — tia năng lượng + 1 lớp "thụp" trầm đi kèm */
-    Snd.playEx(pickShotVar(type), { vol: vol, combat: true });
-    Snd.playEx('explosion_small', { vol: vol*0.25, rate: 1.25, combat: true });
-    return;
-  }
-  if(type==='mech' || type==='robot'){ /* Robot 2 nòng: luân phiên biến thể + lệch pan + lệch pitch từng nòng */
+  /* baseVol cũ (0.30 tại chỗ / 0.22 khách online) -> hệ số nhân quanh mức danh định đã hiệu chuẩn;
+     khoảng cách/lowpass/pan do mô hình §3.3 trong Snd lo (không nhân camVol lần nữa). */
+  var vol = (baseVol == null ? 0.30 : baseVol) / 0.30;
+  if(type === 'mech' || type === 'robot'){ /* 2 nòng luân phiên: lệch pan + lệch pitch từng nòng */
     mechBarrelFlip = !mechBarrelFlip;
-    var bv = mechBarrelFlip ? 'shoot_laser2' : 'shoot_laser4'; lastShotVar[type] = bv;
-    Snd.playEx(bv, { vol: vol, rate: mechBarrelFlip ? 0.98 : 1.10, pan: mechBarrelFlip ? -0.25 : 0.25, combat: true });
+    Snd.weapon(type, x, y, vol, { rate: mechBarrelFlip ? 0.98 : 1.10, panAdd: mechBarrelFlip ? -0.25 : 0.25 });
     return;
   }
-  if(type==='tank' || type==='heavytank' || type==='artillery' || type==='gunship'){ /* pháo nặng: tiếng pháo + 1 lớp nổ nhỏ trầm đi kèm */
-    Snd.playEx('shoot_cannon', { vol: vol, combat: true });
-    Snd.playEx('explosion_small', { vol: vol*0.35, rate: 0.8 });
-    return;
-  }
-  Snd.playEx(pickShotVar(type), { vol: vol, combat: true });
+  Snd.weapon(type, x, y, vol, {});
 }
 /* ================= v10 — CHU TRÌNH TẤN CÔNG AIM/STRIKE =================
    Thay shoot() cũ (bắn tức thì). begin → tick (TRACK+AIM trong cooldown) → executeStrike.
@@ -4313,6 +5193,8 @@ function beginAtk(e, target){
   e.atk = { phase:'aim', t: cdLeft > 0 ? cdLeft : wu, targetId: target.id };
   if(e.aimA == null) e.aimA = Math.atan2(target.y - e.y, target.x - e.x);
   e.lastActAt = S.time;
+  /* v11 §5.4: tiếng nạp/ngắm ở ĐẦU pha AIM cho vũ khí windup dài (chỉ khi thấy được trên màn hình) */
+  if(AIM_SND[e.type] && onScreen(e.x, e.y, 60)) Snd.aimCue(e.type, e.x, e.y, e.id);
 }
 function strikeOrigin(e, ang){
   /* điểm sinh đạn THẾ GIỚI tại khoảnh khắc STRIKE: {x,y} = điểm HIỂN THỊ (đã gồm độ cao bay),
@@ -4357,6 +5239,8 @@ function tickAtk(e, dt){
   /* quân: aimA do TRACK ở hậu xử lý tick() bám liên tục (cả ngoài AIM) — tới lúc vào AIM tháp đã
      gần khớp hướng; snap 70ms cuối CHỈ cho lớp nhanh (lớp chậm giữ tốc độ quay thật + cổng góc). */
   if(!(def && def.slow) && a.t <= 0.07) e.aimA = turnToward(e.aimA == null ? want : e.aimA, want, 20 * dt);
+  /* v11 §6.2: tiếng VUNG cận chiến tại STRIKE−30ms — tách khỏi tiếng TRÚNG */
+  if(a.t <= 0.03 + dt && a.t > 0 && !a.swung && sp.projSpeed <= 0 && e.kind !== 'building'){ a.swung = true; if(onScreen(e.x, e.y)) Snd.swing(e.type, e.x, e.y); }
   a.t -= dt;
   if(a.t <= 0){
     if(dist(e.x, e.y, target.x, target.y) - edge > sp.range + 2){ a.t = 0; return; } /* mục tiêu lùi khỏi tầm hiệu dụng: giữ ngắm, chưa bắn */
@@ -4366,9 +5250,24 @@ function tickAtk(e, dt){
     e.atk = { phase:'recoil', t: RECOIL_TIME, targetId: 0 };
   }
 }
+/* v11 §6.1: bề mặt trúng đạn — khiên Protoss còn năng lượng > giáp Protoss > thịt Zerg > kim loại (Terran + nhà) */
+function impactKindOf(t){
+  if(!t) return 'metal';
+  if(t.shield != null && t.shield > 0) return 'shield';
+  var r = t.kind === 'building' ? bldRace(t.type) : unitRace(t.type);
+  if(r === 'zerg') return 'flesh';
+  if(r === 'protoss') return 'parmor';
+  return 'metal';
+}
+function metalFreqFor(t){ /* mục tiêu càng to tiếng kim loại càng trầm: 2400 -> 700Hz */
+  if(!t) return 1600;
+  var sz = t.kind === 'building' ? (BSPECS[t.type].size || 60) : (SPECS[t.type].draw || 40);
+  return clamp(2900 - sz * 26, 700, 2400);
+}
 function executeStrike(e, target){
   var isB = e.kind === 'building';
   var sp = isB ? BSPECS[e.type] : SPECS[e.type];
+  if(typeof Snd !== 'undefined' && Snd.noteShot) Snd.noteShot(); /* tension nhạc: mọi strike đều tính */
   e.cooldown = sp.cd;
   e.lastActAt = S.time;
   if(sp.projSpeed > 0) e.recoilT = RECOIL_TIME;
@@ -4402,6 +5301,7 @@ function executeStrike(e, target){
     }
     if(altBarrels) e.atkBarrel = ((e.atkBarrel || 0) + 1) % def.tips.length;
     fxMuzzle(org.x, org.y, ang, e.type === 'firebat', pk, wp0);
+    if(!isB && SPECS[e.type].flying && onScreen(e.x, e.y)) Snd.cue('sw:air', { x: org.x, y: org.y, throttleMs: 60, throttleKey: 'sw:air' }); /* §5.4 whoosh quân bay */
     if(isB){ if(e.faction === 'player' && onScreen(e.x, e.y)) playWeaponShot(e.type, e.x, e.y, 0.25); else if(S.netOnline) NET.evShot(e.faction, e.type, e.x, e.y); }
     else { if(onScreen(e.x, e.y)) playWeaponShot(e.type, e.x, e.y, 0.30); if(S.netOnline) NET.evShot(e.faction, e.type, e.x, e.y); }
   } else {
@@ -4414,12 +5314,12 @@ function executeStrike(e, target){
     spawnP({ kind:'slash', x: target.x, y: target.y - 4, vx:0, vy:0, life:0.16, max:0.16, size: slashSize, seed: ang, c: slashC });
     if(e.type === 'zealot') spawnP({ kind:'slash', x: target.x, y: target.y - 4, vx:0, vy:0, life:0.14, max:0.14, size: slashSize * 0.68, seed: ang + 0.65, c: slashC });
     if(e.type === 'ultralisk'){ for(var udi = 0; udi < 3; udi++) spawnP({ kind:'dust', x: target.x + (rng()-0.5)*22, y: target.y + (rng()-0.5)*10, vx:(rng()-0.5)*36, vy:-10-rng()*16, life:0.34, max:0.34, size:5+rng()*4, seed:rng()*6 }); addShake(target.x, target.y, 1.2); }
-    if(missed){ fxFizzle(target.x, target.y); }
+    if(missed){ fxFizzle(target.x, target.y); if(onScreen(target.x, target.y)) Snd.impact('miss', target.x, target.y, { vol: 0.8 }); }
     else {
       applyDamage(target, dmg, e.faction);
       fxImpact(target.x, target.y, target);
       if(sp.splash) splashHit(e, target, target.x, target.y, sp.splash, target);
-      if(onScreen(e.x, e.y)) Snd.playEx('hit_tick', { vol: 0.17, throttleMs: 90, combat: true });
+      if(onScreen(e.x, e.y)) Snd.meleeHit(e.type, impactKindOf(target), target.x, target.y, { freq: metalFreqFor(target) });
     }
   }
 }
@@ -4470,7 +5370,7 @@ function tickUnit(u, dt){
         var amt = Math.min(HARVEST_AMT, node.amount); node.amount -= amt;
         u.carrying = amt; u.carryType = node.type; o.phase='return';
         fxSparkle(node.x, node.y);
-        if(node.amount<=0 && node.type==='mineral') S.nodes = S.nodes.filter(function(n){return n.id!==node.id;});
+        if(node.amount<=0 && node.type==='mineral'){ S.nodes = S.nodes.filter(function(n){return n.id!==node.id;}); if(u.faction === 'player') Snd.cue('al:depleted', { x: node.x, y: node.y }); } /* v11 §7.2: mỏ cạn — cue trung tính */
       }
       return;
     }
@@ -4513,13 +5413,13 @@ function tickProjectiles(dt){
       } }
     var d = dist(p.x,p.y,t.x,t.y), step = p.speed*dt;
     if(d <= Math.max(12, step)){
-      if(p.miss){ fxFizzle(t.x, t.y); dead.push(p.id); return; } /* đạn bắn lên cao trượt: chỉ tóe lửa xám, không sát thương */
+      if(p.miss){ fxFizzle(t.x, t.y); if(onScreen(t.x, t.y)) Snd.impact('miss', t.x, t.y, { vol: 0.7 }); dead.push(p.id); return; } /* đạn bắn lên cao trượt: chỉ tóe lửa xám, không sát thương */
       if(p.fxOnly){ dead.push(p.id); return; } /* V6.4: đạn HÌNH ẢNH (nòng phụ) — chạm là tan, không sát thương/không tiếng */
       applyDamage(t, p.dmg, p.attackerFaction);
       fxImpact(t.x, t.y, t, p); /* FIX v6 + V6.4: hiệu ứng điểm chạm theo cả mục tiêu LẪN vũ khí */
       if(p.kind === 'rocket') spawnP({kind:'flash', x:t.x, y:t.y, vx:0, vy:0, life:0.13, max:0.13, size:16, seed:rng()*6, c:[255,170,80]}); /* đầu đạn tên lửa nổ chớp cam */
       if(p.kind === 'shell' || (p.splash||0) > 0) spawnP({kind:'ring', x:t.x, y:t.y, vx:0, vy:0, life:0.3, max:0.3, size: Math.max(26, (p.splash||0) + 14), seed:0, c: wpT ? wpT.c : null}); /* vòng nổ MÀU VŨ KHÍ cho MỌI đạn diện rộng (trước chỉ đạn pháo) */
-      if(!p.flame && onScreen(t.x, t.y)) Snd.playEx('hit_tick', { vol: 0.09, throttleMs: 70, combat: true }); /* đạn chạm: tick kim loại rất nhỏ xác nhận trúng */
+      if(!p.flame && onScreen(t.x, t.y)) Snd.impact(impactKindOf(t), t.x, t.y, { vol: 0.55, freq: metalFreqFor(t), throttleMs: 70, throttleKey: 'imp:proj' }); /* v11 §6.1: tiếng chạm THEO BỀ MẶT mục tiêu */
       if(p.splash){
         var tFly = entIsFlying(t);
         S.units.slice().forEach(function(e){
@@ -4549,11 +5449,15 @@ function tickProjectiles(dt){
 function tickBuildings(dt){
   S.buildings.slice().forEach(function(b){
     if(b.constructing){
+      /* v11 §6.4: tiếng thi công theo tộc (chỉ nhà người chơi + trên màn hình, throttle toàn cục) */
+      if(b.faction === 'player' && onScreen(b.x, b.y)) Snd.cue('bd:loop:' + bldRace(b.type), { x: b.x, y: b.y, throttleMs: 1400, throttleKey: 'bdloop' });
       b.progress += dt / COSTS[b.type].t;
       if(b.progress>=1){ b.progress=1; b.constructing=false; b.hp=b.maxHp; if(b.faction==='player'){ showMsg(BSPECS[b.type].name + ' xây xong!'); Snd.play('build_done', 0.8, 100); } else if(S.netOnline && isHumanF(b.faction)) NET.sendTo(b.faction, { k:'msg', text: BSPECS[b.type].name + ' xây xong!' }); if(GAS_TYPES[b.type] && isHumanF(b.faction)) autoGasHarvest(b); recalcSupply(); renderPanel(true); }
       else b.hp = Math.max(1, Math.round(b.maxHp * (0.25 + 0.75*b.progress)));
       return;
     }
+    /* v11 §6.4: Protoss MẤT ĐIỆN (chuyển trạng thái) — cue power-down 1 lần mỗi lần mất */
+    if(bldRace(b.type) === 'protoss'){ var pwNow = isPowered(b); if(b._pw === true && !pwNow && b.faction === 'player' && onScreen(b.x, b.y)) Snd.cue('bd:powerdown', { x: b.x, y: b.y }); b._pw = pwNow; }
     if(b.type==='hatchery' && !b.constructing){
       /* ẤU TRÙNG: tự sinh mỗi ~12s, tối đa 3 · TRỨNG: nở tại Tổ, Zergling nở 2 con */
       b.larvaT = (b.larvaT || 0) + dt;
@@ -4654,8 +5558,8 @@ function tickAI(dt){
           for(i=0;i<nA1;i++){ u = makeUnit(team, compAir1, base.x + sx*(50+i*46), base.y+235+((i%2)*38)); u.order={type:'attackmove',x:tgt.x,y:tgt.y,targetId:0,nodeId:0,phase:'',harvestT:0}; if(DF.hpMul!==1){ u.maxHp=Math.round(u.maxHp*DF.hpMul); u.hp=u.maxHp; if(u.shieldMax){ u.shieldMax=Math.round(u.shieldMax*DF.hpMul); u.shield=u.shieldMax; } } S.units.push(u); }
           for(i=0;i<nA2;i++){ u = makeUnit(team, compAir2, base.x + sx*90, base.y+275); u.order={type:'attackmove',x:tgt.x,y:tgt.y,targetId:0,nodeId:0,phase:'',harvestT:0}; if(DF.hpMul!==1){ u.maxHp=Math.round(u.maxHp*DF.hpMul); u.hp=u.maxHp; if(u.shieldMax){ u.shieldMax=Math.round(u.shieldMax*DF.hpMul); u.shield=u.shieldMax; } } S.units.push(u); }
         }
-        if(tgt.faction==='player') showMsg('Đợt địch thứ ' + st.wave + ' (' + (TEAM_NAMES[team] || team) + ') đang tràn đến!', 3000);
-        else if(S.netOnline && isHumanF(tgt.faction)) NET.sendTo(tgt.faction, { k:'msg', text:'Đợt địch thứ ' + st.wave + ' (' + (TEAM_NAMES[team] || team) + ') đang tràn đến!' });
+        if(tgt.faction==='player'){ showMsg('Đợt địch thứ ' + st.wave + ' (' + (TEAM_NAMES[team] || team) + ') đang tràn đến!', 3000); Snd.cue('al:wave:' + arace, {}); } /* v11 §7.2: motif đợt tới theo tộc KẺ TẤN CÔNG */
+        else if(S.netOnline && isHumanF(tgt.faction)){ NET.sendTo(tgt.faction, { k:'msg', text:'Đợt địch thứ ' + st.wave + ' (' + (TEAM_NAMES[team] || team) + ') đang tràn đến!' }); NET.sendTo(tgt.faction, { k:'wavewarn', race: arace }); }
       }
     }
     /* lính gác của đội này: thấy kẻ lạ (bất kỳ phe khác) gần tổ thì lao ra đánh */
@@ -4800,9 +5704,10 @@ function startGame(){
   var so = document.getElementById('splashOverlay'); if(so) so.classList.add('hidden');
   setPauseIcon();
   enterFullscreen();
-  Snd.playAmbient();
+  /* v11: ambient.ogg ĐÃ GỠ (spec §9.3) — không còn lớp nền file mẫu; nhạc thích ứng lo phần nền. */
   Music.start(S.playerRace);
-  Snd.play('ui_click', 0.7, 0);
+  Snd.cue('ui:confirm', { vol: 0.8 });
+  Snd.countdown();
 }
 
 /* ============ HUD & CONSOLE ============ */
@@ -6373,26 +7278,63 @@ function drawWorld(){
   }
   ctx.restore();
 }
-function hpBar(x, y, w, frac, friendly, colOverride, sel){
-  /* v10: khi ĐƯỢC CHỌN, dấu chọn nằm NGAY Ở THANH NÀY (viền trắng + dày hơn + nền đậm) — không còn
-     vòng/đĩa chọn dưới đất (Cường: "làm cả dưới chân lúc chọn quân rất khó nhìn"). */
-  var h = sel ? 6.5 : 5;
-  ctx.fillStyle = sel ? 'rgba(0,0,0,.85)' : 'rgba(0,0,0,.65)'; ctx.fillRect(x-w/2, y, w, h);
-  ctx.fillStyle = colOverride || (frac>0.35 ? (friendly?'#4ade80':'#f87171') : '#ef4444');
-  ctx.fillRect(x-w/2, y, w*clamp(frac,0,1), h);
-  if(sel){ ctx.strokeStyle = 'rgba(255,255,255,.95)'; ctx.lineWidth = 1.4; ctx.strokeRect(x-w/2, y, w, h); }
+/* v11 — THANH TRÊN ĐẦU, bản CUỐI theo Cường (23:35 + 23:37):
+   - Dải MÀU ĐỘI (teamColor): LUÔN hiện trên MỌI quân/nhà, mọi phe — đây là dấu nhận phe duy nhất trên đầu.
+   - Thanh MÁU: CHỈ hiện khi hp < max (đã bị thương); hồi/sửa đầy -> ẩn hẳn.
+   - Thanh KHIÊN (Protoss): chỉ hiện khi khiên đã hao hoặc máu đã tổn (nguyên vẹn = chỉ còn dải đội).
+   - Kiểu dáng GỌN: mỏng ~3px, BO TRÒN hai đầu, hơi trong, không viền dày — cả cụm đọc như MỘT chi tiết mảnh.
+   - Chọn quân KHÔNG còn nhấn ở thanh (bỏ viền trắng/dày của v10) — dấu chọn là VÒNG DƯỚI ĐẤT (drawSelRing). */
+function rrPath(x, y, w, h){
+  var r = Math.min(h / 2, w / 2);
+  ctx.beginPath();
+  if(ctx.roundRect) ctx.roundRect(x, y, w, h, r); else ctx.rect(x, y, w, h);
 }
-function shieldBar(e, x, y, w){ /* thanh KHIÊN xanh dương nằm ngay trên thanh máu (Protoss) */
-  if(!e.shieldMax) return;
-  ctx.fillStyle='rgba(0,0,0,.65)'; ctx.fillRect(x-w/2, y, w, 4);
-  ctx.fillStyle='#38bdf8'; ctx.fillRect(x-w/2, y, w*clamp(e.shield/e.shieldMax,0,1), 4);
+function drawOverhead(x, yBot, w, faction, hpFrac, shFrac){
+  var y = yBot;
+  if(hpFrac !== null && hpFrac !== undefined){
+    y -= 3.4;
+    rrPath(x - w/2, y, w, 3.4); ctx.fillStyle = 'rgba(6,10,8,0.5)'; ctx.fill();
+    rrPath(x - w/2, y, Math.max(3.4, w * clamp(hpFrac, 0, 1)), 3.4);
+    ctx.fillStyle = hpFrac > 0.55 ? 'rgba(74,222,128,0.92)' : (hpFrac > 0.28 ? 'rgba(250,204,21,0.92)' : 'rgba(248,113,113,0.95)'); ctx.fill();
+    y -= 1.6;
+  }
+  if(shFrac !== null && shFrac !== undefined){
+    y -= 3;
+    rrPath(x - w/2, y, w, 3); ctx.fillStyle = 'rgba(6,10,16,0.45)'; ctx.fill();
+    rrPath(x - w/2, y, Math.max(3, w * clamp(shFrac, 0, 1)), 3); ctx.fillStyle = 'rgba(56,189,248,0.9)'; ctx.fill();
+    y -= 1.6;
+  }
+  y -= 3;
+  rrPath(x - w/2, y, w, 3); ctx.globalAlpha = 0.88; ctx.fillStyle = teamColor(faction); ctx.fill(); ctx.globalAlpha = 1;
 }
+/* v11 — VÒNG CHỌN dưới đất (Cường làm rõ 23:33): vòng TRUNG TÍNH kiểu RTS cổ điển, CHỈ hiện cho
+   quân/nhà ĐANG ĐƯỢC CHỌN (đơn + cả nhóm). KHÔNG phải đĩa màu phe: đĩa/viền màu đội dưới đất vẫn bỏ hẳn. */
+function drawSelRing(x, y, rx, ry){
+  ctx.save();
+  ctx.beginPath(); ctx.ellipse(x, y, rx, ry, 0, 0, 6.2832);
+  ctx.fillStyle = 'rgba(74,222,128,0.08)'; ctx.fill();
+  ctx.strokeStyle = 'rgba(74,222,128,0.38)'; ctx.lineWidth = 3.4; ctx.stroke();
+  ctx.beginPath(); ctx.ellipse(x, y, rx, ry, 0, 0, 6.2832);
+  ctx.strokeStyle = 'rgba(134,239,172,0.95)'; ctx.lineWidth = 1.7; ctx.stroke();
+  ctx.restore();
+}
+/* v11 — RÀ NEO SPRITE NHÀ (audit bằng PIL trên alpha của từng sprite 384px, 2026-10-26):
+   "hover" = đáy tranh trừ đáy footprint (size/2): chỉ barracks DƯƠNG (+9,7px — tranh nổi hẳn lên khỏi
+   bóng, đúng nhà Cường chê "lơ lửng"); mọi nhà khác ≤ 0 (tranh tràn qua mép đất = đã bám đất).
+   BLD_DY = độ dịch XUỐNG khi VẼ để đáy tranh chạm đúng mép footprint. */
+var BLD_DY = { barracks: 10 };
 function drawBuilding(b){
   var bs = BSPECS[b.type], hs = bs.size/2, pc = b.faction==='player';
   var dim = (b.faction!=='player' && fogAtWorld(b.x,b.y)===1);
-  /* bóng đổ MỀM dưới nhà (sprite gradient nung sẵn — mép tan, không còn elip đặc) */
-  drawShadow(b.x + 5, b.y + hs*0.94, hs*2.3, hs*0.68, 0.95);
-  /* v10: KHÔNG còn khung chọn quanh nhà — nhà được chọn => thanh máu trên đầu nhấn viền trắng (hpBar sel). */
+  var bDy = BLD_DY[b.type] || 0; /* v11: neo dọc đã rà (barracks +10 — hết lơ lửng) */
+  /* v11 (Cường 23:33): nhà NGỒI HỢP vào nền — ĐẾ tộc phai ra ngoài footprint + bóng TIẾP ĐẤT ôm chân
+     + dải AO mảnh ở mép đất; bóng mềm tổng hạ alpha vì đã có lớp tiếp đất riêng. */
+  drawApron(b.x, b.y + hs*0.34, hs*2.9, hs*1.85, bldRace(b.type));
+  drawShadow(b.x + 5, b.y + hs*0.94, hs*2.3, hs*0.68, 0.55);
+  drawShadow(b.x, b.y + hs*0.88, bs.size*1.05, bs.size*0.34, 0.55);
+  drawShadow(b.x, b.y + hs*0.99, bs.size*0.98, 11, 0.35);
+  /* v11: nhà ĐANG ĐƯỢC CHỌN -> vòng chọn TRUNG TÍNH dưới đất (không khung/viền màu phe như bản cũ) */
+  if(S.selectedBuildingId === b.id) drawSelRing(b.x, b.y + hs*0.88, hs*1.14, hs*0.52);
   ctx.save(); if(dim) ctx.globalAlpha = 0.55;
   var drawn = false;
   if(b.constructing && b.faction==='player'){
@@ -6403,7 +7345,7 @@ function drawBuilding(b){
     if(imgReady(im)){
       var aSpr = brace==='zerg' ? (pr <= 0.6 ? 0.25 : 0.25 + 0.75*(pr - 0.6)/0.4) : (0.25 + 0.75*pr);
       ctx.save(); ctx.globalAlpha = aSpr;
-      ctx.drawImage(im, b.x - bs.draw/2, b.y - bs.draw/2, bs.draw, bs.draw);
+      ctx.drawImage(im, b.x - bs.draw/2, b.y + bDy - bs.draw/2, bs.draw, bs.draw);
       ctx.restore(); drawn = true;
     }
     ctx.fillStyle = brace==='zerg' ? 'rgba(168,85,247,' + (0.16*(1 - pr)).toFixed(3) + ')' : (brace==='protoss' ? 'rgba(56,189,248,' + (0.20*(1 - pr)).toFixed(3) + ')' : 'rgba(45,212,191,' + (0.20*(1 - pr)).toFixed(3) + ')');
@@ -6413,8 +7355,8 @@ function drawBuilding(b){
     ctx.fillStyle = '#4ade80'; ctx.fillRect(b.x-hs, b.y-hs-13, bs.size*pr, 5);
   } else {
     var turLayered = b.type === 'turret' && imgReady(IMGL.turret_base) && imgReady(IMGL.turret_launcher) && (!!b.atk || !!defEnemyNear(b, BSPECS.turret.range * 1.15));
-    drawn = turLayered ? drawSprite(IMGL.turret_base, b.x, b.y, bs.draw, bs.draw, false) : drawSprite(UIMG(IMG, bs.spr, b.faction), b.x, b.y, bs.draw, bs.draw, false);
-    if(turLayered) drawAimLayer(b, BAIMDEF.turret, b.x, b.y, bs.draw, b.aimA || 0);
+    drawn = turLayered ? drawSprite(IMGL.turret_base, b.x, b.y + bDy, bs.draw, bs.draw, false) : drawSprite(UIMG(IMG, bs.spr, b.faction), b.x, b.y + bDy, bs.draw, bs.draw, false);
+    if(turLayered) drawAimLayer(b, BAIMDEF.turret, b.x, b.y + bDy, bs.draw, b.aimA || 0);
     if(b.type === 'cannon' && b.atk && b.atk.phase === 'aim'){ /* v10: 2 vòng sáng QUAY quanh lõi + lõi nạp sáng dần */
       var cdef = BAIMDEF.cannon, chg2 = 1 - clamp(b.atk.t / cdef.wu, 0, 1);
       var rpx = b.x + (cdef.ring.x - 0.5) * bs.draw, rpy = b.y + (cdef.ring.y - 0.5) * bs.draw;
@@ -6423,6 +7365,12 @@ function drawBuilding(b){
         ctx.beginPath(); ctx.arc(rpx, rpy, rr, ra0, ra0 + 4.2); ctx.stroke(); }
       ctx.restore();
       fxChargeGlow(b.x + (cdef.pt.x - 0.5) * bs.draw, b.y + (cdef.pt.y - 0.5) * bs.draw, 6 + 7 * chg2, 0.3 + 0.7 * chg2, '125,225,252');
+    }
+    if(b.type === 'sunken' && b.atk){ /* v11: NGÒI đâm theo chu trình AIM/STRIKE — vươn trong AIM, đỉnh tại STRIKE, rút trong RECOIL */
+      var sext = 0;
+      if(b.atk.phase === 'aim') sext = 1 - clamp(b.atk.t / BAIMDEF.sunken.wu, 0, 1);
+      else if(b.atk.phase === 'recoil') sext = clamp(b.atk.t / RECOIL_TIME, 0, 1);
+      if(sext > 0.02) drawSunkenSpine(b, sext);
     }
     if(b.faction==='player' && !!MAIN_TYPES[b.type] && S.mainUpgrade && S.mainUpgrade.bid===b.id){ /* nhà này đang NÂNG CẤP: thanh xanh trên đầu */
       var upp = clamp(S.mainUpgrade.t / S.mainUpgrade.total, 0, 1);
@@ -6481,7 +7429,7 @@ function drawBuilding(b){
     ctx.fillStyle = pc ? (bl ? '#14532d' : '#4ade80') : (bl ? '#450a0a' : '#f87171');
     ctx.beginPath(); ctx.arc(b.x+hs-7, b.y-hs+5, 2.6, 0, 6.29); ctx.fill();
   }
-  /* v10: BỎ dải/viền màu đội dưới chân nhà (Cường 21:53) — nhà nhận phe bằng thanh máu trên đầu. */
+  /* v10: BỎ dải/viền màu đội dưới chân nhà (Cường 21:53) — giữ nguyên ở v11; vòng CHỌN trung tính ở khối đất phía trên là việc khác. */
   /* FIX v6 — VIỀN VÀNG + CHẤM CẤP cho nhà sản xuất/nhà chính đạt Lv2+: vẽ phủ lên sprite (không sửa ảnh gốc) */
   var lvShow = TRAIN_FROM[b.type] ? typeLevel(b.faction, b.type) : (!!MAIN_TYPES[b.type] ? (b.faction==='player' ? (b.mainLv||1) : factionMainLevel(b.faction)) : 1);
   if(!b.constructing && lvShow >= 2){
@@ -6499,8 +7447,9 @@ function drawBuilding(b){
       ctx.save(); ctx.translate(pxd, pyd); ctx.rotate(Math.PI/4); ctx.fillRect(-3.1, -3.1, 6.2, 6.2); ctx.restore();
     }
   }
-  if(b.shieldMax) shieldBar(b, b.x, b.y-hs-20, bs.size);
-  hpBar(b.x, b.y-hs-14, bs.size, b.hp/b.maxHp, pc, S.teamColorMode ? teamColor(b.faction) : null, S.selectedBuildingId===b.id);
+  var bDmg = b.hp < b.maxHp;
+  var bShF = b.shieldMax ? clamp(b.shield / b.shieldMax, 0, 1) : null;
+  drawOverhead(b.x, b.y - hs - 9, bs.size, b.faction, bDmg ? b.hp / b.maxHp : null, (bShF !== null && (bShF < 1 || bDmg)) ? bShF : null);
   ctx.fillStyle = dim ? '#9aa7b8' : '#eaf6ff'; ctx.font='bold 11px Arial'; ctx.textAlign='center';
   ctx.fillText(bs.name, b.x, b.y+hs+16);
 }
@@ -6538,6 +7487,21 @@ function drawAimLayer(e, def, bx, by, D, ang){
   }
   if(def.layerN) one(def.layerN, def.pivot, def.tips[0]);
   if(def.layerN2 && def.pivot2) one(def.layerN2, def.pivot2, def.tips2[0]);
+}
+/* v11 — NGÒI SUNKEN (bản vẽ Cường DUYỆT 2026-10-26 23:09, asset M5 của spec animation):
+   đoạn ngòi phân đốt vẽ sẵn quay quanh gốc đuôi (0.498, 0.508) theo aimA; VƯƠN DẦN trong pha
+   AIM (ext 0->1 theo windup), giữ đỉnh ở khoảnh khắc STRIKE, RÚT VỀ trong pha recoil.
+   Lộ hình bằng CLIP dọc trục (không co giãn — bề ngang đốt không bị bóp méo); xoay 360° nên
+   mọi hướng đâm đều đúng (bản duyệt gồm E/NE/S — cùng một đoạn ngòi xoay quanh pivot). */
+function drawSunkenSpine(b, ext){
+  var im = IMGL.sunken_spine; if(!im || !imgReady(im)) return false;
+  var D = BSPECS.sunken.draw, pv = BAIMDEF.sunken.pivot;
+  var px = b.x + (pv.x - 0.5) * D, py = b.y + (BLD_DY[b.type] || 0) + (pv.y - 0.5) * D;
+  ctx.save(); ctx.translate(px, py); ctx.rotate(b.aimA || 0);
+  ctx.beginPath(); ctx.rect(-D * 0.03, -D * 0.17, (0.03 + ext * 0.475) * D, D * 0.34); ctx.clip();
+  ctx.drawImage(im, -pv.x * D, -pv.y * D, D, D);
+  ctx.restore();
+  return true;
 }
 function fxChargeGlow(x, y, r, frac, col){
   var g = ctx.createRadialGradient(x, y, 0, x, y, r);
@@ -6581,12 +7545,14 @@ function drawUnit(u){
   /* bóng đổ MỀM (sprite gradient nung sẵn): neo đất, quân bay bóng nhạt + lệch theo độ cao */
   var shS = (an.hover || sp.flying) ? 1 - 0.05*(hovY/(an.amp||2.5)) : 1;
   drawShadow(u.x + (sp.flying ? 16 : 3), u.y + sp.draw*0.34, sp.draw*0.92*shS, sp.draw*0.36*shS, sp.flying ? 0.55 : 0.9);
+  /* v11 (Cường làm rõ 23:33): VÒNG CHỌN dưới đất KHÔI PHỤC — trung tính, chỉ quân đang được chọn (đơn + nhóm) */
+  if(S.selectedIds.indexOf(u.id) >= 0) drawSelRing(u.x, u.y + sp.draw*0.36, sp.draw*0.47, sp.draw*0.20);
   /* quầng sáng thở của Protoss mặt đất: neo tại chân quân (không chạy theo dy), chỉ nhịp alpha */
   if(pose.glow > 0.03){
     ctx.fillStyle = 'rgba(125,225,252,' + (0.13 * pose.glow).toFixed(3) + ')';
     ctx.beginPath(); ctx.ellipse(u.x, u.y + sp.draw*0.32, sp.draw*0.55, sp.draw*0.22, 0, 0, 6.29); ctx.fill();
   }
-  /* v10: BỎ vòng chọn dưới chân — quân được chọn => thanh máu trên đầu viền trắng dày (hpBar sel). */
+  /* (v11: vòng chọn dưới chân ĐÃ KHÔI PHỤC ở khối bóng đổ phía trên — Cường làm rõ 23:33) */
   /* (nhịp "thở" scale 0.8% cũ đã THAY bằng lớp nhàn idlePoseOf ở trên — biên độ rõ hơn, theo tộc) */
   /* FIX v6 — GIẬT LÙI khi bắn (mọi quân bắn xa) + LAO TỚI khi chém cận chiến: lệch vị trí VẼ, không đổi vị trí thật */
   var offX = 0, offY = 0;
@@ -6650,9 +7616,9 @@ function drawUnit(u){
       ctx.strokeStyle='rgba(0,0,0,.5)'; ctx.lineWidth=1; ctx.stroke();
     }
   }
-  if(u.shieldMax) shieldBar(u, u.x, u.y + flyY - sp.draw/2 - 15, 30);
-  var uSel = S.selectedIds.indexOf(u.id)>=0;
-  if(u.hp < u.maxHp || uSel) hpBar(u.x, u.y + flyY - sp.draw/2 - 9, 30, u.hp/u.maxHp, pc, S.teamColorMode ? teamColor(u.faction) : null, uSel);
+  var uDmg = u.hp < u.maxHp;
+  var uShF = u.shieldMax ? clamp(u.shield / u.shieldMax, 0, 1) : null;
+  drawOverhead(u.x, u.y + flyY - sp.draw/2 - 4, 30, u.faction, uDmg ? u.hp / u.maxHp : null, (uShF !== null && (uShF < 1 || uDmg)) ? uShF : null);
 }
 function drawMinimap(){
   var w = mmCanvas.clientWidth || 104, h = mmCanvas.clientHeight || 80, sx = w/WORLD_W, sy = h/WORLD_H;
@@ -6755,7 +7721,7 @@ function doLeftAction(wx, wy, evT){
       S.selectedBuildingId = 0; cmdPage = 'main'; Snd.play('select', 0.6, 120);
       lastTapUnit = null;
     } else {
-      S.selectedIds=[pick.unit.id]; S.selectedBuildingId=0; cmdPage='main'; Snd.play('select', 0.6, 120);
+      S.selectedIds=[pick.unit.id]; S.selectedBuildingId=0; cmdPage='main'; Snd.ack(unitRace(pick.unit.type), 'select', { unitKey: pick.unit.id, vol: 0.9, legacy: 'select' }); /* v11 §7.1: ack theo TỘC QUÂN + khóa chống spam (chọn >3 lần/2s -> grumble) */
       lastTapUnit = { t: nowT, type: pick.unit.type, x: wx, y: wy };
     }
   }
@@ -6905,7 +7871,7 @@ document.getElementById('btnStart').addEventListener('click', startGame);
 (function(){
   var sp = document.getElementById('splashOverlay'), st = document.getElementById('startOverlay');
   if(!sp || !st) return;
-  document.getElementById('btnOffline').addEventListener('click', function(){ sp.classList.add('hidden'); st.classList.remove('hidden'); Snd.play('ui_click', 0.7, 40); });
+  document.getElementById('btnOffline').addEventListener('click', function(){ sp.classList.add('hidden'); st.classList.remove('hidden'); Snd.play('ui_click', 0.7, 40); Music.startMenu(chosenRace); }); /* v11 §8.4: nhạc menu từ màn chọn chế độ */
   document.getElementById('btnBackSplash').addEventListener('click', function(){ st.classList.add('hidden'); sp.classList.remove('hidden'); Snd.play('ui_click', 0.7, 40); });
   document.getElementById('btnOnline').addEventListener('click', function(){
     Snd.play('ui_click', 0.7, 40);
@@ -6915,9 +7881,9 @@ document.getElementById('btnStart').addEventListener('click', startGame);
 /* SÁCH HƯỚNG DẪN (FIX J): mở từ màn bắt đầu, đóng bằng ✕ hoặc chạm ra ngoài sách */
 (function(){
   var ov = document.getElementById('bookOverlay'); if(!ov) return;
-  document.getElementById('btnBook').addEventListener('click', function(){ buildDict(); buildMapGrid(); ov.classList.remove('hidden'); });
-  document.getElementById('btnBookClose').addEventListener('click', function(){ ov.classList.add('hidden'); });
-  ov.addEventListener('click', function(e){ if(e.target === ov) ov.classList.add('hidden'); });
+  document.getElementById('btnBook').addEventListener('click', function(){ buildDict(); buildMapGrid(); ov.classList.remove('hidden'); Snd.cue('ui:page', {}); }); /* v11 §8.1: tiếng lật sách */
+  document.getElementById('btnBookClose').addEventListener('click', function(){ ov.classList.add('hidden'); Snd.cue('ui:back', {}); });
+  ov.addEventListener('click', function(e){ if(e.target === ov){ ov.classList.add('hidden'); Snd.cue('ui:back', {}); } });
   ov.querySelectorAll('.bookTabs button').forEach(function(bn){
     bn.addEventListener('click', function(){
       ov.querySelectorAll('.bookTabs button').forEach(function(x){ x.classList.toggle('sel', x === bn); });
@@ -7134,7 +8100,7 @@ function setTeamsChoice(n){ /* API tương thích (__RTS__/test): n phe = n−1 
   syncTeamsFromRows();
   resetGame();
 }
-function setRaceChoice(r){ if(!RACES[r]) return; chosenRace = r; try{ localStorage.setItem('ctvt_race', r); }catch(e){} resetGame(); }
+function setRaceChoice(r){ if(!RACES[r]) return; chosenRace = r; try{ localStorage.setItem('ctvt_race', r); }catch(e){} Music.setRace(r); resetGame(); } /* v11 §8.4: nhạc menu theo tộc đang chọn ở màn setup */
 
 /* ============ PWA: đăng ký Service Worker (chỉ http/https) + nút "Cài app" kín đáo ở màn bắt đầu ============ */
 try {
@@ -7696,9 +8662,11 @@ NET.connGone = function(c){
   if(NET.phase === 'room' && c.slot !== undefined && c.slot >= 0 && NET.room){
     NET.room.slots[c.slot].filled = false;
     NET.broadcastRoom();
+    Snd.cue('lb:leave', {}); NET._readyCueAt = 0; /* v11 §8.2: khách rời phòng + mở lại cue sẵn sàng */
     return;
   }
   if(NET.phase === 'match' && c.faction){
+    Snd.cue('lb:lost', {}); /* v11 §8.2: mất người giữa trận — motif gãy */
     NET.takeover(c.faction);
   }
 };
@@ -7964,12 +8932,16 @@ NET.applySnap = function(m){
       if(CORPSES.length >= 40) CORPSES.shift();
       CORPSES.push({ type: '', spr: ev.spr, x: ev.x, y: ev.y, face: ev.face || 0, faction: ev.faction, t: 0, flying: !!ev.flying, zerg: !!ev.zerg, draw: ev.draw || 48 });
       fxExplosion(ev.x, ev.y, false);
+      if(onScreen(ev.x, ev.y)){ if(ev.flying) Snd.boomFall(ev.zerg ? 'zerg' : raceOfFaction(ev.faction), ev.x, ev.y, 0.7); else Snd.boom('small', ev.zerg ? 'zerg' : raceOfFaction(ev.faction), ev.x, ev.y, 0.7); }
     } else if(ev.kind === 'boom'){
       fxExplosion(ev.x, ev.y, true);
       BOOMS.push({ x: ev.x, y: ev.y, t: 0, total: 1.2, emit: 0 });
       addShake(ev.x, ev.y, ev.main ? 3 : 2);
+      if(onScreen(ev.x, ev.y)) Snd.boom(ev.main ? 'huge' : 'med', raceOfFaction(ev.faction), ev.x, ev.y, 0.9); /* v11: khách nghe tiếng nhà sập từ sự kiện mạng */
     } else if(ev.kind === 'shot'){
-      if(onScreen(ev.x, ev.y) && performance.now() - (NET._shotSndAt || 0) > 70){ NET._shotSndAt = performance.now(); playWeaponShot(ev.type, ev.x, ev.y, 0.22); }
+      /* v11 §9.3(d): BỎ throttle toàn cục 70ms cũ — trần giọng của engine đã đủ chống ngập; giữ throttle cũ sẽ nuốt >5% phát bắn */
+      if(typeof Snd !== 'undefined' && Snd.noteShot) Snd.noteShot(); /* tension nhạc phía khách: tính cả phát ngoài khung */
+      if(onScreen(ev.x, ev.y)) playWeaponShot(ev.type, ev.x, ev.y, 0.22);
     }
   });
   panelSig = '';
@@ -8018,6 +8990,7 @@ function netGuestFrame(dt){
 NET.setHomeStatus = function(t){ var el = document.getElementById('netHomeStatus'); if(el) el.textContent = t || ''; };
 NET.setRoomStatus = function(t){ var el = document.getElementById('netRoomStatus'); if(el) el.textContent = t || ''; };
 NET.openLobby = function(){
+  Music.startMenu(chosenRace); /* v11 §8.4: nhạc menu ở sảnh online */
   document.getElementById('netOverlay').classList.remove('hidden');
   document.getElementById('netHome').classList.remove('hidden');
   document.getElementById('netRoom').classList.add('hidden');
@@ -8052,6 +9025,7 @@ NET.createRoom = function(opts){
       NET.applyPreset(opts.preset || 'duel');
       NET.phase = 'room';
       NET.showRoom();
+      Snd.cue('lb:open', {}); /* v11 §8.2: tạo phòng xong — motif kênh mở */
     }, function(wconn){
       NET.wireHostConn(wconn);
     });
@@ -8071,11 +9045,16 @@ NET.wireHostConn = function(w){
       NET.room.slots[slot].filled = true;
       w.send({ k:'welcome', slot: slot, room: NET.pubRoom() });
       NET.broadcastRoom();
+      Snd.cue('lb:join', {}); /* v11 §8.2: khách vào phòng */
     }
-    else if(m.k === 'race'){ if(w.slot > 0 && NET.room.slots[w.slot].kind === 'guest'){ NET.room.slots[w.slot].race = m.race; NET.broadcastRoom(); } }
+    else if(m.k === 'race'){ if(w.slot > 0 && NET.room.slots[w.slot].kind === 'guest'){ NET.room.slots[w.slot].race = m.race; NET.broadcastRoom(); Snd.cue('ui:tick', { vol: 0.7 }); } }
     else if(m.k === 'intent'){ NET.execIntent(w, m); }
     else if(m.k === 'nping'){ w.send({ k:'npong', t: m.t }); }
-    else if(m.k === 'ready'){ NET.readySet[w.faction || ('slot' + w.slot)] = true; }
+    else if(m.k === 'ready'){ NET.readySet[w.faction || ('slot' + w.slot)] = true;
+      /* v11 §8.2: TẤT CẢ khách đã sẵn sàng -> cue 3 nốt lên, 1 lần mỗi đợt */
+      var allR = NET.room && NET.room.slots.every(function(s2, i2){ return i2 === 0 || s2.kind !== 'guest' || !s2.filled || NET.readySet['slot' + i2]; });
+      if(allR && !NET._readyCueAt){ NET._readyCueAt = 1; Snd.cue('lb:ready', {}); }
+    }
     else if(m.k === 'rematch'){ showMsg('Khách xin ĐẤU LẠI — bấm ↻ ĐẤU LẠI ở màn kết quả để cả phòng về sảnh phòng.', 3600); }
   };
   w.onClose = function(){ NET.connGone(w); };
@@ -8103,11 +9082,13 @@ NET.guestOnData = function(m){
   if(!m || !m.k) return;
   switch(m.k){
     case 'err': NET.setHomeStatus('❌ ' + (m.text || 'Lỗi từ chủ phòng')); NET.phase = 'off'; NET.role = 'off'; break;
-    case 'welcome': NET.mySlot = m.slot; NET.room = m.room; NET.phase = 'room'; NET.showRoom(); break;
+    case 'welcome': NET.mySlot = m.slot; NET.room = m.room; NET.phase = 'room'; NET.showRoom(); Snd.cue('lb:join', {}); Music.startMenu(chosenRace); break; /* v11 §8.2/§8.4 */
     case 'room': NET.room = m.room; if(NET.phase === 'room') NET.renderRoom(); break;
     case 'start': NET.guestStart(m.cfg); break;
     case 'snap': NET.applySnap(m); break;
     case 'msg': showMsg(m.text, 3000); break;
+    case 'wavewarn': Snd.cue('al:wave:' + (m.race || 'zerg'), {}); break; /* v11 §7.2: đợt địch nhắm vào phe mình */
+    case 'allywarn': Snd.cue('al:ally', {}); break; /* v11 §7.2: đồng minh bị đánh (biến thể −4dB) */
     case 'npong': NET.rtt = Math.max(0, Math.round(performance.now()) - m.t); NET.updateChip(); break;
     case 'elim': NET.elim = true; document.getElementById('elimBanner').classList.remove('hidden'); showMsg('☠ Căn cứ của bạn đã mất — phe của bạn vẫn đang chiến đấu!', 4000); break;
     case 'over': NET.phase = 'over'; endGame(m.win ? 'win' : 'lose'); document.getElementById('endTitle').textContent = m.win ? 'THẮNG! Phe của bạn đã quét sạch đối thủ' : 'THUA! Phe của bạn đã bị quét sạch'; NET.showEndButtons(); break;
@@ -8117,6 +9098,7 @@ NET.guestOnData = function(m){
 };
 NET.hostGone = function(){
   if(NET.role !== 'guest') return;
+  Snd.cue('lb:lost', {}); /* v11 §8.2: motif FM gãy khi mất chủ phòng */
   NET.setHomeStatus('❌ Mất kết nối tới chủ phòng — trận đã kết thúc.');
   NET.teardown('lobby');
 };
@@ -8129,6 +9111,7 @@ NET.backToRoom = function(){
   document.getElementById('elimBanner').classList.add('hidden');
   NET.hideChip();
   Music.stop();
+  Snd.cue('lb:open', {}); Music.startMenu(chosenRace); /* v11 §8.2/§8.4: về sảnh phòng = motif kênh mở + nhạc menu */
   activateSpawnVariant(chosenMap, null); /* v9: trả bố cục về góc (FFA) trước trận mới */
   resetGame();
   if(NET.role === 'host') NET.broadcastRoom(); else NET.showRoom();
