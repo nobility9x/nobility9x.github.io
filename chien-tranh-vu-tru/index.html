@@ -748,7 +748,7 @@ html,body{width:100%;height:100%;height:100dvh;overflow:hidden;background:#000;c
 .typeTab img{width:12px;height:12px;object-fit:contain;pointer-events:none}
 .typeTab .tc{font-size:9px;font-weight:900;color:#eaf6ff}
 .typeTab.active{border-color:var(--acc, #2dd4bf);box-shadow:0 0 6px var(--acc, rgba(45,212,191,.5))}
-#selRow #statBar{margin-left:auto;height:auto;padding:0;font-size:10px;gap:5px;flex:none}
+#selRow #statBar{margin-left:2px;height:auto;padding:0;font-size:10px;gap:5px;flex:none} /* v6.2: bỏ đẩy ra xa (auto) — dòng "Đợt …" ngồi ngay sau nội dung, hết khoảng trống */
 #infoPanel{align-items:stretch;padding:0 1px}
 #infoPanel .portraitBox{width:54px;height:auto;align-self:stretch}
 #infoPanel .infoMain{justify-content:center}
@@ -796,7 +796,17 @@ html,body{width:100%;height:100%;height:100dvh;overflow:hidden;background:#000;c
 .upgBtn:disabled{background:#1a2029;border-color:#3c465a;color:#7d8aa0;cursor:default}
 .upgBtn:disabled .upgCost{color:#7d8aa0}
 .upgBtn .upgProg{position:absolute;left:0;bottom:0;height:3px;background:#22d3ee}
-.upgCap{flex:none;font-size:7px;line-height:1.1;color:#9fb4cc;text-align:center}
+/* — THẺ NHÀ CHIA ĐÔI + THU GỌN (v6.2): ô trên = tên/cấp/máu, ô dưới (.prodBox) = sản xuất/trạng thái.
+   Nội dung ÔM SÁT từ trên xuống (không còn justify-center để khoảng trống giữa thẻ);
+   dòng trạng thái đợt địch (#statBar) bỏ margin-left:auto -> ngồi ngay sau nội dung thẻ/tab. — */
+#infoPanel .infoMain.bCard{justify-content:flex-start;gap:3px;padding:1px 0}
+.bTop{display:flex;flex-direction:column;gap:1px;min-width:0}
+.bTop .infoLine2{gap:6px}
+.lvPips{font-size:8px;color:#7dd7ff;letter-spacing:1px}
+.prodBox{margin-top:1px;padding:2px 5px;background:rgba(10,15,22,.55);border:1px solid #333d4f;border-radius:3px;display:flex;flex-direction:column;gap:2px;min-width:0}
+.prodTxt{font-size:10px;line-height:1.25;color:#9fb4cc;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.prodBox .queueRow{gap:3px;flex-wrap:nowrap}
+.qSlot.empty{background:rgba(10,15,22,.35);border:1px dashed #2a3342}
 /* — LỚP PHỦ TẠM DỪNG (v6.1): chứa lối về màn hình chính thay nút MENU cũ — */
 #pauseOverlay .card{text-align:center}
 #pauseOverlay .card button{display:block;width:100%;margin-top:10px}
@@ -1220,32 +1230,99 @@ function mapLayout(mapId, teams){
   var map = MAPS[mapId], out = { bases:[], nodes:[] }, i;
   out.bases.push({faction:'player', x:map.bases.player[0], y:map.bases.player[1]});
   ['ai1','ai2','ai3'].slice(0, Math.max(1, teams-1)).forEach(function(t){ out.bases.push({faction:t, x:map.bases[t][0], y:map.bases[t][1]}); });
+  /* node được gom theo NHÓM mỏ (mỗi căn cứ 1 nhóm, mỗi mỏ mở rộng 1 nhóm, mỏ phụ đứng riêng):
+     lượt dời chống-dốc ở dưới dời CẢ NHÓM như một khối cứng để vòng khoáng không bị xé lẻ */
+  var groups = [];
   out.bases.forEach(function(b){
-    var fx = b.x > map.w*0.6 ? -1 : 1;
-    [[195,-80],[255,35],[170,70],[315,105],[225,-165]].forEach(function(o){ out.nodes.push({type:'mineral', x:b.x+o[0]*fx, y:b.y+o[1], amount:1500}); });
-    out.nodes.push({type:'gas', x:b.x-115*fx, y:b.y-235, amount:5000});
+    var fx = b.x > map.w*0.6 ? -1 : 1, g = [];
+    [[195,-80],[255,35],[170,70],[315,105],[225,-165]].forEach(function(o){ var nd = {type:'mineral', x:b.x+o[0]*fx, y:b.y+o[1], amount:1500}; out.nodes.push(nd); g.push(nd); });
+    var gd = {type:'gas', x:b.x-115*fx, y:b.y-235, amount:5000}; out.nodes.push(gd); g.push(gd);
+    groups.push(g);
   });
   /* các mỏ MỞ RỘNG do builder bản đồ cấp (natural / mỏ 3 / mỏ giàu): vòng khoáng + 1 mạch khí mỗi mỏ */
   (map.expansions || []).forEach(function(ex){
-    var offs = ex.rich ? [[-110,-35],[0,-60],[110,-35],[-70,40],[70,40],[0,85],[-130,15]] : [[-95,-30],[0,-55],[95,-30],[-60,35],[60,35]];
-    offs.forEach(function(o){ out.nodes.push({type:'mineral', x:ex.x+o[0], y:ex.y+o[1], amount: ex.rich ? 2500 : 1500}); });
-    out.nodes.push({type:'gas', x:ex.x + (ex.rich ? 140 : 120), y:ex.y - 95, amount:5000});
+    var offs = ex.rich ? [[-110,-35],[0,-60],[110,-35],[-70,40],[70,40],[0,85],[-130,15]] : [[-95,-30],[0,-55],[95,-30],[-60,35],[60,35]], g = [];
+    offs.forEach(function(o){ var nd = {type:'mineral', x:ex.x+o[0], y:ex.y+o[1], amount: ex.rich ? 2500 : 1500}; out.nodes.push(nd); g.push(nd); });
+    var gd = {type:'gas', x:ex.x + (ex.rich ? 140 : 120), y:ex.y - 95, amount:5000}; out.nodes.push(gd); g.push(gd);
+    groups.push(g);
   });
-  (map.extra || []).forEach(function(e){ out.nodes.push({type:e[0], x:map.w*e[1], y:map.h*e[2], amount: e[0]==='gas' ? 5000 : 1500}); });
+  (map.extra || []).forEach(function(e){ var nd = {type:e[0], x:map.w*e[1], y:map.h*e[2], amount: e[0]==='gas' ? 5000 : 1500}; out.nodes.push(nd); groups.push([nd]); });
   for(i=0;i<out.nodes.length;i++){ out.nodes[i].x = clamp(out.nodes[i].x, 40, map.w-40); out.nodes[i].y = clamp(out.nodes[i].y, 40, map.h-40); }
-  /* CHỐNG NODE TRÊN DỐC: node nào rơi đúng ô dốc (vòng khoáng của mỏ kề dốc) thì xê ra ô phẳng
-     gần nhất — tài nguyên không bao giờ nằm trên dốc/vách (quy tắc bản đồ ladder). */
-  function rampTileAt(x, y){
-    var cx = ((x/60)|0)*60 + 30, cy = ((y/60)|0)*60 + 30;
-    return (map.ramps || []).some(function(r){ return cx >= r[0] && cx < r[2] && cy >= r[1] && cy < r[3]; });
+  /* v6.2 (mục C + D) — MỌI NODE tài nguyên (khoáng + khí, mỏ chính + mỏ mở rộng + mỏ phụ)
+     phải sạch theo FOOTPRINT, không chỉ tâm node (người chơi báo 15:53: cụm khoáng nằm GIỮA
+     dốc, thợ thu hoạch vắt mép dốc; trước đó mạch khí cũng chỉ sạch ở tâm — nhà khí trồng
+     đúng tâm mạch sẽ vắt vách theo). Luật footprint: khoáng bán kính 55px, khí 45px —
+     (1) hình tròn footprint KHÔNG cắt bất kỳ HÌNH DỐC (rect) nào; (2) mọi Ô LƯỚI mà
+     footprint chạm tới (xét theo TÂM Ô 60px, cùng quy ước buildElevation; khí dùng hs 42
+     như luật nhà khí của mục C, khoáng hs 55) đều KHÔNG phải ô dốc và CÙNG 1 TẦNG với tâm.
+     Node bẩn thì xê theo vòng xoắn ốc (bán kính tới 240px, tránh đè node khác ≥80px) tới
+     vị trí sạch gần nhất; không tìm được thì giữ nguyên vị trí gốc. */
+  function lvAtPx(x, y){ var lv = 1; (map.elev || []).forEach(function(r){ if(x >= r[0] && x < r[2] && y >= r[1] && y < r[3]) lv = r[4]; }); return lv; }
+  function rampAtPx(x, y){ return (map.ramps || []).some(function(r){ return x >= r[0] && x < r[2] && y >= r[1] && y < r[3]; }); }
+  function nodeRectHit(x, y, r){
+    return (map.ramps || []).some(function(rp){
+      var cx = clamp(x, rp[0], rp[2]), cy = clamp(y, rp[1], rp[3]), dx = x - cx, dy = y - cy;
+      return dx*dx + dy*dy <= r*r;
+    });
   }
-  out.nodes.forEach(function(n){
-    if(!rampTileAt(n.x, n.y)) return;
-    var offs = [[0,-70],[0,70],[-70,0],[70,0],[-70,-70],[70,-70],[-70,70],[70,70],[0,-130],[0,130],[-130,0],[130,0],[-130,-130],[130,130],[-130,130],[130,-130]];
-    for(var oi=0; oi<offs.length; oi++){
-      var nx = clamp(n.x + offs[oi][0], 40, map.w-40), ny = clamp(n.y + offs[oi][1], 40, map.h-40);
-      if(!rampTileAt(nx, ny)){ n.x = nx; n.y = ny; return; }
+  function nodeFootClean(type, x, y){
+    var r = type === 'gas' ? 45 : 55;
+    if(nodeRectHit(x, y, r)) return false;
+    /* tầng chuẩn = tầng của Ô chứa node (lấy tại tâm ô, đúng ngữ nghĩa elevGrid của game —
+       lấy theo điểm tọa độ sẽ lệch khi node sát biên hình tầng) */
+    var h = type === 'gas' ? 42 : 55, lvC = lvAtPx(((x/60)|0)*60 + 30, ((y/60)|0)*60 + 30), tx, ty;
+    var tx0 = Math.floor((x - h)/60), tx1 = Math.floor((x + h)/60), ty0 = Math.floor((y - h)/60), ty1 = Math.floor((y + h)/60);
+    for(ty = ty0; ty <= ty1; ty++) for(tx = tx0; tx <= tx1; tx++){
+      var cx = tx*60 + 30, cy = ty*60 + 30;
+      if(rampAtPx(cx, cy) || lvAtPx(cx, cy) !== lvC) return false;
     }
+    return true;
+  }
+  /* dời theo NHÓM: một mỏ kẹt giữa cụm dốc thì dời cả vòng khoáng như khối cứng (dời lẻ từng
+     node sẽ phá vòng mỏ + các node bẩn chặn đường nhau). Xoắn ốc tới 420px, 16 hướng/vòng;
+     vị trí nhận phải sạch cho MỌI node trong nhóm, không đè node nhóm khác (≥80px), không
+     lấn bãi đáp nhà chính (≥140px từ tâm căn cứ), mọi node trong biên an toàn 70px. */
+  function groupClean(g, dx, dy){
+    for(var gi = 0; gi < g.length; gi++){ if(!nodeFootClean(g[gi].type, g[gi].x + dx, g[gi].y + dy)) return false; }
+    return true;
+  }
+  function groupClash(g, dx, dy){
+    for(var gi = 0; gi < g.length; gi++){
+      var nx = g[gi].x + dx, ny = g[gi].y + dy, k, o;
+      if(nx < 70 || ny < 70 || nx > map.w - 70 || ny > map.h - 70) return true;
+      for(k = 0; k < out.bases.length; k++){ if(Math.hypot(nx - out.bases[k].x, ny - out.bases[k].y) < 140) return true; }
+      for(k = 0; k < out.nodes.length; k++){ o = out.nodes[k]; if(g.indexOf(o) >= 0) continue; if(Math.abs(o.x - nx) < 80 && Math.abs(o.y - ny) < 80) return true; }
+    }
+    return false;
+  }
+  groups.forEach(function(g){
+    if(groupClean(g, 0, 0)) return;
+    var found = null, rad, a;
+    for(rad = 30; rad <= 420 && !found; rad += 30){
+      for(a = 0; a < 16 && !found; a++){
+        var dx = Math.round(Math.cos(a/16*6.2832)*rad), dy = Math.round(Math.sin(a/16*6.2832)*rad);
+        if(!groupClash(g, dx, dy) && groupClean(g, dx, dy)) found = [dx, dy];
+      }
+    }
+    if(found){ g.forEach(function(n){ n.x += found[0]; n.y += found[1]; }); }
+  });
+  /* dự phòng: nhóm nào vẫn bẩn sau lượt dời nhóm (khu vực bậc thang/rậm dốc không còn khoảng
+     phẳng đủ rộng cho cả vòng mỏ) thì dời LẺ từng node còn bẩn — giữ mỏ nguyên vẹn là ưu tiên
+     một, nhưng từng node sạch vẫn hơn cả mỏ vắt vách. Xoắn ốc tới 420px, cùng luật tránh đè. */
+  out.nodes.forEach(function(n){
+    if(nodeFootClean(n.type, n.x, n.y)) return;
+    var found = null, rad, a, k;
+    for(rad = 30; rad <= 420 && !found; rad += 30){
+      for(a = 0; a < 16 && !found; a++){
+        var nx = Math.round(n.x + Math.cos(a/16*6.2832)*rad), ny = Math.round(n.y + Math.sin(a/16*6.2832)*rad);
+        if(nx < 70 || ny < 70 || nx > map.w - 70 || ny > map.h - 70) continue;
+        var clash = false;
+        for(k = 0; k < out.bases.length && !clash; k++){ if(Math.hypot(nx - out.bases[k].x, ny - out.bases[k].y) < 140) clash = true; }
+        for(k = 0; k < out.nodes.length && !clash; k++){ var o = out.nodes[k]; if(o !== n && Math.abs(o.x - nx) < 80 && Math.abs(o.y - ny) < 80) clash = true; }
+        if(!clash && nodeFootClean(n.type, nx, ny)) found = [nx, ny];
+      }
+    }
+    if(found){ n.x = found[0]; n.y = found[1]; }
   });
   return out;
 }
@@ -1760,12 +1837,15 @@ function tileY(y){ return clamp((y/TILE)|0, 0, eRows-1); }
 function levelAt(x, y){ if(!elevGrid) return 1; return elevGrid[tileY(y)*eCols + tileX(x)]; }
 function isRampAt(x, y){ if(!rampGrid) return false; return rampGrid[tileY(y)*eCols + tileX(x)] === 1; }
 function elevOf(e){ return levelAt(e.x, e.y); }
-/* Đi giữa 2 ô kề: cùng tầng, hoặc lệch đúng 1 tầng và một trong hai ô là DỐC */
+/* Đi giữa 2 ô kề: cùng tầng thì tự do; ĐỔI TẦNG chỉ khi 2 ô KỀ THẲNG (không chéo),
+   lệch đúng 1 tầng và một trong hai ô là DỐC. (v6.2: trước đây cho bước CHÉO đổi tầng ở
+   góc ô dốc — A* đã cấm nhưng lớp lái mịn + rút ngắn đường vẫn lách qua được mép vách.) */
 function tilesWalkable(ax, ay, bx, by){
   if(ax===bx && ay===by) return true;
   if(!elevGrid) return true;
   var la = elevGrid[ay*eCols+ax], lb = elevGrid[by*eCols+bx];
   if(la === lb) return true;
+  if(Math.abs(ax-bx) + Math.abs(ay-by) !== 1) return false;
   return Math.abs(la-lb) === 1 && (rampGrid[ay*eCols+ax] === 1 || rampGrid[by*eCols+bx] === 1);
 }
 /* Đoạn thẳng có cắt qua VÁCH (mép tầng không phải dốc) không — lấy mẫu mỗi 24px */
@@ -2049,7 +2129,7 @@ function makeUnit(faction, type, x, y){
   return { id:uid(), kind:'unit', faction:faction, type:type, x:x, y:y, hp:sp.hp, maxHp:sp.hp, face:1,
     shield: sm, shieldMax: sm, lastHurtAt: -99,
     cooldown:0, carrying:0, carryType:null, combatTargetId:0, postX:x, postY:y,
-    vx:0, vy:0, speedNow:0, animDist:0, lastMoveAt:-9, recoilT:0, turretA:0, turnAcc:0, dustAcc:0,
+    vx:0, vy:0, speedNow:0, animDist:0, lastMoveAt:-9, lastActAt:-9, idleW:0, recoilT:0, turretA:0, turnAcc:0, dustAcc:0,
     order:{type:'idle', x:x, y:y, targetId:0, nodeId:0, phase:'', harvestT:0} };
 }
 function makeBuilding(faction, type, x, y, built){
@@ -2376,14 +2456,13 @@ function hasBuilt(type){
 function placementOK(type, x, y){
   var hs = BSPECS[type].size/2, i;
   if(x-hs<10||y-hs<10||x+hs>WORLD_W-10||y+hs>WORLD_H-10) return false;
-  /* địa hình: không xây trên ô DỐC (chặn mất đường lên/xuống) và không xây vắt 2 tầng —
-     xét các ô có TÂM nằm trong footprint nhà (nhà nhỏ hơn 1 ô thì xét ô chứa tâm nhà) */
+  /* địa hình: KHÔNG xây đè vào DỐC và không xây vắt 2 tầng — xét MỌI ô mà footprint CHẠM tới
+     (v6.2: trước đây chỉ xét ô có TÂM nằm trong footprint nên nhà vẫn đè được MÉP ô dốc
+     khi tâm ô dốc nằm ngoài footprint — người chơi báo 15:22 "nhà không được xây đè vào dốc") */
   if(elevGrid){
     if(isRampAt(x, y)) return false;
     var lvC = levelAt(x, y), ptx, pty;
     for(pty = tileY(y-hs); pty <= tileY(y+hs); pty++) for(ptx = tileX(x-hs); ptx <= tileX(x+hs); ptx++){
-      var pcx = ptx*TILE + TILE/2, pcy = pty*TILE + TILE/2;
-      if(pcx < x-hs || pcx > x+hs || pcy < y-hs || pcy > y+hs) continue;
       if(rampGrid[pty*eCols+ptx] === 1 || elevGrid[pty*eCols+ptx] !== lvC) return false;
     }
   }
@@ -2408,9 +2487,14 @@ function placementBlockReason(type, x, y){
   if(x - hs < 8 || y - hs < 8 || x + hs > WORLD_W - 8 || y + hs > WORLD_H - 8) return 'Địa hình không hợp';
   if(elevGrid){
     var lvC = levelAt(x, y), tx, ty;
+    /* v6.2: footprint chạm Ô DỐC -> lý do riêng "Trùng dốc" (quét dốc trước, ưu tiên hơn lệch tầng) */
     for(ty = Math.max(0, tileY(y - hs)); ty <= Math.min(eRows - 1, tileY(y + hs)); ty++)
       for(tx = Math.max(0, tileX(x - hs)); tx <= Math.min(eCols - 1, tileX(x + hs)); tx++){
-        if(rampGrid[ty*eCols + tx] === 1 || elevGrid[ty*eCols + tx] !== lvC) return 'Địa hình không hợp';
+        if(rampGrid[ty*eCols + tx] === 1) return 'Trùng dốc';
+      }
+    for(ty = Math.max(0, tileY(y - hs)); ty <= Math.min(eRows - 1, tileY(y + hs)); ty++)
+      for(tx = Math.max(0, tileX(x - hs)); tx <= Math.min(eCols - 1, tileX(x + hs)); tx++){
+        if(elevGrid[ty*eCols + tx] !== lvC) return 'Địa hình không hợp';
       }
   }
   var i, e;
@@ -2803,6 +2887,7 @@ function playWeaponShot(type, x, y, baseVol){
 function shoot(u, target){
   var sp = SPECS[u.type];
   u.cooldown = sp.cd;
+  u.lastActAt = S.time; /* v6.2 (mục E): mốc ra đòn gần nhất — lớp nhàn chỉ chạy khi thật sự không làm gì */
   if(sp.projSpeed > 0) u.recoilT = 0.14; /* FIX v6: MỌI quân bắn xa giật lùi nhẹ khi khai hoả (trước chỉ Xe Tăng) */
   if(Math.abs(target.x - u.x) > 2) u.face = target.x > u.x ? 1 : -1;
   var ang = Math.atan2(target.y - u.y, target.x - u.x);
@@ -3044,6 +3129,17 @@ function tickAI(dt){
     });
   });
 }
+/* v6.2 — cổng VÁCH cho lực ĐẨY TÁCH ĐÀN: tickSeparation trước đây ghi thẳng x/y nên đám đông
+   chen nhau ở mép vách bị ĐẨY QUA TẦNG không qua dốc (lỗi người chơi báo 15:21). Mọi bước đẩy
+   phải qua tilesWalkable như bước đi thường: nguyên bước không được thì trượt theo 1 trục,
+   vẫn không được thì HỦY bước đẩy đó. Quân bay miễn kiểm (đã lọc cặp bay/đất ở vòng lặp). */
+function sepStep(e, nx, ny){
+  if(!elevGrid || SPECS[e.type].flying){ e.x = nx; e.y = ny; return; }
+  var ax = tileX(e.x), ay = tileY(e.y);
+  if(tilesWalkable(ax, ay, tileX(nx), tileY(ny))){ e.x = nx; e.y = ny; return; }
+  if(tilesWalkable(ax, ay, tileX(nx), ay)){ e.x = nx; return; }
+  if(tilesWalkable(ax, ay, ax, tileY(ny))){ e.y = ny; return; }
+}
 function tickSeparation(){
   var us = S.units, i, j;
   for(i=0;i<us.length;i++) for(j=i+1;j<us.length;j++){
@@ -3055,8 +3151,8 @@ function tickSeparation(){
     if(!!SPECS[a.type].flying !== !!SPECS[b.type].flying) continue; /* FIX v6: quân bay lơ lửng TRÊN quân đất — không chen đẩy nhau */
     /* bán kính tách theo CỠ quân: quân nhỏ giữ 22 như cũ, quân to không còn chồng lấp thành cục */
     var rr = clamp((SPECS[a.type].draw + SPECS[b.type].draw)*0.30, 22, 46);
-    if(d>0 && d<rr){ var push=(rr-d)/2, dx=(b.x-a.x)/d, dy=(b.y-a.y)/d; a.x-=dx*push; a.y-=dy*push; b.x+=dx*push; b.y+=dy*push; }
-    else if(d===0){ b.x += 1.5; } /* trùng khít tâm: đẩy nhẹ một phía cho tách dần */
+    if(d>0 && d<rr){ var push=(rr-d)/2, dx=(b.x-a.x)/d, dy=(b.y-a.y)/d; sepStep(a, a.x-dx*push, a.y-dy*push); sepStep(b, b.x+dx*push, b.y+dy*push); }
+    else if(d===0){ sepStep(b, b.x + 1.5, b.y); } /* trùng khít tâm: đẩy nhẹ một phía cho tách dần */
   }
 }
 function tick(dt){
@@ -3073,6 +3169,11 @@ function tick(dt){
     var ad = u.animDist||0, delta = ad - (u._adPrev||0); u._adPrev = ad;
     var inst = dt > 0 ? delta/dt : 0;
     u.speedNow = (u.speedNow||0)*0.5 + inst*0.5;
+    /* v6.2 (mục E) — TRỌNG SỐ NHÀN: quân thật sự không làm gì (không đi, tốc ~0, không ra đòn
+       trong 0.8s) thì idleW dâng dần tới 1 (~0.7s); hễ đi/đánh là rút NHANH về 0 để lớp nhàn
+       không bao giờ cãi chu kỳ bước đi theo quãng đường. drawUnit đọc idleW qua idlePoseOf. */
+    var idleBusy = (S.time - (u.lastMoveAt||-9)) < 0.3 || u.speedNow > 8 || (S.time - (u.lastActAt||-9)) < 0.8 || u.recoilT > 0 || u.lungeT > 0;
+    u.idleW = clamp((u.idleW||0) + (idleBusy ? -7*dt : 1.5*dt), 0, 1);
     if(u._mvT !== S.time){ var dk = Math.max(0, 1 - 11*dt); u.vx = (u.vx||0)*dk; u.vy = (u.vy||0)*dk; }
     if(u.recoilT > 0) u.recoilT = Math.max(0, u.recoilT - dt);
     if(u.lungeT > 0) u.lungeT = Math.max(0, u.lungeT - dt); /* FIX v6: nhịp lao chém cận chiến */
@@ -3197,12 +3298,14 @@ function portraitHTML(spr){
 }
 /* v6.1: nút NÂNG CẤP nằm ngay DƯỚI hình nhà trong thẻ chọn (đã rời khỏi lưới lệnh).
    Trả '' khi nhà không nâng được (không phải nhà chính/nhà sản xuất, đang xây).
-   Cùng luật khoá với lưới lệnh cũ: nhà chính nâng RIÊNG, nhà sản xuất nâng CHUNG cả loại. */
+   Cùng luật khoá với lưới lệnh cũ: nhà chính nâng RIÊNG, nhà sản xuất nâng CHUNG cả loại.
+   v6.2: BỎ dòng chú thích "Nâng RIÊNG/CHUNG nhà này" dưới nút (lệnh người dùng 15:14) —
+   chỉ còn nút (cấp + giá / tiến độ); phạm vi nâng vẫn rõ ở ô trên của thẻ + sách. */
 function upgBtnHTML(b){
   if(!b || b.constructing) return '';
-  var inner = '', dis = '', reason = '', kind = '', cap = '';
+  var inner = '', dis = '', reason = '', kind = '';
   if(!!MAIN_TYPES[b.type]){
-    kind = 'upmain'; cap = 'Nâng RIÊNG nhà này';
+    kind = 'upmain';
     var mlv = b.mainLv || 1;
     if(S.mainUpgrade && S.mainUpgrade.bid === b.id){
       var p1 = Math.round(S.mainUpgrade.t / S.mainUpgrade.total * 100);
@@ -3219,7 +3322,7 @@ function upgBtnHTML(b){
       if(!canAfford(uc)){ dis = ' disabled'; reason = 'Không đủ tài nguyên để nâng cấp'; }
     }
   } else if(TRAIN_FROM[b.type]){
-    kind = 'upbld'; cap = 'Nâng CHUNG loại nhà này';
+    kind = 'upbld';
     var tlv = typeLevel('player', b.type);
     if(S.bldUp && S.bldUp[b.type]){
       var p2 = Math.round(S.bldUp[b.type].t / S.bldUp[b.type].total * 100);
@@ -3234,8 +3337,7 @@ function upgBtnHTML(b){
       else if(!canAfford(uc3)){ dis = ' disabled'; reason = 'Không đủ tài nguyên để nâng cấp'; }
     }
   } else return '';
-  return '<button class="upgBtn" type="button" data-kind="' + kind + '"' + dis + (reason ? ' data-reason="' + reason + '" title="' + reason + '"' : '') + '>' + inner + '</button>' +
-    '<div class="upgCap">' + cap + '</div>';
+  return '<button class="upgBtn" type="button" data-kind="' + kind + '"' + dis + (reason ? ' data-reason="' + reason + '" title="' + reason + '"' : '') + '>' + inner + '</button>';
 }
 /* Lưới lệnh: trả về mảng lệnh của trang hiện tại (tối đa 6 lệnh — lưới hiển thị 4x2 từ v5-E) {icon|img, action, unit|b|kind, cost, disabled, lvl, active} */
 function currentCommands(){
@@ -3307,8 +3409,8 @@ function renderPanel(force){
   var selKey = S.selectedIds.join(',') + '|L' + S.mainLevel + (S.mainUpgrade ? '|U' + Math.round(S.time*2) : '');
   var sig = selKey + '|BL' + Object.keys(S.bldLevels||{}).map(function(k){ return k + S.bldLevels[k]; }).join('.') + (Object.keys(S.bldUp||{}).length ? '|BU' + Math.round(S.time*2) : '') + '|' + S.selectedBuildingId + '|' + (placing?placing.type:'') + '|' + (pendingOrder||'') + '|' + cmdPage + '|' +
             (S.minerals|0) + '|' + (S.gas|0) + '|' + S.supplyUsed + '/' + S.supplyCap + '|' +
-            (b ? (b.queue.map(function(q){return q.type;}).join('.') + ':' + b.constructing + (GAS_TYPES[b.type] ? ':g' + gasWorkerCount(b) : '') + (b.type==='hatchery' ? ':L' + (b.larvae||0) + 'E' + ((b.eggs||[]).map(function(e2){return e2.type;}).join('.')) : '') + (b.shieldMax ? ':s' + Math.round(b.shield) : '')) : '') + '|' +
-            ((b && (b.queue.length || b.constructing)) || (S.bldUp && Object.keys(S.bldUp).length) ? Math.round(S.time*2) : '') + '|' +
+            (b ? (b.queue.map(function(q){return q.type;}).join('.') + ':' + b.constructing + ':P' + (b.constructing ? Math.round((b.progress||0)*20) : (b.eggs && b.eggs[0] && b.eggs[0].total ? Math.round(b.eggs[0].t/b.eggs[0].total*10) : 0)) + (GAS_TYPES[b.type] ? ':g' + gasWorkerCount(b) : '') + (b.type==='hatchery' ? ':L' + (b.larvae||0) + 'E' + ((b.eggs||[]).map(function(e2){return e2.type;}).join('.')) : '') + (b.shieldMax ? ':s' + Math.round(b.shield) : '')) : '') + '|' +
+            ((b && (b.queue.length || b.constructing || (b.eggs && b.eggs.length))) || (S.bldUp && Object.keys(S.bldUp).length) ? Math.round(S.time*2) : '') + '|' +
             sel.map(function(u){ return Math.ceil(u.hp); }).join('.') + '|' + S.units.length + '|' +
             (function(){ var nx2 = Infinity; aiTeamList().forEach(function(t){ if(S.ai && S.ai[t]) nx2 = Math.min(nx2, S.ai[t].nextAt); }); return isFinite(nx2) ? Math.ceil(Math.max(0, nx2 - S.time)/4) : 0; })();
   if(!force && sig===panelSig) return; panelSig = sig;
@@ -3319,28 +3421,49 @@ function renderPanel(force){
     info.innerHTML = '<div class="infoMain"><div class="infoName">Đang đặt: ' + BSPECS[placing.type].name + '</div>' +
       '<div class="infoSub">Kéo-thả hoặc chạm lên bản đồ để đặt nhà: khung XANH = đặt được, ĐỎ = không (có ghi lý do). Nút ✕ đỏ (góc dưới-trái bản đồ) để hủy.' + (GAS_TYPES[placing.type] ? ' ' + BSPECS[placing.type].name + ' chỉ đặt được trên mạch khí — các mạch khí đang được khoanh sáng.' : '') + (S.playerRace==='zerg' && placing.type!=='hatchery' && !GAS_TYPES[placing.type] ? ' Nhà Zerg chỉ xây được trên thảm nhầy quanh Tổ Quái.' : '') + (S.playerRace==='protoss' && placing.type!=='pylon' && !GAS_TYPES[placing.type] ? ' Nhà Protoss phải nằm trong vùng năng lượng của Pylon.' : '') + '</div></div>';
   } else if(b && b.faction==='player'){
-    /* v5-E: panel nhà nén còn 2 dòng — tên+máu, rồi MỘT dòng gộp: thanh máu · các dòng phụ nối bằng ' · ' (ưu tiên việc đang diễn ra) · ô hàng đợi */
-    /* v6.1: cột trái = hình nhà + nút NÂNG CẤP ngay bên dưới hình (upgBtnHTML; nhà không nâng được thì cột chỉ có hình) */
-    var h = '<div class="portCol">' + portraitHTML(BSPECS[b.type].spr) + upgBtnHTML(b) + '</div><div class="infoMain">' +
-      '<div class="infoName">' + BSPECS[b.type].name + (!!MAIN_TYPES[b.type] ? ' Lv' + (b.mainLv||1) : (TRAIN_FROM[b.type] ? ' Lv' + typeLevel('player', b.type) : '')) + ' <span class="hpNums">' + Math.ceil(b.hp) + ' / ' + b.maxHp + '</span></div>';
-    var subs = [];
-    if(b.constructing) subs.push('Đang xây: ' + Math.round(b.progress*100) + '%');
-    if(!!MAIN_TYPES[b.type]) subs.push('Cấp nhà này: ' + '●'.repeat(b.mainLv||1) + '○'.repeat(3 - (b.mainLv||1)) + (S.mainUpgrade && S.mainUpgrade.bid===b.id ? ' • Đang nâng lên Lv' + S.mainUpgrade.to + ': ' + Math.round(S.mainUpgrade.t/S.mainUpgrade.total*100) + '%' : ' • Nhà Chính nâng RIÊNG từng nhà; cổng mở khoá tính theo nhà cấp cao nhất (Lv' + S.mainLevel + ')'));
-    if(TRAIN_FROM[b.type] && !MAIN_TYPES[b.type]) subs.push('Cấp CHUNG cho mọi nhà ' + BSPECS[b.type].name + ': Lv' + typeLevel('player', b.type) + ' • Hàng đợi mỗi nhà: ' + queueCapFor(b) + ' ô' + (S.bldUp && S.bldUp[b.type] ? ' • Đang nâng lên Lv' + S.bldUp[b.type].to + ': ' + Math.round(S.bldUp[b.type].t/S.bldUp[b.type].total*100) + '%' : ''));
-    if(b.shieldMax) subs.push('Khiên: ' + Math.round(b.shield) + '/' + b.shieldMax + (isPowered(b) ? '' : ' • <b>MẤT ĐIỆN</b> — nhà tê liệt, cần Pylon gần hơn'));
-    if(BSPECS[b.type].dmg) subs.push('Sát thương: ' + BSPECS[b.type].dmg + (b.type==='turret' ? ' ×2 phát nhanh' : ''));
-    if(GAS_TYPES[b.type]) subs.push('Thợ đang hút khí: ' + gasWorkerCount(b) + ' • chạm Thợ vào trạm để thêm người hút');
-    if(b.type==='hatchery') subs.push('Ấu Trùng: ' + (b.larvae||0) + '/' + larvaeCapFor(b) + ' (12s thêm 1) • Cấp sản xuất của Tổ = cấp nhà chính cao nhất Lv' + S.mainLevel + ' • Trứng đang nở: ' + ((b.eggs||[]).length) + ' • Thảm nhầy (Creep) đang lan — chỉ xây nhà Zerg trên thảm');
-    if(b.type==='cc') subs.push('Cung cấp dân số +10 • Luyện Robot Thợ tại đây');
-    h += '<div class="infoLine2">' + segBarHTML(b.hp, b.maxHp, 18) +
-      (subs.length ? '<div class="infoSub">' + subs.join(' · ') + '</div>' : '');
-    if(b.queue.length){
-      h += '<div class="queueRow">' + b.queue.map(function(q,i){
-        var pct = i===0 ? Math.round(q.t/q.total*100) : 0;
-        return '<div class="qSlot"><img src="' + sprImg(SPECS[q.type].spr) + '" alt="">' + (i===0 ? '<div class="bar" style="width:' + pct + '%"></div>' : '') + '</div>';
-      }).join('') + '</div>';
+    /* v6.2: thẻ nhà CHIA ĐÔI (lệnh người dùng từ ảnh khoanh 15:14):
+       — Ô TRÊN (.bTop): TÊN + CẤP (Lv + chấm ● cho Nhà Chính) + MÁU (thanh + số; khiên nằm cùng dòng thanh).
+       — Ô DƯỚI (.prodBox, hộp con riêng): thông tin SẢN XUẤT / trạng thái làm việc —
+         nhà sản xuất: ô hàng đợi đủ số ô (đang luyện có thanh tiến độ) + nhãn "Hàng đợi: n/cap ô";
+         Tổ Quái: Ấu Trùng + trứng đang nở (có thanh); nhà không sản xuất: MỘT dòng trạng thái ngắn
+         (đang xây %, thợ hút khí, phòng thủ sẵn sàng, cấp dân số); không có gì để hiện thì BỎ ô dưới.
+       Nội dung ôm sát (justify-content:flex-start, gap nhỏ) — hết khoảng trống thừa trong thẻ. */
+    var h = '<div class="portCol">' + portraitHTML(BSPECS[b.type].spr) + upgBtnHTML(b) + '</div><div class="infoMain bCard">' +
+      '<div class="bTop"><div class="infoName">' + BSPECS[b.type].name + (!!MAIN_TYPES[b.type] ? ' Lv' + (b.mainLv||1) + ' <span class="lvPips">' + '●'.repeat(b.mainLv||1) + '○'.repeat(3 - (b.mainLv||1)) + '</span>' : (TRAIN_FROM[b.type] ? ' Lv' + typeLevel('player', b.type) : '')) + ' <span class="hpNums">' + Math.ceil(b.hp) + ' / ' + b.maxHp + '</span></div>' +
+      '<div class="infoLine2">' + segBarHTML(b.hp, b.maxHp, 18) +
+      (b.shieldMax ? '<div class="infoSub">Khiên: ' + Math.round(b.shield) + '/' + b.shieldMax + (isPowered(b) ? '' : ' • <b>MẤT ĐIỆN</b> — cần Pylon gần hơn') + '</div>' : '') +
+      '</div></div>';
+    var pb = [];
+    if(b.constructing){
+      pb.push('<div class="prodTxt">Đang xây: ' + Math.round(b.progress*100) + '%</div>');
+    } else if(b.type==='hatchery'){
+      var eggs = b.eggs || [];
+      var eggH = eggs.map(function(eg, i){
+        var ep = (i===0 && eg.total) ? Math.round((eg.t||0)/eg.total*100) : 0;
+        return '<div class="qSlot"><img src="' + sprImg(SPECS[eg.type].spr) + '" alt="">' + (i===0 ? '<div class="bar" style="width:' + ep + '%"></div>' : '') + '</div>';
+      }).join('');
+      pb.push('<div class="prodTxt">Ấu Trùng: ' + (b.larvae||0) + '/' + larvaeCapFor(b) + ' · Trứng đang nở: ' + eggs.length + (S.mainUpgrade && S.mainUpgrade.bid===b.id ? ' · Đang nâng Tổ lên Lv' + S.mainUpgrade.to + ': ' + Math.round(S.mainUpgrade.t/S.mainUpgrade.total*100) + '%' : '') + '</div>' + (eggH ? '<div class="queueRow">' + eggH + '</div>' : ''));
+    } else if(TRAIN_FROM[b.type]){
+      var capQ = queueCapFor(b), qq = b.queue || [], slotsH = '';
+      for(var qi=0; qi<capQ; qi++){
+        if(qi < qq.length){
+          var qp = qi===0 ? Math.round(qq[qi].t/qq[qi].total*100) : 0;
+          slotsH += '<div class="qSlot"><img src="' + sprImg(SPECS[qq[qi].type].spr) + '" alt="">' + (qi===0 ? '<div class="bar" style="width:' + qp + '%"></div>' : '') + '</div>';
+        } else slotsH += '<div class="qSlot empty"></div>';
+      }
+      var upT = '';
+      if(S.bldUp && S.bldUp[b.type]) upT = ' · Đang nâng cấp nhà lên Lv' + S.bldUp[b.type].to + ': ' + Math.round(S.bldUp[b.type].t/S.bldUp[b.type].total*100) + '%';
+      else if(!!MAIN_TYPES[b.type] && S.mainUpgrade && S.mainUpgrade.bid===b.id) upT = ' · Đang nâng Nhà Chính lên Lv' + S.mainUpgrade.to + ': ' + Math.round(S.mainUpgrade.t/S.mainUpgrade.total*100) + '%';
+      pb.push('<div class="prodTxt">Hàng đợi: ' + qq.length + '/' + capQ + ' ô' + upT + '</div><div class="queueRow">' + slotsH + '</div>');
+    } else if(GAS_TYPES[b.type]){
+      pb.push('<div class="prodTxt">Thợ đang hút khí: ' + gasWorkerCount(b) + ' · chạm Thợ vào trạm để thêm người hút</div>');
+    } else if(BSPECS[b.type].dmg){
+      pb.push('<div class="prodTxt">Phòng thủ sẵn sàng · Sát thương: ' + BSPECS[b.type].dmg + (b.type==='turret' ? ' ×2 phát nhanh' : '') + '</div>');
+    } else if(BSPECS[b.type].supplyCap){
+      pb.push('<div class="prodTxt">' + (b.type==='pylon' ? 'Vùng năng lượng cho nhà Protoss · ' : '') + 'Cung cấp dân số +' + BSPECS[b.type].supplyCap + '</div>');
     }
-    info.innerHTML = h + '</div></div>';
+    if(pb.length) h += '<div class="prodBox">' + pb.join('') + '</div>';
+    info.innerHTML = h + '</div>';
   } else if(sel.length===1){
     var u = sel[0], sp = SPECS[u.type];
     var sub = 'Sát thương: ' + Math.round(unitDamage(u.type) * 10)/10 + (sp.splash ? ' · diện rộng' : '') + ' • Dân số: ' + sp.supply + (u.carrying>0 ? ' • Đang mang ' + u.carrying + ' ' + (u.carryType==='gas' ? 'khí' : 'khoáng') : '');
@@ -4404,6 +4527,24 @@ function drawBuilding(b){
   ctx.fillStyle = dim ? '#9aa7b8' : '#eaf6ff'; ctx.font='bold 11px Arial'; ctx.textAlign='center';
   ctx.fillText(bs.name, b.x, b.y+hs+16);
 }
+/* ============ v6.2 (mục E) — LỚP HOẠT HÌNH NHÀN ============
+   Quân đứng yên không còn "hoá đá": lớp nhàn cộng dồn lên tư thế vẽ (KHÔNG đụng vị trí
+   logic, KHÔNG đụng bóng đổ neo đất, KHÔNG đụng pha bước đi theo quãng đường). Vị theo tộc:
+   Terran đu đưa thế đứng rất nhẹ · Zerg nhúc nhích/phập phồng · Protoss mặt đất bob + quầng
+   sáng thở. Quân bay/lơ lửng đã có hover theo thời gian nên miễn lớp này. Pha lệch theo id
+   (góc vàng) để cả đội quân đứng cạnh nhau không đu đưa đồng bộ như múa tập thể. */
+var IDLE_ZERG = { zergling:1, hydralisk:1, ultralisk:1 };
+var IDLE_PROTOSS = { zealot:1, dragoon:1, colossus:1 };
+function idleKindOf(u){ if(IDLE_ZERG[u.type]) return 'zerg'; if(IDLE_PROTOSS[u.type]) return 'protoss'; return 'terran'; }
+function idlePoseOf(u){
+  var sp = SPECS[u.type], an = ANIM[u.type] || {}, w = u.idleW || 0;
+  if(w <= 0.003 || an.hover || sp.flying) return { w:0, dy:0, sc:1, roll:0, glow:0 };
+  var ph = u.id * 2.39996, t = S.time, dy = 0, sc = 1, roll = 0, glow = 0, k = idleKindOf(u), s;
+  if(k === 'zerg'){ s = Math.sin(t*3.3 + ph); dy = s * 0.9 * w; sc = 1 + 0.022 * Math.sin(t*4.7 + ph*1.7) * w; roll = 0.010 * s * w; }
+  else if(k === 'protoss'){ dy = Math.sin(t*2.1 + ph) * 1.0 * w; sc = 1 + 0.010 * Math.sin(t*2.1 + ph + 1.3) * w; glow = (0.5 + 0.5 * Math.sin(t*2.6 + ph)) * w; }
+  else { dy = Math.sin(t*1.9 + ph) * 0.7 * w; sc = 1 + 0.012 * Math.sin(t*2.4 + ph) * w; roll = 0.006 * Math.sin(t*1.3 + ph*2.1) * w; }
+  return { w:w, dy:dy, sc:sc, roll:roll, glow:glow };
+}
 function drawUnit(u){
   var pc = u.faction==='player', sp = SPECS[u.type];
   var an = ANIM[u.type] || {};
@@ -4435,33 +4576,42 @@ function drawUnit(u){
     ctx.strokeStyle = teamColor(u.faction); ctx.lineWidth = 1.8;
     ctx.beginPath(); ctx.ellipse(u.x, u.y + sp.draw*0.32, sp.draw*0.46, sp.draw*0.185, 0, 0, 6.29); ctx.stroke();
   }
+  var pose = idlePoseOf(u); /* v6.2 (mục E): tư thế NHÀN của khung này (w=0 khi đang đi/đánh) */
   /* bóng đổ MỀM (sprite gradient nung sẵn): neo đất, quân bay bóng nhạt + lệch theo độ cao */
   var shS = (an.hover || sp.flying) ? 1 - 0.05*(hovY/(an.amp||2.5)) : 1;
   drawShadow(u.x + (sp.flying ? 16 : 3), u.y + sp.draw*0.34, sp.draw*0.92*shS, sp.draw*0.36*shS, sp.flying ? 0.55 : 0.9);
+  /* quầng sáng thở của Protoss mặt đất: neo tại chân quân (không chạy theo dy), chỉ nhịp alpha */
+  if(pose.glow > 0.03){
+    ctx.fillStyle = 'rgba(125,225,252,' + (0.13 * pose.glow).toFixed(3) + ')';
+    ctx.beginPath(); ctx.ellipse(u.x, u.y + sp.draw*0.32, sp.draw*0.55, sp.draw*0.22, 0, 0, 6.29); ctx.fill();
+  }
   if(S.selectedIds.indexOf(u.id)>=0){
     var pu = 0.65 + 0.35*Math.sin(S.time*5);
     ctx.strokeStyle='rgba(74,222,128,' + pu.toFixed(3) + ')'; ctx.lineWidth=2.5;
     ctx.beginPath(); ctx.ellipse(u.x, u.y + sp.draw*0.32, sp.draw*0.42, sp.draw*0.17, 0, 0, 6.29); ctx.stroke();
   }
-  /* thân: thở nhẹ khi đứng yên (giết cảm giác tượng chết) */
-  var breathe = (!moving && !an.hover && !sp.flying) ? 1 + 0.008*Math.sin(S.time*2.513 + u.id*2.3) : 1;
+  /* (nhịp "thở" scale 0.8% cũ đã THAY bằng lớp nhàn idlePoseOf ở trên — biên độ rõ hơn, theo tộc) */
   /* FIX v6 — GIẬT LÙI khi bắn (mọi quân bắn xa) + LAO TỚI khi chém cận chiến: lệch vị trí VẼ, không đổi vị trí thật */
   var offX = 0, offY = 0;
   if(u.recoilT > 0) offX = -(u.face < 0 ? -1 : 1) * (u.recoilT / 0.14) * 2.2;
   if(u.lungeT > 0){ var lsin = Math.sin((u.lungeT / 0.18) * Math.PI); offX += (u.lungeDx||0) * lsin * 7; offY += (u.lungeDy||0) * lsin * 7; }
   var bodyX = u.x + offX;
-  var bodyY = u.y + flyY + bobY + offY, drawn = false;
+  var bodyY = u.y + flyY + bobY + offY + pose.dy, drawn = false;
   var sheet = UIMG(IMGW, sp.spr, u.faction);
   if(sheet && an.frames && imgReady(sheet)){
-    /* có sheet khung hình thật: frame do QUÃNG ĐƯỜNG chọn, bob nằm trong hình — không nhún thêm */
+    /* có sheet khung hình thật: frame do QUÃNG ĐƯỜNG chọn, bob nằm trong hình — không nhún thêm;
+       lớp nhàn chỉ cộng dy/scale rất nhẹ (pose w=0 ngay khi quân di chuyển) */
     var fr = moving ? Math.floor(phase * an.frames) % an.frames : 0;
-    drawn = drawFrame(sheet, fr, an.frames, bodyX, u.y + flyY + offY, sp.draw, sp.draw*breathe*pulse, u.face<0, roll*0.5 + lean);
+    drawn = drawFrame(sheet, fr, an.frames, bodyX, u.y + flyY + offY + pose.dy, sp.draw, sp.draw*pose.sc*pulse, u.face<0, roll*0.5 + lean + pose.roll*0.5);
   } else if(an.slither){
-    drawn = drawSlither(UIMG(IMG, sp.spr, u.faction), bodyX, bodyY, sp.draw, sp.draw, u.face<0, u.animDist||0, Math.max(sf, moving?0.7:0));
+    /* Hydralisk: thân trườn theo animDist; khi nhàn, pha trườn LẠC nhẹ ±6px quanh chỗ đứng
+       (đuôi uốn chậm) mà thân không hề rời vị trí — sf sàn theo idleW để sóng đuôi chạy */
+    var slDist = (u.animDist||0) + Math.sin(S.time*2.0 + u.id*2.39996) * 6 * pose.w;
+    drawn = drawSlither(UIMG(IMG, sp.spr, u.faction), bodyX, bodyY, sp.draw, sp.draw, u.face<0, slDist, Math.max(sf, moving?0.7:0, pose.w*0.4));
   } else if(u.type==='tank'){
-    drawn = drawTank(u, bodyY, roll + lean) || drawSpriteT(UIMG(IMG, sp.spr, u.faction), bodyX, bodyY, sp.draw, sp.draw, u.face<0, roll + lean);
+    drawn = drawTank(u, bodyY, roll + lean + pose.roll) || drawSpriteT(UIMG(IMG, sp.spr, u.faction), bodyX, bodyY, sp.draw, sp.draw, u.face<0, roll + lean + pose.roll);
   } else {
-    drawn = drawSpriteT(UIMG(IMG, sp.spr, u.faction), bodyX, bodyY, sp.draw, sp.draw*breathe*pulse, u.face<0, roll + lean);
+    drawn = drawSpriteT(UIMG(IMG, sp.spr, u.faction), bodyX, bodyY, sp.draw, sp.draw*pose.sc*pulse, u.face<0, roll + lean + pose.roll);
   }
   if(!drawn){
     ctx.fillStyle = pc ? '#22d3ee' : '#f43f5e';
@@ -5269,6 +5419,8 @@ window.__RTS__ = {
   fx: { count: function(){ return PARTS.length; }, burst: function(x,y){ fxExplosion(x,y,false); return PARTS.length; },
         shake: function(){ return { t: SHAKE.t, mag: SHAKE.mag }; }, corpses: function(){ return CORPSES.length; }, projKinds: function(){ return S.projectiles.map(function(p){ return p.kind || ''; }); } },
   buildAt: buildAt,
+  evalPlacement: evalPlacement, /* v6.2: test dùng đúng hàm ghost/thả nhà của UI để kiểm luật đặt nhà */
+  idlePose: function(id){ var u = findById(id); return u ? idlePoseOf(u) : null; }, /* v6.2 (mục E): test đọc đúng tư thế nhàn mà drawUnit dùng */
   orderMove: orderMove,
   orderAttackMove: orderAttackMove,
   orderHarvest: orderHarvest,
