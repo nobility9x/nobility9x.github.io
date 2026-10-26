@@ -573,6 +573,217 @@ html,body{width:100%;height:100%;height:100dvh;overflow:hidden;background:#000;c
 #startCard.panelOpen .mapNote{display:none}
 #startCard.panelOpen #aiRows{display:none}
 #startCard.panelOpen .teamNote{display:none !important}
+
+/* ===== V5.3 — BỐ CỤC MÀN CHUẨN BỊ THEO ĐÚNG BẢN VẼ TAY (bản duyệt trước, chưa đăng) =====
+   Khác v5.2: bỏ cột+rail đóng gói sát nhau. Theo bản vẽ: dải TRÊN = tab tộc + hộp bản đồ Cỡ|Loại ·
+   CỘT ĐỘ KHÓ đứng dọc BÊN CẠNH các hàng Máy · hàng Máy DÀI chiếm gần hết bề ngang giữa màn ·
+   góc dưới-trái = nút TRÒN Bắt đầu · góc dưới-phải = cuốn SÁCH MỞ LỚN ngang ngửa nút tròn,
+   nhãn HƯỚNG DẪN ngay dưới sách · khoảng giữa thoáng. Bề mặt cơ khí + chữ kỹ thuật giữ từ v5.2. */
+#startCard .setupMain{flex-direction:column;gap:6px}
+#startCard .setupTop{display:flex;gap:8px;align-items:stretch}
+#startCard .setupTop .racePick{flex:1.25;min-width:0}
+#startCard .setupTop #mapBar{flex:1;width:auto}
+#startCard .setupMid{display:flex;gap:8px;flex:1;min-height:0}
+#startCard .diffSide{width:60px;flex:none;display:flex;flex-direction:column;gap:5px}
+#startCard .diffSide #diffPick{flex:1}
+#startCard .diffSide #diffPick .diffBtn{flex:1;display:flex;align-items:center;justify-content:center;padding:4px 2px}
+#startCard .rowsCol{flex:1;min-width:0;display:flex}
+#startCard .rowsCol #aiRows{flex:1;margin-top:0}
+#startCard .aiRow{flex:1;display:flex;flex-direction:column;justify-content:center;min-height:0}
+#startCard .aiRow.open{flex:1.55}
+#startCard .setupBot{display:flex;align-items:flex-end;gap:10px}
+#startCard .setupBot .teamNote{flex:1;align-self:center;text-align:center;margin:0;padding:0 4px}
+#startCard #btnStart{margin:0}
+#startCard #btnBook{width:144px;flex:none;padding:5px 6px 4px;gap:1px}
+#startCard #btnBook .bookSvg{width:122px;height:auto}
+#startCard #btnBook .bookLbl{font-size:9.5px}
+/* hàng Máy đang xổ chọn tộc -> gập khung ghi chú bản đồ, nhường chiều cao cho hàng (như panel bản đồ) */
+#startCard:has(.aiRow.open) .mapNote{display:none}
+/* v5.3 tinh chỉnh dọc: thu nút quay lại ở đầu thẻ + sách nhỏ đi một nấc để hàng Máy (phần tử chính
+   trong bản vẽ) cao thêm ~8px/hàng, hết cảm giác thanh mỏng */
+#startCard #btnBackSplash{min-height:0;height:36px;padding:2px 12px;font-size:16px;line-height:1}
+#startCard #btnBook{width:136px}
+#startCard #btnBook .bookSvg{width:106px}
+#startCard .aiRowHead{padding-top:8px;padding-bottom:8px}
+#startCard .mapNote{padding-top:3px;padding-bottom:3px}
+#startCard .raceCard.raceTab{padding-top:4px;padding-bottom:4px}
+/* panel bản đồ đang xổ -> ẩn cả dải giữa (cột độ khó + hàng Máy) để panel vừa khung */
+#startCard.panelOpen .setupMid{display:none}
+
+/* ===== V5.3-B — BỐ CỤC ĐỌC LẠI TỪ ẢNH BẢN VẼ RÕ (xoay ảnh cho chữ đọc xuôi thì bố cục thật là):
+   CỘT TRÁI = 3 tab tộc xếp DỌC · CỘT GIỮA = hộp bản đồ Cỡ|Loại trên cùng, hàng Máy dài ở giữa,
+   hàng Dễ/Vừa/Khó NGANG ở đáy cột giữa · CỘT PHẢI = SÁCH MỞ LỚN ở góc trên, nút TRÒN Bắt đầu
+   ở góc dưới, khoảng trống ở giữa cột phải. (Bản v5.3 đầu đọc lệch vị trí sách/độ khó/tab tộc.) */
+#startCard .setupMain{flex-direction:row;gap:10px}
+#startCard{min-height:100%}
+#startCard .raceCol{width:148px;flex:none;display:flex}
+#startCard .raceCol .racePick{flex:1;flex-direction:column;gap:8px;margin:0}
+#startCard .raceCol .raceCard.raceTab{flex:1;flex-direction:column;align-items:center;justify-content:center;gap:5px;padding:8px 6px;text-align:center}
+#startCard .raceCol .raceCard.raceTab img{width:34px;height:34px}
+#startCard .centerCol{flex:1;min-width:0;display:flex;flex-direction:column;gap:6px}
+#startCard .centerCol #mapBar{flex:none}
+#startCard .centerCol #aiRows{flex:1;margin-top:0}
+#startCard .centerCol .teamNote{text-align:left;margin:0}
+#startCard .diffRow{display:flex;align-items:center;gap:8px}
+#startCard .diffRow .railLbl{flex:none}
+#startCard .setupMain #diffPick.diffCol{flex:1;flex-direction:row;gap:6px}
+#startCard .setupMain #diffPick .diffBtn{flex:1;padding:7px 2px}
+#startCard .sideCol{width:150px;flex:none;display:flex;flex-direction:column;align-items:center;gap:8px}
+#startCard .sideSpacer{flex:1;min-height:6px}
+#startCard .sideCol #btnBook{width:142px}
+#startCard .sideCol #btnStart{width:106px;height:106px;margin:0}
+#startCard.panelOpen .diffRow{display:none}
+#startCard.panelOpen .centerCol #aiRows{display:none}
+
+/* ===== V5.3 COLOR PASS — MÀU/VẬT LIỆU MÀN CHUẨN BỊ (bố cục v5.3-B GIỮ NGUYÊN, chỉ đổi màu) =====
+   Chẩn đoán bản phẳng: mọi tấm cùng một gradient chì-xanh xám, độ bão hoà thấp, tộc nào cũng như tộc
+   nào. Bản này: thép xanh có CHIỀU SÂU (cạnh trên hứng sáng, đáy sẫm, gân chải mờ, vành dưới ánh
+   đồng ấm); mỗi TAB TỘC mang đúng vật liệu tộc mình ngay cả khi chưa chọn (bản muted); hộp bản đồ
+   khung đồng/thép ấm; hàng Máy thép sâu + ánh ấm dưới đáy, hàng đang chọn tộc phát sáng theo tộc đó;
+   độ khó chọn = VÀNG HỔ PHÁCH đặc trưng "cài đặt"; nút tròn = vòng kim loại đồng tâm, lõi ấm hổ phách
+   + vành nhấn theo tộc đang chọn; sách bìa xanh sâu tương phản mạnh hơn, viền vàng rõ. */
+/* — thân thẻ: thép sâu + vành ấm — */
+#startCard{background-image:
+    radial-gradient(circle 2.6px at 9px 9px, rgba(220,240,255,.95) 1.4px, rgba(5,7,10,.95) 2.3px, transparent 3px),
+    radial-gradient(circle 2.6px at calc(100% - 9px) 9px, rgba(220,240,255,.95) 1.4px, rgba(5,7,10,.95) 2.3px, transparent 3px),
+    radial-gradient(circle 2.6px at 9px calc(100% - 9px), rgba(220,240,255,.6) 1.4px, rgba(5,7,10,.95) 2.3px, transparent 3px),
+    radial-gradient(circle 2.6px at calc(100% - 9px) calc(100% - 9px), rgba(220,240,255,.6) 1.4px, rgba(5,7,10,.95) 2.3px, transparent 3px),
+    repeating-linear-gradient(90deg, rgba(255,255,255,.016) 0 2px, transparent 2px 4px),
+    linear-gradient(165deg,#31435f,#1a2942 55%,#0e1728);
+  border-color:#0a0e14;
+  box-shadow:inset 0 1px 0 rgba(205,230,255,.42), inset 0 -14px 20px rgba(0,0,0,.45), inset 0 -2px 0 rgba(232,193,90,.14), 0 10px 34px rgba(0,0,0,.6)}
+#startCard h1{color:#eef7ff;text-shadow:0 2px 0 rgba(0,0,0,.8),0 0 16px rgba(140,200,245,.4)}
+#startCard .pickLbl,#startCard .railLbl{color:#9db2c9}
+/* — TAB TỘC: vật liệu riêng từng tộc — */
+#startCard .raceCard.raceTab{opacity:.88;filter:saturate(.78);
+  box-shadow:inset 0 1px 0 rgba(215,235,255,.34), inset 0 -7px 10px rgba(0,0,0,.4)}
+#startCard .raceCard.raceTab[data-race="terran"]{background:linear-gradient(180deg,#33536e,#1d3448 60%,#132433)}
+#startCard .raceCard.raceTab[data-race="terran"] .rn{color:#b7dcf2}
+#startCard .raceCard.raceTab[data-race="zerg"]{background:linear-gradient(180deg,#55263c,#33182a 60%,#200f1e)}
+#startCard .raceCard.raceTab[data-race="zerg"] .rn{color:#f2bda9}
+#startCard .raceCard.raceTab[data-race="protoss"]{background:linear-gradient(180deg,#2a524c,#183331 60%,#0f2422);box-shadow:inset 0 1px 0 rgba(255,240,200,.3), inset 0 -7px 10px rgba(0,0,0,.4), inset 0 -2px 0 rgba(232,193,90,.22)}
+#startCard .raceCard.raceTab[data-race="protoss"] .rn{color:#ffe9a8}
+#startCard .raceCard.raceTab img{filter:drop-shadow(0 2px 3px rgba(0,0,0,.65))}
+#startCard .raceCard.raceTab.sel{opacity:1;filter:none}
+#startCard .raceCard.raceTab.sel .rn{color:#fff}
+#startCard .raceCard.raceTab[data-race="terran"].sel{border-color:#fb923c;box-shadow:inset 0 1px 0 rgba(225,242,255,.45), inset 0 -7px 10px rgba(0,0,0,.35), 0 0 13px rgba(251,146,60,.5)}
+#startCard .raceCard.raceTab[data-race="zerg"].sel{border-color:#e0653a;box-shadow:inset 0 1px 0 rgba(255,220,205,.4), inset 0 -7px 10px rgba(0,0,0,.35), 0 0 13px rgba(224,101,58,.55)}
+#startCard .raceCard.raceTab[data-race="protoss"].sel{border-color:#e8c15a;box-shadow:inset 0 1px 0 rgba(255,246,215,.45), inset 0 -7px 10px rgba(0,0,0,.35), 0 0 13px rgba(232,193,90,.5)}
+/* — HỘP BẢN ĐỒ: khung đồng/thép ấm — */
+#startCard #mapBar{border-color:#6b5a34;
+  background-image:
+    radial-gradient(circle 2.2px at 6px 6px, rgba(225,240,255,.85) 1.1px, rgba(5,7,10,.95) 1.9px, transparent 2.5px),
+    radial-gradient(circle 2.2px at calc(100% - 6px) calc(100% - 6px), rgba(225,240,255,.55) 1.1px, rgba(5,7,10,.95) 1.9px, transparent 2.5px),
+    repeating-linear-gradient(90deg, rgba(255,255,255,.016) 0 2px, transparent 2px 4px),
+    linear-gradient(180deg,#475872,#2b3a52 60%,#1b2639);
+  box-shadow:inset 0 1px 0 rgba(255,238,205,.34), inset 0 -7px 10px rgba(0,0,0,.38), inset 0 -2px 0 rgba(201,168,106,.28)}
+#startCard #mapBar .mbKey{color:#d3af6d}
+#startCard #mapBar .mbCaret{color:#e8c87e}
+#startCard .mapNote{background:linear-gradient(180deg,#243650,#141f31);border-color:#46536e;box-shadow:inset 0 1px 0 rgba(200,225,255,.2)}
+#startCard .mapNote canvas{border-color:rgba(232,200,126,.4)}
+#startCard .mapNoteTxt{color:#c6d8ea}
+#startCard .mapCard{background:linear-gradient(180deg,#354763,#1d2a3f);box-shadow:inset 0 1px 0 rgba(205,230,255,.24)}
+#startCard .mapCard .mn{color:#eef6ff}
+#startCard .mapCard .ms{color:#a9bdd4}
+/* — HÀNG MÁY: thép sâu, ánh ấm đáy; hàng đã chốt tộc phát sáng theo tộc khi mở/đã đặt — */
+#startCard .aiRowHead{background:linear-gradient(180deg,#364a66,#203046 60%,#16222f);
+  box-shadow:inset 0 1px 0 rgba(205,230,255,.34), inset 0 -8px 11px rgba(0,0,0,.42), inset 0 -2px 0 rgba(251,191,36,.15)}
+#startCard .aiRowVal{color:#9db2c9}
+#startCard .aiRow.set .aiRowVal{color:#ffe1a8}
+#startCard .aiRowCaret{color:#c8d9ec}
+#startCard .aiRow:has(.aiOpt.sel[data-opt="terran"]) .aiRowHead{border-color:rgba(251,146,60,.65);box-shadow:inset 0 1px 0 rgba(225,242,255,.4), inset 0 -8px 11px rgba(0,0,0,.4), 0 0 9px rgba(251,146,60,.35)}
+#startCard .aiRow:has(.aiOpt.sel[data-opt="zerg"]) .aiRowHead{border-color:rgba(224,101,58,.7);box-shadow:inset 0 1px 0 rgba(255,220,205,.38), inset 0 -8px 11px rgba(0,0,0,.4), 0 0 9px rgba(224,101,58,.4)}
+#startCard .aiRow:has(.aiOpt.sel[data-opt="protoss"]) .aiRowHead{border-color:rgba(232,193,90,.7);box-shadow:inset 0 1px 0 rgba(255,246,215,.4), inset 0 -8px 11px rgba(0,0,0,.4), 0 0 9px rgba(232,193,90,.38)}
+#startCard .aiOpt{background:linear-gradient(180deg,#2c3e58,#182335);box-shadow:inset 0 1px 0 rgba(205,230,255,.26);color:#d3e2f0}
+#startCard .aiOpt.sel[data-opt="terran"]{border-color:#fb923c;color:#fff;box-shadow:inset 0 1px 0 rgba(225,242,255,.4),0 0 8px rgba(251,146,60,.45)}
+#startCard .aiOpt.sel[data-opt="zerg"]{border-color:#e0653a;color:#fff;box-shadow:inset 0 1px 0 rgba(255,220,205,.4),0 0 8px rgba(224,101,58,.5)}
+#startCard .aiOpt.sel[data-opt="protoss"]{border-color:#e8c15a;color:#fff;box-shadow:inset 0 1px 0 rgba(255,246,215,.42),0 0 8px rgba(232,193,90,.45)}
+#startCard .teamNote{color:#9db2c9}
+/* — ĐỘ KHÓ: chưa chọn = thép lặng; đã chọn = VÀNG HỔ PHÁCH — */
+#startCard #diffPick .diffBtn{background:linear-gradient(180deg,#2e405a,#1a2637 60%,#121b29);color:#b7c9dc;
+  box-shadow:inset 0 1px 0 rgba(205,230,255,.28), inset 0 -6px 9px rgba(0,0,0,.38)}
+#startCard #diffPick .diffBtn.sel{background:linear-gradient(180deg,#c98f27,#9c6d14 60%,#77530d);border-color:#fbbf24;color:#fff7e0;
+  box-shadow:inset 0 1px 0 rgba(255,244,205,.55), inset 0 -6px 9px rgba(60,38,0,.45), 0 0 10px rgba(251,191,36,.4)}
+/* — SÁCH: bìa xanh sâu, viền vàng rõ, tương phản mạnh hơn — */
+#startCard #btnBook{background:linear-gradient(180deg,#2f4f7c,#1d3556 60%,#12243c);border-color:#c9a86a;color:#eaf3ff;
+  box-shadow:inset 0 1px 0 rgba(215,238,255,.36), inset 0 -7px 10px rgba(0,0,0,.42), 0 3px 10px rgba(0,0,0,.45)}
+#startCard #btnBook .bookLbl{color:#eec987}
+/* — NÚT TRÒN BẮT ĐẦU: vòng kim loại đồng tâm, lõi ấm hổ phách, vành nhấn theo tộc — */
+#startCard #btnStart{background:radial-gradient(circle at 50% 36%, #7a5c22 0%, #4a3d1e 34%, #263b54 62%, #16263a 82%, #0a1420 100%);
+  border-color:#d9a441;
+  box-shadow:0 0 0 4px #0b1017, 0 0 0 6px #7a6434, 0 0 20px var(--acc, rgba(45,212,191,.4)), inset 0 2px 3px rgba(255,240,205,.55), inset 0 -12px 18px rgba(0,0,0,.62), 0 6px 16px rgba(0,0,0,.55)}
+#startCard #btnStart:active{box-shadow:0 0 0 4px #0b1017, 0 0 0 6px #7a6434, 0 0 14px var(--acc, rgba(45,212,191,.35)), inset 0 2px 3px rgba(255,240,205,.45), inset 0 -7px 13px rgba(0,0,0,.62), 0 3px 8px rgba(0,0,0,.55)}
+#startCard #btnBackSplash{background:linear-gradient(180deg,#364a66,#1e2c42);box-shadow:inset 0 1px 0 rgba(205,230,255,.32);color:#dbe9f7}
+
+/* ===== V5.3 CONSOLE V3 — ĐÚNG DẠNG MẪU SC2 NGƯỜI DÙNG GỬI (102227_6) =====
+   Khối TRÁI: dải tài nguyên (khoáng/khí/dân số/giờ) NGAY TRÊN minimap · minimap to hết chiều cao
+   còn lại · lưới phụ 2x2 cạnh minimap = [chân dung MENU | tiếng] / [tạm dừng | toàn màn hình].
+   Khối GIỮA hai tầng như mẫu: hàng TAB LOẠI nhỏ đánh số (sprite + ×N) ở trên · hàng THẺ LỚN ở
+   dưới (hình to + TÊN + [×N] + vạch máu), thẻ loại đang chọn to hơn + phát sáng + bóng xếp chồng.
+   Khối PHẢI: lưới lệnh 3x3 CÓ CHỮ nhỏ dưới icon (như mẫu), đóng khung vát góc; nút ✕ huỷ đặt nhà
+   vẫn là nút tròn 48px riêng trên bản đồ (luật điện thoại thắng mẫu).
+   Chiều cao qua MỘT biến --consoleH (mặc định 100px — bản 88px chỉ để chụp duyệt so sánh). */
+:root{--consoleH:100px}
+#console{height:var(--consoleH);padding:1px 6px;gap:6px}
+/* — KHỐI TRÁI — */
+#mmBlock{flex:none;width:176px;display:flex;flex-direction:column;gap:2px;padding:3px;
+  background:linear-gradient(165deg,#2d3647,#10141c 60%,#1c232f);border:1px solid #5a6677;border-radius:4px;
+  box-shadow:inset 0 1px 0 rgba(180,205,240,.2),inset 0 -8px 14px rgba(0,0,0,.5);position:relative}
+#resStrip{flex:none;height:15px;display:flex;align-items:center;gap:6px;padding:0 1px}
+#resStrip #resCluster{position:static;margin:0;display:flex;flex-direction:row;gap:9px;z-index:auto}
+#resStrip #resCluster .res{min-height:0;background:transparent;border:none;border-radius:0;padding:0;gap:3px;font-size:12px;font-weight:800}
+#resStrip #resCluster .res svg{width:12px;height:12px}
+#resClock{margin-left:auto;font-size:12px;font-weight:800;color:#7dd7ff;white-space:nowrap}
+#resClock::before{content:'◷ ';color:#9fb4cc;font-weight:400}
+#mmRow{flex:1;min-height:0;display:flex;gap:4px}
+#mmWrap{flex:none;width:90px;height:auto;align-self:stretch;padding:2px}
+#utilGrid{flex:1;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:3px}
+#utilGrid #menuBtn{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;background:#171c26;border:1px solid #454e61;border-radius:4px;cursor:pointer;padding:1px}
+#utilGrid #menuBtn img{width:20px;height:20px;object-fit:contain;border:1px solid var(--acc, #2dd4bf);border-radius:3px;background:#0a0f16}
+#utilGrid .menuLbl{font-size:7.5px;font-weight:900;letter-spacing:1px;color:#e8c15a;line-height:1}
+#console #utilGrid .iconBtn{width:auto;height:auto;min-width:0;min-height:0;background:#171c26;border:1px solid #454e61;border-radius:4px;display:flex;align-items:center;justify-content:center}
+#console #utilGrid .iconBtn svg{width:17px;height:17px}
+/* — KHỐI GIỮA — */
+#infoCol{padding:2px 7px;gap:2px}
+#selRow{flex:none;height:14px;display:flex;align-items:center;gap:8px;min-width:0}
+#selTabs{flex:1;min-width:0;display:flex;align-items:center;gap:4px;overflow:hidden}
+.selTotal{font-size:10px;font-weight:900;color:#aee6ff;white-space:nowrap}
+.typeTab{display:flex;align-items:center;gap:3px;height:14px;padding:0 4px 0 2px;background:#10161f;border:1px solid #3c465a;border-radius:3px;cursor:pointer;flex:none}
+.typeTab .tn{font-size:8.5px;font-weight:900;color:#7dd7ff}
+.typeTab img{width:12px;height:12px;object-fit:contain;pointer-events:none}
+.typeTab .tc{font-size:9px;font-weight:900;color:#eaf6ff}
+.typeTab.active{border-color:var(--acc, #2dd4bf);box-shadow:0 0 6px var(--acc, rgba(45,212,191,.5))}
+#selRow #statBar{margin-left:auto;height:auto;padding:0;font-size:10px;gap:5px;flex:none}
+#infoPanel{align-items:stretch;padding:0 1px}
+#infoPanel .portraitBox{width:54px;height:auto;align-self:stretch}
+#infoPanel .infoMain{justify-content:center}
+/* thẻ loại LỚN (tầng dưới của khối giữa) */
+.selWrap.big{display:flex;width:100%;align-items:stretch}
+.selGrid.big{display:flex;flex-direction:row;gap:5px;width:100%;align-items:stretch;overflow:hidden}
+.typeCard.big{position:relative;flex:1 1 0;min-width:0;width:auto;height:auto;max-width:none;
+  display:flex;flex-direction:row;align-items:center;gap:5px;padding:2px 5px;cursor:pointer;
+  background:linear-gradient(180deg,#26334a,#121926);border:1px solid #4a5468;border-radius:5px;
+  box-shadow:inset 0 1px 0 rgba(190,215,245,.16)}
+.typeCard.big img.tcImg{width:30px;height:30px;object-fit:contain;flex:none;pointer-events:none}
+.typeCard.big .tcMain{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
+.typeCard.big .tcName{font-size:10px;font-weight:900;color:#f3e9c8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.15}
+.typeCard.big .tcSub{display:flex;align-items:center;gap:5px}
+.typeCard.big .cnt{position:static;background:none;border:none;border-radius:0;padding:0;line-height:1.1;
+  font-size:10.5px;font-weight:900;color:#eaf6ff}
+.typeCard.big .cnt::before{content:'[';color:#7dd7ff}
+.typeCard.big .cnt::after{content:']';color:#7dd7ff}
+.typeCard.big .hpMini{position:static;flex:1;height:4px;left:auto;right:auto;bottom:auto;background:rgba(0,0,0,.75);border-radius:2px;overflow:hidden}
+.typeCard.big.active{flex-grow:1.3;border-color:var(--acc, #2dd4bf);
+  box-shadow:2px 2px 0 -1px #2b3648, 3.5px 3.5px 0 -1px #57637c, 0 0 11px var(--acc, rgba(45,212,191,.55)), inset 0 1px 0 rgba(220,245,255,.3)}
+.qSlot{width:20px;height:20px}
+/* — KHỐI PHẢI: lưới 3x3 có chữ — */
+#cmdWrap{width:120px;padding:1px 2px}
+#cmdGrid{display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);gap:2px;width:100%;height:100%}
+.cmdBtn{padding:1px;gap:0}
+.cmdBtn svg{width:15px;height:15px}
+.cmdBtn img{max-width:88%;max-height:52%}
+.cmdBtn .clbl{font-size:8.5px;margin-top:1px}
+.cmdBtn .lvl{font-size:8.5px;top:0;right:2px}
 </style>
 </head>
 <body>
@@ -586,23 +797,29 @@ html,body{width:100%;height:100%;height:100dvh;overflow:hidden;background:#000;c
     <button id="btnCancelPlace" class="hidden" type="button" aria-label="Hủy đặt nhà">✕</button>
 </div>
 <div id="console">
-    <div id="mmWrap"><canvas id="minimap" width="208" height="160"></canvas></div>
-    <div id="menuBlock">
-      <div class="mbLeft" id="menuBtn" title="Menu / Tạm dừng"><img id="menuPortrait" src="assets/sprites/command.png" alt=""><div class="menuLbl">MENU</div></div>
-      <div class="mbBtns">
-        <button class="iconBtn" id="btnMute" type="button" aria-label="Bật / tắt tiếng"></button>
-        <button class="iconBtn" id="btnPause" type="button" aria-label="Tạm dừng"></button>
-        <button class="iconBtn" id="btnFs" type="button" aria-label="Toàn màn hình"></button>
-      </div>
-    </div>
-    <div id="infoCol">
-      <div id="topLine">
-        <div id="statBar"><span id="resTime">00:00</span><span>·</span><span>Đợt <span id="resWave">0</span></span><span>·</span><span id="resDiff">Vừa</span></div>
+    <div id="mmBlock">
+      <div id="resStrip">
         <div id="resCluster">
           <div class="res min" data-res="min"></div>
           <div class="res gas" data-res="gas"></div>
           <div class="res sup" data-res="sup"></div>
         </div>
+        <div id="resClock"><span id="resTime">00:00</span></div>
+      </div>
+      <div id="mmRow">
+        <div id="mmWrap"><canvas id="minimap" width="208" height="160"></canvas></div>
+        <div id="utilGrid">
+          <div class="mbLeft" id="menuBtn" title="Menu / Tạm dừng"><img id="menuPortrait" src="assets/sprites/command.png" alt=""><div class="menuLbl">MENU</div></div>
+          <button class="iconBtn" id="btnMute" type="button" aria-label="Bật / tắt tiếng"></button>
+          <button class="iconBtn" id="btnPause" type="button" aria-label="Tạm dừng"></button>
+          <button class="iconBtn" id="btnFs" type="button" aria-label="Toàn màn hình"></button>
+        </div>
+      </div>
+    </div>
+    <div id="infoCol">
+      <div id="selRow">
+        <div id="selTabs"></div>
+        <div id="statBar"><span>Đợt <span id="resWave">0</span></span><span>·</span><span id="resDiff">Vừa</span></div>
       </div>
       <div id="infoPanel"><div class="infoHint">Chưa chọn gì.<br>Chạm vào quân / nhà của mình để xem thông tin tại đây — giống bảng điều khiển của chỉ huy.</div></div>
       <div id="upgPanel"></div>
@@ -633,12 +850,14 @@ html,body{width:100%;height:100%;height:100dvh;overflow:hidden;background:#000;c
       <span class="headSpacer"></span>
     </div>
     <div class="setupMain">
-      <div class="setupCol">
+      <div class="raceCol">
         <div class="racePick" id="racePick">
           <div class="raceCard raceTab" data-race="terran"><img src="assets/sprites/command.png" alt=""><div class="rTxt"><div class="rn">TERRAN</div></div></div>
           <div class="raceCard raceTab" data-race="zerg"><img src="assets/sprites/hatchery.png" alt=""><div class="rTxt"><div class="rn">ZERG</div></div></div>
           <div class="raceCard raceTab" data-race="protoss"><img src="assets/sprites/nexus.png" alt=""><div class="rTxt"><div class="rn">PROTOSS</div></div></div>
         </div>
+      </div>
+      <div class="centerCol">
         <button type="button" id="mapBar" aria-expanded="false">
           <span class="mbHalf"><span class="mbKey">CỠ</span><b id="mapBarSize">Vừa</b></span>
           <span class="mbSep"></span>
@@ -655,19 +874,21 @@ html,body{width:100%;height:100%;height:100dvh;overflow:hidden;background:#000;c
         </div>
         <div id="aiRows"></div>
         <div class="teamNote" id="teamNote"></div>
-      </div>
-      <div class="setupRail">
-        <div class="railLbl">ĐỘ KHÓ</div>
-        <div class="teamPick diffCol" id="diffPick">
-          <button type="button" class="diffBtn" data-diff="de">DỄ</button>
-          <button type="button" class="diffBtn" data-diff="vua">VỪA</button>
-          <button type="button" class="diffBtn" data-diff="kho">KHÓ</button>
+        <div class="diffRow">
+          <span class="railLbl">ĐỘ KHÓ</span>
+          <div class="teamPick diffCol" id="diffPick">
+            <button type="button" class="diffBtn" data-diff="de">DỄ</button>
+            <button type="button" class="diffBtn" data-diff="vua">VỪA</button>
+            <button type="button" class="diffBtn" data-diff="kho">KHÓ</button>
+          </div>
         </div>
-        <div class="railSpacer"></div>
+      </div>
+      <div class="sideCol">
         <button id="btnBook" type="button" aria-label="Sách hướng dẫn">
-          <svg viewBox="0 0 48 36" class="bookSvg" aria-hidden="true"><path d="M24 7 C19 3.5 11 3 4 5 L4 30 C11 28 19 28.5 24 32 C29 28.5 37 28 44 30 L44 5 C37 3 29 3.5 24 7 Z" fill="#e9dec2" stroke="#8a6a34" stroke-width="1.7"/><path d="M24 7 L24 32" stroke="#8a6a34" stroke-width="1.5"/><path d="M8 9.5 C13 8 18 8.2 21.5 10 M8 14.5 C13 13 18 13.2 21.5 15 M8 19.5 C13 18 18 18.2 21.5 20 M40 9.5 C35 8 30 8.2 26.5 10 M40 14.5 C35 13 30 13.2 26.5 15 M40 19.5 C35 18 30 18.2 26.5 20" stroke="#9a8a68" stroke-width="1.3" fill="none"/></svg>
-          <span class="bookLbl">SÁCH</span>
+          <svg viewBox="0 0 120 84" class="bookSvg" aria-hidden="true"><ellipse cx="60" cy="77" rx="47" ry="5" fill="rgba(0,0,0,.5)"/><path d="M60 16 C47 6 26 3 8 8 L8 67 C26 62 47 65 60 75 C73 65 94 62 112 67 L112 8 C94 3 73 6 60 16 Z" fill="#1d3a5e" stroke="#e0bc72" stroke-width="2.4"/><path d="M60 20 C48.5 11.5 29.5 8.8 13.5 12.8 L13.5 62.5 C29.5 58.7 48.5 61.2 60 69.5 C71.5 61.2 90.5 58.7 106.5 62.5 L106.5 12.8 C90.5 8.8 71.5 11.5 60 20 Z" fill="#efe3c2" stroke="#8a6a34" stroke-width="1.3"/><path d="M60 20 L60 69.5" stroke="#8a6a34" stroke-width="1.8"/><path d="M19 21 C29 18.6 42 19.4 53 23.4 M19 30 C29 27.6 42 28.4 53 32.4 M19 39 C29 36.6 42 37.4 53 41.4 M19 48 C28 45.8 39 46.4 49 49.8 M101 21 C91 18.6 78 19.4 67 23.4 M101 30 C91 27.6 78 28.4 67 32.4 M101 48 C92 45.8 81 46.4 71 49.8" stroke="#9a8a68" stroke-width="2.1" fill="none" stroke-linecap="round"/><path d="M67 39 C78 36.6 91 37.4 101 41.4" stroke="#9a8a68" stroke-width="2.1" fill="none" stroke-linecap="round" stroke-dasharray="1 7"/><path d="M87 62 L87 81 L92.5 75.5 L98 81 L98 60.5 C94.3 60.9 90.6 61.4 87 62 Z" fill="#b4443c" stroke="#7e2a24" stroke-width="1.1"/><path d="M8 16 L8 8 L16 8 M104 8 L112 8 L112 16 M8 59 L8 67 L16 67 M104 67 L112 67 L112 59" stroke="#e8c87e" stroke-width="2" fill="none"/></svg>
+          <span class="bookLbl">HƯỚNG DẪN</span>
         </button>
+        <div class="sideSpacer"></div>
         <button id="btnStart" type="button">▶ VÀO TRẬN — TERRAN</button>
       </div>
     </div>
@@ -2711,6 +2932,21 @@ function currentCommands(){
   }
   return cells;
 }
+/* v5.3: chú thích NGẮN dưới icon lưới lệnh 3x3 (như mẫu SC2) — tối đa ~6 ký tự để vừa ô ~36px */
+var CMD_CAP_U = { worker:'Thợ', marine:'Lính', firebat:'Lửa', tank:'Tăng', mech:'Máy', zergling:'Nhỏ', hydralisk:'Gai', ultralisk:'Khổng', drone:'Drone', overlord:'Chúa', probe:'Probe', zealot:'Zealot', dragoon:'Kỵ', archon:'Archon' };
+var CMD_CAP_B = { depot:'Kho', barracks:'Trại', factory:'Xưởng', refinery:'Khí', turret:'Tháp', pool:'Hồ', zergden:'Hang', sunken:'Ổ', extractor:'Khí', hatchery:'Tổ', pylon:'Điện', gateway:'Cổng', cybercore:'Lõi', cannon:'Pháo', assimilator:'Khí' };
+function cmdCaption(c){
+  if(!c) return '';
+  if(c.action==='train') return CMD_CAP_U[c.unit] || '';
+  if(c.action==='build') return CMD_CAP_B[c.b] || '';
+  if(c.action==='research') return c.kind==='weapon' ? 'Vũ Khí' : 'Giáp';
+  if(c.action==='upmain') return 'Lên Cấp';
+  if(c.action==='cancelPlace') return 'Hủy';
+  if(c.action==='stop') return 'Dừng';
+  if(c.action==='page') return c.page==='build' ? 'Xây' : 'Lệnh';
+  if(c.action==='order') return c.mode==='attack' ? 'Đánh' : (c.mode==='harvest' ? 'Đào' : 'Đi');
+  return '';
+}
 function renderPanel(force){
   if(!S) return;
   var sel = selectedUnits(), b = S.selectedBuildingId ? findById(S.selectedBuildingId) : null;
@@ -2723,6 +2959,7 @@ function renderPanel(force){
             (function(){ var nx2 = Infinity; aiTeamList().forEach(function(t){ if(S.ai && S.ai[t]) nx2 = Math.min(nx2, S.ai[t].nextAt); }); return isFinite(nx2) ? Math.ceil(Math.max(0, nx2 - S.time)/4) : 0; })();
   if(!force && sig===panelSig) return; panelSig = sig;
   var info = document.getElementById('infoPanel'), grid = document.getElementById('cmdGrid');
+  var tabsEl = document.getElementById('selTabs'); if(tabsEl) tabsEl.innerHTML = '';
   /* --- thông tin giữa console --- */
   if(placing){
     info.innerHTML = '<div class="infoMain"><div class="infoName">Đang đặt: ' + BSPECS[placing.type].name + '</div>' +
@@ -2759,20 +2996,26 @@ function renderPanel(force){
     info.innerHTML = portraitHTML(sp.spr) + '<div class="infoMain"><div class="infoName">' + sp.name + ' <span class="hpNums">' + Math.ceil(u.hp) + ' / ' + u.maxHp + '</span>' + shT + '</div>' +
       '<div class="infoLine2">' + unitBarHTML(u) + '<div class="infoSub">' + sub + '</div></div></div>';
   } else if(sel.length>1){
-    /* v5.1: THẺ THEO LOẠI QUÂN kiểu SC2 (icon + huy hiệu số lượng + vạch máu của quân yếu nhất nhóm);
-       chạm 1 thẻ = thu hẹp chọn xuống đúng loại đó; khi vùng chọn chỉ còn 1 loại, thẻ của nó phát sáng. */
+    /* v5.3 CONSOLE V3 — hai tầng như mẫu SC2: TẦNG TRÊN = tab loại nhỏ đánh số (sprite + ×N) ở
+       #selTabs; TẦNG DƯỚI = THẺ LỚN (hình to + TÊN + [×N] + vạch máu của quân yếu nhất nhóm).
+       Chạm tab/thẻ = thu hẹp chọn xuống đúng loại đó; khi vùng chọn chỉ còn 1 loại, tab + thẻ của
+       nó phát sáng (thẻ to hơn + bóng xếp chồng). */
     var groups = {}, gorder = [];
     sel.forEach(function(x){ if(!groups[x.type]){ groups[x.type] = []; gorder.push(x.type); } groups[x.type].push(x); });
     gorder.sort(function(a2, b2){ return groups[b2].length - groups[a2].length; });
     var oneType = gorder.length === 1;
+    if(tabsEl) tabsEl.innerHTML = '<span class="selTotal">' + sel.length + ' quân</span>' + gorder.map(function(t, ix){
+      return '<div class="typeTab' + (oneType ? ' active' : '') + '" data-type="' + t + '"><span class="tn">' + (ix+1) + '</span><img src="' + sprImg(SPECS[t].spr) + '" alt=""><span class="tc">×' + groups[t].length + '</span></div>';
+    }).join('');
     var cards = gorder.map(function(t){
       var arr = groups[t], worst = 1;
       arr.forEach(function(x){ worst = Math.min(worst, x.hp/x.maxHp); });
       var col = worst>0.5 ? '#22c55e' : (worst>0.25 ? '#eab308' : '#ef4444');
-      return '<div class="selCell typeCard' + (oneType ? ' active' : '') + '" data-type="' + t + '"><img src="' + sprImg(SPECS[t].spr) + '" alt="">' +
-        '<span class="cnt">×' + arr.length + '</span><span class="hpMini"><i style="width:' + Math.round(worst*100) + '%;background:' + col + '"></i></span></div>';
+      return '<div class="selCell typeCard big' + (oneType ? ' active' : '') + '" data-type="' + t + '"><img class="tcImg" src="' + sprImg(SPECS[t].spr) + '" alt="">' +
+        '<div class="tcMain"><div class="tcName">' + SPECS[t].name + '</div>' +
+        '<div class="tcSub"><span class="cnt">×' + arr.length + '</span><span class="hpMini"><i style="width:' + Math.round(worst*100) + '%;background:' + col + '"></i></span></div></div></div>';
     }).join('');
-    info.innerHTML = '<div class="infoMain selWrap"><div class="selCount">' + sel.length + ' quân<br><span>chạm thẻ = lọc loại</span></div><div class="selGrid">' + cards + '</div></div>';
+    info.innerHTML = '<div class="selWrap big"><div class="selGrid big">' + cards + '</div></div>';
   } else if(pendingOrder){
     info.innerHTML = '<div class="infoMain"><div class="infoName">' + (pendingOrder==='attack' ? 'TẤN CÔNG' : pendingOrder==='harvest' ? 'KHAI THÁC' : 'DI CHUYỂN') + '</div><div class="infoSub">Chạm vào đích trên bản đồ.</div></div>';
   } else {
@@ -2786,12 +3029,12 @@ function renderPanel(force){
     info.innerHTML = '<div class="infoMain baseStat"><div class="infoName">CĂN CỨ — Thợ: ' + wkN + ' · Quân: ' + armyN + ' · Dân số: ' + S.supplyUsed + '/' + S.supplyCap + '</div>' +
       '<div class="infoSub">' + mid + '</div></div>';
   }
-  /* --- lưới lệnh 4×2 trong khối đóng khung riêng (v5.1: nút CHỈ icon — bỏ hẳn chú thích chữ;
-     nhuộm tông theo loại lệnh: tấn công / sản xuất quân chiến đấu = ẤM, xây / nghiên cứu / nâng
-     nhà chính / chuyển trang = LẠNH, dừng / huỷ = trung tính. Tên + giá + lý do khoá hiện ở dòng
-     cmdCost khi chạm, không in lên nút — đúng quy tắc "cần thì mới hiện chữ") --- */
+  /* --- lưới lệnh 3×3 trong khối đóng khung riêng (v5.3: ĐÚNG DẠNG MẪU SC2 — icon + CHỮ NGẮN
+     dưới icon; nhuộm tông theo loại lệnh như v5.1: tấn công / sản xuất quân chiến đấu = ẤM, xây /
+     nghiên cứu / nâng nhà chính / chuyển trang = LẠNH, dừng / huỷ = trung tính. Giá vẫn KHÔNG in
+     lên nút (v4.1) — hiện ở dòng cmdCost khi chạm; lý do khoá cũng vậy) --- */
   var cmds = currentCommands(), gh = '';
-  for(var i=0;i<8;i++){
+  for(var i=0;i<9;i++){
     var c = cmds[i];
     if(!c){ gh += '<button class="cmdBtn" disabled aria-hidden="true"></button>'; continue; }
     var prog = -1;
@@ -2801,9 +3044,10 @@ function renderPanel(force){
     if(c.action==='order' && c.mode==='attack') tint = 'tAtk';
     else if(c.action==='train') tint = isWorkerType(c.unit) ? 'tCool' : 'tAtk';
     else if(c.action==='build' || c.action==='research' || c.action==='upmain' || c.action==='page') tint = 'tCool';
-    /* v4.1 ITEM 4: lưới lệnh KHÔNG hiện số giá nữa (◆/●/👥) — bấm là trừ ở thanh tài nguyên trên cùng */
+    var cap = cmdCaption(c);
     gh += '<button class="cmdBtn ' + tint + (c.active ? ' active' : '') + '" data-i="' + i + '"' + (c.disabled ? ' disabled' : '') + '>' +
       (c.img ? '<img src="' + sprImg(c.img) + '" alt="">' : IC[c.icon]) +
+      (cap ? '<span class="clbl">' + cap + '</span>' : '') +
       (prog >= 0 ? '<span class="cprog" style="width:' + Math.round(prog*100) + '%"></span>' : '') +
       (c.lvl ? '<span class="lvl">' + c.lvl + '</span>' : '') + '</button>';
   }
@@ -2842,6 +3086,17 @@ function renderPanel(force){
 document.getElementById('btnCancelPlace').addEventListener('click', function(){
   if(!placing) return;
   placing = null; dragPlace = null; Snd.play('ui_click', 0.7, 60); showMsg('Đã hủy đặt nhà'); renderPanel(true);
+});
+/* v5.3: cả THẺ LỚN (trong #infoPanel) lẫn TAB LOẠI nhỏ (trong #selTabs) đều thu hẹp chọn theo loại */
+function narrowToType(ctype){
+    var ids = S.units.filter(function(x){ return x.faction === 'player' && x.type === ctype && S.selectedIds.indexOf(x.id) >= 0; }).map(function(x){ return x.id; });
+    if(!ids.length) return;
+    S.selectedIds = ids; S.selectedBuildingId = 0; pendingOrder = null;
+    Snd.play('select', 0.6, 90); renderPanel(true);
+}
+document.getElementById('selTabs').addEventListener('click', function(ev){
+  var tab = ev.target.closest ? ev.target.closest('.typeTab') : null; if(!tab) return;
+  var ctype = tab.getAttribute('data-type'); if(ctype) narrowToType(ctype);
 });
 document.getElementById('infoPanel').addEventListener('click', function(ev){
   var cell = ev.target.closest ? ev.target.closest('.selCell') : null; if(!cell) return;
