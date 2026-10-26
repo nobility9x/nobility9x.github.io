@@ -870,6 +870,28 @@ html,body{width:100%;height:100%;height:100dvh;overflow:hidden;background:#000;c
 /* — phần tử neo đáy khung nhìn phải tránh hai khối bên cao 100px (canvas nay phủ toàn khung) — */
 #cmdCost{bottom:calc(var(--consoleH) + 8px)}
 #btnCancelPlace{bottom:calc(var(--consoleH) + 46px)}
+/* ===== V6.4 — CONSOLE LIỀN KHỐI (lệnh 16:46: "3 ô nó đang tách biệt nhau") =====
+   Ba khối (minimap · thẻ giữa · lưới lệnh) hết nổi như 3 đảo rời: chúng CHẠM CẠNH nhau
+   (gap 6px -> 0), ngồi trên MỘT TẤM GẦM chung chạy suốt chiều ngang (::before, thò 3px mỗi
+   đầu + lộ qua các góc bo của khối), một ĐƯỜNG NỀN nhấn chung xuyên suốt (::after), và
+   VAI BẬC THANG kim loại (.shPlate) chảy từ đỉnh hai khối bên xuống ô giữa tại đúng 2 mối
+   nối — hẹp (42px), pointer-events:none, KHÔNG lấp dải map đã giành ở v6.3 (dải giữa hai
+   vai vẫn là canvas chạm xuyên). Hình học v6.3 giữ nguyên: ô giữa vẫn 54px, khối bên vẫn
+   98-100px, vùng bảo đảm camera/minimap không đổi. */
+#console{gap:0}
+#console::before{content:'';position:absolute;left:3px;right:3px;bottom:0;height:15px;z-index:0;pointer-events:none;
+  background:linear-gradient(180deg,#3a465c,#161c27 55%,#0a0e15);border:1px solid #525f73;border-bottom:none;border-radius:7px 7px 0 0;
+  box-shadow:inset 0 1px 0 rgba(190,215,245,.25)}
+#console::after{content:'';position:absolute;left:3px;right:3px;bottom:0;height:2px;z-index:2;pointer-events:none;
+  background:linear-gradient(90deg,transparent,var(--acc, rgba(45,212,191,.55)) 12%,var(--acc, rgba(45,212,191,.55)) 88%,transparent)}
+#mmBlock,#infoCol,#cmdWrap{position:relative;z-index:1}
+.shPlate{position:absolute;top:1px;height:calc(var(--consoleH) - var(--consoleMidH) - 1px);width:42px;z-index:0;pointer-events:none;
+  background:linear-gradient(180deg,#2d3647,#171e2a 70%,#131922)}
+.shPlate::before{content:'';position:absolute;inset:0;background:var(--acc, rgba(45,212,191,.55))}
+.shL{left:calc(6px + 144px - 16px);clip-path:polygon(0 0,100% 100%,0 100%)}
+.shL::before{clip-path:polygon(0 0,100% calc(100% - 3px),100% 100%,0 3px)}
+.shR{right:calc(6px + 120px - 16px);clip-path:polygon(100% 0,100% 100%,0 100%)}
+.shR::before{clip-path:polygon(100% 0,100% 3px,0 100%,0 calc(100% - 3px))}
 </style>
 </head>
 <body>
@@ -890,6 +912,7 @@ html,body{width:100%;height:100%;height:100dvh;overflow:hidden;background:#000;c
     <button id="btnCancelPlace" class="hidden" type="button" aria-label="Hủy đặt nhà">✕</button>
 </div>
 <div id="console">
+    <div class="shPlate shL"></div><div class="shPlate shR"></div>
     <div id="mmBlock">
       <div id="mmRow">
         <div id="mmWrap"><canvas id="minimap" width="208" height="160"></canvas></div>
@@ -2074,14 +2097,34 @@ function fxExplosion(x, y, big){
   SCORCH.push({x:x, y:y, r: big?42:15+rng()*7, life:1});
   if(SCORCH.length > 42) SCORCH.shift();
 }
-function fxMuzzle(x, y, ang, flame){
-  spawnP({kind:'flash', x:x, y:y, vx:0, vy:0, life:0.07, max:0.07, size: flame?16:11, seed:rng()*6});
+function fxMuzzle(x, y, ang, flame, kind, wp){
+  /* V6.4: chớp nòng THEO VŨ KHÍ — cỡ + màu riêng; súng axit thì PHUN bọt dịch thay vì loé lửa */
+  if(kind === 'acid'){
+    for(var j=0;j<3;j++){ var a2 = ang + (rng()-0.5)*0.4, sp2 = 46 + rng()*50;
+      spawnP({kind:'puff', x:x, y:y, vx:Math.cos(a2)*sp2, vy:Math.sin(a2)*sp2, life:0.2+rng()*0.12, max:0.32, size:2.6+rng()*2.2, seed:rng()*6, c: wp ? wp.c : [163,230,53]}); }
+    return;
+  }
+  spawnP({kind:'flash', x:x, y:y, vx:0, vy:0, life:0.07, max:0.07, size: wp ? wp.muz : (flame?16:11), seed:rng()*6, c: wp ? wp.c : null});
   if(flame){ for(var i=0;i<6;i++){ var a = ang + (rng()-0.5)*0.55, sp = 70 + rng()*80;
     spawnP({kind:'flame', x:x, y:y, vx:Math.cos(a)*sp, vy:Math.sin(a)*sp, life:0.22+rng()*0.18, max:0.4, size:5+rng()*5, seed:rng()*6}); } }
 }
-/* FIX v6 — hiệu ứng TRÚNG ĐẠN tại điểm chạm: khiên Protoss -> vòng sáng loé; thịt Zerg -> bọt hữu cơ; còn lại -> tia lửa kim loại */
-function fxImpact(x, y, target){
-  var i, a, sp;
+/* FIX v6 — hiệu ứng TRÚNG ĐẠN tại điểm chạm: khiên Protoss -> vòng sáng loé; thịt Zerg -> bọt hữu cơ; còn lại -> tia lửa kim loại.
+   V6.4: thêm dấu ấn theo VŨ KHÍ của kẻ bắn (proj) — đạn axit tóe dịch màu vũ khí, đạn năng
+   lượng tóe tia đúng màu vũ khí — để nhìn điểm chạm cũng biết ai vừa bắn trúng. */
+function fxImpact(x, y, target, proj){
+  var i, a, sp, wp = proj ? wfxOf(proj.attackerType) : null;
+  if(proj && proj.kind === 'acid'){
+    for(i=0;i<5;i++){ a = rng()*6.283; sp = 18 + rng()*46;
+      spawnP({kind:'puff', x:x, y:y, vx:Math.cos(a)*sp, vy:Math.sin(a)*sp - 10, life:0.3+rng()*0.2, max:0.5, size:3+rng()*3.2, seed:rng()*6, c: wp ? wp.c : [163,230,53]}); }
+    if(target && (target.shieldMax||0) > 0) spawnP({kind:'shieldring', x:x, y:y, vx:0, vy:0, life:0.22, max:0.22, size: (target.kind==='building' ? BSPECS[target.type].size*0.62 : (SPECS[target.type].draw||48)*0.62), seed:0}); /* khiên vẫn loé vòng khi hứng đạn axit */
+    return;
+  }
+  if(proj && (proj.kind === 'bolt' || proj.kind === 'orb')){
+    for(i=0;i<5;i++){ a = rng()*6.283; sp = 34 + rng()*80;
+      spawnP({kind:'spark', x:x, y:y, vx:Math.cos(a)*sp, vy:Math.sin(a)*sp - 12, life:0.2+rng()*0.18, max:0.38, size:1.7+rng()*1.5, seed:rng()*6, c: wp ? wp.c : [125,245,255]}); }
+    if(target && (target.shieldMax||0) > 0) spawnP({kind:'shieldring', x:x, y:y, vx:0, vy:0, life:0.22, max:0.22, size: (target.kind==='building' ? BSPECS[target.type].size*0.62 : (SPECS[target.type].draw||48)*0.62), seed:0});
+    return;
+  }
   if(target && (target.shieldMax||0) > 0){
     spawnP({kind:'shieldring', x:x, y:y, vx:0, vy:0, life:0.22, max:0.22, size: (target.kind==='building' ? BSPECS[target.type].size*0.62 : (SPECS[target.type].draw||48)*0.62), seed:0});
     return;
@@ -2823,17 +2866,54 @@ function canHitAir(ent){
   return !!sp.flying || (sp.projSpeed > 0 && !sp.groundOnly);
 }
 function entIsFlying(e){ return e.kind === 'unit' && !!SPECS[e.type].flying; }
-var PROJ_KIND = { marine:'tracer', robot:'tracer', scoutbot:'tracer', turret:'tracer', heli:'tracer', scoutship:'tracer',
-  dragoon:'bolt', frigate:'bolt', cannon:'bolt', archon:'bolt', carrier:'bolt',
-  tank:'shell', heavytank:'shell', artillery:'shell', jet:'shell', gunship:'shell', leviathan:'shell',
-  hydralisk:'acid', wasp:'acid', sunken:'acid', bat:'acid',
+var PROJ_KIND = { marine:'tracer', robot:'tracer', scoutbot:'tracer', heli:'tracer', scoutship:'tracer',
+  dragoon:'orb', frigate:'bolt', cannon:'orb', archon:'bolt', carrier:'bolt',
+  tank:'shell', heavytank:'shell', artillery:'shell', jet:'shell', gunship:'shell',
+  hydralisk:'acid', wasp:'acid', sunken:'acid', bat:'acid', leviathan:'acid',
+  turret:'rocket',
   colossus:'beam' };
 function projKindFor(type){ return PROJ_KIND[type] || 'tracer'; }
+/* ===== V6.4 — HỒ SƠ HIỆU ỨNG THEO VŨ KHÍ ("chau chuốt lại hiệu ứng skill từng nhân vật,
+   với tháp pháo"): mỗi loại quân/tháp một CHỮ KÝ riêng — màu đạn RIÊNG theo vũ khí (không
+   còn nhuộm theo phe), độ dài vệt (len), cỡ đầu đạn (rad), cỡ chớp nòng (muz). Đạn nhận diện
+   được GIỮA TRẬN HỖN CHIẾN: nhìn vệt đạn biết ngay quân nào đang bắn.
+   twin = bắn thêm 1 đạn HÌNH ẢNH song song (fxOnly, 0 sát thương — cân bằng không đổi);
+   spine = đạn thuôn như gai (Hydralisk); arc = hệ số cầu vồng đạn pháo (Pháo Tự Hành cao hơn). */
+var WFX = {
+  marine:   { c:[255,214,90],  len:13, rad:2.5, muz:11 },
+  firebat:  { c:[251,146,60],  len:11, rad:5,   muz:16 },
+  mech:     { c:[160,240,255], len:14, rad:2.8, muz:12, twin:true },
+  robot:    { c:[255,170,80],  len:14, rad:2.8, muz:12, twin:true },
+  scoutbot: { c:[170,255,190], len:12, rad:2.2, muz:10 },
+  heli:     { c:[255,200,110], len:12, rad:2.4, muz:10 },
+  scoutship:{ c:[150,230,255], len:12, rad:2.4, muz:10 },
+  turret:   { c:[255,150,60],  len:10, rad:2.6, muz:13 },
+  dragoon:  { c:[110,180,255], len:0,  rad:3.4, muz:13 },
+  frigate:  { c:[196,150,255], len:16, rad:2.8, muz:12 },
+  cannon:   { c:[130,245,255], len:0,  rad:3.8, muz:15 },
+  archon:   { c:[160,225,255], len:15, rad:3.0, muz:16 },
+  carrier:  { c:[250,205,100], len:14, rad:2.7, muz:13 },
+  colossus: { c:[125,245,255], len:38, rad:3.0, muz:14 },
+  tank:     { c:[255,217,160], len:0,  rad:3.4, muz:15 },
+  heavytank:{ c:[255,190,120], len:0,  rad:4.8, muz:20 },
+  artillery:{ c:[255,205,140], len:0,  rad:3.9, muz:17, arc:1.35 },
+  jet:      { c:[255,215,150], len:0,  rad:3.0, muz:13 },
+  gunship:  { c:[255,180,100], len:0,  rad:4.2, muz:17 },
+  hydralisk:{ c:[163,230,53],  len:11, rad:2.2, muz:10, spine:true },
+  wasp:     { c:[215,240,90],  len:0,  rad:2.8, muz:10 },
+  bat:      { c:[190,235,110], len:0,  rad:2.4, muz:9 },
+  sunken:   { c:[200,140,255], len:0,  rad:4.4, muz:14 },
+  leviathan:{ c:[180,240,90],  len:0,  rad:5.2, muz:16 }
+};
+function wfxOf(type){ return WFX[type] || null; }
+function wcolCss(c, a){ return 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + (a == null ? 1 : a) + ')'; }
 var PROJ_POOL = [];
 function spawnProjectile(fields){
   if(S.projectiles.length >= 220) return null; /* trần đạn đang bay: quá tải thì phát bắn áp sát thương ngay (xem shoot) */
   var p = PROJ_POOL.pop() || {};
   for(var k in fields) p[k] = fields[k];
+  if(fields.fxOnly === undefined) p.fxOnly = false; /* đạn tái dùng từ hồ: reset cờ hình ảnh */
+  p.seed = rng()*6.283; /* hạt giống RIÊNG cho hiệu ứng (đuôi lửa tên lửa, nhấp nháy) */
   p.id = uid();
   S.projectiles.push(p);
   return p;
@@ -2897,7 +2977,7 @@ var SHOT_SETS = {
   hydralisk: ['shoot_spit'],
   firebat:   ['shoot_flame'],
   dragoon:   ['shoot_laser3','shoot_laser2'],
-  archon:    ['shoot_cannon'],
+  archon:    ['shoot_laser3','shoot_laser4'], /* V6.4: Archon là đòn TÂM LINH — bỏ tiếng pháo Terran, thêm lớp trầm năng lượng ở playWeaponShot */
   sunken:    ['shoot_spit'],
   cannon:    ['shoot_laser3','shoot_laser4'],
   /* FIX v6 — quân mới dùng lại bộ mẫu sẵn có (không thêm lớp nhiễu nào) */
@@ -2931,6 +3011,15 @@ function camVol(x, y, base){ /* âm lượng giảm nhẹ theo khoảng cách t�
 }
 function playWeaponShot(type, x, y, baseVol){
   var vol = camVol(x, y, baseVol==null ? 0.30 : baseVol);
+  if(type==='turret'){ /* V6.4: Tháp TÊN LỬA phóng rocket — tiếng pháo nén cao (vút) thay vì tia laze */
+    Snd.playEx('shoot_cannon', { vol: vol*0.55, rate: 1.7, combat: true });
+    return;
+  }
+  if(type==='archon'){ /* V6.4: đòn tâm linh — tia năng lượng + 1 lớp "thụp" trầm đi kèm */
+    Snd.playEx(pickShotVar(type), { vol: vol, combat: true });
+    Snd.playEx('explosion_small', { vol: vol*0.25, rate: 1.25, combat: true });
+    return;
+  }
   if(type==='mech' || type==='robot'){ /* Robot 2 nòng: luân phiên biến thể + lệch pan + lệch pitch từng nòng */
     mechBarrelFlip = !mechBarrelFlip;
     var bv = mechBarrelFlip ? 'shoot_laser2' : 'shoot_laser4'; lastShotVar[type] = bv;
@@ -2956,19 +3045,30 @@ function shoot(u, target){
   if(sp.projSpeed>0){
     var dd0 = dist(u.x, u.y, target.x, target.y);
     var pk = projKindFor(u.type);
+    var wp0 = wfxOf(u.type);
     var spawned = spawnProjectile({ faction:u.faction, x:u.x, y:u.y, sx:u.x, sy:u.y, tx:target.x, ty:target.y, targetId:target.id, dmg:dmg, speed:sp.projSpeed,
       splash: sp.splash||0, attackerType:u.type, attackerFaction:u.faction, flame: u.type==='firebat', miss: missed,
-      kind: pk, arcH: pk==='shell' ? Math.max(14, dd0*0.22) : 0 });
+      kind: pk, arcH: pk==='shell' ? Math.max(14, dd0*0.22) * (wp0 && wp0.arc ? wp0.arc : 1) : 0 });
     if(!spawned){ /* trần đạn: phát này áp sát thương ngay thay vì mất đòn */
       if(!missed){ applyDamage(target, dmg, u.faction); if(sp.splash) splashHit(u, target, target.x, target.y, sp.splash, target); }
+    } else if(wp0 && wp0.twin){ /* V6.4: quân SONG SÚNG (Robot/Mech) — thêm 1 đạn HÌNH ẢNH song song lệch 6px: trông như 2 nòng cùng khạc, 0 sát thương nên cân bằng DPS giữ nguyên */
+      var pxn = -Math.sin(ang)*6, pyn = Math.cos(ang)*6;
+      spawnProjectile({ faction:u.faction, x:u.x + pxn, y:u.y + pyn, sx:u.x + pxn, sy:u.y + pyn, tx:target.x, ty:target.y, targetId:target.id, dmg:0, speed:sp.projSpeed,
+        splash: 0, attackerType:u.type, attackerFaction:u.faction, flame: false, miss: missed, fxOnly: true,
+        kind: pk, arcH: 0 });
     }
-    fxMuzzle(u.x + Math.cos(ang)*sp.draw*0.42, u.y + Math.sin(ang)*sp.draw*0.30, ang, u.type==='firebat');
+    fxMuzzle(u.x + Math.cos(ang)*sp.draw*0.42, u.y + Math.sin(ang)*sp.draw*0.30, ang, u.type==='firebat', pk, wp0);
     if(onScreen(u.x,u.y)) playWeaponShot(u.type, u.x, u.y, 0.30);
   } else {
     /* CẬN CHIẾN: lao người tới + vệt chém loé tại mục tiêu */
     var ld = Math.max(1, dist(u.x, u.y, target.x, target.y));
     u.lungeT = 0.18; u.lungeDx = (target.x - u.x)/ld; u.lungeDy = (target.y - u.y)/ld;
-    spawnP({kind:'slash', x:target.x, y:target.y - 4, vx:0, vy:0, life:0.16, max:0.16, size: Math.max(10, (sp.draw||40)*0.34), seed: ang});
+    /* V6.4: nhát chém RIÊNG — Zealot = LƯỠI PSI xanh kép; Quái Khổng Lồ = vòng cung TO + bụi đất + rung nhẹ; còn lại giữ vệt trắng */
+    var slashC = u.type==='zealot' ? [150,240,255] : (u.type==='ultralisk' ? [255,190,120] : null);
+    var slashSize = Math.max(10, (sp.draw||40) * (u.type==='ultralisk' ? 0.44 : 0.34));
+    spawnP({kind:'slash', x:target.x, y:target.y - 4, vx:0, vy:0, life:0.16, max:0.16, size: slashSize, seed: ang, c: slashC});
+    if(u.type==='zealot') spawnP({kind:'slash', x:target.x, y:target.y - 4, vx:0, vy:0, life:0.14, max:0.14, size: slashSize*0.68, seed: ang + 0.65, c: slashC});
+    if(u.type==='ultralisk'){ for(var udi=0;udi<3;udi++) spawnP({kind:'dust', x:target.x + (rng()-0.5)*22, y:target.y + (rng()-0.5)*10, vx:(rng()-0.5)*36, vy:-10-rng()*16, life:0.34, max:0.34, size:5+rng()*4, seed:rng()*6}); addShake(target.x, target.y, 1.2); }
     if(missed){
       fxFizzle(target.x, target.y); /* đòn cận chiến vung lên dốc trượt mục tiêu */
     } else {
@@ -3039,15 +3139,24 @@ function tickProjectiles(dt){
     if(!t){ dead.push(p.id); return; }
     p.tx = t.x; p.ty = t.y; /* đầu đạn bám mục tiêu di động (vẽ vòng cung cần điểm đích hiện tại) */
     p.trail = (p.trail||0) + dt;
-    if(p.trail > 0.03){ p.trail = 0;
-      var tc = p.kind==='acid' ? [163,230,53] : (p.kind==='bolt' || p.kind==='beam') ? [125,245,255] : (p.flame ? [251,146,60] : (p.faction==='player' ? [253,224,71] : [240,171,252]));
-      spawnP({kind:'spark', x:p.x, y:p.y, vx:0, vy:0, life:0.16, max:0.16, size: p.flame?3.4:2.2, seed:0, c: tc}); }
+    /* V6.4: vệt đuôi THEO VŨ KHÍ — tên lửa để vệt KHÓI, đạn pháo thưa + mờ, còn lại tia đúng màu vũ khí */
+    var wpT = wfxOf(p.attackerType);
+    var trEvery = p.kind==='shell' ? 0.05 : 0.03;
+    if(p.trail > trEvery){ p.trail = 0;
+      if(p.kind === 'rocket'){
+        spawnP({kind:'smoke', x:p.x, y:p.y, vx:(rng()-0.5)*8, vy:-8-rng()*8, life:0.32, max:0.32, size:2.8, seed:rng()*6});
+      } else {
+        var tc = wpT ? wpT.c : (p.kind==='acid' ? [163,230,53] : (p.kind==='bolt' || p.kind==='beam' || p.kind==='orb') ? [125,245,255] : (p.flame ? [251,146,60] : (p.faction==='player' ? [253,224,71] : [240,171,252])));
+        spawnP({kind:'spark', x:p.x, y:p.y, vx:0, vy:0, life:0.16, max:0.16, size: p.flame?3.4:(wpT ? Math.max(1.6, Math.min(3.4, wpT.rad*0.8)) : 2.2), seed:0, c: tc});
+      } }
     var d = dist(p.x,p.y,t.x,t.y), step = p.speed*dt;
     if(d <= Math.max(12, step)){
       if(p.miss){ fxFizzle(t.x, t.y); dead.push(p.id); return; } /* đạn bắn lên cao trượt: chỉ tóe lửa xám, không sát thương */
+      if(p.fxOnly){ dead.push(p.id); return; } /* V6.4: đạn HÌNH ẢNH (nòng phụ) — chạm là tan, không sát thương/không tiếng */
       applyDamage(t, p.dmg, p.attackerFaction);
-      fxImpact(t.x, t.y, t); /* FIX v6: tóe lửa/bọt hữu cơ/vòng khiên NGAY điểm chạm */
-      if(p.kind === 'shell') spawnP({kind:'ring', x:t.x, y:t.y, vx:0, vy:0, life:0.3, max:0.3, size: Math.max(26, (p.splash||0) + 14), seed:0}); /* vòng nổ của đạn pháo */
+      fxImpact(t.x, t.y, t, p); /* FIX v6 + V6.4: hiệu ứng điểm chạm theo cả mục tiêu LẪN vũ khí */
+      if(p.kind === 'rocket') spawnP({kind:'flash', x:t.x, y:t.y, vx:0, vy:0, life:0.13, max:0.13, size:16, seed:rng()*6, c:[255,170,80]}); /* đầu đạn tên lửa nổ chớp cam */
+      if(p.kind === 'shell' || (p.splash||0) > 0) spawnP({kind:'ring', x:t.x, y:t.y, vx:0, vy:0, life:0.3, max:0.3, size: Math.max(26, (p.splash||0) + 14), seed:0, c: wpT ? wpT.c : null}); /* vòng nổ MÀU VŨ KHÍ cho MỌI đạn diện rộng (trước chỉ đạn pháo) */
       if(!p.flame && onScreen(t.x, t.y)) Snd.playEx('hit_tick', { vol: 0.09, throttleMs: 70, combat: true }); /* đạn chạm: tick kim loại rất nhỏ xác nhận trúng */
       if(p.splash){
         var tFly = entIsFlying(t);
@@ -3063,6 +3172,10 @@ function tickProjectiles(dt){
         });
       }
       dead.push(p.id); return;
+    }
+    if(p.kind === 'rocket' && d > 1){ /* V6.4: tên lửa LẮC nhẹ theo phương vuông góc — đường bay "sống", đạn dẫn tự sửa */
+      var wob = Math.sin(S.time*26 + (p.seed||0)) * 16 * dt;
+      p.x += -(t.y-p.y)/d * wob; p.y += (t.x-p.x)/d * wob;
     }
     p.x += (t.x-p.x)/d*step; p.y += (t.y-p.y)/d*step;
   });
@@ -3104,12 +3217,12 @@ function tickBuildings(dt){
       S.units.forEach(function(e){ if(e.faction!=='player'){ if(SPECS[e.type].flying && b.type==='sunken') return; var d=dist(b.x,b.y,e.x,e.y); if(d<bd){ bd=d; tgt=e; } } });
       if(tgt && b.cooldown<=0){
         b.cooldown = dsp.cd;
-        fxMuzzle(b.x, b.y - 16, Math.atan2(tgt.y-b.y, tgt.x-b.x), false);
         var dpk = projKindFor(b.type);
+        fxMuzzle(b.x, b.y - 16, Math.atan2(tgt.y-b.y, tgt.x-b.x), false, dpk, wfxOf(b.type)); /* V6.4: chớp nòng theo tháp */
         spawnProjectile({ faction:'player', x:b.x, y:b.y-14, sx:b.x, sy:b.y-14, tx:tgt.x, ty:tgt.y, targetId:tgt.id,
           dmg: Math.max(1, dsp.dmg), speed:dsp.projSpeed, splash:0, attackerType:b.type, attackerFaction:'player', flame:false,
           kind: dpk, arcH: 0, miss: !entIsFlying(tgt) && elevShotMiss(b.x, b.y, tgt.x, tgt.y) });
-        if(onScreen(b.x,b.y)) playWeaponShot(b.type==='sunken' ? 'sunken' : 'turret', b.x, b.y, 0.25);
+        if(onScreen(b.x,b.y)) playWeaponShot(b.type, b.x, b.y, 0.25); /* V6.4: tiếng RIÊNG từng tháp (turret=rocket, cannon=photon, sunken=phun dịch) — trước đây cannon bị mượn tiếng turret */
       }
     }
     if(b.queue.length && isPowered(b) && !(S.mainUpgrade && S.mainUpgrade.bid === b.id) && !(b.faction==='player' && S.bldUp && S.bldUp[b.type])){ /* nhà chính đang nâng RIÊNG / loại nhà đang nâng CHUNG: tạm dừng sản xuất */
@@ -4331,49 +4444,91 @@ function drawWorld(){
     }
     ctx.restore();
   });
-  /* FIX v6 — ĐẠN hiển thị theo LOẠI VŨ KHÍ: vệt đạn thẳng · tia năng lượng · đạn pháo CONG (vẽ bóng đất + đầu đạn theo chiều cao) · cục dịch · tia lửa điện */
+  /* FIX v6 — ĐẠN hiển thị theo LOẠI VŨ KHÍ · V6.4 — CHỮ KÝ RIÊNG TỪNG VŨ KHÍ (WFX):
+     màu/vệt/cỡ lấy theo LOẠI QUÂN BẮN (attackerType), không nhuộm theo phe nữa — giữa trận
+     hỗn chiến nhìn vệt đạn là biết quân nào: tia vàng Marine · tia cam Robot song súng ·
+     cầu pha-lê xanh Dragoon · cầu Photon lớn · gai thuôn Hydralisk · cục dịch TO của Chúa
+     Tể Bay · vệt tím Sunken · tên lửa có thân + lửa đuôi của Tháp Tên Lửa · pháo Hạng Nặng
+     đầu đạn TO hơn hẳn pháo thường · tia Colossus KÉP song song. */
   S.projectiles.forEach(function(p){
     var dx = p.tx - p.sx, dy = p.ty - p.sy, dd = Math.max(1, Math.sqrt(dx*dx + dy*dy));
     var ux = dx/dd, uy = dy/dd;
-    var col = p.faction==='player' ? '#fde047' : '#f0abfc';
+    var wp = wfxOf(p.attackerType);
+    var pc = wp ? wp.c : null;
+    var col = pc ? wcolCss(pc) : (p.faction==='player' ? '#fde047' : '#f0abfc');
     if(p.kind === 'shell' && p.arcH){
       var f2 = clamp(1 - (dist(p.x, p.y, p.tx, p.ty) / dd), 0, 1);
       var z = 4 * p.arcH * f2 * (1 - f2);
+      var sr = wp ? wp.rad : 3.4;
       ctx.fillStyle = 'rgba(0,0,0,0.28)';
-      ctx.beginPath(); ctx.ellipse(p.x, p.y, 4.5, 2.6, 0, 0, 6.29); ctx.fill(); /* bóng của đầu đạn trên mặt đất */
-      ctx.fillStyle = '#ffd9a0';
-      ctx.beginPath(); ctx.arc(p.x, p.y - z, 3.4, 0, 6.29); ctx.fill();
+      ctx.beginPath(); ctx.ellipse(p.x, p.y, sr + 1.1, (sr + 1.1)*0.58, 0, 0, 6.29); ctx.fill(); /* bóng của đầu đạn trên mặt đất */
+      ctx.fillStyle = col;
+      ctx.beginPath(); ctx.arc(p.x, p.y - z, sr, 0, 6.29); ctx.fill();
       ctx.fillStyle = 'rgba(255,255,255,0.9)';
-      ctx.beginPath(); ctx.arc(p.x, p.y - z, 1.5, 0, 6.29); ctx.fill();
+      ctx.beginPath(); ctx.arc(p.x, p.y - z, sr*0.44, 0, 6.29); ctx.fill();
       return;
     }
-    if(p.kind === 'beam'){ /* tia năng lượng: vệt dài theo hướng bay */
-      ctx.strokeStyle = p.faction==='player' ? 'rgba(125,245,255,0.95)' : 'rgba(240,171,252,0.95)'; ctx.lineWidth = 3;
-      ctx.beginPath(); ctx.moveTo(p.x - ux*30, p.y - uy*30); ctx.lineTo(p.x, p.y); ctx.stroke();
+    if(p.kind === 'rocket'){ /* TÊN LỬA của Tháp Tên Lửa: thân xám thuôn + đầu cam + lửa đuôi nhấp nháy (vệt khói do tickProjectiles nhả) */
+      var ra = Math.atan2(uy, ux);
+      ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(ra);
+      ctx.fillStyle = 'rgba(255,140,40,0.9)';
+      ctx.beginPath(); ctx.arc(-6, 0, 2.1 + Math.sin(S.time*40 + (p.seed||0))*0.5, 0, 6.29); ctx.fill(); /* lửa đuôi */
+      ctx.fillStyle = '#d7dee8';
+      ctx.fillRect(-5, -1.7, 9, 3.4); /* thân */
+      ctx.fillStyle = col;
+      ctx.beginPath(); ctx.moveTo(4, -1.7); ctx.lineTo(8.5, 0); ctx.lineTo(4, 1.7); ctx.closePath(); ctx.fill(); /* đầu đạn */
+      ctx.restore();
+      return;
+    }
+    if(p.kind === 'beam'){ /* Colossus: TIA KÉP song song — tia chính dày + tia phụ mảnh lệch 3.5px + lõi trắng */
+      var bl = wp ? wp.len : 30;
+      ctx.strokeStyle = wcolCss(pc || [125,245,255], 0.5); ctx.lineWidth = 1.6;
+      ctx.beginPath(); ctx.moveTo(p.x - ux*bl - uy*3.5, p.y - uy*bl + ux*3.5); ctx.lineTo(p.x - uy*3.5, p.y + ux*3.5); ctx.stroke();
+      ctx.strokeStyle = wcolCss(pc || [125,245,255], 0.95); ctx.lineWidth = 3;
+      ctx.beginPath(); ctx.moveTo(p.x - ux*bl, p.y - uy*bl); ctx.lineTo(p.x, p.y); ctx.stroke();
       ctx.strokeStyle = 'rgba(255,255,255,0.85)'; ctx.lineWidth = 1.2;
-      ctx.beginPath(); ctx.moveTo(p.x - ux*30, p.y - uy*30); ctx.lineTo(p.x, p.y); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(p.x - ux*bl, p.y - uy*bl); ctx.lineTo(p.x, p.y); ctx.stroke();
       return;
     }
-    if(p.kind === 'acid'){ /* cục dịch xanh lá */
-      ctx.fillStyle = '#a3e635';
-      ctx.beginPath(); ctx.arc(p.x, p.y, 3.6, 0, 6.29); ctx.fill();
-      ctx.fillStyle = 'rgba(220,255,160,0.85)';
-      ctx.beginPath(); ctx.arc(p.x - 1, p.y - 1, 1.5, 0, 6.29); ctx.fill();
+    if(p.kind === 'orb'){ /* CẦU NĂNG LƯỢNG Protoss (Dragoon/Pháo Photon): quầng mờ + thân màu vũ khí + lõi trắng */
+      var orad = wp ? wp.rad : 3.4;
+      ctx.fillStyle = wcolCss(pc || [125,245,255], 0.22);
+      ctx.beginPath(); ctx.arc(p.x, p.y, orad*1.9, 0, 6.29); ctx.fill();
+      ctx.fillStyle = col;
+      ctx.beginPath(); ctx.arc(p.x, p.y, orad, 0, 6.29); ctx.fill();
+      ctx.fillStyle = 'rgba(255,255,255,0.95)';
+      ctx.beginPath(); ctx.arc(p.x, p.y, orad*0.45, 0, 6.29); ctx.fill();
       return;
     }
-    if(p.kind === 'bolt'){ /* tia điện/năng lượng ngắn, sáng */
+    if(p.kind === 'acid'){
+      if(wp && wp.spine){ /* GAI của Hydralisk: vệt thuôn nhọn theo hướng bay */
+        ctx.strokeStyle = wcolCss(pc, 0.9); ctx.lineWidth = 2.6;
+        ctx.beginPath(); ctx.moveTo(p.x - ux*wp.len, p.y - uy*wp.len); ctx.lineTo(p.x, p.y); ctx.stroke();
+        ctx.fillStyle = 'rgba(240,255,210,0.95)';
+        ctx.beginPath(); ctx.arc(p.x, p.y, wp.rad, 0, 6.29); ctx.fill();
+        return;
+      }
+      /* cục dịch: cỡ + màu theo quân (Dơi nhỏ · Ong vừa · Sunken tím TO · Chúa Tể Bay TO nhất) */
+      var ar = wp ? wp.rad : 3.6;
+      ctx.fillStyle = col;
+      ctx.beginPath(); ctx.arc(p.x, p.y, ar, 0, 6.29); ctx.fill();
+      ctx.fillStyle = 'rgba(240,255,220,0.85)';
+      ctx.beginPath(); ctx.arc(p.x - ar*0.28, p.y - ar*0.28, ar*0.42, 0, 6.29); ctx.fill();
+      return;
+    }
+    if(p.kind === 'bolt'){ /* tia năng lượng: dài/màu theo vũ khí (Frigate tím dài · Archon xanh sáng · Carrier vàng) */
       ctx.strokeStyle = col; ctx.lineWidth = 2.6;
-      ctx.beginPath(); ctx.moveTo(p.x - ux*13, p.y - uy*13); ctx.lineTo(p.x, p.y); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(p.x - ux*(wp ? wp.len : 13), p.y - uy*(wp ? wp.len : 13)); ctx.lineTo(p.x, p.y); ctx.stroke();
       ctx.fillStyle = '#ffffff';
-      ctx.beginPath(); ctx.arc(p.x, p.y, 2.2, 0, 6.29); ctx.fill();
+      ctx.beginPath(); ctx.arc(p.x, p.y, wp ? wp.rad : 2.2, 0, 6.29); ctx.fill();
       return;
     }
-    /* tracer (mặc định) + flame cũ: vệt sáng ngắn + đầu đạn */
-    ctx.strokeStyle = p.flame ? 'rgba(251,146,60,0.75)' : (p.faction==='player' ? 'rgba(253,224,71,0.75)' : 'rgba(240,171,252,0.75)');
+    /* tracer: vệt + đầu đạn MÀU VŨ KHÍ (Marine vàng · Mech xanh băng · Robot cam · Robot Trinh Sát xanh lá…) */
+    ctx.strokeStyle = p.flame ? 'rgba(251,146,60,0.75)' : (pc ? wcolCss(pc, 0.75) : (p.faction==='player' ? 'rgba(253,224,71,0.75)' : 'rgba(240,171,252,0.75)'));
     ctx.lineWidth = 2;
-    ctx.beginPath(); ctx.moveTo(p.x - ux*11, p.y - uy*11); ctx.lineTo(p.x, p.y); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(p.x - ux*(wp ? wp.len : 11), p.y - uy*(wp ? wp.len : 11)); ctx.lineTo(p.x, p.y); ctx.stroke();
     ctx.fillStyle = p.flame ? '#fb923c' : col;
-    ctx.beginPath(); ctx.arc(p.x, p.y, p.flame ? 5 : 2.6, 0, 6.29); ctx.fill();
+    ctx.beginPath(); ctx.arc(p.x, p.y, p.flame ? 5 : (wp ? wp.rad : 2.6), 0, 6.29); ctx.fill();
   });
   /* hạt hiệu ứng (vẽ dưới sương mù để vùng chưa khám phá vẫn che được) */
   PARTS.forEach(function(p){
@@ -4386,9 +4541,9 @@ function drawWorld(){
     else if(p.kind==='spark'){ ctx.fillStyle='rgba(' + p.c[0] + ',' + p.c[1] + ',' + p.c[2] + ',' + (0.9*a).toFixed(3) + ')'; ctx.beginPath(); ctx.arc(p.x,p.y,p.size*a+0.4,0,6.29); ctx.fill(); }
     else if(p.kind==='flame'){ ctx.fillStyle='rgba(255,116,28,' + (0.75*a).toFixed(3) + ')'; ctx.beginPath(); ctx.arc(p.x,p.y,p.size*(0.4+0.6*a),0,6.29); ctx.fill();
       ctx.fillStyle='rgba(255,208,80,' + (0.8*a).toFixed(3) + ')'; ctx.beginPath(); ctx.arc(p.x,p.y,p.size*0.45*a+0.3,0,6.29); ctx.fill(); }
-    else if(p.kind==='flash'){ ctx.fillStyle='rgba(255,236,170,' + (0.85*a).toFixed(3) + ')'; ctx.beginPath(); ctx.arc(p.x,p.y,p.size*a,0,6.29); ctx.fill();
+    else if(p.kind==='flash'){ ctx.fillStyle= p.c ? wcolCss(p.c, 0.85*a) : 'rgba(255,236,170,' + (0.85*a).toFixed(3) + ')'; ctx.beginPath(); ctx.arc(p.x,p.y,p.size*a,0,6.29); ctx.fill();
       ctx.fillStyle='rgba(255,255,255,' + (0.95*a).toFixed(3) + ')'; ctx.beginPath(); ctx.arc(p.x,p.y,p.size*0.45*a,0,6.29); ctx.fill(); }
-    else if(p.kind==='ring'){ ctx.strokeStyle='rgba(255,196,110,' + (0.8*a).toFixed(3) + ')'; ctx.lineWidth=3.5*a+0.5;
+    else if(p.kind==='ring'){ ctx.strokeStyle= p.c ? wcolCss(p.c, 0.8*a) : 'rgba(255,196,110,' + (0.8*a).toFixed(3) + ')'; ctx.lineWidth=3.5*a+0.5;
       ctx.beginPath(); ctx.arc(p.x,p.y, p.size*(1-a)+6, 0, 6.29); ctx.stroke(); }
     /* FIX v6 — các loại hạt mới: mảnh vỡ nhà, bọt hữu cơ Zerg, nhát chém cận chiến, vòng khiên Protoss */
     else if(p.kind==='debris'){ ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.seed + (1-a)*3);
@@ -4396,7 +4551,7 @@ function drawWorld(){
     else if(p.kind==='puff'){ ctx.fillStyle='rgba(' + p.c[0] + ',' + p.c[1] + ',' + p.c[2] + ',' + (0.55*a).toFixed(3) + ')';
       ctx.beginPath(); ctx.arc(p.x, p.y, p.size*(1.3-0.5*a), 0, 6.29); ctx.fill(); }
     else if(p.kind==='slash'){ ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.seed);
-      ctx.strokeStyle='rgba(235,248,255,' + (0.85*a).toFixed(3) + ')'; ctx.lineWidth = 2.4*a + 0.6;
+      ctx.strokeStyle= p.c ? wcolCss(p.c, 0.85*a) : 'rgba(235,248,255,' + (0.85*a).toFixed(3) + ')'; ctx.lineWidth = 2.4*a + 0.6;
       ctx.beginPath(); ctx.arc(0, 0, p.size, -1.1, 0.7); ctx.stroke(); ctx.restore(); }
     else if(p.kind==='shieldring'){ ctx.strokeStyle='rgba(110,235,255,' + (0.75*a).toFixed(3) + ')'; ctx.lineWidth = 2.2*a + 0.6;
       ctx.beginPath(); ctx.arc(p.x, p.y, p.size*(1.12-0.55*a), 0, 6.29); ctx.stroke(); }
