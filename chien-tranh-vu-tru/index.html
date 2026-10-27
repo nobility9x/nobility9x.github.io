@@ -621,6 +621,23 @@ html,body{width:100%;height:100%;height:100dvh;overflow:hidden;background:#000;c
 #startCard .sideCol #btnStart{width:106px;height:106px;margin:0}
 #startCard.panelOpen .diffRow{display:none}
 #startCard.panelOpen .centerCol #aiRows{display:none}
+/* ===== V15.2 — PANEL BẢN ĐỒ = HỘP CUỘN THẬT TRONG CỘT GIỮA =====
+   Bệnh v15.1 trên máy thật (khung hẹp): 7 thẻ loại (2 vàng + 5 cũ) cao hơn phần cột giữa còn
+   trống -> tràn khỏi thẻ, bị overflow:hidden của overlay cắt mất Băng/Rừng (không cuộn được)
+   và sơn đè sang cột nút VÀO TRẬN. Trị tận gốc: (1) #startCard cao ĐÚNG 100% khung để chuỗi
+   flex có chiều cao xác định (trước chỉ min-height:100% nên flex không co được, nội dung cứ
+   tràn); (2) #mapPanel thành flex item co giãn + min-height:0 + overflow-y:auto -> panel bị
+   chặn gọn trong cột giữa và CUỘN dọc theo trục khung (khung xoay 90° trên màn dọc nên vuốt
+   ngang màn hình = cuộn danh sách), không bao giờ tràn sang cột bên. touch-action:pan-x —
+   ĐÃ ĐO THẬT bằng CDP touch-drag: Chrome phân giải trục pan của touch-action theo KHÔNG
+   GIAN MÀN HÌNH (sau transform), mà cử chỉ cuộn panel trên màn dọc là vuốt NGANG, nên pan-y
+   CHẶN mất cuộn (scrollTop đứng im), pan-x mới cho cuộn; overlay cũng không có handler
+   touchmove nào chặn (chỉ canvas game có). */
+#startOverlay #startCard{height:100%}
+#startCard #mapPanel{flex:1 1 auto;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;touch-action:pan-x;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:#3d506e transparent;padding-right:2px}
+#startCard #mapPanel::-webkit-scrollbar{width:4px}
+#startCard #mapPanel::-webkit-scrollbar-track{background:transparent}
+#startCard #mapPanel::-webkit-scrollbar-thumb{background:#3d506e;border-radius:2px}
 
 /* ===== V5.3 COLOR PASS — MÀU/VẬT LIỆU MÀN CHUẨN BỊ (bố cục v5.3-B GIỮ NGUYÊN, chỉ đổi màu) =====
    Chẩn đoán bản phẳng: mọi tấm cùng một gradient chì-xanh xám, độ bão hoà thấp, tộc nào cũng như tộc
