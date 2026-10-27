@@ -3091,6 +3091,69 @@ function hCrunch(c, out, t, o){
 }
 
 /* ---------- động cơ sự kiện: bus + trần giọng + biến thể tổ hợp lớp ---------- */
+/* ================= V14 — GIỌNG THẬT CHO ACK QUÂN (file mp3 trong voice/) =================
+   Thay synth CHỈ ở thời điểm phát trực tiếp bên trong Snd.ev (họ 'ack:*'): buffer đã giải mã
+   thì phát FILE qua đúng đồ thị giọng của ev (bus ack -> master: nút mute/âm lượng vẫn hiệu
+   lực), playbackRate = pf của synth (cao độ theo cỡ quân, kèm jitter như recipe) · gain qua
+   hệ số CAL triệt tiêu trim synth -> độ lớn ngang ack synth (đích median −27dB §9.1).
+   Chưa tải xong / lỗi / thiếu file -> synth như cũ, KHÔNG lỗi console. Advisor (al:*) không
+   qua đường này. Tải lười: cử chỉ đầu tiên / startGame / ack đầu tiên — fetch+decode nền. */
+var VoiceAck = (function(){
+  var RACE = { terran: 't', zerg: 'z', protoss: 'p' };
+  var KIND = { select: 'sel', move: 'move', attack: 'atk', grumble: 'grb', ready: 'rdy' };
+  var COUNTS = { sel: 3, move: 3, atk: 3, grb: 2, rdy: 2 };
+  var CAL = 0.25; /* hiệu chuẩn độ lớn giọng thật (file −14..−17dB) ≈ ack synth −27dB */
+  var bufs = {}, started = false, loadedN = 0, plays = 0, lastKey = '', lastIdx = {}, byKey = {};
+  function load(){
+    if(started) return; started = true;
+    var c = AU.ac(); if(!c || typeof fetch !== 'function'){ started = false; return; }
+    ['t', 'z', 'p'].forEach(function(rk){
+      Object.keys(COUNTS).forEach(function(kk){
+        var key = rk + '-' + kk; bufs[key] = bufs[key] || [];
+        for(var n = 1; n <= COUNTS[kk]; n++){
+          (function(key, idx){
+            fetch('voice/' + key + '-' + idx + '.mp3')
+              .then(function(r){ if(!r.ok) throw 0; return r.arrayBuffer(); })
+              .then(function(ab){ return c.decodeAudioData(ab); })
+              .then(function(buf){ bufs[key][idx - 1] = buf; loadedN++; })
+              .catch(function(){ /* thiếu file / offline lần đầu: giữ synth, im lặng */ });
+          })(key, n);
+        }
+      });
+    });
+  }
+  /* trả về độ dài phát (giây) nếu đã phát file; 0 = chưa sẵn dữ liệu -> nơi gọi dùng synth */
+  function tryPlay(id, c, out, t, o, def){
+    var parts = id.split(':'); /* ack:<race>:<kind> */
+    var rk = RACE[parts[1]], kk = KIND[parts[2]];
+    if(!rk || !kk) return 0;
+    if(!started) load();
+    var key = rk + '-' + kk, arr = bufs[key]; if(!arr) return 0;
+    var avail = [];
+    for(var i = 0; i < arr.length; i++) if(arr[i]) avail.push(i);
+    if(!avail.length) return 0;
+    var ix;
+    if(avail.length === 1) ix = avail[0];
+    else { var guard = 0; do { ix = avail[(Math.random() * avail.length) | 0]; } while(ix === lastIdx[key] && ++guard < 6); }
+    lastIdx[key] = ix;
+    var buf = arr[ix];
+    var pf = ((o && o.pf) || 1) * Snd.jit(0.015);
+    var src = c.createBufferSource(); src.buffer = buf; src.playbackRate.value = pf;
+    var g = auGain(c, CAL / ((def && def.trim) || 1));
+    src.connect(g); g.connect(out);
+    try{ src.start(t); src.stop(t + buf.duration / pf + 0.05); }catch(e){ return 0; }
+    plays++; lastKey = key + '-' + (ix + 1) + '.mp3'; byKey[lastKey] = (byKey[lastKey] || 0) + 1;
+    return buf.duration / pf;
+  }
+  return { load: load, tryPlay: tryPlay,
+           state: function(){ return { loaded: loadedN, started: started, plays: plays, last: lastKey, byKey: byKey }; } };
+})();
+if(typeof window !== 'undefined'){
+  var _vaKick = function(){ VoiceAck.load(); };
+  window.addEventListener('pointerdown', _vaKick, { once: true });
+  window.addEventListener('keydown', _vaKick, { once: true });
+}
+
 var Snd = (function(){
   var muted = false, played = {}, varHist = {}, lastCombo = {}, lastEvAt = {};
   var voices = [], maxVoices = 0, maxNodes = 0, shotTimes = [], ackBlocked = 0, ackTotal = 0;
@@ -3183,15 +3246,18 @@ var Snd = (function(){
     if(def.bus === 'alert') AU.duck(AU.graph().musicDuck, -8, 2.5, 0.25), AU.duck(AU.graph().weaponDuck, -2, 2.5, 0.25);
     if(def.bus === 'sting') AU.duck(AU.graph().duckAll, -6, Math.min(2.6, def.dur || 1.2), 0.3);
     AU.curVoice = v;
-    try{ def.fn(c, v.in, t0, opts, v); }catch(e){}
+    var vDur = 0;
+    if(id.indexOf('ack:') === 0) vDur = VoiceAck.tryPlay(id, c, v.in, t0, opts, def); /* V14: giọng thật thay synth khi buffer đã sẵn; chưa sẵn -> synth bên dưới */
+    if(!vDur){ try{ def.fn(c, v.in, t0, opts, v); }catch(e){} }
     AU.curVoice = null;
-    scheduleEnd(v, Math.max(0, t0 - c.currentTime) + (def.hold != null ? def.hold : (def.dur || 0.3))); /* hold = độ dài NGHE THẬT (ngắn hơn dur của các tiếng spam) — nhả ngân sách node đúng nhịp */
+    scheduleEnd(v, Math.max(0, t0 - c.currentTime) + (vDur > 0 ? vDur : (def.hold != null ? def.hold : (def.dur || 0.3)))); /* hold = độ dài NGHE THẬT (ngắn hơn dur của các tiếng spam) — nhả ngân sách node đúng nhịp; V14: giọng thật giữ slot theo đúng độ dài file */
     return true;
   }
   /* biến thể tổ hợp lớp dùng chung cho công thức (trả về pick + áp jitter) */
   function pick(key, pools){ return combo(key, pools); }
   return {
     cfg: cfg,
+    voice: VoiceAck, /* V14: bề mặt debug giọng thật (loaded/plays/last/byKey) */
     get _noiseN(){ return noiseN; }, set _noiseN(v){ noiseN = v; },
     ev: ev, pick: pick, jit: jit, jitV: jitV, distModel: distModel,
     /* nhịp giao tranh cho NHẠC (tension): đếm MỌI strike của host-sim + sự kiện shot phía khách —
@@ -6245,6 +6311,7 @@ function startGame(){
   setPauseIcon();
   enterFullscreen();
   /* v11: ambient.ogg ĐÃ GỠ (spec §9.3) — không còn lớp nền file mẫu; nhạc thích ứng lo phần nền. */
+  VoiceAck.load(); /* v14: nạp giọng thật ack (lười, bất đồng bộ — ack tới trước khi tải xong vẫn dùng synth) */
   Music.start(S.playerRace);
   Snd.cue('ui:confirm', { vol: 0.8 });
   Snd.countdown();

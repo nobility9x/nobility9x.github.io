@@ -2,7 +2,7 @@
    Chiến lược: HTML = network-first (bản đăng mới luôn tới được người đã cài),
    tài nguyên tĩnh (sprite/tiếng/icon/manifest) = cache-first.
    Đổi BUILD_ID mỗi lần phát hành để dọn cache cũ. */
-const BUILD_ID = 'ctvt-v13-1';
+const BUILD_ID = 'ctvt-v14-1';
 const CACHE = BUILD_ID;
 
 const CORE = [
@@ -28,9 +28,14 @@ const SPRITES = ['worker','marine','firebat','tank','mech','dropship','zergling'
   'marine_body','marine_rifle','firebat_body','firebat_nozzle_r','firebat_nozzle_l','mech_body','mech_barrel_r','mech_barrel_l','robot_body','robot_barrel','heli_body','heli_chin','heavytank_hull','heavytank_turret','artillery_body','artillery_cannon','turret_base','turret_launcher','sunken_spine',
   /* v12: lớp chi route B (chân/hông) + rotor heli + cánh bat/wasp + dải xích cuộn theo bên */
   'scoutbot_legsL','scoutbot_legsR','scoutbot_torso','mech_legsL','mech_legsR','mech_torso','mech_bodyNL','robot_legsL','robot_legsR','robot_torso','robot_bodyNL','firebat_legsL','firebat_legsR','firebat_torso','firebat_bodyNL','heli_rotor','heli_nr','heli_body_nr','bat_wingL','bat_wingR','bat_bodyNW','wasp_wingL','wasp_wingR','wasp_bodyNW','heavytank_track','artillery_track'].map(function (n) { return 'assets/sprites/' + n + '.png'; });
-/* v11: âm thanh TỔNG HỢP WebAudio toàn diện — không còn file tiếng nào để precache */
+/* v11: âm thanh TỔNG HỢP WebAudio toàn diện — không còn file tiếng tổng hợp nào để precache.
+   v14: giọng THẬT cho ack quân (39 file mp3 trong voice/) — precache để chơi offline. */
 const SOUNDS = [];
-const PRECACHE = CORE.concat(SPRITES, SOUNDS);
+const VOICE = ['t-sel-1','t-sel-2','t-sel-3','t-move-1','t-move-2','t-move-3','t-atk-1','t-atk-2','t-atk-3','t-grb-1','t-grb-2','t-rdy-1','t-rdy-2',
+  'z-sel-1','z-sel-2','z-sel-3','z-move-1','z-move-2','z-move-3','z-atk-1','z-atk-2','z-atk-3','z-grb-1','z-grb-2','z-rdy-1','z-rdy-2',
+  'p-sel-1','p-sel-2','p-sel-3','p-move-1','p-move-2','p-move-3','p-atk-1','p-atk-2','p-atk-3','p-grb-1','p-grb-2','p-rdy-1','p-rdy-2']
+  .map(function (n) { return 'voice/' + n + '.mp3'; });
+const PRECACHE = CORE.concat(SPRITES, SOUNDS, VOICE);
 
 self.addEventListener('install', function (e) {
   e.waitUntil(
