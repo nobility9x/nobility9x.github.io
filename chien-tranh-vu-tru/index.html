@@ -915,6 +915,128 @@ html,body{width:100%;height:100%;height:100dvh;overflow:hidden;background:#000;c
 .shL::before{clip-path:polygon(0 0,100% calc(100% - 3px),100% 100%,0 3px)}
 .shR{right:calc(6px + 120px - 16px);clip-path:polygon(100% 0,100% 100%,0 100%)}
 .shR::before{clip-path:polygon(100% 0,100% 3px,0 100%,0 calc(100% - 3px))}
+
+/* ===== V13 SKIN — VẬT LIỆU CONSOLE "HẦM HỐ" (lệnh Cường 2026-10-27 11:08) =====
+   CHỈ bề mặt: background nhiều lớp / box-shadow / outline / text-shadow / filter.
+   KHÔNG đổi bất kỳ width/height/padding/flex/gap/font-size/border-width nào của v6.3/v6.4.
+   Hệ vật liệu: (1) tấm giáp = vân xước dọc + vệt sáng chéo + thân theo tộc + đinh tán góc
+   (radial-gradient trong chính background) + bevel 2 tầng inset; (2) piping = border-top
+   accent sẵn có + hào quang color-mix + rãnh tối dưới mép; (3) tông thân theo tộc qua
+   #stage[data-race] (JS đặt cạnh --acc). Không animation, không ảnh, không blur diện rộng. */
+/* — biến vật liệu theo tộc: TERRAN thép xanh lạnh (mặc định) — */
+#stage{--mScr:repeating-linear-gradient(90deg, rgba(255,255,255,.05) 0 1px, transparent 1px 3px);
+  --mSheen:linear-gradient(115deg, rgba(255,255,255,.09) 0%, rgba(255,255,255,0) 42%);
+  --mBody:linear-gradient(165deg,#3a4f6e,#0d1420 55%,#1e2a3d);
+  --mEdge:rgba(205,228,255,.42);
+  --mRivet:radial-gradient(circle 3.6px at calc(100% - 8px) 8px, #e6f2ff 1.3px, #0a0d12 2.8px, transparent 3.8px),
+    radial-gradient(circle 3.6px at 8px calc(100% - 8px), #e6f2ff 1.3px, #0a0d12 2.8px, transparent 3.8px),
+    radial-gradient(circle 3.6px at calc(100% - 8px) calc(100% - 8px), #cfe2f5 1.2px, #0a0d12 2.6px, transparent 3.6px)}
+#stage[data-race='zerg']{--mBody:linear-gradient(165deg,#4a2c3d,#140a11 55%,#2c1622);
+  --mEdge:rgba(232,164,188,.38);
+  --mRivet:radial-gradient(circle 3.6px at calc(100% - 8px) 8px, #f3cfdd 1.3px, #0d070a 2.8px, transparent 3.8px),
+    radial-gradient(circle 3.6px at 8px calc(100% - 8px), #f3cfdd 1.3px, #0d070a 2.8px, transparent 3.8px),
+    radial-gradient(circle 3.6px at calc(100% - 8px) calc(100% - 8px), #e3b7c8 1.2px, #0d070a 2.6px, transparent 3.6px)}
+#stage[data-race='protoss']{--mBody:linear-gradient(165deg,#54431f,#120d05 55%,#2e2008);
+  --mEdge:rgba(255,226,160,.45);
+  --mRivet:radial-gradient(circle 3.6px at calc(100% - 8px) 8px, #ffedb8 1.3px, #0d0a05 2.8px, transparent 3.8px),
+    radial-gradient(circle 3.6px at 8px calc(100% - 8px), #ffedb8 1.3px, #0d0a05 2.8px, transparent 3.8px),
+    radial-gradient(circle 3.6px at calc(100% - 8px) calc(100% - 8px), #f5d98c 1.2px, #0d0a05 2.6px, transparent 3.6px)}
+/* — TẤM GIÁP 3 KHỐI: đinh tán + xước + vệt sáng + thân tộc; bevel 2 tầng + rãnh piping — */
+#mmBlock,#cmdWrap,#infoCol{background:var(--mRivet),var(--mScr),var(--mSheen),var(--mBody);
+  box-shadow:inset 0 1px 0 var(--mEdge), inset 1px 0 0 rgba(255,255,255,.09),
+    inset 0 -2px 0 rgba(0,0,0,.6), inset -1px 0 0 rgba(0,0,0,.4),
+    inset 0 -4px 0 -2px rgba(0,0,0,.55), inset 0 -12px 18px rgba(0,0,0,.35), inset 0 6px 10px -6px rgba(255,255,255,.06),
+    0 0 10px rgba(45,212,191,.4), 0 0 10px color-mix(in srgb, var(--acc, rgba(45,212,191,.55)) 55%, transparent)}
+#infoCol{box-shadow:inset 0 1px 0 var(--mEdge), inset 1px 0 0 rgba(255,255,255,.09),
+    inset 0 -2px 0 rgba(0,0,0,.6), inset -1px 0 0 rgba(0,0,0,.4), inset 0 -12px 18px rgba(0,0,0,.35),
+    0 -6px 18px rgba(0,0,0,.5),
+    0 0 10px rgba(45,212,191,.4), 0 0 10px color-mix(in srgb, var(--acc, rgba(45,212,191,.55)) 55%, transparent)}
+/* — GẦM CHUNG: gợi ý diamond-plate 2 lớp chéo + bevel rõ — */
+#console::before{background:
+    repeating-linear-gradient(45deg, rgba(255,255,255,.035) 0 2px, transparent 2px 5px),
+    repeating-linear-gradient(-45deg, rgba(0,0,0,.07) 0 2px, transparent 2px 5px),
+    linear-gradient(180deg,#46536d,#161c27 55%,#0a0e15);
+  box-shadow:inset 0 1px 0 rgba(205,228,255,.30), inset 0 -1px 0 rgba(0,0,0,.6), inset 1px 0 0 rgba(255,255,255,.06)}
+/* — VAI BẬC THANG: vân xước + vệt sáng theo thân giáp — */
+.shPlate{background:var(--mScr),linear-gradient(180deg,#37445c,#171e2a 70%,#12161f)}
+#stage[data-race='zerg'] .shPlate{background:var(--mScr),linear-gradient(180deg,#3a2430,#1a0f16 70%,#140a10)}
+#stage[data-race='protoss'] .shPlate{background:var(--mScr),linear-gradient(180deg,#3d301f,#1a1409 70%,#130e06)}
+/* — BEZEL MINIMAP: vành kép thị giác (outline + 2 tầng shadow) + kính phản chiếu — */
+#mmWrap{background:var(--mScr),var(--mSheen),var(--mBody);
+  outline:1px solid rgba(0,0,0,.7); outline-offset:1px;
+  box-shadow:0 0 0 2px #0a0d13, 0 0 0 3.5px #2c3a4f, 0 0 0 4.5px rgba(190,215,245,.22),
+    inset 0 1px 0 var(--mEdge), inset 0 0 0 1px rgba(0,0,0,.6), inset 0 3px 9px rgba(0,0,0,.7)}
+#mmWrap::after{content:'';position:absolute;inset:0;z-index:3;pointer-events:none;border-radius:4px;
+  background:linear-gradient(115deg, rgba(255,255,255,.06) 0%, rgba(255,255,255,0) 46%)}
+/* — NÚT TIỆN ÍCH (cột dọc cạnh minimap): vuông chunky bevel 2 tầng — */
+#console #utilGrid .iconBtn{background:linear-gradient(180deg,#3a4a68,#141a25 60%,#0b0f16);
+  border-color:#677b99;
+  box-shadow:inset 0 1px 0 rgba(205,228,255,.45), inset 0 -2px 0 rgba(0,0,0,.6), 0 1px 2px rgba(0,0,0,.5)}
+#console #utilGrid .iconBtn:active{box-shadow:inset 0 2px 6px rgba(0,0,0,.65), inset 0 0 0 1px rgba(0,0,0,.4)}
+#console #utilGrid .iconBtn svg{filter:drop-shadow(0 1px 1px rgba(0,0,0,.8))}
+/* — NÚT LỆNH: giáp nổi + đinh góc phải-trên + tem tông theo loại lệnh — */
+.cmdBtn{background:
+    radial-gradient(circle 2.2px at calc(100% - 5px) 5px, rgba(232,244,255,.85) .8px, rgba(6,8,12,.9) 1.7px, transparent 2.6px),
+    linear-gradient(115deg, rgba(255,255,255,.08), rgba(255,255,255,0) 46%),
+    linear-gradient(180deg,#46587a,#141c2a 55%,#0c1119);
+  border-color:#7488a5;
+  box-shadow:inset 0 1px 0 rgba(205,228,255,.5), inset 0 -2px 0 rgba(0,0,0,.6), inset 0 -7px 11px rgba(0,0,0,.35), 0 1px 2px rgba(0,0,0,.5)}
+.cmdBtn.tAtk{background:
+    radial-gradient(circle 2.2px at calc(100% - 5px) 5px, rgba(255,230,200,.8) .8px, rgba(10,5,2,.9) 1.7px, transparent 2.6px),
+    linear-gradient(115deg, rgba(255,255,255,.05), rgba(255,255,255,0) 46%),
+    linear-gradient(180deg,#5f3722,#2e1a10 55%,#1c100a);border-color:#a06a41}
+.cmdBtn.tCool{background:
+    radial-gradient(circle 2.2px at calc(100% - 5px) 5px, rgba(210,240,255,.8) .8px, rgba(2,6,10,.9) 1.7px, transparent 2.6px),
+    linear-gradient(115deg, rgba(255,255,255,.05), rgba(255,255,255,0) 46%),
+    linear-gradient(180deg,#29536f,#152b3c 55%,#0e1d29);border-color:#52809f}
+.cmdBtn svg{filter:drop-shadow(0 1px 1px rgba(0,0,0,.75))}
+.cmdBtn .clbl{text-shadow:0 1px 1px #000, 0 0 4px rgba(0,0,0,.6)}
+.cmdBtn.active{border-color:var(--acc, #2dd4bf);
+  box-shadow:0 0 9px rgba(45,212,191,.4), 0 0 9px color-mix(in srgb, var(--acc, rgba(45,212,191,.55)) 55%, transparent),
+    inset 0 0 0 1px var(--acc, #2dd4bf), inset 0 1px 0 rgba(220,245,255,.4), inset 0 -2px 0 rgba(0,0,0,.4)}
+.cmdBtn:active:not(:disabled){box-shadow:inset 0 2px 7px rgba(0,0,0,.65), inset 0 0 0 1px rgba(0,0,0,.45)}
+.cmdBtn:disabled{opacity:.55;filter:saturate(.25) brightness(.62)}
+/* — DÒNG GIÁ = THỎI KIM LOẠI VÀNG (nơi giá thật sự hiển thị) — */
+#cmdCost{background:linear-gradient(180deg,#54400d,#33270a 48%,#201803);
+  border-color:#c9a227;color:#ffe9a8;
+  box-shadow:inset 0 1px 0 rgba(255,240,190,.5), inset 0 -2px 0 rgba(0,0,0,.5), 0 2px 7px rgba(0,0,0,.55);
+  text-shadow:0 1px 1px #000}
+/* — PANEL THÔNG TIN: kính tối có lưới mảnh + vignette; chữ khắc + tiêu đề phát sáng nhẹ — */
+#infoPanel{background:
+    repeating-linear-gradient(0deg, rgba(160,200,255,.05) 0 1px, transparent 1px 4px),
+    repeating-linear-gradient(90deg, rgba(160,200,255,.05) 0 1px, transparent 1px 4px),
+    radial-gradient(125% 140% at 50% 38%, rgba(0,0,0,0) 52%, rgba(0,0,0,.6) 100%),
+    linear-gradient(180deg, rgba(11,16,25,.88), rgba(4,6,10,.93));
+  border-color:#4a5a72;
+  box-shadow:inset 0 1px 0 rgba(190,215,245,.13), inset 0 0 18px rgba(0,0,0,.55)}
+#infoPanel .infoName{text-shadow:0 1px 1px #000, 0 0 6px color-mix(in srgb, var(--acc, rgba(45,212,191,.55)) 35%, transparent)}
+#infoPanel .infoSub, #selRow, .prodTxt{text-shadow:0 1px 1px #000}
+.portraitBox{background:radial-gradient(120% 120% at 50% 42%, #101823 55%, #05070b);
+  border-color:#0d0b06;
+  box-shadow:0 0 0 1.5px var(--acc, #2dd4bf), 0 0 0 3px rgba(8,10,14,.92),
+    0 0 8px rgba(45,212,191,.35), 0 0 8px color-mix(in srgb, var(--acc, rgba(45,212,191,.55)) 50%, transparent),
+    inset 0 0 9px rgba(0,0,0,.75)}
+/* — thanh máu/khiên: mặt bevel (highlight trên + tối đáy), % do JS giữ — */
+.hpSegs{box-shadow:inset 0 1px 2px rgba(0,0,0,.8), inset 0 -1px 0 rgba(255,255,255,.06)}
+.hpSegs i{box-shadow:inset 0 1px 0 rgba(255,255,255,.45), inset 0 -2px 0 rgba(0,0,0,.35)}
+.typeCard .hpMini, .typeCard.big .hpMini{box-shadow:inset 0 1px 1px rgba(0,0,0,.8)}
+/* — THẺ LOẠI / TAB / HỘP SẢN XUẤT / Ô HÀNG ĐỢI / NÚT NÂNG CẤP: cùng ngôn ngữ thu nhỏ — */
+.typeCard.big{background:var(--mScr),linear-gradient(180deg,#2b3a55,#121926);
+  box-shadow:inset 0 1px 0 rgba(205,228,255,.22), inset 0 -2px 0 rgba(0,0,0,.45)}
+.typeCard.big.active{box-shadow:2px 2px 0 -1px #2b3648, 3.5px 3.5px 0 -1px #57637c,
+    0 0 11px rgba(45,212,191,.4), 0 0 11px color-mix(in srgb, var(--acc, rgba(45,212,191,.55)) 55%, transparent),
+    inset 0 1px 0 rgba(220,245,255,.3), inset 0 0 0 1px var(--acc, #2dd4bf)}
+.typeTab{background:linear-gradient(180deg,#1b2536,#0d1219);border-color:#4a5a72;
+  box-shadow:inset 0 1px 0 rgba(205,228,255,.18), inset 0 -1px 0 rgba(0,0,0,.5)}
+.typeTab.active{box-shadow:inset 0 0 0 1px var(--acc, #2dd4bf), 0 0 6px color-mix(in srgb, var(--acc, rgba(45,212,191,.55)) 55%, transparent)}
+.prodBox{background:var(--mScr),rgba(8,12,19,.6);border-color:#3d4a5f;
+  box-shadow:inset 0 1px 0 rgba(190,215,245,.10), inset 0 0 10px rgba(0,0,0,.4)}
+.qSlot{background:linear-gradient(180deg,#131a26,#080b11);border-color:#46536a;
+  box-shadow:inset 0 1px 0 rgba(205,228,255,.16), inset 0 -2px 0 rgba(0,0,0,.5)}
+.qSlot.empty{background:rgba(10,15,22,.35);box-shadow:inset 0 0 6px rgba(0,0,0,.45)}
+.upgBtn{background:linear-gradient(180deg,#48682f,#22331a 60%,#182511);border-color:#8ab45e;
+  box-shadow:inset 0 1px 0 rgba(230,255,200,.35), inset 0 -2px 0 rgba(0,0,0,.5), 0 1px 2px rgba(0,0,0,.4)}
+.upgBtn:disabled{background:#1a2029;box-shadow:inset 0 0 8px rgba(0,0,0,.5)}
 </style>
 </head>
 <body>
@@ -3442,78 +3564,150 @@ defEv('lb:lost', 'ui', 0.7, 7, function(c, out, t, o){ /* mất kết nối/ti�
 });
 
 /* ================= §7.1 ACK — "giọng" tổng hợp theo tộc ================= */
+/* V13 (spec §3 + phụ lục SC A1–A4): ack = CÂU ĐÁP 2–3 âm tiết có nhịp nói, xoay vòng theo
+   HÌNH CÂU (chiều P của pool — pick chống lặp liền kề cả tổ hợp), ngữ điệu theo kind:
+   select LÊN cuối · move NGANG dứt · attack XUỐNG nhanh gắt · grumble trĩu chậm · ready báo danh.
+   o.pf = hệ số cao độ theo cỡ quân/nhà (nơi gọi truyền; nhà 0,6 + lớp thunk theo o.bld). */
 function ackTerran(kind){
   return function(c, out, t, o){
-    var pk = Snd.pick('ack:terran', { V: 3, M: 3 }), f = [1050, 1330, 1680][pk.V] * Snd.jit(0.02), V = Snd.jitV();
-    function blip(tt, ff, d){ hChirp(c, out, tt, { type: 'square', f0: ff, f1: ff, dur: d || 0.032, vol: 0.16 * V }); }
-    hRatchet(c, out, t, { n: 1, f0: 300, bp: [2800, 3200, 3650][pk.M], vol: 0.10 * V, pw: 0.008 }); /* click radio */
-    if(kind === 'select') blip(t + 0.015, f);
-    else if(kind === 'move'){ blip(t + 0.015, f); blip(t + 0.075, f * 1.2); }
-    else if(kind === 'attack'){ blip(t + 0.015, f); blip(t + 0.065, f * 1.12); blip(t + 0.115, f * 1.26); }
-    else { blip(t + 0.015, f * 0.8, 0.05); blip(t + 0.1, f * 0.68, 0.06); } /* grumble: trầm, đi xuống */
+    var pk = Snd.pick('ack:terran', { V: 3, M: 3, P: 3 }), PF = (o && o.pf) || 1,
+        f = [1050, 1330, 1680][pk.V] * PF * Snd.jit(0.02), V = Snd.jitV(), P = pk.P || 0, end = t + 0.2;
+    function blip(tt, ff, d){ hChirp(c, out, tt, { type: 'square', f0: ff, f1: ff, dur: d || 0.045, vol: 0.16 * V });
+      hChirp(c, out, tt, { type: 'triangle', f0: ff * 2.02, f1: ff * 2.02, dur: d || 0.045, vol: 0.05 * V }); } /* hài 2f mỏng: độ hiện diện trên loa nhỏ */
+    function click(tt, bp, v){ hRatchet(c, out, tt, { n: 1, f0: 300, bp: bp, vol: v * V, pw: 0.008 }); }
+    click(t, [2800, 3200, 3650][pk.M], 0.10); /* A3: tạch MỞ kênh đầu câu */
+    if(o && o.bld) hMetal(c, out, t + 0.012, { f: 190, dur: 0.09, vol: 0.20 * V }); /* nhà: thunk kim loại trầm */
+    if(kind === 'select'){ /* LÊN giọng cuối câu — chờ lệnh */
+      if(P === 0){ blip(t + 0.02, f, 0.045); blip(t + 0.115, f * 1.2, 0.06); end = t + 0.195; }
+      else if(P === 1){ blip(t + 0.02, f * 1.1, 0.09); blip(t + 0.145, f * 1.32, 0.05); end = t + 0.215; }
+      else { blip(t + 0.02, f, 0.04); blip(t + 0.085, f * 1.13, 0.04); blip(t + 0.15, f * 1.38, 0.055); end = t + 0.225; }
+    } else if(kind === 'move'){ /* NGANG, dứt — khẳng định */
+      if(P === 0){ blip(t + 0.02, f, 0.05); blip(t + 0.105, f, 0.05); end = t + 0.175; }
+      else if(P === 1){ blip(t + 0.02, f * 1.06, 0.075); end = t + 0.115; }
+      else { blip(t + 0.02, f, 0.04); blip(t + 0.08, f, 0.04); blip(t + 0.14, f * 0.98, 0.05); end = t + 0.21; }
+    } else if(kind === 'attack'){ /* XUỐNG dốc, nhanh, gắt (ratchet bp thấp làm méo cơ khí) */
+      hRatchet(c, out, t + 0.012, { n: 2, gap: 0.03, f0: 240, bp: 1750, vol: 0.055 * V, pw: 0.01 });
+      if(P === 0){ blip(t + 0.015, f * 1.15, 0.04); blip(t + 0.07, f * 1.02, 0.04); blip(t + 0.125, f * 0.88, 0.055); end = t + 0.20; }
+      else if(P === 1){ blip(t + 0.015, f * 1.2, 0.06); blip(t + 0.10, f * 0.9, 0.05); end = t + 0.17; }
+      else { blip(t + 0.015, f * 1.1, 0.035); blip(t + 0.06, f * 1.0, 0.035); blip(t + 0.105, f * 0.92, 0.035); blip(t + 0.15, f * 0.8, 0.06); end = t + 0.23; }
+    } else if(kind === 'ready'){ /* A4: báo danh — 2 nhịp lên dứt */
+      blip(t + 0.02, f, 0.07); blip(t + 0.12, f * 1.25, 0.08); end = t + 0.22;
+    } else { /* grumble: trĩu xuống, chậm */
+      if(P === 0){ blip(t + 0.02, f * 0.8, 0.06); blip(t + 0.13, f * 0.66, 0.09); end = t + 0.24; }
+      else if(P === 1){ blip(t + 0.02, f * 0.74, 0.13); end = t + 0.17; }
+      else { blip(t + 0.02, f * 0.85, 0.05); blip(t + 0.10, f * 0.7, 0.05); blip(t + 0.18, f * 0.6, 0.09); end = t + 0.29; }
+    }
+    click(end + 0.012, [2400, 2700, 3100][pk.M] * 0.9, 0.07); /* A3: tạch ĐÓNG kênh cuối câu */
   };
 }
 function ackZerg(kind){
   return function(c, out, t, o){
-    var pk = Snd.pick('ack:zerg', { V: 3, S: 2, F: 2, G: 2 }), base = [248, 300, 362][pk.V] * Snd.jit(0.02), V = Snd.jitV();
+    var pk = Snd.pick('ack:zerg', { V: 3, S: 2, F: 2, G: 2, P: 3 }), PF = (o && o.pf) || 1,
+        base = [280, 330, 390][pk.V] * PF * Snd.jit(0.02), V = Snd.jitV(), P = pk.P || 0;
     function sq(tt, f0, f1, d){
       var fmK = [2.6, 3.05][pk.F || 0];
       var fms = [{ a: f0 * fmK, b: f1 * (fmK - 0.2), q: 2.2, g: 1 }, { a: f0 * (fmK + 1.5), b: f1 * (fmK + 1.2), q: 2.6, g: 0.5 }];
       if(o.f3) fms.push({ a: f0 * 6.4, b: f1 * 5.8, q: 3, g: 0.35 }); /* ⚠EAR E3: formant thứ 3 — chỉ bản B của mẫu nghe, game không truyền f3 */
       hFormant(c, out, tt, { type: 'sine', f0: f0, f1: f1, dur: d, vol: 0.32 * [1.24, 1][pk.G || 0] * V, a: 0.015, fms: fms, dry: [0.18, 0.30][pk.G || 0] }); /* pool cân bằng dry/formant: đổi hẳn dáng phổ ngay cả khi trùng cao độ · vol bù theo cụm (G0 vốn nhỏ hơn ~1.8dB — đo 30 render) */
     }
-    if(kind === 'select') sq(t, base, base * [1.45, 1.62][pk.S], 0.09);
-    else if(kind === 'move'){ sq(t, base, base * [1.3, 1.47][pk.S], 0.08); sq(t + 0.1, base * 1.15, base * [1.6, 1.78][pk.S], 0.08); }
-    else if(kind === 'attack'){ sq(t, base, base * 1.5, 0.1); hSub(c, out, t + 0.02, { f0: 170, f1: 70, dur: 0.12, vol: 0.22 * V, ghost: 0 }); sq(t + 0.12, base * 1.2, base * 1.75, 0.09); }
-    else sq(t, base * 1.1, base * 0.55, 0.24); /* grumble: è è trầm dài */
+    if(o && o.bld) hSub(c, out, t + 0.01, { f0: 120, f1: 58, dur: 0.14, vol: 0.20 * V, ghost: 0 }); /* nhà: thud hữu cơ trầm */
+    if(kind === 'select'){ /* ực-ực LÊN cuối */
+      if(P === 0){ sq(t, base, base * 1.45, 0.09); sq(t + 0.11, base * 1.12, base * [1.6, 1.78][pk.S], 0.08); }
+      else if(P === 1){ sq(t, base * 1.05, base * 1.75, 0.14); }
+      else { sq(t, base, base * 1.3, 0.06); sq(t + 0.075, base * 1.1, base * 1.5, 0.06); sq(t + 0.15, base * 1.2, base * 1.85, 0.07); }
+    } else if(kind === 'move'){ /* NGANG dứt */
+      if(P === 0){ sq(t, base, base * [1.3, 1.47][pk.S], 0.08); sq(t + 0.1, base * 1.02, base * 1.32, 0.08); }
+      else if(P === 1){ sq(t, base * 1.08, base * 1.36, 0.115); }
+      else { sq(t, base, base * 1.22, 0.055); sq(t + 0.07, base * 1.05, base * 1.3, 0.055); sq(t + 0.14, base * 1.02, base * 1.34, 0.06); }
+    } else if(kind === 'attack'){ /* XUỐNG dốc + sub gầm */
+      hSub(c, out, t + 0.02, { f0: 170, f1: 70, dur: 0.12, vol: 0.22 * V, ghost: 0 });
+      if(P === 0){ sq(t, base * 1.25, base * 1.5, 0.09); sq(t + 0.11, base * 1.05, base * 0.8, 0.10); }
+      else if(P === 1){ sq(t, base * 1.35, base * 0.85, 0.15); }
+      else { sq(t, base * 1.2, base * 1.45, 0.06); sq(t + 0.07, base * 1.3, base * 1.1, 0.06); sq(t + 0.14, base * 1.1, base * 0.7, 0.09); }
+    } else if(kind === 'ready'){ /* A4: báo danh — 1–2 xung vọt lên */
+      sq(t, base * 1.1, base * 1.6, 0.10);
+      if(P !== 1) sq(t + 0.12, base * 1.25, base * 1.85, 0.09);
+    } else { /* grumble: è è trĩu chậm */
+      if(P === 0) sq(t, base * 1.1, base * 0.55, 0.24);
+      else if(P === 1){ sq(t, base, base * 0.7, 0.11); sq(t + 0.15, base * 0.95, base * 0.5, 0.13); }
+      else sq(t, base * 1.15, base * 0.62, 0.30);
+    }
   };
 }
 function ackProtoss(kind){
   return function(c, out, t, o){
-    var pk = Snd.pick('ack:protoss', { V: 3 }), f = [880, 932, 830][pk.V] * Snd.jit(0.02), V = Snd.jitV();
+    var pk = Snd.pick('ack:protoss', { V: 3, P: 3 }), PF = (o && o.pf) || 1,
+        f = [880, 932, 830][pk.V] * PF * Snd.jit(0.02), V = Snd.jitV(), P = pk.P || 0;
     function note(tt, ff, d, idx){ hFM(c, out, tt, { car: ff, ratio: 2.4, idx: idx || 2, idxEnd: 0.4, dur: d || 0.16, vol: 0.24 * V }); }
-    if(kind === 'select') note(t, f);
-    else if(kind === 'move'){ note(t, f); note(t + 0.09, f * 1.335); }
-    else if(kind === 'attack'){ note(t, f); note(t + 0.08, f * 1.26); note(t + 0.16, f * 1.5, 0.22); }
-    else { note(t, f, 0.2, 2.8); note(t + 0.14, f * 0.84, 0.24, 2.8); } /* grumble: 2 nốt xuống, tối hơn */
+    if(o && o.bld) hFM(c, out, t + 0.01, { car: 220, ratio: 2, idx: 2, idxEnd: 0.5, dur: 0.15, vol: 0.18 * V }); /* nhà: chuông trầm thunk */
+    if(kind === 'select'){ /* mở lên quãng 5 */
+      if(P === 0){ note(t, f, 0.14); note(t + 0.16, f * 1.5, 0.20); }
+      else if(P === 1){ note(t, f * 1.335, 0.23); }
+      else { note(t, f, 0.09); note(t + 0.10, f * 1.26, 0.09); note(t + 0.20, f * 1.5, 0.18); }
+    } else if(kind === 'move'){ /* NGANG dứt */
+      if(P === 0){ note(t, f, 0.13); note(t + 0.11, f, 0.15); }
+      else if(P === 1){ note(t, f * 1.13, 0.20); }
+      else { note(t, f, 0.08); note(t + 0.09, f, 0.08); note(t + 0.18, f * 1.02, 0.12); }
+    } else if(kind === 'attack'){ /* XUỐNG dốc + nốt chồng quãng 5 */
+      if(P === 0){ note(t, f * 1.5, 0.12); note(t, f, 0.12); note(t + 0.09, f * 0.9, 0.17); }
+      else if(P === 1){ note(t, f * 1.26, 0.10); note(t + 0.10, f * 0.94, 0.19); }
+      else { note(t, f * 1.5, 0.09); note(t + 0.08, f * 1.26, 0.09); note(t + 0.16, f, 0.20); }
+    } else if(kind === 'ready'){ /* A4: báo danh — lên quãng 5 dứt khoát */
+      note(t, f, 0.12); note(t + 0.13, f * 1.5, 0.22);
+    } else { /* grumble: 2 nốt xuống, tối hơn, chậm */
+      if(P === 0){ note(t, f, 0.2, 2.8); note(t + 0.14, f * 0.84, 0.24, 2.8); }
+      else if(P === 1){ note(t, f * 0.94, 0.30, 2.8); }
+      else { note(t, f, 0.13, 2.8); note(t + 0.11, f * 0.89, 0.13, 2.8); note(t + 0.22, f * 0.78, 0.2, 2.8); }
+    }
   };
 }
 ['terran', 'zerg', 'protoss'].forEach(function(race){
   var mk = race === 'terran' ? ackTerran : (race === 'zerg' ? ackZerg : ackProtoss);
-  ['select', 'move', 'attack', 'grumble'].forEach(function(kind){
-    defEv('ack:' + race + ':' + kind, 'ack', kind === 'attack' ? 0.45 : 0.35, 3, mk(kind), { hold: kind === 'attack' ? 0.24 : 0.18 }); /* hold = độ dài nghe thật của ack (~0.1-0.2s) — nhả trần giọng sớm, lệnh đúng nhịp không bị nuốt */
+  ['select', 'move', 'attack', 'grumble', 'ready'].forEach(function(kind){
+    defEv('ack:' + race + ':' + kind, 'ack', kind === 'attack' ? 0.45 : 0.4, 3, mk(kind),
+      { hold: (kind === 'select' || kind === 'ready' || kind === 'attack') ? 0.30 : 0.28 }); /* hold ≈ độ dài câu thật (0,23–0,38s) — câu không bị cắt khi lệnh dồn, trần giọng vẫn nhả trước nhịp lệnh 400ms */
   });
 });
 
-/* ================= §7.2 CẢNH BÁO ================= */
-defEv('al:base:terran', 'alert', 0.9, 7, function(c, out, t, o){ /* còi 2 tông cơ khí — pool cặp tông + hài phụ để không render nào giống hệt nhau */
+/* ================= §7.2 CẢNH BÁO — V13 A5: ADVISOR = MỘT GIỌNG CỐ ĐỊNH MỖI TỘC =================
+   Terran = giọng radio trầm 700–900Hz + khung click · Zerg = xung Overmind (formant 620/800
+   dùng chung mọi cảnh báo) · Protoss = chuông FM quãng 5 (ratio 2,4). Mỗi LOẠI cảnh báo là
+   một ĐIỆU CÂU của cùng giọng đó: base = gọi gấp (cụm ×2) · wave = triệu tập đi LÊN ·
+   done = XUỐNG dứt. Cooldown từng loại ≥4s nằm ở call site (base sẵn cổng 10s trong maybeAlarm). */
+function advTerran(c, out, t, notes, vol){
+  hRatchet(c, out, t, { n: 1, f0: 300, bp: 2600, vol: 0.08, pw: 0.008 });
+  notes.forEach(function(n){ hChirp(c, out, t + n[0], { type: 'square', f0: n[1], f1: n[1], dur: n[2], vol: vol });
+    hChirp(c, out, t + n[0], { type: 'triangle', f0: n[1] * 2.02, f1: n[1] * 2.02, dur: n[2], vol: vol * 0.3 }); });
+  var last = notes[notes.length - 1];
+  hRatchet(c, out, t + last[0] + last[2] + 0.02, { n: 1, f0: 300, bp: 2300, vol: 0.06, pw: 0.008 });
+}
+function advZerg(c, out, t, pulses, vol){
+  pulses.forEach(function(p){ hFormant(c, out, t + p[0], { type: 'sine', f0: p[1], f1: p[2], dur: p[3], vol: vol, a: 0.015, fms: [{ a: 620, b: 800, q: 2.2, g: 1 }], dry: 0.25 }); });
+}
+function advProtoss(c, out, t, notes, vol){
+  notes.forEach(function(n){ hFM(c, out, t + n[0], { car: n[1], ratio: 2.4, idx: 2.2, idxEnd: 0.4, dur: n[2], vol: vol }); });
+}
+defEv('al:base:terran', 'alert', 0.9, 7, function(c, out, t, o){ /* bị đánh: radio gọi gấp — cụm 2 tông ×2; cặp tông + chiều lên/xuống xoay pool (giữ biến thể của bản cũ trong cùng MỘT giọng radio) */
   var pk = Snd.pick('al:base:terran', { A: 3, B: 2 }), pr = [[740, 988], [698, 932], [784, 1046]][pk.A];
-  var os = auOsc(c, 'square', pr[0]), lp = auFilter(c, 'lowpass', 1800, 0.5), g = auGain(c, 0);
-  for(var i = 0; i < 4; i++) os.frequency.setValueAtTime((i + pk.B) % 2 ? pr[1] : pr[0], t + i * 0.12);
-  auEnv(g, t, 0.20 * Snd.jitV(), 0.008, 0.5);
-  os.connect(lp); lp.connect(g); g.connect(out); os.start(t); os.stop(t + 0.55);
-  var os2 = auOsc(c, 'triangle', pr[0] * 2.02), g2 = auGain(c, 0);
-  for(var j = 0; j < 4; j++) os2.frequency.setValueAtTime((j + pk.B) % 2 ? pr[1] * 2.02 : pr[0] * 2.02, t + j * 0.12);
-  auEnv(g2, t, 0.07 * Snd.jitV(), 0.008, 0.5);
-  os2.connect(g2); g2.connect(out); os2.start(t); os2.stop(t + 0.55);
+  var lo = pk.B ? pr[1] : pr[0], hi = pk.B ? pr[0] : pr[1];
+  advTerran(c, out, t, [[0, lo, 0.13], [0.17, hi, 0.13], [0.38, lo, 0.13], [0.55, hi, 0.17]], 0.20 * Snd.jitV());
 });
-defEv('al:base:zerg', 'alert', 0.9, 7, function(c, out, t, o){ /* tiếng rít hữu cơ ×2 */
-  [0, 0.36].forEach(function(off){
-    hFormant(c, out, t + off, { type: 'sawtooth', f0: 300, f1: 920, dur: 0.3, vol: 0.48 * Snd.jitV(), a: 0.02,
-      fms: [{ a: 800, b: 2100, q: 2, g: 1 }, { a: 1300, b: 2900, q: 2.4, g: 0.5 }], dry: 0.15 });
-  });
+defEv('al:base:zerg', 'alert', 0.9, 7, function(c, out, t, o){ /* bị đánh: xung đôi Overmind ×2 */
+  advZerg(c, out, t, [[0, 210, 330, 0.22], [0.30, 210, 330, 0.26]], 0.46 * Snd.jitV());
 });
-defEv('al:base:protoss', 'alert', 0.9, 7, function(c, out, t, o){ /* chuông FM 3 nhịp rơi */
-  [1318, 1174, 988].forEach(function(f, i){ hFM(c, out, t + i * 0.16, { car: f * Snd.jit(0.01), ratio: 2.4, idx: 2.4, idxEnd: 0.4, dur: 0.2, vol: 0.24 * Snd.jitV() }); });
+defEv('al:base:protoss', 'alert', 0.9, 7, function(c, out, t, o){ /* bị đánh: chuông rơi quãng 5 ×2 */
+  advProtoss(c, out, t, [[0, 1318, 0.16], [0.16, 988, 0.20], [0.44, 1318, 0.16], [0.60, 988, 0.24]], 0.24 * Snd.jitV());
 });
 ['terran', 'zerg', 'protoss'].forEach(function(race){
-  defEv('al:wave:' + race, 'alert', 0.7, 8, function(c, out, t, o){ /* đợt tấn công tới: motif căng theo tộc KẺ TẤN CÔNG */
-    if(race === 'zerg'){ for(var i = 0; i < 3; i++) hFormant(c, out, t + i * 0.13, { type: 'sine', f0: 190, f1: 260, dur: 0.11, vol: 0.46, a: 0.015, fms: [{ a: 620, b: 800, q: 2.2, g: 1 }], dry: 0.25 }); }
-    else if(race === 'protoss'){ [659.25, 622.25, 659.25].forEach(function(f, i){ hFM(c, out, t + i * 0.13, { car: f, ratio: 2.4, idx: 2.2, idxEnd: 0.4, dur: 0.16, vol: 0.22 }); }); } /* quãng 2 thứ — chỉ ở cue căng thẳng */
-    else { [196, 220, 196].forEach(function(f, i){ hMetal(c, out, t + i * 0.13, { f: f, dur: 0.2, vol: 0.22 }); }); }
+  defEv('al:wave:' + race, 'alert', 0.7, 8, function(c, out, t, o){ /* đợt địch tới: triệu tập đi LÊN bằng giọng advisor của tộc KẺ TẤN CÔNG */
+    if(race === 'zerg') advZerg(c, out, t, [[0, 190, 260, 0.11], [0.13, 205, 285, 0.11], [0.26, 220, 315, 0.14]], 0.46);
+    else if(race === 'protoss') advProtoss(c, out, t, [[0, 659, 0.15], [0.13, 784, 0.15], [0.26, 988, 0.22]], 0.22);
+    else advTerran(c, out, t, [[0, 698, 0.12], [0.14, 784, 0.12], [0.28, 880, 0.20]], 0.20);
   });
-  defEv('al:done:' + race, 'alert', 0.7, 8, function(c, out, t, o){ /* nghiên cứu xong: 3 nốt lên bằng giọng tộc */
-    var m = RACE_MOTIFS[race].win; playMotif(c, out, t, race, [m[0], m[2], m[4]], 0.11, 0.24, 0.3);
+  defEv('al:done:' + race, 'alert', 0.7, 8, function(c, out, t, o){ /* xong việc: XUỐNG dứt bằng giọng advisor */
+    if(race === 'zerg') advZerg(c, out, t, [[0, 300, 190, 0.26]], 0.44);
+    else if(race === 'protoss') advProtoss(c, out, t, [[0, 988, 0.14], [0.15, 659, 0.24]], 0.22);
+    else advTerran(c, out, t, [[0, 880, 0.12], [0.14, 740, 0.20]], 0.20);
   });
 });
 defEv('al:ally', 'alert', 0.5, 6, function(c, out, t, o){ /* đồng minh bị đánh: biến thể ngắn, −4dB qua trim */
@@ -3572,8 +3766,11 @@ defEv('wk:mine', 'world', 0.15, 4, function(c, out, t, o){ /* cuốc khoáng: g�
   hMetal(c, out, t, { f: [2350, 2180, 2540][pk.A] * Snd.jit(0.03), dur: 0.05, vol: 0.15 * Snd.jitV() });
 });
 
-/* ================= TRIM BAN ĐẦU (hiệu chuẩn §9 sẽ ghi đè bằng bảng đo) ================= */
-var TRIM_TABLE = {"w:marine":1.27,"w:firebat":1.11,"w:mech":1.297,"w:robot":1.42,"w:tank":0.487,"w:heavytank":0.497,"w:artillery":0.478,"w:turret":2.29,"w:heli":1.276,"w:jet":1.178,"w:gunship":0.8,"w:hydralisk":0.756,"w:sunken":0.386,"w:bat":0.467,"w:wasp":0.975,"w:leviathan":0.595,"w:dragoon":0.918,"w:archon":0.61,"w:cannon":1.053,"w:scoutbot":0.894,"w:colossus":0.782,"w:scoutship":1.116,"w:frigate":0.876,"w:carrier":0.688,"aim:tank":1.697,"aim:heavytank":1.65,"aim:artillery":1.697,"aim:sunken":1.897,"aim:colossus":2.4,"aim:leviathan":1.942,"imp:flesh":0.744,"imp:metal":0.794,"imp:shield":1.035,"imp:parmor":0.895,"imp:miss":1.576,"sw:zergling":2.364,"sw:zealot":0.952,"sw:ultralisk":1.049,"sw:worker":1.513,"sw:drone":1.864,"sw:probe":1.484,"sw:air":1.911,"mh:zealot":1.677,"mh:ultralisk":0.564,"mh:zergling":1.94,"boom:small":0.885,"boom:med":1.14,"boom:huge":1.291,"boom:fall":1.147,"st:win:terran":1.442,"st:lose:terran":1.619,"st:down:terran":1.512,"st:motif:terran":1.326,"st:win:zerg":2.203,"st:lose:zerg":2.494,"st:down:zerg":2.283,"st:motif:zerg":1.99,"st:win:protoss":1.32,"st:lose:protoss":1.497,"st:down:protoss":1.395,"st:motif:protoss":1.227,"ui:tick":2.51,"ui:confirm":2.194,"ui:back":1.516,"ui:toggle":2.117,"ui:page":2.663,"ui:error":0.888,"ui:blocked_res":1.979,"ui:blocked_sup":2.328,"ui:count":2.486,"ui:go":1.454,"lb:open":2.106,"lb:join":2.485,"lb:leave":2.276,"lb:ready":1.778,"lb:lost":2.341,"ack:terran:select":3.441,"ack:terran:move":3.019,"ack:terran:attack":2.397,"ack:terran:grumble":2.32,"ack:zerg:select":3.255,"ack:zerg:move":3.032,"ack:zerg:attack":1.678,"ack:zerg:grumble":2.504,"ack:protoss:select":1.765,"ack:protoss:move":1.277,"ack:protoss:attack":1.092,"ack:protoss:grumble":1.306,"al:base:terran":2.106,"al:base:zerg":2.436,"al:base:protoss":1.883,"al:wave:terran":1.644,"al:done:terran":1.302,"al:wave:zerg":3.365,"al:done:zerg":1.953,"al:wave:protoss":1.938,"al:done:protoss":1.202,"al:ally":1.861,"al:depleted":1.65,"bd:place:terran":1.169,"bd:place:zerg":1.283,"bd:place:protoss":1.907,"bd:loop:terran":1.513,"bd:loop:zerg":0.944,"bd:loop:protoss":0.515,"bd:done:terran":1.798,"bd:research_start:terran":1.665,"bd:research_done:terran":1.71,"tr:done:terran":2.051,"bd:done:zerg":3.272,"bd:research_start:zerg":2.459,"bd:research_done:zerg":2.574,"tr:done:zerg":3.45,"bd:done:protoss":2.1,"bd:research_start:protoss":1.557,"bd:research_done:protoss":1.585,"tr:done:protoss":2.374,"bd:powerdown":1.663,"bd:shieldup":3.25,"wk:mine":2.93};
+/* ================= TRIM BAN ĐẦU (hiệu chuẩn §9 sẽ ghi đè bằng bảng đo) =================
+   V13: trim họ ack (gồm 3 key ready MỚI) + họ al đã HIỆU CHUẨN LẠI theo đo 30 render —
+   đích = median RMS của bản trước cho từng key (ready lấy đích của select cùng tộc);
+   số liệu đầy đủ: proof-v13/ack-measure-before.json + ack-measure-after.json. */
+var TRIM_TABLE = {"w:marine":1.27,"w:firebat":1.11,"w:mech":1.297,"w:robot":1.42,"w:tank":0.487,"w:heavytank":0.497,"w:artillery":0.478,"w:turret":2.29,"w:heli":1.276,"w:jet":1.178,"w:gunship":0.8,"w:hydralisk":0.756,"w:sunken":0.386,"w:bat":0.467,"w:wasp":0.975,"w:leviathan":0.595,"w:dragoon":0.918,"w:archon":0.61,"w:cannon":1.053,"w:scoutbot":0.894,"w:colossus":0.782,"w:scoutship":1.116,"w:frigate":0.876,"w:carrier":0.688,"aim:tank":1.697,"aim:heavytank":1.65,"aim:artillery":1.697,"aim:sunken":1.897,"aim:colossus":2.4,"aim:leviathan":1.942,"imp:flesh":0.744,"imp:metal":0.794,"imp:shield":1.035,"imp:parmor":0.895,"imp:miss":1.576,"sw:zergling":2.364,"sw:zealot":0.952,"sw:ultralisk":1.049,"sw:worker":1.513,"sw:drone":1.864,"sw:probe":1.484,"sw:air":1.911,"mh:zealot":1.677,"mh:ultralisk":0.564,"mh:zergling":1.94,"boom:small":0.885,"boom:med":1.14,"boom:huge":1.291,"boom:fall":1.147,"st:win:terran":1.442,"st:lose:terran":1.619,"st:down:terran":1.512,"st:motif:terran":1.326,"st:win:zerg":2.203,"st:lose:zerg":2.494,"st:down:zerg":2.283,"st:motif:zerg":1.99,"st:win:protoss":1.32,"st:lose:protoss":1.497,"st:down:protoss":1.395,"st:motif:protoss":1.227,"ui:tick":2.51,"ui:confirm":2.194,"ui:back":1.516,"ui:toggle":2.117,"ui:page":2.663,"ui:error":0.888,"ui:blocked_res":1.979,"ui:blocked_sup":2.328,"ui:count":2.486,"ui:go":1.454,"lb:open":2.106,"lb:join":2.485,"lb:leave":2.276,"lb:ready":1.778,"lb:lost":2.341,"ack:terran:select":2.345,"ack:terran:move":2.92,"ack:terran:attack":2.321,"ack:terran:grumble":2.323,"ack:zerg:select":2.685,"ack:zerg:move":3.12,"ack:zerg:attack":1.597,"ack:zerg:grumble":2.506,"ack:protoss:select":1.52,"ack:protoss:move":1.393,"ack:protoss:attack":1.283,"ack:protoss:grumble":1.447,"al:base:terran":2.452,"al:base:zerg":2.845,"al:base:protoss":2.053,"al:wave:terran":2.023,"al:done:terran":2.101,"al:wave:zerg":3.13,"al:done:zerg":2.496,"al:wave:protoss":1.901,"al:done:protoss":1.799,"al:ally":1.861,"al:depleted":1.65,"bd:place:terran":1.169,"bd:place:zerg":1.283,"bd:place:protoss":1.907,"bd:loop:terran":1.513,"bd:loop:zerg":0.944,"bd:loop:protoss":0.515,"bd:done:terran":1.798,"bd:research_start:terran":1.665,"bd:research_done:terran":1.71,"tr:done:terran":2.051,"bd:done:zerg":3.272,"bd:research_start:zerg":2.459,"bd:research_done:zerg":2.574,"tr:done:zerg":3.45,"bd:done:protoss":2.1,"bd:research_start:protoss":1.557,"bd:research_done:protoss":1.585,"tr:done:protoss":2.374,"bd:powerdown":1.663,"bd:shieldup":3.25,"wk:mine":2.93,"ack:terran:ready":2.159,"ack:zerg:ready":2.531,"ack:protoss:ready":1.326};
 for(var _tk in TRIM_TABLE) if(EVENTS[_tk]) EVENTS[_tk].trim = TRIM_TABLE[_tk];
 
 /* ================= FACADE + CẦU NỐI TÊN CŨ ================= */
@@ -3594,6 +3791,13 @@ Snd.boom = function(size, race, x, y, vol){ return Snd.ev('boom:' + size, { x: x
 Snd.boomFall = function(race, x, y, vol){ return Snd.ev('boom:fall', { x: x, y: y, race: race, vol: vol }); };
 Snd.cue = function(id, o){ return Snd.ev(id, o || {}); };
 var _ackSelTrack = {};
+/* V13 §3.2: hệ số cao độ ack theo CỠ quân (draw của SPECS) — quân nhỏ cao giọng, quân lớn trầm;
+   nhà dùng pf 0,6 + cờ bld (lớp thunk trong recipe). Thợ: nơi gọi nhân vol ×0,85 (mềm hơn). */
+function ackPfFor(type){ var d = (typeof SPECS !== 'undefined' && SPECS[type] && SPECS[type].draw) || 50;
+  return d <= 40 ? 1.15 : (d <= 56 ? 1.0 : (d <= 76 ? 0.85 : (d < 90 ? 0.76 : 0.68))); }
+function ackSelUnit(u, vol){ if(!u) return; Snd.ack(unitRace(u.type), 'select', { unitKey: u.id, vol: (vol || 0.9) * (isWorkerType(u.type) ? 0.85 : 1), pf: ackPfFor(u.type), legacy: 'select' }); }
+function ackOrder(kind, ids, vol){ var u = (ids && ids.length) ? findById(ids[0]) : null; /* pf theo quân đầu nhóm lệnh */
+  Snd.ack(playerRaceSafe(), kind, { vol: vol || 0.7, pf: u ? ackPfFor(u.type) : 1, legacy: kind }); }
 Snd.ack = function(race, kind, o){
   o = o || {}; race = race || 'terran';
   var useKind = kind;
@@ -3602,7 +3806,7 @@ Snd.ack = function(race, kind, o){
     tr.push(now); while(tr.length && now - tr[0] > 2000) tr.shift();
     if(tr.length > 3) useKind = 'grumble'; /* spam chọn cùng 1 quân >3 lần/2s -> càu nhàu */
   }
-  var ok = Snd.ev('ack:' + race + ':' + useKind, { x: o.x, y: o.y, vol: o.vol, legacy: o.legacy, f3: o.f3,
+  var ok = Snd.ev('ack:' + race + ':' + useKind, { x: o.x, y: o.y, vol: o.vol, legacy: o.legacy, f3: o.f3, pf: o.pf, bld: o.bld,
     throttleMs: kind === 'select' ? 90 : 250, throttleKey: 'ack:' + race + ':' + kind });
   Snd._ackCount(ok);
   return ok;
@@ -4458,7 +4662,7 @@ function resetGame(){
   });
   /* Tông màu console theo tộc (chỉ đổi accent, bố cục giữ nguyên) */
   var accCol = S.playerRace==='zerg' ? '#e0653a' : (S.playerRace==='protoss' ? '#e8c15a' : '#2dd4bf');
-  var stgEl = document.getElementById('stage'); if(stgEl) stgEl.style.setProperty('--acc', accCol);
+  var stgEl = document.getElementById('stage'); if(stgEl){ stgEl.style.setProperty('--acc', accCol); stgEl.setAttribute('data-race', S.playerRace); } /* v13: data-race cho vật liệu console theo tộc */
   frameHome();
   placing = null; pendingOrder = null; cmdPage = 'main'; panelSig = '';
   var ccEl = document.getElementById('cmdCost'); if(ccEl) ccEl.innerHTML = ''; /* tránh sót dòng giá của ván trước */
@@ -4615,19 +4819,19 @@ function assignGroupOrders(list, x, y, type){
   }
 }
 function orderMove(ids, x, y, f){
-  if(NET.role==='guest' && NET.phase==='match' && !f){ NET.sendIntent({a:'move', ids:ids.slice(), x:x, y:y}); if(ids.length){ Snd.play('move', 0.7, 300); addMarker(x, y, 'move'); } return ids.length>0; }
+  if(NET.role==='guest' && NET.phase==='match' && !f){ NET.sendIntent({a:'move', ids:ids.slice(), x:x, y:y}); if(ids.length){ ackOrder('move', ids, 0.7); addMarker(x, y, 'move'); } return ids.length>0; }
   f = f || 'player';
   var list = S.units.filter(function(u){ return ids.indexOf(u.id)>=0 && u.faction===f; });
   assignGroupOrders(list, x, y, 'move');
-  if(list.length && f==='player'){ Snd.play('move', 0.7, 300); addMarker(x, y, 'move'); }
+  if(list.length && f==='player'){ ackOrder('move', ids, 0.7); addMarker(x, y, 'move'); }
   return list.length>0;
 }
 function orderAttackMove(ids, x, y, f){
-  if(NET.role==='guest' && NET.phase==='match' && !f){ NET.sendIntent({a:'attackmove', ids:ids.slice(), x:x, y:y}); if(ids.length){ Snd.play('attack', 0.7, 300); addMarker(x, y, 'attack'); } return ids.length>0; }
+  if(NET.role==='guest' && NET.phase==='match' && !f){ NET.sendIntent({a:'attackmove', ids:ids.slice(), x:x, y:y}); if(ids.length){ ackOrder('attack', ids, 0.7); addMarker(x, y, 'attack'); } return ids.length>0; }
   f = f || 'player';
   var list = S.units.filter(function(u){ return ids.indexOf(u.id)>=0 && u.faction===f; });
   assignGroupOrders(list, x, y, 'attackmove');
-  if(list.length && f==='player'){ Snd.play('attack', 0.7, 300); addMarker(x, y, 'attack'); }
+  if(list.length && f==='player'){ ackOrder('attack', ids, 0.7); addMarker(x, y, 'attack'); }
   return list.length>0;
 }
 function refineryReady(node){
@@ -4639,13 +4843,13 @@ function orderHarvest(unitId, nodeId){
   if(NET.role==='guest' && NET.phase==='match'){
     var gn = S.nodes.find(function(x){ return x.id===nodeId; });
     if(gn && gn.type==='gas' && !refineryReady(gn)){ showMsg('Muốn hút khí phải xây Trạm Lọc Khí trên mạch khí trước!'); Snd.play('error', 0.7, 200); return false; }
-    NET.sendIntent({a:'harvest', id:unitId, node:nodeId}); Snd.play('move', 0.55, 300); return true;
+    NET.sendIntent({a:'harvest', id:unitId, node:nodeId}); ackOrder('move', [unitId], 0.55 * 0.85); return true; /* thợ: vol ×0,85 */
   }
   var u = findById(unitId); if(!u || u.kind!=='unit' || !isWorkerType(u.type)) return false;
   var n = S.nodes.find(function(x){return x.id===nodeId;}); if(!n) return false;
   if(n.type==='gas' && !refineryReady(n)){ if(!QUIET_ACT){ showMsg('Muốn hút khí phải xây Trạm Lọc Khí trên mạch khí trước!'); Snd.play('error', 0.7, 200); } return false; }
   setOrder(u, {type:'harvest', x:n.x, y:n.y, targetId:0, nodeId:nodeId, phase:'go', harvestT:0});
-  Snd.play('move', 0.55, 300);
+  Snd.ack(unitRace(u.type), 'move', { vol: 0.55 * 0.85, pf: ackPfFor(u.type), legacy: 'move' }); /* thợ: vol ×0,85 */
   return true;
 }
 /* Trạm Lọc Khí xây xong: thợ chủ thầu (hoặc thợ gần nhất) TỰ vào vòng hút khí — người chơi không cần ra lệnh thêm */
@@ -4674,7 +4878,7 @@ function orderUnitsTo(ids, wx, wy){
   if(NET.role==='guest' && NET.phase==='match'){
     var r = orderUnitsToF(ids, wx, wy, 'player', null, true); /* chạy khô trên bóng trạng thái để biết loại lệnh + tiếng phản hồi giống offline */
     NET.sendIntent({a:'tap', ids:ids.slice(), x:wx, y:wy});
-    if(r === 'attack') Snd.play('attack', 0.7, 300); else if(r === 'move') Snd.play('move', 0.7, 300);
+    if(r === 'attack') ackOrder('attack', ids, 0.7); else if(r === 'move') ackOrder('move', ids, 0.7);
     return r;
   }
   return orderUnitsToF(ids, wx, wy, 'player', null);
@@ -4682,8 +4886,8 @@ function orderUnitsTo(ids, wx, wy){
 function orderUnitsToF(ids, wx, wy, f, fogArr, dry){
   f = f || 'player';
   var i, e;
-  for(i=0;i<S.units.length;i++){ e=S.units[i]; if(hostileTo(f, e.faction) && fogAtArr(fogArr, e.x,e.y)===2 && dist(wx,wy,e.x,e.y)<36){ if(!dry) ids.forEach(function(id){ var u=findById(id); if(u&&u.kind==='unit'&&u.faction===f) setOrder(u,{type:'attack',x:e.x,y:e.y,targetId:e.id,nodeId:0,phase:'',harvestT:0}); }); if(f==='player' && !dry) Snd.play('attack', 0.7, 300); return 'attack'; } }
-  for(i=0;i<S.buildings.length;i++){ e=S.buildings[i]; var hs=BSPECS[e.type].size/2+14; if(hostileTo(f, e.faction) && fogAtArr(fogArr, e.x,e.y)>0 && Math.abs(wx-e.x)<hs && Math.abs(wy-e.y)<hs){ if(!dry) ids.forEach(function(id){ var u=findById(id); if(u&&u.kind==='unit'&&u.faction===f) setOrder(u,{type:'attack',x:e.x,y:e.y,targetId:e.id,nodeId:0,phase:'',harvestT:0}); }); if(f==='player' && !dry) Snd.play('attack', 0.7, 300); return 'attack'; } }
+  for(i=0;i<S.units.length;i++){ e=S.units[i]; if(hostileTo(f, e.faction) && fogAtArr(fogArr, e.x,e.y)===2 && dist(wx,wy,e.x,e.y)<36){ if(!dry) ids.forEach(function(id){ var u=findById(id); if(u&&u.kind==='unit'&&u.faction===f) setOrder(u,{type:'attack',x:e.x,y:e.y,targetId:e.id,nodeId:0,phase:'',harvestT:0}); }); if(f==='player' && !dry) ackOrder('attack', ids, 0.7); return 'attack'; } }
+  for(i=0;i<S.buildings.length;i++){ e=S.buildings[i]; var hs=BSPECS[e.type].size/2+14; if(hostileTo(f, e.faction) && fogAtArr(fogArr, e.x,e.y)>0 && Math.abs(wx-e.x)<hs && Math.abs(wy-e.y)<hs){ if(!dry) ids.forEach(function(id){ var u=findById(id); if(u&&u.kind==='unit'&&u.faction===f) setOrder(u,{type:'attack',x:e.x,y:e.y,targetId:e.id,nodeId:0,phase:'',harvestT:0}); }); if(f==='player' && !dry) ackOrder('attack', ids, 0.7); return 'attack'; } }
   for(i=0;i<S.nodes.length;i++){ var n=S.nodes[i]; if(fogAtArr(fogArr, n.x,n.y)>0 && dist(wx,wy,n.x,n.y)<46){
     var any=false;
     if(!dry) ids.forEach(function(id){ var u=findById(id); if(u&&u.kind==='unit'&&u.faction===f&&isWorkerType(u.type)){ if(orderHarvest(id,n.id)) any=true; } else if(u&&u.kind==='unit'&&u.faction===f){ setOrder(u,{type:'move',x:n.x,y:n.y,targetId:0,nodeId:0,phase:'',harvestT:0}); } });
@@ -5580,7 +5784,7 @@ function tickUnit(u, dt){
         var amt = Math.min(HARVEST_AMT, node.amount); node.amount -= amt;
         u.carrying = amt; u.carryType = node.type; o.phase='return';
         fxSparkle(node.x, node.y);
-        if(node.amount<=0 && node.type==='mineral'){ S.nodes = S.nodes.filter(function(n){return n.id!==node.id;}); if(u.faction === 'player') Snd.cue('al:depleted', { x: node.x, y: node.y }); } /* v11 §7.2: mỏ cạn — cue trung tính */
+        if(node.amount<=0 && node.type==='mineral'){ S.nodes = S.nodes.filter(function(n){return n.id!==node.id;}); if(u.faction === 'player') Snd.cue('al:depleted', { x: node.x, y: node.y, throttleMs: 8000, throttleKey: 'aldepl' }); } /* v11 §7.2: mỏ cạn — cue trung tính · V13 A5: cooldown 8s */
       }
       return;
     }
@@ -5683,7 +5887,7 @@ function tickBuildings(dt){
             var ea = rng()*6.28;
             S.units.push(makeUnit(b.faction, eg.type, clamp(b.x + Math.cos(ea)*(BSPECS.hatchery.size/2+26), 20, WORLD_W-20), clamp(b.y + (BSPECS.hatchery.size/2+22) + ei*22, 20, WORLD_H-20)));
           }
-          if(isHumanF(b.faction)){ facStore(b.faction).stats.trained += cnt; if(b.faction==='player') Snd.play('train_done', 0.7, 100); }
+          if(isHumanF(b.faction)){ facStore(b.faction).stats.trained += cnt; if(b.faction==='player') Snd.ack(unitRace(eg.type), 'ready', { vol: 0.8 * (isWorkerType(eg.type) ? 0.85 : 1), pf: ackPfFor(eg.type), legacy: 'train_done' }); } /* V13 A4: quân nở xong tự BÁO DANH bằng giọng tộc (thay chuông tr:done tại call site này) */
           recalcSupply(); renderPanel(true);
         }
       }
@@ -5711,7 +5915,7 @@ function tickBuildings(dt){
         b.queue.shift();
         var ang = rng()*6.28, sx = b.x + Math.cos(ang)*(BSPECS[b.type].size/2+26), sy = b.y + BSPECS[b.type].size/2 + 26;
         S.units.push(makeUnit(b.faction, q.type, clamp(sx,20,WORLD_W-20), clamp(sy,20,WORLD_H-20)));
-        if(isHumanF(b.faction)){ facStore(b.faction).stats.trained++; if(b.faction==='player') Snd.play('train_done', 0.7, 100); }
+        if(isHumanF(b.faction)){ facStore(b.faction).stats.trained++; if(b.faction==='player') Snd.ack(unitRace(q.type), 'ready', { vol: 0.8 * (isWorkerType(q.type) ? 0.85 : 1), pf: ackPfFor(q.type), legacy: 'train_done' }); } /* V13 A4: quân luyện xong tự BÁO DANH bằng giọng tộc (thay chuông tr:done tại call site này) */
         recalcSupply(); renderPanel(true);
       }
     }
@@ -5770,7 +5974,7 @@ function tickAI(dt){
           for(i=0;i<nA1;i++){ u = makeUnit(team, compAir1, base.x + sx*(50+i*46), base.y+235+((i%2)*38)); u.order={type:'attackmove',x:tgt.x,y:tgt.y,targetId:0,nodeId:0,phase:'',harvestT:0}; if(DF.hpMul!==1){ u.maxHp=Math.round(u.maxHp*DF.hpMul); u.hp=u.maxHp; if(u.shieldMax){ u.shieldMax=Math.round(u.shieldMax*DF.hpMul); u.shield=u.shieldMax; } } S.units.push(u); }
           for(i=0;i<nA2;i++){ u = makeUnit(team, compAir2, base.x + sx*90, base.y+275); u.order={type:'attackmove',x:tgt.x,y:tgt.y,targetId:0,nodeId:0,phase:'',harvestT:0}; if(DF.hpMul!==1){ u.maxHp=Math.round(u.maxHp*DF.hpMul); u.hp=u.maxHp; if(u.shieldMax){ u.shieldMax=Math.round(u.shieldMax*DF.hpMul); u.shield=u.shieldMax; } } S.units.push(u); }
         }
-        if(tgt.faction==='player'){ showMsg('Đợt địch thứ ' + st.wave + ' (' + (TEAM_NAMES[team] || team) + ') đang tràn đến!', 3000); Snd.cue('al:wave:' + arace, {}); } /* v11 §7.2: motif đợt tới theo tộc KẺ TẤN CÔNG */
+        if(tgt.faction==='player'){ showMsg('Đợt địch thứ ' + st.wave + ' (' + (TEAM_NAMES[team] || team) + ') đang tràn đến!', 3000); Snd.cue('al:wave:' + arace, { throttleMs: 8000, throttleKey: 'alwave' }); } /* v11 §7.2 + V13 A5: giọng advisor theo tộc KẺ TẤN CÔNG · cooldown 8s/loại */
         else if(S.netOnline && isHumanF(tgt.faction)){ NET.sendTo(tgt.faction, { k:'msg', text:'Đợt địch thứ ' + st.wave + ' (' + (TEAM_NAMES[team] || team) + ') đang tràn đến!' }); NET.sendTo(tgt.faction, { k:'wavewarn', race: arace }); }
       }
     }
@@ -6336,7 +6540,7 @@ function narrowToType(ctype){
     var ids = S.units.filter(function(x){ return x.faction === 'player' && x.type === ctype && S.selectedIds.indexOf(x.id) >= 0; }).map(function(x){ return x.id; });
     if(!ids.length) return;
     S.selectedIds = ids; S.selectedBuildingId = 0; pendingOrder = null;
-    Snd.play('select', 0.6, 90); renderPanel(true);
+    ackSelUnit(findById(ids[0]), 0.75); renderPanel(true); /* v13: tab loại cũng qua ack tộc + pf */
 }
 document.getElementById('selTabs').addEventListener('click', function(ev){
   var tab = ev.target.closest ? ev.target.closest('.typeTab') : null; if(!tab) return;
@@ -6360,13 +6564,13 @@ document.getElementById('infoPanel').addEventListener('click', function(ev){
     var ids = S.units.filter(function(x){ return x.faction === 'player' && x.type === ctype && S.selectedIds.indexOf(x.id) >= 0; }).map(function(x){ return x.id; });
     if(!ids.length) return;
     S.selectedIds = ids; S.selectedBuildingId = 0; pendingOrder = null;
-    Snd.play('select', 0.6, 90); renderPanel(true);
+    ackSelUnit(findById(ids[0]), 0.75); renderPanel(true); /* v13: thẻ loại cũng qua ack tộc + pf */
     return;
   }
   var uid = parseInt(cell.getAttribute('data-uid'), 10);
   var u = S.units.find(function(x){ return x.id === uid && x.faction === 'player'; }); if(!u) return;
   S.selectedIds = [uid]; S.selectedBuildingId = 0; pendingOrder = null;
-  Snd.play('select', 0.6, 90); renderPanel(true);
+  ackSelUnit(u, 0.75); renderPanel(true); /* v13: ô quân trong lưới nhóm cũng qua ack tộc + pf */
 });
 document.getElementById('cmdGrid').addEventListener('click', function(ev){
   if(performance.now() < suppressCmdClickUntil) return; /* click "ma" ngay sau khi thả kéo — bỏ qua */
@@ -8194,14 +8398,14 @@ function doLeftAction(wx, wy, evT){
       var cand = S.units.filter(function(u){ return u.faction==='player' && !u.dead && u.type===tu && u.x >= cam.x && u.x <= vx1 && u.y >= cam.y && u.y <= vy1; });
       cand.sort(function(a, b){ return dist(a.x, a.y, wx, wy) - dist(b.x, b.y, wx, wy); });
       selectIds(cand.map(function(u){ return u.id; }));
-      S.selectedBuildingId = 0; cmdPage = 'main'; Snd.play('select', 0.6, 120);
+      S.selectedBuildingId = 0; cmdPage = 'main'; ackSelUnit(pick.unit, 0.75); /* v13: nhấn đúp cũng qua ack tộc + pf theo cỡ */
       lastTapUnit = null;
     } else {
-      S.selectedIds=[pick.unit.id]; S.selectedBuildingId=0; cmdPage='main'; Snd.ack(unitRace(pick.unit.type), 'select', { unitKey: pick.unit.id, vol: 0.9, legacy: 'select' }); /* v11 §7.1: ack theo TỘC QUÂN + khóa chống spam (chọn >3 lần/2s -> grumble) */
+      S.selectedIds=[pick.unit.id]; S.selectedBuildingId=0; cmdPage='main'; ackSelUnit(pick.unit, 0.9); /* v11 §7.1 + v13: ack theo TỘC QUÂN + pf theo cỡ + khóa chống spam (chọn >3 lần/2s -> grumble) */
       lastTapUnit = { t: nowT, type: pick.unit.type, x: wx, y: wy };
     }
   }
-  else if(pick && pick.building){ S.selectedBuildingId=pick.building.id; S.selectedIds=[]; cmdPage='main'; Snd.play('select', 0.6, 120); lastTapUnit = null; }
+  else if(pick && pick.building){ S.selectedBuildingId=pick.building.id; S.selectedIds=[]; cmdPage='main'; Snd.ack(playerRaceSafe(), 'select', { unitKey: 'b' + pick.building.id, vol: 0.85, pf: 0.6, bld: 1, legacy: 'select' }); lastTapUnit = null; } /* v13: nhà cũng đáp bằng giọng tộc (pf 0,6 + thunk) */
   else if(S.selectedIds.length){ orderUnitsTo(S.selectedIds.slice(), wx, wy); lastTapUnit = null; }
   else { S.selectedIds=[]; S.selectedBuildingId=0; }
   renderPanel(true);
@@ -8212,7 +8416,7 @@ function boxSelect(x1, y1, x2, y2){
   inBox.sort(function(a,b){ return dist(a.x,a.y,cx,cy) - dist(b.x,b.y,cx,cy); });
   selectIds(inBox.map(function(u){ return u.id; }));
   cmdPage = 'main';
-  Snd.play('select', 0.6, 120);
+  if(inBox.length) ackSelUnit(inBox[0], 0.75); /* v13: kéo chọn nhóm cũng qua ack tộc + pf */
   renderPanel(true);
 }
 canvas.addEventListener('mousedown', function(ev){
@@ -9315,7 +9519,7 @@ NET.guestStart = function(cfg){
   NET.guestBase = cfg.myBase;
   buildElevation(); buildMmElev(); buildTerrain();
   var accCol = mySlot.race === 'zerg' ? '#e0653a' : (mySlot.race === 'protoss' ? '#e8c15a' : '#2dd4bf');
-  var stgEl = document.getElementById('stage'); if(stgEl) stgEl.style.setProperty('--acc', accCol);
+  var stgEl = document.getElementById('stage'); if(stgEl){ stgEl.style.setProperty('--acc', accCol); stgEl.setAttribute('data-race', mySlot.race); } /* v13: data-race cho vật liệu console theo tộc */
   NET.phase = 'match'; NET.elim = false; NET.lastSnapAt = 0; NET.guestSnapT = 0;
   document.getElementById('netOverlay').classList.add('hidden');
   document.getElementById('elimBanner').classList.add('hidden');
@@ -9595,8 +9799,8 @@ NET.guestOnData = function(m){
     case 'start': NET.guestStart(m.cfg); break;
     case 'snap': NET.applySnap(m); break;
     case 'msg': showMsg(m.text, 3000); break;
-    case 'wavewarn': Snd.cue('al:wave:' + (m.race || 'zerg'), {}); break; /* v11 §7.2: đợt địch nhắm vào phe mình */
-    case 'allywarn': Snd.cue('al:ally', {}); break; /* v11 §7.2: đồng minh bị đánh (biến thể −4dB) */
+    case 'wavewarn': Snd.cue('al:wave:' + (m.race || 'zerg'), { throttleMs: 8000, throttleKey: 'alwave' }); break; /* v11 §7.2 + V13 A5: cooldown 8s/loại */
+    case 'allywarn': Snd.cue('al:ally', { throttleMs: 8000, throttleKey: 'alally' }); break; /* v11 §7.2: đồng minh bị đánh (biến thể −4dB) · V13 A5: cooldown 8s */
     case 'npong': NET.rtt = Math.max(0, Math.round(performance.now()) - m.t); NET.updateChip(); break;
     case 'elim': NET.elim = true; document.getElementById('elimBanner').classList.remove('hidden'); showMsg('☠ Căn cứ của bạn đã mất — phe của bạn vẫn đang chiến đấu!', 4000); break;
     case 'over': NET.phase = 'over'; endGame(m.win ? 'win' : 'lose'); document.getElementById('endTitle').textContent = m.win ? 'THẮNG! Phe của bạn đã quét sạch đối thủ' : 'THUA! Phe của bạn đã bị quét sạch'; NET.showEndButtons(); break;
