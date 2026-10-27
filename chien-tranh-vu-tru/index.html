@@ -2786,6 +2786,10 @@ function buildToonDef(){ return buildFixed1Def(); }
      chắc ô tầng 2); đài NE trong tranh chỉ có 1 bậc → bậc thứ hai (phía Nam) soạn vào
      dữ liệu VÀ vẽ bổ sung trong lớp nướng theo đúng kiểu bậc tranh (supStep) — đó là
      nét vẽ code DUY NHẤT trên nền tranh.
+   • V15.3 (chủ bắt lỗi "đâu cần bậc thang, chỗ nào cũng đi được"): bbox của bậc CHÉO
+     nuốt cả dải váy đài bên cạnh bậc (rect tới 56 ô dốc, dải qua vành tới ~15 cặp ô /
+     ~500px) → quân tràn qua váy cạnh bậc như không có vách. Cờ dốc nay theo DẢI BẬC
+     THẬT (FIXED1.rampPolys, đo từ tranh + overlay kiểm chứng), bbox chỉ còn định danh.
    • Toàn bộ mặt đất (cỏ / đất / đường mòn) = tầng 1 đi được như nhau (luật của chủ:
      đường mòn chỉ là hình thức). Vật cản DUY NHẤT: 4 ụ đá tím, 2 hồ, ụ pha lê hổ phách
      ở tâm, vành đảo/ngoài đảo — phong kín bằng TẦNG (vành giữ tầng xa, lõi chấm lật tầng
@@ -2799,6 +2803,15 @@ var FIXED1 = {
     { cx: 4726, cy: 3528, poly: [[5352,3528],[5355,3638],[5356,3756],[5323,3870],[5230,3948],[5116,3990],[4995,3990],[4895,3988],[4809,3992],[4726,3993],[4644,3992],[4571,3953],[4512,3898],[4430,3879],[4306,3879],[4185,3839],[3985,3796],[3986,3658],[3987,3528],[4030,3406],[4252,3356],[4305,3286],[4368,3229],[4385,3124],[4461,3071],[4551,3050],[4631,2990],[4726,3076],[4806,3077],[4904,3044],[5007,3044],[5120,3061],[5220,3116],[5208,3252],[5231,3345],[5355,3418]] } ],
   ramps: [ [894,1117,1121,1513], [1339,838,1800,1268], [3973,945,4415,1366], [4466,1140,4693,1512],
            [1311,2957,1778,3363], [1595,3388,1986,3695], [4645,2744,4885,3124], [3988,3008,4462,3410] ],
+  /* V15.3: đa giác DẢI BẬC THẬT (px thế giới) — hình học gắn cờ dốc, thay cho bbox ở trên
+     (bbox chỉ còn vai trò định danh hành lang). Bậc thẳng (0/3/6) giữ nguyên rect; 5 bậc
+     chéo/ngang đo bằng phân đoạn màu bậc trên tranh v10 + khớp PCA, nới bề rộng về ~232px,
+     đầu đài +55px vào trong mặt đài / chân +30px ra cỏ theo quy ước 7 dốc tranh; đã kiểm
+     chứng bằng overlay vẽ đa giác lên tranh (proof-v153). Thứ tự khớp ramps[]. */
+  rampPolys: [ [[894,1117],[1121,1117],[1121,1513],[894,1513]], [[1345,1013],[1498,839],[1836,1136],[1683,1310]],
+               [[4100,1406],[3936,1242],[4244,933],[4408,1097]], [[4466,1140],[4693,1140],[4693,1512],[4466,1512]],
+               [[1441,3364],[1312,3169],[1687,2920],[1816,3115]], [[1592,3650],[1596,3402],[2012,3409],[2008,3657]],
+               [[4645,2744],[4885,2744],[4885,3124],[4645,3124]], [[3946,3175],[4069,2964],[4466,3195],[4343,3406]] ],
   supStep: [4466, 1140, 4693, 1512], /* bậc NE phía Nam (vòng 1c): rect dốc thứ 4 ở trên — chuẩn hoá theo 7 dốc tranh: đỉnh nới 51px vào trong mặt đài (mép đài tại đây y≈1191), chân kéo tới 1512 = chân vách, cỏ đón bậc (bản 1b để 1082..1418: đỉnh chồm 117px lên mặt đài, chân treo giữa mặt đá 1330..1500 -> chủ chê lệch lẹo); lớp nướng vẽ bậc bổ sung trong rect này */
   rocks: [ { x: 3000, y: 1172, rx: 480, ry: 270 }, { x: 1620, y: 1805, rx: 250, ry: 190 },
            { x: 4109, y: 2432, rx: 340, ry: 275 }, { x: 2970, y: 3033, rx: 460, ry: 280 } ],
@@ -2871,9 +2884,25 @@ function buildFixed1Def(){
     i = ty*TW + tx; x = tx*TILE + 30; y = ty*TILE + 30;
     if(fixed1InPoly(x, y, F.decks[k].poly)){ lv[i] = 2; ft[i] = 0; blob[i] = 0; }
   }
+  /* V15.3: cắt đa giác dải bậc thành rect theo hàng ô (tiết diện tại tâm hàng) — def.ramps
+     nhận các rect lát này nên rampGrid runtime (tâm-trong-rect) khớp ô-từng-ô với tiles.rp. */
+  var rampRects = [];
+  F.rampPolys.forEach(function(poly){
+    for(var ry = 0; ry < TH; ry++){
+      var cyR = ry*TILE + 30, xa = Infinity, xb = -Infinity;
+      for(var ei = 0; ei < poly.length; ei++){
+        var pa = poly[ei], pb = poly[(ei + 1) % poly.length];
+        if((pa[1] <= cyR && pb[1] > cyR) || (pb[1] <= cyR && pa[1] > cyR)){
+          var xi = pa[0] + (cyR - pa[1]) * (pb[0] - pa[0]) / (pb[1] - pa[1]);
+          if(xi < xa) xa = xi; if(xi > xb) xb = xi;
+        }
+      }
+      if(xb > xa) rampRects.push([Math.floor(xa), ry*TILE, Math.ceil(xb), (ry + 1)*TILE]);
+    }
+  });
   for(ty = 0; ty < TH; ty++) for(tx = 0; tx < TW; tx++){
     x = tx*TILE + 30; y = ty*TILE + 30;
-    for(k = 0; k < F.ramps.length; k++){ var r = F.ramps[k]; if(x >= r[0] && x < r[2] && y >= r[1] && y < r[3]){ rp[ty*TW + tx] = 1; break; } }
+    for(k = 0; k < rampRects.length; k++){ var r = rampRects[k]; if(x >= r[0] && x < r[2] && y >= r[1] && y < r[3]){ rp[ty*TW + tx] = 1; break; } }
   }
   /* túi chết 1 ô: ô tầng 1 không kề BẤT KỲ ô tầng 1/dốc nào (nêm giữa vành đảo và mép
      đài do outline tranh lệch dưới 1 ô — vòng 1b gặp đúng 1 ô ở góc Tây-Bắc đài NW)
@@ -2899,7 +2928,7 @@ function buildFixed1Def(){
     size: 'Cố định · 5760×4320 — tranh AI + dữ liệu tự soạn (1 cỡ duy nhất)',
     w: W, h: H, typeKey: 'caonguyen', sizeKey: 'to',
     bases: { player: [F.decks[0].cx, F.decks[0].cy], ai1: [F.decks[3].cx, F.decks[3].cy], ai2: [F.decks[1].cx, F.decks[1].cy], ai3: [F.decks[2].cx, F.decks[2].cy] },
-    elev: runs, ramps: F.ramps.map(function(r){ return r.slice(); }),
+    elev: runs, ramps: rampRects,
     expansions: F.naturals.map(function(n){ return { x: n.x, y: n.y }; }).concat([{ x: F.rich.x, y: F.rich.y, rich: true }]),
     tiles: { cols: TW, rows: TH, lv: lv, rp: rp, feat: ft },
     chain: [ { u: F.naturals[0].x/W, v: F.naturals[0].y/H }, { u: F.rich.x/W, v: F.rich.y/H, rich: true } ],
