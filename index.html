@@ -274,14 +274,14 @@
 #view-quiz .qz-flag{border:1.5px solid #e6ecfa;border-radius:16px}
 .bhv-pager-nav{display:flex;flex-direction:column;gap:8px;margin:12px 0 4px;position:sticky;bottom:10px;z-index:6;background:rgba(255,255,255,.90);backdrop-filter:blur(8px);border-radius:24px;padding:10px 12px;box-shadow:0 8px 20px rgba(90,120,200,.15)}
 .bhv-pg-top{display:flex;align-items:center;gap:10px}
-.bhv-pg-dots{flex:1;display:flex;justify-content:center;align-items:center;gap:6px}
+.bhv-pg-dots{flex:1;display:flex;justify-content:center;align-items:center;gap:5px}
 .bhv-pg-dot{width:10px;height:10px;border-radius:50%;background:#dde3ec;transition:background .2s,transform .2s;flex:none}
 .bhv-pg-dots.many .bhv-pg-dot{width:8px;height:8px}
 .bhv-pg-dot.done{background:#f5a623}
 .bhv-pg-dot.ok{background:#22c55e}
 .bhv-pg-dot.bad{background:#ef4444}
 .bhv-pg-dot.cur{transform:scale(1.3);box-shadow:0 0 0 2px #fff,0 0 0 4px #ffd43b}
-.bhv-pg-label{font-size:12.5px;font-weight:800;color:#93a5c4;white-space:nowrap}
+.bhv-pg-label{font-size:12px;font-weight:800;color:#93a5c4;white-space:nowrap}
 .bhv-pg-row{display:flex;gap:10px}
 .bhv-pg-btn{flex:1;font-family:inherit;font-size:16px;font-weight:900;padding:12px 8px;border-radius:999px;cursor:pointer;transition:transform .12s}
 .bhv-pg-btn:active{transform:scale(.96)}
@@ -291,10 +291,18 @@
 .bhv-pg-btn:disabled{background:#ffe9bd;color:#c09a58;box-shadow:none;cursor:default}
 .math-session-grid.bhv-paging{grid-template-columns:1fr}
 #view-math .math-session-grid.bhv-paging .math-session-question,#view-game .math-session-grid.bhv-paging .math-session-question{border:0;background:transparent;box-shadow:none;padding:8px 2px}
-.math-session-grid.bhv-paging .math-question-prompt{font-size:25px;min-height:46px;line-height:1.4;text-align:center}
-.math-session-grid.bhv-paging .vertical-sum{width:fit-content;max-width:88%;font-size:42px;line-height:1.45;margin:22px auto 8px;letter-spacing:2px}
+.math-session-grid.bhv-paging .math-question-prompt{font-size:34px;font-weight:800;min-height:52px;line-height:1.35;text-align:center;padding:10px 4px 2px}
+.math-session-grid.bhv-paging .vertical-sum{width:fit-content;max-width:88%;font-size:44px;line-height:1.45;margin:22px auto 8px;letter-spacing:2px;transform:translateX(-16px)}
 .math-session-grid.bhv-paging .math-session-input{font-size:30px;min-height:64px;border-radius:16px;margin-top:10px}
-.math-session-grid.bhv-paging .math-session-choice{font-size:19px;padding:14px 10px;min-height:52px}
+.math-session-grid.bhv-paging .math-session-choices{gap:12px;margin-top:16px}
+.math-session-grid.bhv-paging .math-session-question{counter-reset:bhvchoice}
+.math-session-grid.bhv-paging .math-session-choice{counter-increment:bhvchoice;font-size:24px;font-weight:800;padding:12px 14px;min-height:68px;display:flex;align-items:center;gap:10px;text-align:left}
+.math-session-grid.bhv-paging .math-session-choice::before{content:counter(bhvchoice,upper-alpha);width:34px;height:34px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:16px;font-weight:900;color:#fff;flex:none;background:#74c0fc}
+.math-session-grid.bhv-paging .math-session-choice:nth-child(2)::before{background:#b197fc}
+.math-session-grid.bhv-paging .math-session-choice:nth-child(3)::before{background:#69db7c}
+.math-session-grid.bhv-paging .math-session-choice:nth-child(4)::before{background:#63e6be}
+.math-session-grid.bhv-paging .math-session-choice:nth-child(5)::before{background:#ffa8a8}
+.math-session-grid.bhv-paging .math-session-choice:nth-child(6)::before{background:#ffd43b;color:#7a4d00}
 .math-session-grid.bhv-paging .math-question-number{font-size:12px}
 .math-session-grid.bhv-paging .compare-box{font-size:24px}
 .bhv-pager-on .math-session-grid{grid-template-columns:1fr}
@@ -8238,6 +8246,8 @@ window.__bhvFocus = function(container){
     });
     el = parent;
   }
+  var hdr = document.querySelector('header');
+  if(hdr){ __bhvHidden.push([hdr, hdr.style.display]); hdr.style.display = 'none'; }
   window.scrollTo(0, 0);
 };
 window.__bhvUnfocus = function(){
