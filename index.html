@@ -272,18 +272,26 @@
 #view-quiz .qz-next{background:linear-gradient(120deg,#ff8a1e,#ffae00);border-radius:999px;box-shadow:0 10px 22px rgba(255,138,30,.40);text-shadow:0 1px 5px rgba(146,64,0,.30)}
 #view-quiz .qz-score{background:#fff3bf;color:#8a5a00}
 #view-quiz .qz-flag{border:1.5px solid #e6ecfa;border-radius:16px}
-.bhv-pager-nav{display:flex;align-items:center;gap:10px;margin:14px 0 6px;position:sticky;bottom:10px;z-index:6;background:rgba(255,255,255,.88);backdrop-filter:blur(8px);border-radius:999px;padding:8px;box-shadow:0 8px 20px rgba(90,120,200,.15)}
-.bhv-pg-btn{flex:0 0 auto;font-family:inherit;font-size:16px;font-weight:900;padding:13px 18px;border-radius:999px;cursor:pointer;transition:transform .12s}
+.bhv-pager-nav{display:flex;flex-direction:column;gap:8px;margin:12px 0 4px;position:sticky;bottom:10px;z-index:6;background:rgba(255,255,255,.90);backdrop-filter:blur(8px);border-radius:24px;padding:10px 12px;box-shadow:0 8px 20px rgba(90,120,200,.15)}
+.bhv-pg-top{display:flex;align-items:center;gap:10px}
+.bhv-pg-track{flex:1;height:7px;border-radius:99px;background:#ece7d9;overflow:hidden}
+.bhv-pg-track i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,#74c0fc,#56ccf2);transition:width .2s}
+.bhv-pg-label{font-size:12.5px;font-weight:800;color:#93a5c4;white-space:nowrap}
+.bhv-pg-row{display:flex;gap:10px}
+.bhv-pg-btn{flex:1;font-family:inherit;font-size:16px;font-weight:900;padding:12px 8px;border-radius:999px;cursor:pointer;transition:transform .12s}
 .bhv-pg-btn:active{transform:scale(.96)}
 .bhv-pg-btn.prev{background:#fff;color:#3b5bdb;border:1.5px solid #dbe4ff;box-shadow:0 6px 14px rgba(90,120,200,.14)}
 .bhv-pg-btn.next{background:linear-gradient(120deg,#ffb35c,#ffc94d);color:#7a4d00;border:none;box-shadow:0 8px 18px rgba(255,150,40,.35);text-shadow:none}
+.bhv-pg-exit{flex:none;border:0;background:#eef2ff;color:#4f46e5;font-weight:800;font-size:12.5px;padding:5px 11px;border-radius:999px;cursor:pointer;font-family:inherit}
 .bhv-pg-btn:disabled{background:#ffe9bd;color:#c09a58;box-shadow:none;cursor:default}
-.bhv-pg-mid{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;min-width:0}
-.bhv-pg-segs{display:flex;gap:4px;flex-wrap:wrap;justify-content:center}
-.bhv-pg-segs i{width:15px;height:8px;border-radius:99px;background:#e8e2d2}
-.bhv-pg-segs i.done{background:linear-gradient(90deg,#74c0fc,#56ccf2)}
-.bhv-pg-segs i.now{background:#ffd43b}
-.bhv-pg-label{font-size:12px;font-weight:800;color:#93a5c4}
+.math-session-grid.bhv-paging{grid-template-columns:1fr}
+#view-math .math-session-grid.bhv-paging .math-session-question,#view-game .math-session-grid.bhv-paging .math-session-question{border:0;background:transparent;box-shadow:none;padding:8px 2px}
+.math-session-grid.bhv-paging .math-question-prompt{font-size:24px;min-height:46px;line-height:1.4}
+.math-session-grid.bhv-paging .vertical-sum{max-width:190px;font-size:33px;line-height:1.35;margin-top:14px}
+.math-session-grid.bhv-paging .math-session-input{font-size:27px;min-height:54px}
+.math-session-grid.bhv-paging .math-session-choice{font-size:18px;padding:12px 10px;min-height:48px}
+.math-session-grid.bhv-paging .math-question-number{font-size:12px}
+.math-session-grid.bhv-paging .compare-box{font-size:24px}
 .bhv-pager-on .math-session-grid{grid-template-columns:1fr}
 </style>
 </head>
@@ -8211,33 +8219,69 @@ html.dark .math-session-choice{box-shadow:0 3px 8px rgba(0,0,0,.25)}
 <script id="bhv-pager-v2">
 (function(){
 "use strict";
+var __bhvHidden = [];
+window.__bhvFocus = function(container){
+  window.__bhvUnfocus();
+  var el = container;
+  while(el && !(el.classList && el.classList.contains('view'))){
+    var parent = el.parentElement; if(!parent) break;
+    Array.prototype.forEach.call(parent.children, function(ch){
+      if(ch === el) return;
+      if(ch.classList && (ch.classList.contains('bhv-pager-nav') || ch.classList.contains('worksheet-submit') || ch.classList.contains('worksheet-result'))) return;
+      if(ch.querySelector && ch.querySelector('.worksheet-submit,.worksheet-result,.bhv-pager-nav')) return;
+      __bhvHidden.push([ch, ch.style.display]); ch.style.display = 'none';
+    });
+    el = parent;
+  }
+  window.scrollTo(0, 0);
+};
+window.__bhvUnfocus = function(){
+  while(__bhvHidden.length){ var pair = __bhvHidden.pop(); pair[0].style.display = pair[1]; }
+};
+document.addEventListener('click', function(e){ if(e.target.closest && e.target.closest('[data-view]')) window.__bhvUnfocus(); }, true);
+
 function makePager(container, itemSel, opts){
   if(!container || container.dataset.bhvPager) return;
   container.dataset.bhvPager = '1';
   var items = [], idx = 0, review = false, lastFirst = null;
   var nav = document.createElement('div'); nav.className = 'bhv-pager-nav'; nav.style.display = 'none';
-  var prev = document.createElement('button'); prev.type = 'button'; prev.className = 'bhv-pg-btn prev'; prev.textContent = '← Trước';
-  var mid = document.createElement('div'); mid.className = 'bhv-pg-mid';
-  var segs = document.createElement('div'); segs.className = 'bhv-pg-segs';
+  var top = document.createElement('div'); top.className = 'bhv-pg-top';
+  var track = document.createElement('div'); track.className = 'bhv-pg-track';
+  var fill = document.createElement('i'); track.appendChild(fill);
   var label = document.createElement('div'); label.className = 'bhv-pg-label';
-  mid.appendChild(segs); mid.appendChild(label);
+  var exitBtn = document.createElement('button'); exitBtn.type = 'button'; exitBtn.className = 'bhv-pg-exit'; exitBtn.textContent = '\u2190 Thoát';
+  top.appendChild(exitBtn); top.appendChild(track); top.appendChild(label);
+  var row = document.createElement('div'); row.className = 'bhv-pg-row';
+  var prev = document.createElement('button'); prev.type = 'button'; prev.className = 'bhv-pg-btn prev'; prev.textContent = '← Trước';
   var next = document.createElement('button'); next.type = 'button'; next.className = 'bhv-pg-btn next'; next.textContent = 'Tiếp theo →';
-  nav.appendChild(prev); nav.appendChild(mid); nav.appendChild(next);
+  row.appendChild(prev); row.appendChild(next);
+  nav.appendChild(top); nav.appendChild(row);
   container.parentNode.insertBefore(nav, container.nextSibling);
   function collect(){ items = Array.prototype.slice.call(container.querySelectorAll(itemSel)); }
   function show(){
+    container.classList.toggle('bhv-paging', !review && items.length > 1);
+    if(!review && items.length > 1 && window.__bhvFocus) window.__bhvFocus(container);
     if(review || items.length <= 1){ nav.style.display = items.length <= 1 ? 'none' : (review ? 'none' : 'flex');
       items.forEach(function(el){ el.style.display = ''; }); if(review) nav.style.display='none'; return; }
     nav.style.display = 'flex';
     items.forEach(function(el, i){ el.style.display = i === idx ? '' : 'none'; });
-    segs.innerHTML = '';
-    items.forEach(function(el, i){ var s = document.createElement('i'); if(i < idx) s.className = 'done'; else if(i === idx) s.className = 'now'; segs.appendChild(s); });
+    fill.style.width = (items.length > 1 ? Math.round((idx + 1) / items.length * 100) : 100) + '%';
     label.textContent = (items[idx] && items[idx].classList.contains('qz-end')) ? 'Kết quả 🎉' : 'Câu ' + (idx + 1) + ' / ' + items.length;
     prev.disabled = idx <= 0; next.disabled = idx >= items.length - 1;
   }
   function go(d){ var n = Math.max(0, Math.min(items.length - 1, idx + d)); if(n !== idx){ idx = n; show(); } }
   prev.addEventListener('click', function(){ go(-1); });
   next.addEventListener('click', function(){ go(1); });
+  exitBtn.addEventListener('click', function(){
+    review = false; idx = 0;
+    if(window.__bhvUnfocus) window.__bhvUnfocus();
+    var back = document.getElementById('math-back');
+    if(back && container.closest && container.closest('#view-math')){ back.click(); return; }
+    items.forEach(function(el){ el.style.display = ''; });
+    nav.style.display = 'none'; container.classList.remove('bhv-paging');
+    var y = container.getBoundingClientRect().top + window.scrollY - 90;
+    window.scrollTo({top: Math.max(0, y), behavior: 'smooth'});
+  });
   var tx = null, ty = null, tt = null;
   container.addEventListener('touchstart', function(e){ var t = e.changedTouches[0]; tx = t.clientX; ty = t.clientY; tt = e.target; }, {passive: true});
   container.addEventListener('touchend', function(e){
