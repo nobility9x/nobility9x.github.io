@@ -285,9 +285,18 @@
 .bhv-pg-row{display:flex;gap:8px}
 .bhv-pg-btn{flex:1;min-width:0;font-family:inherit;font-size:14.5px;font-weight:900;height:50px;padding:0 6px;border-radius:999px;cursor:pointer;transition:transform .12s;white-space:nowrap}
 .bhv-pg-btn:active{transform:scale(.96)}
-.bhv-pg-btn.prev{background:#fff;color:#3b5bdb;border:1.5px solid #dbe4ff;box-shadow:0 6px 14px rgba(90,120,200,.14)}
-.bhv-pg-btn.next{background:linear-gradient(120deg,#ffb35c,#ffc94d);color:#7a4d00;border:none;box-shadow:0 8px 18px rgba(255,150,40,.35);text-shadow:none}
+.bhv-pg-btn.prev{background:#fff8ec;color:#a86e14;border:1.5px solid #ffe3ae;box-shadow:0 6px 14px rgba(255,170,60,.14)}
+.bhv-pg-btn.next{background:#fff8ec;color:#a86e14;border:1.5px solid #ffe3ae;box-shadow:0 6px 14px rgba(255,170,60,.14)}
 .bhv-pg-exit{flex:none;border:0;background:#eef2ff;color:#4f46e5;font-weight:800;font-size:12.5px;padding:5px 11px;border-radius:999px;cursor:pointer;font-family:inherit}
+.view.bhv-view-focus{display:flex;flex-direction:column;height:calc(100dvh - 96px)}
+.bhv-view-focus .math-worksheet-screen:not([hidden]){flex:1;display:flex;flex-direction:column;min-height:0}
+.bhv-view-focus .worksheet-card{flex:1;display:flex;flex-direction:column;min-height:0;position:relative}
+.bhv-view-focus .math-session-grid.bhv-paging .math-question-number{position:absolute;top:2px;left:2px}
+.bhv-view-focus .worksheet-card form{flex:1;display:flex;flex-direction:column;min-height:0}
+.bhv-view-focus .math-session-grid{flex:1;align-items:center}
+.bhv-view-focus .bhv-pager-nav{margin-top:auto}
+.bhv-view-focus #quiz-stage{flex:1;display:flex;flex-direction:column;min-height:0}
+.bhv-view-focus .qz-card{flex:1}
 html.bhv-lock{overflow:hidden;overscroll-behavior:none}
 html.bhv-lock body{overflow:hidden}
 .bhv-paging{touch-action:pan-x}
@@ -8252,6 +8261,8 @@ window.__bhvFocus = function(container){
     });
     el = parent;
   }
+  var viewEl = el;
+  if(viewEl){ viewEl.classList.add('bhv-view-focus'); }
   var hdr = document.querySelector('header');
   if(hdr){ __bhvHidden.push([hdr, hdr.style.display]); hdr.style.display = 'none'; }
   document.documentElement.classList.add('bhv-lock');
@@ -8260,6 +8271,7 @@ window.__bhvFocus = function(container){
 window.__bhvUnfocus = function(){
   while(__bhvHidden.length){ var pair = __bhvHidden.pop(); pair[0].style.display = pair[1]; }
   document.documentElement.classList.remove('bhv-lock');
+  Array.prototype.forEach.call(document.querySelectorAll('.bhv-view-focus'), function(v){ v.classList.remove('bhv-view-focus'); });
 };
 window.__bhvUnlockScroll = function(){ document.documentElement.classList.remove('bhv-lock'); };
 document.addEventListener('click', function(e){ if(e.target.closest && e.target.closest('[data-view]')) window.__bhvUnfocus(); }, true);
@@ -8404,7 +8416,9 @@ function makePager(container, itemSel, opts){
       var okCount = items.filter(function(el){ return dotState(el) === 'ok'; }).length;
       var realCount = items.filter(function(el){ return !el.classList.contains('qz-end'); }).length;
       label.textContent = 'Đúng ' + okCount + ' / ' + realCount;
-      updateDots(); if(window.__bhvUnlockScroll) window.__bhvUnlockScroll(); return;
+      updateDots(); if(window.__bhvUnlockScroll) window.__bhvUnlockScroll();
+      var vf = container.closest && container.closest('.view'); if(vf) vf.classList.remove('bhv-view-focus');
+      return;
     }
     if(items.length <= 1){ nav.style.display = 'none'; items.forEach(function(el){ el.style.display = ''; }); return; }
     nav.style.display = 'flex'; row.style.display = 'flex';
