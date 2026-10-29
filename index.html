@@ -382,6 +382,13 @@ html.bhv-lock body{overflow:hidden}
 .bhv-pg-dot{width:9px;height:9px}
 .bhv-pg-label{font-size:14px;color:#7c5a10;background:#fff;border:1.5px solid #f3dfae;border-radius:999px;padding:3px 9px}
 .bhv-pg-exit{padding:5px 9px}
+#math-worksheet-screen.bhv-math-choice .worksheet-card{display:none!important}
+#bhv-math-startbar{display:none;margin:14px 0 18px;padding:16px 14px;border:2px solid #ffe3ae;border-radius:20px;background:#fffaf0;text-align:center}
+#math-worksheet-screen.bhv-math-choice #bhv-math-startbar{display:block}
+#bhv-math-startbar p{margin:0 0 12px;font-size:16.5px;font-weight:800;color:#8a6410}
+#bhv-math-start{border:0;border-radius:999px;padding:15px 30px;font-family:inherit;font-size:19px;font-weight:900;color:#fff;background:linear-gradient(135deg,#fb923c,#f59e0b);box-shadow:0 4px 0 #d97706;cursor:pointer}
+#bhv-math-start:active{transform:translateY(3px);box-shadow:0 1px 0 #d97706}
+.bhv-view-focus #math-ref-card{position:fixed;left:12px;right:12px;bottom:12px;z-index:80;max-height:52dvh;overflow:auto;background:#fff;border:2px solid #ffe3ae;border-radius:16px;box-shadow:0 14px 34px rgba(90,60,0,.28);padding:10px 14px}
 </style>
 </head>
 <body data-owner="be-hoc-vui" data-origin="nobility9x.github.io">
@@ -8316,7 +8323,7 @@ window.__bhvFocus = function(container){
     var parent = el.parentElement; if(!parent) break;
     Array.prototype.forEach.call(parent.children, function(ch){
       if(ch === el) return;
-      if(ch.classList && (ch.classList.contains('bhv-pager-nav') || ch.classList.contains('worksheet-submit') || ch.classList.contains('worksheet-result'))) return;
+      if((ch.classList && (ch.classList.contains('bhv-pager-nav') || ch.classList.contains('worksheet-submit') || ch.classList.contains('worksheet-result'))) || ch.id === 'math-ref-toggle' || ch.id === 'math-ref-card') return;
       if(ch.querySelector && ch.querySelector('.worksheet-submit,.worksheet-result,.bhv-pager-nav')) return;
       __bhvHidden.push([ch, ch.style.display]); ch.style.display = 'none';
     });
@@ -8740,11 +8747,59 @@ function bhvTopicIcons(){
 }
 setTimeout(bhvTopicIcons, 700); setTimeout(bhvTopicIcons, 2000);
 
+/* ===== Vong 7.3 (2026-10-29): cong chon Toan — vao phep tinh phai qua trang chon hang/kieu/do kho ===== */
+var __mathGate = {open:false, first:null};
+function mathGateApplies(){
+  var scr = document.getElementById('math-worksheet-screen');
+  if(!scr || scr.hidden) return false;
+  var rr = document.getElementById('math-range-row'), pr = document.getElementById('math-pair-row'), lr = document.getElementById('math-level-row');
+  return !!((rr && !rr.hidden) || (pr && !pr.hidden) || (lr && !lr.hidden));
+}
+function mathGateBar(){
+  var bar = document.getElementById('bhv-math-startbar');
+  if(bar) return bar;
+  var scr = document.getElementById('math-worksheet-screen'); if(!scr) return null;
+  bar = document.createElement('div'); bar.id = 'bhv-math-startbar';
+  bar.innerHTML = '<p>👆 Bé chọn ở trên trước, xong bấm Bắt đầu nhé!</p><button type="button" id="bhv-math-start">▶ Bắt đầu làm bài</button>';
+  var card = scr.querySelector('.worksheet-card');
+  if(card) scr.insertBefore(bar, card); else scr.appendChild(bar);
+  bar.querySelector('#bhv-math-start').addEventListener('click', function(){
+    __mathGate.open = true;
+    scr.classList.remove('bhv-math-choice');
+    var grid = document.getElementById('math-session-grid');
+    if(grid && window.__bhvFocusReal) window.__bhvFocusReal(grid);
+    var cur = grid ? Array.prototype.find.call(grid.children, function(el){ return el.style.display !== 'none'; }) : null;
+    if(cur && window.__bhvFitItem){ window.__bhvFitItem(grid, cur); setTimeout(function(){ window.__bhvFitItem(grid, cur); }, 460); }
+    window.scrollTo(0, 0);
+  });
+  return bar;
+}
+function mathGateInit(){
+  var grid = document.getElementById('math-session-grid'); if(!grid) return;
+  var realFocus = window.__bhvFocus;
+  window.__bhvFocusReal = realFocus;
+  window.__bhvFocus = function(container){
+    if(container === grid){
+      var f = grid.firstElementChild;
+      if(f !== __mathGate.first){ __mathGate.first = f; __mathGate.open = false; }
+      if(!__mathGate.open && mathGateApplies()){
+        var scr = document.getElementById('math-worksheet-screen');
+        mathGateBar();
+        if(scr) scr.classList.add('bhv-math-choice');
+        if(window.__bhvUnfocus) window.__bhvUnfocus();
+        return;
+      }
+    }
+    return realFocus.apply(this, arguments);
+  };
+}
+
 function init(){
   makePager(document.querySelector('#view-math .math-session-grid') || document.querySelector('.math-session-grid'), '.math-session-question',
     {form: document.getElementById('math-session-form')});
   makePager(document.getElementById('quiz-stage'), '.qz-card', null);
   qzGateInit();
+  mathGateInit();
   bhvTopicIcons();
 }
 if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
