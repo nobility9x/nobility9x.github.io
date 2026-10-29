@@ -321,6 +321,21 @@ html.bhv-lock body{overflow:hidden}
 .math-session-grid.bhv-paging .math-question-number{font-size:12px}
 .math-session-grid.bhv-paging .compare-box{font-size:24px}
 .bhv-pager-on .math-session-grid{grid-template-columns:1fr}
+#view-quiz .qz-prompt{font-size:var(--qzp,21px)}
+#view-quiz .qz-opt{font-size:var(--qzo,16.5px)}
+#view-quiz .qz-expl{font-size:var(--qze,15px)}
+#view-quiz .qz-card.bhv-qz-scroll{overflow-y:auto;min-height:0;touch-action:pan-y}
+#view-quiz .qz-card.bhv-qz-compact .qz-opts{gap:6px}
+#view-quiz .qz-card.bhv-qz-compact .qz-opt{padding:8px 10px}
+#view-quiz .qz-card.bhv-qz-compact .qz-actions{margin:6px 0}
+#view-quiz .qz-card.bhv-qz-compact .qz-head{margin-bottom:6px}
+#view-quiz .qz-card.bhv-qz-compact{padding:14px 14px}
+.bhv-qz-more{position:sticky;bottom:4px;text-align:center;font-size:12.5px;font-weight:800;color:#a86e14;background:#fff3bf;border:1.5px solid #ffe3ae;border-radius:999px;padding:5px 10px;margin-top:8px}
+.bhv-view-focus #quiz-stage .qz-card{min-height:0;max-height:100%}
+.bhv-pager-nav{border:1.5px solid #f3dfae;background:#fffaf0;box-shadow:0 -8px 20px rgba(180,130,40,.14),0 10px 22px rgba(90,120,200,.13);margin-top:16px}
+.bhv-view-focus .bhv-pager-nav{border-top:2.5px solid #ffd98a}
+.math-session-grid.bhv-paging .math-question-prompt{font-size:var(--mqp,34px)}
+.math-session-grid.bhv-paging .math-session-choice{font-size:var(--mqc,24px)}
 </style>
 </head>
 <body data-owner="be-hoc-vui" data-origin="nobility9x.github.io">
@@ -8427,6 +8442,7 @@ function makePager(container, itemSel, opts){
     prev.disabled = idx <= 0; next.disabled = idx >= items.length - 1;
     if(items[idx] && items[idx].classList.contains('qz-end') && window.__bhvUnlockScroll) window.__bhvUnlockScroll();
     updateDots();
+    if(window.__bhvFitItem) window.__bhvFitItem(container, items[idx]);
   }
   function go(d){ var n = Math.max(0, Math.min(items.length - 1, idx + d)); if(n !== idx){ idx = n; show(); animateCard(d); } }
   function animateCard(d){
@@ -8479,10 +8495,119 @@ function makePager(container, itemSel, opts){
   }
   refresh(false);
 }
+/* ===== Vong 6 (2026-10-29): chon lop truoc + co chu theo tung muc/the + tach khung dieu khien ===== */
+var __qzGate = {playing: false, allowUntil: 0};
+function qzSuppress(){
+  var stage = document.getElementById('quiz-stage'); if(!stage) return;
+  if(stage.childElementCount) stage.innerHTML = '';
+  if(window.__bhvUnfocus) window.__bhvUnfocus();
+  var note = document.getElementById('quiz-pool-note');
+  if(note) note.textContent = '\uD83D\uDC46 Ch\u1ECDn l\u1EDBp / ch\u1EE7 \u0111\u1EC1 \u1EDF tr\u00EAn \u0111\u1EC3 b\u1EAFt \u0111\u1EA7u l\u00E0m b\u00E0i nh\u00E9!';
+  Array.prototype.forEach.call(document.querySelectorAll('#quiz-topics .quiz-chip.active'), function(x){ x.classList.remove('active'); });
+}
+function qzGateInit(){
+  var stage = document.getElementById('quiz-stage'); if(!stage) return;
+  if(stage.childElementCount && !__qzGate.playing) qzSuppress();
+  new MutationObserver(function(){
+    if(stage.childElementCount && !__qzGate.playing && Date.now() > __qzGate.allowUntil) qzSuppress();
+  }).observe(stage, {childList: true});
+}
+document.addEventListener('click', function(e){
+  if(!e.target || !e.target.closest) return;
+  var t = e.target;
+  if(t.closest('#quiz-topics .quiz-chip')){ if(e.isTrusted){ __qzGate.playing = true; __qzGate.allowUntil = Date.now() + 2500; } return; }
+  if(t.closest('#quiz-stage .qz-next')){ if(e.isTrusted){ __qzGate.playing = true; __qzGate.allowUntil = Date.now() + 2500; } return; }
+  if(t.closest('#quiz-levels .quiz-chip')){ if(e.isTrusted && __qzGate.playing) __qzGate.allowUntil = Date.now() + 2500; return; }
+  if(t.closest('.quiz-group')){ __qzGate.playing = false; __qzGate.allowUntil = 0; return; }
+  var pk = t.closest('[data-pick]');
+  if(pk && (pk.getAttribute('data-pick') || '').indexOf('qgroup') >= 0){ __qzGate.playing = false; __qzGate.allowUntil = 0; return; }
+  if(t.closest('[data-view]')){ __qzGate.playing = false; __qzGate.allowUntil = 0; return; }
+  var ex = t.closest('#view-quiz .bhv-pg-exit');
+  if(ex && e.isTrusted){ __qzGate.playing = false; __qzGate.allowUntil = 0; setTimeout(qzSuppress, 120); }
+}, true);
+var QZ_BASE = {history:{p:21,o:16.5}, geo:{p:21,o:16.5}, scilife:{p:22,o:17.5}, tin:{p:20.5,o:16}, khtn:{p:20.5,o:16}, vatly:{p:20,o:15.5}, hoahoc:{p:20,o:15.5}, congnghe:{p:20.5,o:16}, sinhhoc:{p:20.5,o:16}};
+function qzGroupNow(){
+  var g = document.querySelector('#quiz-groups .quiz-group.active');
+  return (g && g.dataset.qgroup) || 'history';
+}
+function contentBottom(el){
+  var b = 0, r = el.getBoundingClientRect();
+  Array.prototype.forEach.call(el.children, function(ch){ if(ch.offsetParent !== null || ch.getClientRects().length){ var cr = ch.getBoundingClientRect(); if(cr.height) b = Math.max(b, cr.bottom); } });
+  return b - r.top;
+}
+function fitQuizCard(card){
+  if(!card || card.classList.contains('qz-end') || card.style.display === 'none' || !card.getClientRects().length) return;
+  var base = QZ_BASE[qzGroupNow()] || QZ_BASE.history;
+  var p = base.p, o = base.o, pMin = Math.max(14.5, base.p - 6.5), oMin = Math.max(13, base.o - 3.5);
+  var pr = card.querySelector('.qz-prompt');
+  var total = pr ? pr.textContent.length : 0;
+  card.querySelectorAll('.qz-opt').forEach(function(x){ total += x.textContent.length; });
+  if(total > 460){ p = Math.min(p, pMin + 1.5); o = Math.min(o, oMin + 0.5); }
+  else if(total > 360){ p = Math.min(p, base.p - 3); o = Math.min(o, base.o - 2); }
+  else if(total > 280){ p = Math.min(p, base.p - 1.5); o = Math.min(o, base.o - 1); }
+  card.classList.remove('bhv-qz-scroll');
+  card.classList.toggle('bhv-qz-compact', total > 380);
+  var oldCue = card.querySelector('.bhv-qz-more'); if(oldCue) oldCue.remove();
+  function apply(){ card.style.setProperty('--qzp', p + 'px'); card.style.setProperty('--qzo', o + 'px'); card.style.setProperty('--qze', Math.max(13, o - 1.5) + 'px'); }
+  apply();
+  function havePx(){
+    var nav = document.querySelector('#view-quiz .bhv-pager-nav');
+    if(nav && nav.getClientRects().length && nav.style.display !== 'none')
+      return nav.getBoundingClientRect().top - card.getBoundingClientRect().top - 12;
+    return card.clientHeight - 14;
+  }
+  var guard = 0;
+  while(guard++ < 16){
+    if(contentBottom(card) <= havePx()) break;
+    if(p <= pMin && o <= oMin) break;
+    if(p > pMin) p = Math.max(pMin, p - 1);
+    if(o > oMin) o = Math.max(oMin, o - 0.5);
+    apply();
+  }
+  if(contentBottom(card) > havePx()){
+    card.classList.add('bhv-qz-scroll');
+    var cue = document.createElement('div'); cue.className = 'bhv-qz-more'; cue.textContent = '\u25BC Vu\u1ED1t l\u00EAn xem ti\u1EBFp \u0111\u00E1p \u00E1n b\u00EAn d\u01B0\u1EDBi';
+    card.appendChild(cue);
+  }
+}
+function fitMathItem(item){
+  if(!item || item.querySelector('.vertical-sum') || item.style.display === 'none' || !item.getClientRects().length) return;
+  var pr = item.querySelector('.math-question-prompt'); if(!pr) return;
+  item.style.setProperty('--mqp', '34px'); item.style.setProperty('--mqc', '24px');
+  var grid = item.parentElement; if(!grid) return;
+  var nav = grid.parentElement ? grid.parentElement.querySelector('.bhv-pager-nav') : null;
+  function over(){
+    var lim = nav && nav.offsetParent !== null ? nav.getBoundingClientRect().top - 10 : window.innerHeight - 106;
+    var b = 0;
+    Array.prototype.forEach.call(item.children, function(ch){ var cr = ch.getBoundingClientRect(); if(cr.height) b = Math.max(b, cr.bottom); });
+    return b > lim;
+  }
+  var ps = 34, cs = 24, guard = 0;
+  while(guard++ < 8 && over()){
+    if(ps > 22){ ps -= 2; item.style.setProperty('--mqp', ps + 'px'); }
+    else if(cs > 18){ cs -= 1.5; item.style.setProperty('--mqc', cs + 'px'); }
+    else break;
+  }
+}
+window.__bhvFitItem = function(container, item){
+  if(!container || !item) return;
+  requestAnimationFrame(function(){
+    if(container.id === 'quiz-stage') fitQuizCard(item); else fitMathItem(item);
+  });
+};
+document.addEventListener('click', function(e){
+  if(e.target && e.target.closest && e.target.closest('#view-quiz .qz-opt')){
+    setTimeout(function(){ var c = document.querySelector('#quiz-stage .qz-card:not([style*="none"])'); if(c) fitQuizCard(c); }, 90);
+  }
+});
+window.addEventListener('resize', function(){
+  var c = document.querySelector('#quiz-stage .qz-card:not([style*="none"])'); if(c) fitQuizCard(c);
+});
 function init(){
   makePager(document.querySelector('#view-math .math-session-grid') || document.querySelector('.math-session-grid'), '.math-session-question',
     {form: document.getElementById('math-session-form')});
   makePager(document.getElementById('quiz-stage'), '.qz-card', null);
+  qzGateInit();
 }
 if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
 })();
