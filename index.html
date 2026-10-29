@@ -8271,11 +8271,93 @@ function makePager(container, itemSel, opts){
   var nav = document.createElement('div'); nav.className = 'bhv-pager-nav'; nav.style.display = 'none';
   var top = document.createElement('div'); top.className = 'bhv-pg-top';
   var dots = document.createElement('div'); dots.className = 'bhv-pg-dots';
+  function bhvNums(t){ return String(t).replace(/(\d)\.(\d{3})(?=\D|$)/g, '$1$2'); }
+  function bhvEval(expr){
+    var t = bhvNums(String(expr)).replace(/\u2212/g, '-').replace(/\u00d7/g, '*').replace(/x(?=\s*\d)/g, '*').replace(/\u00f7/g, '/').replace(/:/g, '/').replace(/,/g, '.').replace(/\s+/g, '');
+    if(!/^[0-9+\-*/().]+$/.test(t) || !/[+\-*/]/.test(t.replace(/^-/, ''))) return null;
+    var pos = 0;
+    function peek(){ return t[pos] || ''; }
+    function parseE(){ var v = parseT(); while(peek() === '+' || peek() === '-'){ var op = t[pos++]; var r = parseT(); v = op === '+' ? v + r : v - r; } return v; }
+    function parseT(){ var v = parseF(); while(peek() === '*' || peek() === '/'){ var op = t[pos++]; var r = parseF(); v = op === '*' ? v * r : v / r; } return v; }
+    function parseF(){
+      if(peek() === '-'){ pos++; return -parseF(); }
+      if(peek() === '('){ pos++; var v = parseE(); if(peek() === ')') pos++; return v; }
+      var m = /^\d+(\.\d+)?/.exec(t.slice(pos)); if(!m) return NaN;
+      pos += m[0].length; return parseFloat(m[0]);
+    }
+    var v = parseE();
+    if(pos !== t.length || typeof v !== 'number' || !isFinite(v)) return null;
+    return v;
+  }
+  function bhvVal(txt){
+    var t = String(txt).trim();
+    if(t === '') return null;
+    if(/^[0-9.,/]+$/.test(t.replace(/\s/g, ''))){
+      var r = bhvEval(t.indexOf('/') >= 0 ? t.replace('/', '/') + '+0' : t);
+      if(r !== null) return r;
+      var n = parseFloat(bhvNums(t).replace(',', '.'));
+      return isNaN(n) ? null : n;
+    }
+    return null;
+  }
+  function liveState(el){
+    if(el.querySelector('.calc-step-input.step-bad')) return 'bad';
+    var steps = el.querySelectorAll('.calc-step-input');
+    if(steps.length && el.querySelectorAll('.calc-step-input.step-ok').length === steps.length) return 'ok';
+    var vs = el.querySelector('.vertical-sum');
+    if(vs){
+      var inp = vs.querySelector('.math-session-input');
+      if(!inp || String(inp.value).trim() === '') return '';
+      var sp = vs.querySelectorAll('span');
+      if(sp.length < 2) return 'done';
+      var aTxt = sp[0].textContent, bEl = sp[1].querySelector('b'), bTxt = sp[1].textContent;
+      if(!bEl) return 'done';
+      var A = bhvVal(aTxt), B = bhvVal(bTxt.replace(bEl.textContent, ''));
+      var got = bhvVal(inp.value);
+      if(A === null || B === null || got === null) return 'done';
+      var op = bEl.textContent.trim(), r;
+      if(op === '+') r = A + B; else if(op === '\u2212' || op === '-') r = A - B;
+      else if(op === '\u00d7' || op === 'x') r = A * B;
+      else if(op === '\u00f7' || op === ':'){ if(B === 0 || A % B !== 0) return 'done'; r = A / B; }
+      else return 'done';
+      return Math.abs(got - r) < 1e-6 ? 'ok' : 'bad';
+    }
+    var promptEl = el.querySelector('.math-question-prompt');
+    var expr = null;
+    if(promptEl){
+      var pt = promptEl.textContent || '';
+      var di = pt.search(/\d/);
+      if(di >= 0){
+        var cand = pt.slice(di).replace(/=\s*\??.*$/, '').replace(/\?.*$/, '');
+        if(/^[0-9+\-\u2212\u00d7\u00f7:/().,\s]+$/.test(cand) && /[+\-\u2212\u00d7\u00f7:]/.test(cand)) expr = bhvEval(cand);
+      }
+    }
+    var sel = el.querySelector('.math-session-choice.selected');
+    if(sel){
+      var st = sel.textContent.trim();
+      if(st === '<' || st === '>' || st === '=') return 'done';
+      if(expr === null) return 'done';
+      var sv = bhvVal(st);
+      if(sv === null) return 'done';
+      return Math.abs(sv - expr) < 1e-6 ? 'ok' : 'bad';
+    }
+    var inp2 = el.querySelector('.math-session-input');
+    if(inp2 && String(inp2.value).trim() !== ''){
+      if(el.querySelectorAll('.math-session-input').length > 1) return 'done';
+      if(expr === null) return 'done';
+      var gv = bhvVal(inp2.value);
+      if(gv === null) return 'done';
+      return Math.abs(gv - expr) < 1e-6 ? 'ok' : 'bad';
+    }
+    return '';
+  }
   function dotState(el){
     if(el.classList.contains('correct')) return 'ok';
     if(el.classList.contains('incorrect')) return 'bad';
     if(el.querySelector('.math-session-choice.wrong,.qz-opt.bad,.english-quiz-option.wrong,.english-quiz-option.incorrect')) return 'bad';
     if(el.querySelector('.math-session-choice.correct,.qz-opt.good,.english-quiz-option.correct')) return 'ok';
+    var live = liveState(el);
+    if(live) return live;
     if(el.querySelector('.math-session-choice.selected,.qz-opt.selected')) return 'done';
     var inp = el.querySelector('.math-session-input');
     if(inp && String(inp.value).trim() !== '') return 'done';
