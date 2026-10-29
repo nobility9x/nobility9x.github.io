@@ -288,7 +288,7 @@
 .bhv-pg-btn.prev{background:#fff8ec;color:#a86e14;border:1.5px solid #ffe3ae;box-shadow:0 6px 14px rgba(255,170,60,.14)}
 .bhv-pg-btn.next{background:#fff8ec;color:#a86e14;border:1.5px solid #ffe3ae;box-shadow:0 6px 14px rgba(255,170,60,.14)}
 .bhv-pg-exit{flex:none;border:0;background:#eef2ff;color:#4f46e5;font-weight:800;font-size:12.5px;padding:5px 11px;border-radius:999px;cursor:pointer;font-family:inherit}
-.view.bhv-view-focus{display:flex;flex-direction:column;height:calc(100dvh - 96px)}
+.view.bhv-view-focus{display:flex;flex-direction:column;height:calc(100dvh - 16px)}
 .bhv-view-focus .math-worksheet-screen:not([hidden]){flex:1;display:flex;flex-direction:column;min-height:0}
 .bhv-view-focus .worksheet-card{flex:1;display:flex;flex-direction:column;min-height:0;position:relative}
 .bhv-view-focus .math-session-grid.bhv-paging .math-question-number{position:absolute;top:2px;left:2px}
@@ -8338,6 +8338,8 @@ window.__bhvFocus = function(container){
   if(viewEl){ viewEl.classList.add('bhv-view-focus'); }
   var hdr = document.querySelector('header');
   if(hdr){ __bhvHidden.push([hdr, hdr.style.display]); hdr.style.display = 'none'; }
+  var mnav = document.querySelector('.mobile-nav');
+  if(mnav){ __bhvHidden.push([mnav, mnav.style.display]); mnav.style.display = 'none'; }
   document.documentElement.classList.add('bhv-lock');
   window.scrollTo(0, 0);
 };
