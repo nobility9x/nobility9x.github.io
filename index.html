@@ -336,6 +336,47 @@ html.bhv-lock body{overflow:hidden}
 .bhv-view-focus .bhv-pager-nav{border-top:2.5px solid #ffd98a}
 .math-session-grid.bhv-paging .math-question-prompt{font-size:var(--mqp,34px)}
 .math-session-grid.bhv-paging .math-session-choice{font-size:var(--mqc,24px)}
+#view-quiz .qz-progress{display:none!important}
+#view-quiz .quiz-topics .cls-strip{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;overflow:visible!important;padding:4px 2px 4px;scrollbar-width:none}
+#view-quiz .quiz-topics .cls-lab{font-size:14px;font-weight:800;color:#7186ad;margin:10px 2px 3px}
+#view-quiz .quiz-topics .quiz-chip{width:auto!important;height:auto!important;min-height:0!important;border-radius:22px!important;display:flex!important;flex-direction:column!important;align-items:center;justify-content:flex-start;gap:2px;padding:13px 4px 11px!important;font-size:16.5px;line-height:1.18;text-align:center;background:#fff;box-shadow:0 3px 0 rgba(27,42,74,.07);white-space:normal}
+#view-quiz .quiz-topics .quiz-chip:active{transform:translateY(2px);box-shadow:0 1px 0 rgba(27,42,74,.07)}
+#view-quiz .quiz-topics .quiz-chip .bhv-topic-ico{width:54px;height:54px;border-radius:17px;display:flex;align-items:center;justify-content:center;margin-bottom:4px;flex:0 0 auto;background:#eef3fc}
+#view-quiz .quiz-topics .quiz-chip .bhv-topic-ico svg{width:37px;height:37px;display:block}
+#view-quiz .quiz-topics .quiz-chip small{font-size:11px;color:#8a97ad;font-weight:700}
+#view-quiz .quiz-topics .quiz-chip .bhv-topic-ico[data-ico="geo"]{background:#e1f3fd}
+#view-quiz .quiz-topics .quiz-chip .bhv-topic-ico[data-ico="hist"]{background:#fcefd8}
+#view-quiz .quiz-topics .quiz-chip .bhv-topic-ico[data-ico="tin"]{background:#e2ebfd}
+#view-quiz .quiz-topics .quiz-chip .bhv-topic-ico[data-ico="atom"]{background:#efe8fd}
+#view-quiz .quiz-topics .quiz-chip .bhv-topic-ico[data-ico="bolt"]{background:#fdf0cd}
+#view-quiz .quiz-topics .quiz-chip .bhv-topic-ico[data-ico="flask"]{background:#fde7f3}
+#view-quiz .quiz-topics .quiz-chip .bhv-topic-ico[data-ico="gear"]{background:#ffe9d6}
+#view-quiz .quiz-topics .quiz-chip .bhv-topic-ico[data-ico="leaf"]{background:#e0f6e4}
+#view-quiz .quiz-topics .quiz-chip .bhv-topic-ico[data-ico="khoa"]{background:#dbf5f0}
+#view-quiz .quiz-topics .quiz-chip .bhv-topic-ico[data-ico="shield"]{background:#ffe1e1}
+#view-quiz .quiz-topics .quiz-chip .bhv-topic-ico[data-ico="traffic"]{background:#e7edf6}
+#view-quiz .quiz-topics .quiz-chip .bhv-topic-ico[data-ico="cap1"]{background:#fdeeda}
+#view-quiz .quiz-topics .quiz-chip .bhv-topic-ico[data-ico="cap2"]{background:#e2ebfd}
+#view-quiz .quiz-topics .quiz-chip .bhv-topic-ico[data-ico="cap3"]{background:#e5e6fd}
+#view-quiz .quiz-topics .quiz-chip .bhv-topic-ico[data-ico="them"]{background:#dff3fd}
+#view-quiz .qz-card.bhv-qz-compact .qz-flag{width:auto!important;max-width:72%!important;max-height:118px!important}
+#view-quiz .qz-card.bhv-qz-compact2 .qz-flag{max-height:84px!important}
+#view-quiz .qz-card.bhv-qz-compact2 .qz-letter{width:25px;height:25px;font-size:13px}
+#view-quiz .qz-card.bhv-qz-compact2 .qz-opts{gap:5px}
+#view-quiz .qz-card.bhv-qz-compact2 .qz-opt{padding:7px 10px}
+#view-quiz .qz-card.bhv-qz-compact2 .qz-mini{padding:6px 10px;font-size:13px}
+#view-quiz .qz-card.bhv-qz-compact2 .qz-prompt{line-height:1.34}
+#view-quiz .qz-card.bhv-qz-compact2 .qz-actions{margin:4px 0 6px}
+#view-quiz .qz-card.bhv-qz-compact2 .qz-head{margin-bottom:5px}
+#view-quiz .quiz-topics .quiz-grow:not([hidden]){display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;overflow:visible!important;flex-wrap:wrap}
+#view-quiz .quiz-topics .quiz-rowlab{display:flex!important;grid-column:1/-1;align-items:center;gap:6px;font-size:14px;font-weight:800;color:#7186ad;margin:8px 2px 0}
+#view-quiz .quiz-topics .quiz-break{display:none!important}
+#view-quiz .quiz-topics .cls-strip{grid-column:1/-1}
+.bhv-pg-top{gap:6px}
+.bhv-pg-dots{gap:3.5px;min-width:0}
+.bhv-pg-dot{width:9px;height:9px}
+.bhv-pg-label{font-size:14px;color:#7c5a10;background:#fff;border:1.5px solid #f3dfae;border-radius:999px;padding:3px 9px}
+.bhv-pg-exit{padding:5px 9px}
 </style>
 </head>
 <body data-owner="be-hoc-vui" data-origin="nobility9x.github.io">
@@ -8538,7 +8579,7 @@ function contentBottom(el){
 function fitQuizCard(card){
   if(!card || card.classList.contains('qz-end') || card.style.display === 'none' || !card.getClientRects().length) return;
   var base = QZ_BASE[qzGroupNow()] || QZ_BASE.history;
-  var p = base.p, o = base.o, pMin = Math.max(14.5, base.p - 6.5), oMin = Math.max(13, base.o - 3.5);
+  var p = base.p, o = base.o, pMin = Math.max(13, base.p - 8), oMin = Math.max(12, base.o - 4.5);
   var pr = card.querySelector('.qz-prompt');
   var total = pr ? pr.textContent.length : 0;
   card.querySelectorAll('.qz-opt').forEach(function(x){ total += x.textContent.length; });
@@ -8547,6 +8588,7 @@ function fitQuizCard(card){
   else if(total > 280){ p = Math.min(p, base.p - 1.5); o = Math.min(o, base.o - 1); }
   card.classList.remove('bhv-qz-scroll');
   card.classList.toggle('bhv-qz-compact', total > 380);
+  card.classList.toggle('bhv-qz-compact2', total > 540);
   var oldCue = card.querySelector('.bhv-qz-more'); if(oldCue) oldCue.remove();
   function apply(){ card.style.setProperty('--qzp', p + 'px'); card.style.setProperty('--qzo', o + 'px'); card.style.setProperty('--qze', Math.max(13, o - 1.5) + 'px'); }
   apply();
@@ -8557,12 +8599,15 @@ function fitQuizCard(card){
     return card.clientHeight - 14;
   }
   var guard = 0;
-  while(guard++ < 16){
+  while(guard++ < 30){
     if(contentBottom(card) <= havePx()) break;
     if(p <= pMin && o <= oMin) break;
     if(p > pMin) p = Math.max(pMin, p - 1);
     if(o > oMin) o = Math.max(oMin, o - 0.5);
     apply();
+  }
+  if(contentBottom(card) > havePx() && !card.classList.contains('bhv-qz-compact2')){
+    card.classList.add('bhv-qz-compact2');
   }
   if(contentBottom(card) > havePx()){
     card.classList.add('bhv-qz-scroll');
@@ -8571,7 +8616,28 @@ function fitQuizCard(card){
   }
 }
 function fitMathItem(item){
-  if(!item || item.querySelector('.vertical-sum') || item.style.display === 'none' || !item.getClientRects().length) return;
+  if(!item || item.style.display === 'none' || !item.getClientRects().length) return;
+  var vs = item.querySelector('.vertical-sum');
+  if(vs){
+    var growVs = function(){
+      if(!vs.getClientRects().length) return;
+      vs.style.fontSize = '44px';
+      var ir = item.getBoundingClientRect(), vr = vs.getBoundingClientRect();
+      if(vr.height > 0 && vr.width > 0){
+        var grid = item.parentElement;
+        var nav = grid && grid.parentElement ? grid.parentElement.querySelector('.bhv-pager-nav') : null;
+        var lim = (nav && nav.offsetParent !== null) ? nav.getBoundingClientRect().top - 14 : window.innerHeight - 120;
+        var availH = lim - vr.top;
+        var availW = ir.width * 0.92;
+        var f = 44 * Math.min(availH * 0.92 / vr.height, availW / vr.width);
+        f = Math.max(44, Math.min(64, Math.round(f)));
+        vs.style.fontSize = f + 'px';
+      }
+    };
+    growVs();
+    setTimeout(growVs, 420);
+    return;
+  }
   var pr = item.querySelector('.math-question-prompt'); if(!pr) return;
   item.style.setProperty('--mqp', '34px'); item.style.setProperty('--mqc', '24px');
   var grid = item.parentElement; if(!grid) return;
@@ -8603,11 +8669,57 @@ document.addEventListener('click', function(e){
 window.addEventListener('resize', function(){
   var c = document.querySelector('#quiz-stage .qz-card:not([style*="none"])'); if(c) fitQuizCard(c);
 });
+/* ===== V7: icon ve rieng cho the chon lop/chu de ===== */
+var BHV_ICO = {
+geo:'<svg viewBox="0 0 48 48"><circle cx="24" cy="24" r="17" fill="#4aa8e0"/><path d="M12 20q6-5 11-2-1 5-6 6-6 1-5-4zM28 12q6 1 9 6-5 2-8-1-2-3-1-5zM20 34q5-3 10 0 1 5-4 7-6-2-6-7z" fill="#58b368"/><ellipse cx="17" cy="15" rx="6" ry="3.4" fill="#ffffff" opacity=".35" transform="rotate(-24 17 15)"/></svg>',
+hist:'<svg viewBox="0 0 48 48"><path d="M24 6 42 16H6z" fill="#d97706"/><rect x="6" y="16.8" width="36" height="3.4" rx="1.7" fill="#b45309"/><rect x="9" y="21" width="5" height="13" rx="1.5" fill="#f59e0b"/><rect x="17.5" y="21" width="5" height="13" rx="1.5" fill="#f59e0b"/><rect x="26" y="21" width="5" height="13" rx="1.5" fill="#f59e0b"/><rect x="34" y="21" width="5" height="13" rx="1.5" fill="#f59e0b"/><rect x="6" y="36.5" width="36" height="4.5" rx="2" fill="#b45309"/></svg>',
+tin:'<svg viewBox="0 0 48 48"><rect x="10" y="10" width="28" height="21" rx="3.5" fill="#3b82f6"/><rect x="14" y="14" width="20" height="13" rx="1.5" fill="#bfdbfe"/><path d="M6 37h36l-3.6 5.5H9.6z" fill="#2563eb"/></svg>',
+atom:'<svg viewBox="0 0 48 48"><g fill="none" stroke="#a78bfa" stroke-width="2.6"><ellipse cx="24" cy="24" rx="16" ry="6.6"/><ellipse cx="24" cy="24" rx="16" ry="6.6" transform="rotate(60 24 24)"/><ellipse cx="24" cy="24" rx="16" ry="6.6" transform="rotate(120 24 24)"/></g><circle cx="24" cy="24" r="4.6" fill="#7c3aed"/></svg>',
+bolt:'<svg viewBox="0 0 48 48"><path d="M28 3 9 28h11l-3.5 17L38 20H26z" fill="#f59e0b"/></svg>',
+flask:'<svg viewBox="0 0 48 48"><rect x="21" y="6" width="6" height="10" rx="1.5" fill="#c084fc"/><path d="M21 16 12.5 37a4.5 4.5 0 0 0 4.2 6h14.6a4.5 4.5 0 0 0 4.2-6L27 16z" fill="#e9d5ff"/><path d="M17.6 29.5h12.8L34 37a3 3 0 0 1-2.8 4H16.8A3 3 0 0 1 14 37z" fill="#ec4899"/><circle cx="21" cy="34" r="1.8" fill="#fff" opacity=".8"/><circle cx="27" cy="37" r="1.3" fill="#fff" opacity=".8"/></svg>',
+gear:'<svg viewBox="0 0 48 48"><g fill="#f97316"><rect x="21.4" y="4" width="5.2" height="10" rx="2.4"/><rect x="21.4" y="4" width="5.2" height="10" rx="2.4" transform="rotate(45 24 24)"/><rect x="21.4" y="4" width="5.2" height="10" rx="2.4" transform="rotate(90 24 24)"/><rect x="21.4" y="4" width="5.2" height="10" rx="2.4" transform="rotate(135 24 24)"/><rect x="21.4" y="4" width="5.2" height="10" rx="2.4" transform="rotate(180 24 24)"/><rect x="21.4" y="4" width="5.2" height="10" rx="2.4" transform="rotate(225 24 24)"/><rect x="21.4" y="4" width="5.2" height="10" rx="2.4" transform="rotate(270 24 24)"/><rect x="21.4" y="4" width="5.2" height="10" rx="2.4" transform="rotate(315 24 24)"/><circle cx="24" cy="24" r="11.5"/></g><circle cx="24" cy="24" r="5.2" fill="#fff"/></svg>',
+leaf:'<svg viewBox="0 0 48 48"><path d="M39 7C22 9 11 19 10 36c-.4 5.4 3.8 7 7.6 5.4C32 37 40 23 39 7z" fill="#22c55e"/><path d="M14.5 38C20.5 28 28.5 19.5 36.5 13.5" stroke="#bbf7d0" stroke-width="2.6" fill="none" stroke-linecap="round"/></svg>',
+khoa:'<svg viewBox="0 0 48 48"><rect x="21" y="6" width="6" height="10" rx="1.5" fill="#2dd4bf"/><path d="M21 16 12.5 37a4.5 4.5 0 0 0 4.2 6h14.6a4.5 4.5 0 0 0 4.2-6L27 16z" fill="#ccfbf1"/><path d="M17.6 29.5h12.8L34 37a3 3 0 0 1-2.8 4H16.8A3 3 0 0 1 14 37z" fill="#14b8a6"/><circle cx="21" cy="34" r="1.8" fill="#fff" opacity=".85"/><circle cx="27" cy="37" r="1.3" fill="#fff" opacity=".85"/></svg>',
+shield:'<svg viewBox="0 0 48 48"><path d="M24 4l16 5v12c0 11-7 18.4-16 23C15 39.4 8 32 8 21V9z" fill="#ef4444"/><path d="M24 15.5v13M17.5 22h13" stroke="#fff" stroke-width="5" stroke-linecap="round"/></svg>',
+traffic:'<svg viewBox="0 0 48 48"><rect x="16" y="4" width="16" height="40" rx="6.5" fill="#54657f"/><circle cx="24" cy="13" r="4.4" fill="#ff5a5a"/><circle cx="24" cy="24" r="4.4" fill="#ffc93d"/><circle cx="24" cy="35" r="4.4" fill="#3ecf6e"/></svg>',
+cap1:'<svg viewBox="0 0 48 48"><rect x="18" y="5.5" width="12" height="8" rx="4" fill="#b45309"/><rect x="11.5" y="12" width="25" height="30" rx="8.5" fill="#f59e0b"/><rect x="11.5" y="20" width="25" height="4" fill="#fbbf24"/><rect x="16.5" y="27.5" width="15" height="11" rx="4.5" fill="#fbbf24"/></svg>',
+cap2:'<svg viewBox="0 0 48 48"><rect x="9" y="33" width="30" height="7.5" rx="2.4" fill="#3b82f6"/><rect x="12" y="24.5" width="26" height="7.5" rx="2.4" fill="#22c55e"/><rect x="15" y="16" width="21" height="7.5" rx="2.4" fill="#f97316"/><rect x="18" y="8" width="15" height="7" rx="2.4" fill="#eab308"/></svg>',
+cap3:'<svg viewBox="0 0 48 48"><path d="M24 11 46 20.5 24 30 2 20.5z" fill="#6366f1"/><path d="M12.5 25.4V34c0 3.6 5.2 6.2 11.5 6.2S35.5 37.6 35.5 34v-8.6L24 30z" fill="#818cf8"/><path d="M43.5 20.5V31" stroke="#f59e0b" stroke-width="3.2" stroke-linecap="round"/><circle cx="43.5" cy="34.5" r="2.7" fill="#f59e0b"/></svg>',
+them:'<svg viewBox="0 0 48 48"><circle cx="21" cy="21" r="11.5" fill="#bae6fd"/><circle cx="21" cy="21" r="11.5" fill="none" stroke="#0284c7" stroke-width="4.5"/><rect x="28.8" y="27.5" width="6.6" height="16" rx="3.3" transform="rotate(-45 32.1 35.5)" fill="#0284c7"/></svg>'
+};
+var BHV_GRP_ICO = {history:'hist', geo:'geo', tin:'tin', khtn:'atom', vatly:'bolt', hoahoc:'flask', congnghe:'gear', sinhhoc:'leaf', scilife:'khoa'};
+function bhvTopicIcons(){
+  var box = document.getElementById('quiz-topics'); if(!box) return;
+  box.querySelectorAll('.quiz-chip').forEach(function(chip){
+    if(chip.dataset.bhvIco) return;
+    var id = chip.getAttribute('data-qtopic') || '';
+    var key = null;
+    if(/(^|-)them$/.test(id)) key = 'them';
+    else if(/cap1$/.test(id)) key = 'cap1';
+    else if(/cap2$/.test(id)) key = 'cap2';
+    else if(/cap3$/.test(id)) key = 'cap3';
+    else if(id === 'khoa-hoc') key = 'khoa';
+    else if(id === 'an-toan') key = 'shield';
+    else if(id === 'giao-thong') key = 'traffic';
+    else { var g = chip.closest('.quiz-grow'); key = BHV_GRP_ICO[g ? g.getAttribute('data-grow') : ''] || 'geo'; }
+    if(!BHV_ICO[key]) return;
+    chip.dataset.bhvIco = '1';
+    for(var i = 0; i < chip.childNodes.length; i++){
+      var nd = chip.childNodes[i];
+      if(nd.nodeType === 3){ nd.textContent = nd.textContent.replace(/^[\s\u{1F000}-\u{1FAFF}\u{2600}-\u{27BF}\u{2B00}-\u{2BFF}\u{FE0F}\u{200D}]+/u, ''); break; }
+    }
+    var sp = document.createElement('span'); sp.className = 'bhv-topic-ico'; sp.setAttribute('data-ico', key); sp.innerHTML = BHV_ICO[key];
+    chip.insertBefore(sp, chip.firstChild);
+  });
+}
+setTimeout(bhvTopicIcons, 700); setTimeout(bhvTopicIcons, 2000);
+
 function init(){
   makePager(document.querySelector('#view-math .math-session-grid') || document.querySelector('.math-session-grid'), '.math-session-question',
     {form: document.getElementById('math-session-form')});
   makePager(document.getElementById('quiz-stage'), '.qz-card', null);
   qzGateInit();
+  bhvTopicIcons();
 }
 if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
 })();
