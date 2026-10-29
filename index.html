@@ -389,6 +389,11 @@ html.bhv-lock body{overflow:hidden}
 #bhv-math-start{border:0;border-radius:999px;padding:15px 30px;font-family:inherit;font-size:19px;font-weight:900;color:#fff;background:linear-gradient(135deg,#fb923c,#f59e0b);box-shadow:0 4px 0 #d97706;cursor:pointer}
 #bhv-math-start:active{transform:translateY(3px);box-shadow:0 1px 0 #d97706}
 .bhv-view-focus #math-ref-card{position:fixed;left:12px;right:12px;bottom:12px;z-index:80;max-height:52dvh;overflow:auto;background:#fff;border:2px solid #ffe3ae;border-radius:16px;box-shadow:0 14px 34px rgba(90,60,0,.28);padding:10px 14px}
+main:has(.bhv-view-focus){padding-top:8px;padding-left:7px;padding-right:7px}
+#view-quiz.bhv-view-focus #quiz-stage .qz-card{margin-bottom:0;border-bottom:0;border-bottom-left-radius:0;border-bottom-right-radius:0;box-shadow:none;padding:16px 14px}
+#view-quiz.bhv-view-focus .bhv-pager-nav{margin-top:0;margin-bottom:0;border:1.5px solid #e6ecfa;border-top:1px solid #e7dfc9;border-radius:0 0 26px 26px;box-shadow:0 10px 24px rgba(90,120,200,.10)}
+#view-math.bhv-view-focus .worksheet-card{padding:16px 12px 0}
+#view-math.bhv-view-focus .bhv-pager-nav{margin:auto -12px 0;border:0;border-top:1px solid #e7dfc9;border-radius:0 0 24px 24px;box-shadow:none;padding:10px 12px 12px}
 </style>
 </head>
 <body data-owner="be-hoc-vui" data-origin="nobility9x.github.io">
@@ -8690,17 +8695,17 @@ var bhvResizeT = null;
 window.addEventListener('resize', function(){
   clearTimeout(bhvResizeT);
   bhvResizeT = setTimeout(function(){
-    var c = document.querySelector('#quiz-stage .qz-card:not([style*="none"])'); if(c) fitQuizCard(c);
-    var mi = document.querySelector('#view-math .math-session-question:not([style*="none"])'); if(mi) fitMathItem(mi);
+    var c = Array.prototype.find.call(document.querySelectorAll('#quiz-stage .qz-card'), function(el){ return el.style.display !== 'none'; }); if(c) fitQuizCard(c);
+    var mi = Array.prototype.find.call(document.querySelectorAll('#view-math .math-session-question'), function(el){ return el.style.display !== 'none'; }); if(mi) fitMathItem(mi);
   }, 260);
 });
 document.addEventListener('click', function(e){
   if(e.target && e.target.closest && e.target.closest('#view-quiz .qz-opt')){
-    setTimeout(function(){ var c = document.querySelector('#quiz-stage .qz-card:not([style*="none"])'); if(c) fitQuizCard(c); }, 90);
+    setTimeout(function(){ var c = Array.prototype.find.call(document.querySelectorAll('#quiz-stage .qz-card'), function(el){ return el.style.display !== 'none'; }); if(c) fitQuizCard(c); }, 90);
   }
 });
 window.addEventListener('resize', function(){
-  var c = document.querySelector('#quiz-stage .qz-card:not([style*="none"])'); if(c) fitQuizCard(c);
+  var c = Array.prototype.find.call(document.querySelectorAll('#quiz-stage .qz-card'), function(el){ return el.style.display !== 'none'; }); if(c) fitQuizCard(c);
 });
 /* ===== V7: icon ve rieng cho the chon lop/chu de ===== */
 var BHV_ICO = {
