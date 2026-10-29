@@ -8351,6 +8351,15 @@ window.__bhvUnfocus = function(){
 window.__bhvUnlockScroll = function(){ document.documentElement.classList.remove('bhv-lock'); };
 document.addEventListener('click', function(e){ if(e.target.closest && e.target.closest('[data-view]')) window.__bhvUnfocus(); }, true);
 
+/* Back cua dien thoai (popstate) doi view qua app, khong qua click [data-view]:
+   phai go focus + mo khoa cuon, neu khong man hinh moi dung yen nhu bi do. */
+function __bhvPopCleanup(){
+  try{ if(window.__bhvUnfocus) window.__bhvUnfocus(); }catch(e){}
+  try{ __bhvUnlockScroll(); }catch(e){}
+}
+window.addEventListener('popstate', function(){ setTimeout(__bhvPopCleanup, 60); });
+window.addEventListener('pageshow', function(e){ if(e && e.persisted) __bhvPopCleanup(); });
+
 function makePager(container, itemSel, opts){
   if(!container || container.dataset.bhvPager) return;
   container.dataset.bhvPager = '1';
