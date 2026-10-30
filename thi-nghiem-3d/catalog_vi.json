@@ -1,0 +1,1274 @@
+[
+ {
+  "slug": "haber-step",
+  "subject": "chem",
+  "subject_vi": "Hoá học",
+  "title": "Sản xuất amoniac công nghiệp (quy trình Haber)",
+  "question": "Làm thế nào để biến nitơ trong không khí thành amoniac một cách nhanh chóng, dồi dào và tiết kiệm chi phí?",
+  "type": "Quy trình công nghiệp",
+  "steps": [
+   "Tại sao phải xây dựng nhà máy",
+   "tại sao thanh lọc",
+   "Tại sao phải gây áp lực",
+   "tại sao nhiệt độ cao",
+   "Bên trong tòa tháp như thế nào?",
+   "Tại sao vòng lặp",
+   "Đánh giá · Làm đội trưởng"
+  ],
+  "textbook": [
+   "Khóa học bắt buộc chọn lọc 1 Nguyên tắc phản ứng hóa học · Chương 2 Tốc độ phản ứng hóa học và cân bằng hóa học · Phần 4 Quy định về phản ứng hóa học",
+   "Bắt buộc Tập 2 · Chương 5 Các nguyên tố phi kim quan trọng trong sản xuất hóa chất · Phần 2 Nitơ và các hợp chất của nó"
+  ],
+  "file": "courses/haber-step.html",
+  "cover": "covers/haber-step.webp"
+ },
+ {
+  "slug": "river-step",
+  "subject": "geo",
+  "subject_vi": "Địa lý",
+  "title": "Sự phát triển địa hình sông",
+  "question": "Tại sao đường bờ biển đoạn Trấn Giang của sông Dương Tử tiếp tục dịch chuyển về phía bắc?",
+  "type": "Nguyên lý và hiện tượng",
+  "steps": [
+   "Làm quen với bàn cát",
+   "Thung lũng núi hình chữ V",
+   "phần thung lũng",
+   "quạt phù sa",
+   "ngân hàng lõm ngân hàng lồi",
+   "vùng ngập lũ",
+   "đồng bằng",
+   "Đánh giá: Mùa lũ đang đến"
+  ],
+  "textbook": [
+   "Môn học bắt buộc tùy chọn 1 Cơ sở địa lý tự nhiên · Chương 2 Hình thành hình thái bề mặt · Phần 3 Phát triển địa hình sông"
+  ],
+  "file": "courses/river-step.html",
+  "cover": "covers/river-step.webp"
+ },
+ {
+  "slug": "rate-step",
+  "subject": "chem",
+  "subject_vi": "Hoá học",
+  "title": "Các yếu tố ảnh hưởng đến tốc độ phản ứng hóa học",
+  "question": "Tại sao một số trong hai phản ứng giống nhau chỉ mất vài giây, trong khi những phản ứng khác lại phải đợi rất lâu? Điều gì quyết định tốc độ?",
+  "type": "Nguyên lý và hiện tượng",
+  "steps": [
+   "Làm quen với bàn thí nghiệm",
+   "Nồng độ",
+   "nhiệt độ",
+   "chất xúc tác",
+   "Tỷ lệ đo định lượng",
+   "nhìn vào",
+   "Lỗi và thao tác sai",
+   "Đánh giá·Là kỹ thuật viên phòng thí nghiệm"
+  ],
+  "textbook": [
+   "Bắt buộc Tập 2 · Chương 6 Phản ứng hóa học và năng lượng · Hoạt động thí nghiệm 7 yếu tố ảnh hưởng đến tốc độ phản ứng hóa học",
+   "Khóa học bắt buộc chọn lọc 1 Nguyên lý phản ứng hóa học · Chương 2 Tốc độ phản ứng hóa học và cân bằng hóa học · Phần 1 Tốc độ phản ứng hóa học"
+  ],
+  "file": "courses/rate-step.html",
+  "cover": "covers/rate-step.webp"
+ },
+ {
+  "slug": "insolation-step",
+  "subject": "geo",
+  "subject_vi": "Địa lý",
+  "title": "Điểm chiếu thẳng của Mặt Trời: bốn mùa và năm đới",
+  "question": "Vì sao độ cao và hướng nắng buổi trưa tại địa điểm trường thay đổi thường xuyên trong năm?",
+  "type": "Nguyên lý và hiện tượng",
+  "steps": [
+   "Hoàng Chiao Kok",
+   "trở lại với thể thao",
+   "Độ cao buổi trưa",
+   "Phân bố vĩ độ",
+   "Những thay đổi trong năm",
+   "hướng buổi trưa",
+   "bốn mùa",
+   "năm thắt lưng",
+   "Đánh giá · Điểm"
+  ],
+  "textbook": [
+   "Môn học bắt buộc tùy chọn 1 Kiến thức cơ bản về địa lý vật lý · Chương 1 Chuyển động của Trái đất · Phần 2 Ý nghĩa địa lý của sự chuyển động của Trái đất · Chuyển động quay trở lại của điểm mặt trời trực tiếp · Bốn mùa và năm vành đai"
+  ],
+  "file": "courses/insolation-step.html",
+  "cover": "covers/insolation-step.webp"
+ },
+ {
+  "slug": "ball-stick-step",
+  "subject": "chem",
+  "subject_vi": "Hoá học",
+  "title": "Dựng mô hình bóng – que của phân tử hữu cơ",
+  "question": "Các phân tử phẳng khi vẽ trên giấy. Hình dạng ba chiều thực sự trông như thế nào? Bạn có thể biết được điều gì khi xây dựng mô hình quả bóng và cây gậy?",
+  "type": "Nguyên tắc và mô phỏng hiện tượng",
+  "steps": [
+   "hộp các bộ phận",
+   "Mêtan",
+   "Diclometan",
+   "Chìa khóa đơn có thể xoay",
+   "chuỗi cacbon",
+   "sự đồng phân",
+   "Etylen và axetylen",
+   "Benzen",
+   "Kiểm tra"
+  ],
+  "textbook": [
+   "Bắt buộc Tập 2 · Chương 7 Hợp chất hữu cơ · Hoạt động thí nghiệm 8 Xây dựng mô hình quả bóng và cây gậy để hiểu cấu trúc phân tử của các hợp chất hữu cơ"
+  ],
+  "file": "courses/ball-stick-step.html",
+  "cover": "covers/ball-stick-step.webp"
+ },
+ {
+  "slug": "titration-step",
+  "subject": "chem",
+  "subject_vi": "Hoá học",
+  "title": "Chuẩn độ trung hòa axit mạnh và bazơ mạnh",
+  "question": "Tôi đã thêm hơn 20 ml trước đó và hầu như không thấy thay đổi gì. Tại sao màu sắc lại thay đổi trong nửa giọt cuối cùng?",
+  "type": "Nguyên lý và hiện tượng",
+  "steps": [
+   "Tìm hiểu thiết bị chuẩn độ",
+   "Rửa sạch và loại bỏ bong bóng",
+   "Lấy chất lỏng và thêm chỉ thị",
+   "Thêm từng giọt",
+   "Nửa giọt đến cuối",
+   "Bài đọc và tính toán",
+   "nhìn vào",
+   "Lỗi và thao tác sai",
+   "Đánh giá·Là người chuẩn độ"
+  ],
+  "textbook": [
+   "Môn học bắt buộc chọn lọc 1 Nguyên lý phản ứng hóa học · Chương 3 Phản ứng ion và cân bằng trong dung dịch nước · Phần 2 Sự ion hóa nước và pH của dung dịch · Chuẩn độ trung hòa axit-bazơ · Hoạt động thí nghiệm 2"
+  ],
+  "file": "courses/titration-step.html",
+  "cover": "covers/titration-step.webp"
+ },
+ {
+  "slug": "chlorine-step",
+  "subject": "chem",
+  "subject_vi": "Hoá học",
+  "title": "Điều chế và tính chất của khí clo",
+  "question": "Tôi cần một chai clo khô, tinh khiết. Mỗi phần của thiết bị xử lý những gì? Điều gì sẽ xảy ra nếu thiếu một phần?",
+  "type": "Nguyên lý và hiện tượng",
+  "steps": [
+   "Hiểu thiết bị",
+   "tại sao sưởi ấm",
+   "Tại sao axit clohydric đậm đặc?",
+   "Rửa gì trong chai đầu tiên?",
+   "Rửa gì với chai thứ hai?",
+   "Làm thế nào để thu thập",
+   "Lượng clo dư thừa sẽ đi đâu?",
+   "Có gì trong nước clo",
+   "Đánh giá·Là kỹ thuật viên phòng thí nghiệm"
+  ],
+  "textbook": [
+   "Sách bắt buộc 1 · Chương 2 Các nguyên tố quan trọng trong nước biển - natri và clo · Phần 2 Clo và các hợp chất của nó"
+  ],
+  "file": "courses/chlorine-step.html",
+  "cover": "covers/chlorine-step.webp"
+ },
+ {
+  "slug": "blast-furnace-step",
+  "subject": "chem",
+  "subject_vi": "Hoá học",
+  "title": "Luyện gang lò cao",
+  "question": "Tại sao đống quặng đổ từ đỉnh lò lại biến thành dòng sắt nóng chảy chỉ sau vài giờ? Làm thế nào chúng ta có thể tiết kiệm được nhiều nhất có thể?",
+  "type": "Quy trình công nghiệp",
+  "steps": [
+   "Quặng biến thành sắt",
+   "vải nhiều lớp",
+   "Cắt mở các lớp",
+   "Tuyere bị cháy",
+   "Khôi phục từng bước",
+   "Xỉ đá vôi",
+   "Tài khoản của Fengwen",
+   "Đánh giá nhiệm vụ"
+  ],
+  "textbook": [
+   "Bắt buộc Tập 2 · Chương 8 Hóa học và Phát triển bền vững · Phần 1 Phát triển và Sử dụng Tài nguyên Thiên nhiên · Phát triển và Sử dụng Khoáng sản Kim loại"
+  ],
+  "file": "courses/blast-furnace-step.html",
+  "cover": "covers/blast-furnace-step.webp"
+ },
+ {
+  "slug": "smelting-step",
+  "subject": "chem",
+  "subject_vi": "Hoá học",
+  "title": "Luyện kim: điện phân muối nóng chảy và phản ứng nhiệt nhôm",
+  "question": "Tại sao nhôm chỉ có thể “loại bỏ” bằng điện, còn sắt có thể “thay thế” bằng nhôm?",
+  "type": "Quy trình công nghiệp",
+  "steps": [
+   "ba nền tảng",
+   "Chỉ điện phân",
+   "Rãnh cắt",
+   "Ai đi đâu",
+   "cryolit",
+   "Tài khoản tiêu thụ điện",
+   "Nhiệt nhôm",
+   "Đánh giá nhiệm vụ"
+  ],
+  "textbook": [
+   "Bắt buộc Tập 2 · Chương 8 Hóa học và Phát triển bền vững · Phần 1 Phát triển và Sử dụng Tài nguyên Thiên nhiên · Phát triển và Sử dụng Khoáng sản Kim loại"
+  ],
+  "file": "courses/smelting-step.html",
+  "cover": "covers/smelting-step.webp"
+ },
+ {
+  "slug": "currents-step",
+  "subject": "geo",
+  "subject_vi": "Địa lý",
+  "title": "Mô hình phân bố và ảnh hưởng của các dòng hải lưu trên thế giới",
+  "question": "Tại sao hàng chục ngàn con vịt đồ chơi rải rác trên biển và trôi dạt đến các bờ biển trên khắp thế giới?",
+  "type": "Nguyên lý và hiện tượng",
+  "steps": [
+   "Gió đẩy nước đi",
+   "Vòng tròn ở vĩ độ trung bình và thấp",
+   "Xoay ngược vĩ độ trung bình cao",
+   "dòng lạnh",
+   "Nếu bạn không khoanh tròn, nó sẽ lộn ngược.",
+   "Đặc tính nước biển",
+   "tác động khí hậu",
+   "ngư trường",
+   "Đánh giá · Bốn trạm"
+  ],
+  "textbook": [
+   "Khóa học bắt buộc tùy chọn 1 Cơ bản về Địa lý Vật lý · Chương 4 Chuyển động của Nước · Phần 2 Dòng hải lưu",
+   "Sách bắt buộc 1 · Chương 3 Nước trên Trái đất · Phần 3 Sự chuyển động của nước biển"
+  ],
+  "file": "courses/currents-step.html",
+  "cover": "covers/currents-step.webp"
+ },
+ {
+  "slug": "enso-step",
+  "subject": "geo",
+  "subject_vi": "Địa lý",
+  "title": "Tương tác biển-không khí và El Niño và La Niña",
+  "question": "Bờ biển Peru bị hạn hán quanh năm. Tại sao cuối năm 2016 lại mưa lớn khi nước biển ấm lên khiến gần trăm người thiệt mạng?",
+  "type": "Nguyên lý và hiện tượng",
+  "steps": [
+   "trao đổi",
+   "Nghèo",
+   "lưu thông",
+   "El Nino",
+   "Vượt qua ranh giới",
+   "La Niña",
+   "Kiểm tra"
+  ],
+  "textbook": [
+   "Khóa học bắt buộc tùy chọn 1 Cơ bản về Địa lý Vật lý · Chương 4 Chuyển động của Nước · Phần 3 Tương tác giữa biển và không khí"
+  ],
+  "file": "courses/enso-step.html",
+  "cover": "covers/enso-step.webp"
+ },
+ {
+  "slug": "coal-gas-step",
+  "subject": "chem",
+  "subject_vi": "Hoá học",
+  "title": "Sử dụng tổng hợp than đá: khí hoá than",
+  "question": "Than có thể chỉ được đốt cháy? Làm thế nào để biến than thành khí đốt để sản xuất phân bón và metanol?",
+  "type": "Quy trình công nghiệp",
+  "steps": [
+   "Tại sao khí hóa",
+   "Hệ thống sưởi hoặc cung cấp không khí",
+   "Nó trông như thế nào trong bếp lò?",
+   "Có nhiều hay ít hơi nước thì tốt hơn?",
+   "Chuyển đổi sân",
+   "Tại sao khử lưu huỳnh là cần thiết",
+   "trở thành cái gì",
+   "Kiểm tra"
+  ],
+  "textbook": [
+   "Sách bắt buộc 2 · Chương 8 Hóa học và phát triển bền vững · Phần 1 Phát triển và sử dụng tài nguyên thiên nhiên · Sử dụng toàn diện than"
+  ],
+  "file": "courses/coal-gas-step.html",
+  "cover": "covers/coal-gas-step.webp"
+ },
+ {
+  "slug": "sulfuric-step",
+  "subject": "chem",
+  "subject_vi": "Hoá học",
+  "title": "Sản xuất axit sulfuric bằng phương pháp tiếp xúc",
+  "question": "Làm thế nào để biến lưu huỳnh trong quặng thành axit sunfuric một cách nhanh chóng, dồi dào, tiết kiệm và sạch?",
+  "type": "Quy trình công nghiệp",
+  "steps": [
+   "Tại sao nó được chia thành năm phần?",
+   "Tại sao phải thanh lọc trước",
+   "tại sao nhiệt độ này",
+   "Tại sao áp suất bình thường",
+   "Bên trong tòa tháp như thế nào?",
+   "Tại sao phải sử dụng axit sunfuric đậm đặc?",
+   "Đánh giá · Làm đội trưởng"
+  ],
+  "textbook": [
+   "Bắt buộc Tập 2 · Chương 5 Các nguyên tố phi kim quan trọng trong sản xuất hóa chất · Phần 1 Lưu huỳnh và các hợp chất của nó · Sản xuất axit sunfuric công nghiệp"
+  ],
+  "file": "courses/sulfuric-step.html",
+  "cover": "covers/sulfuric-step.webp"
+ },
+ {
+  "slug": "hydrolysis-step",
+  "subject": "chem",
+  "subject_vi": "Hoá học",
+  "title": "Thủy phân muối và ứng dụng",
+  "question": "Các ion được tạo ra bởi quá trình ion hóa muối trông \"không có tính axit cũng không có tính kiềm\". Làm thế nào có thể tạo ra dung dịch có tính axit và kiềm?",
+  "type": "Nguyên lý và hiện tượng",
+  "steps": [
+   "Thí nghiệm nhận thức",
+   "Loại muối",
+   "nhìn vào",
+   "Nồng độ",
+   "nhiệt độ",
+   "Thêm axit để ức chế",
+   "lọc nước",
+   "Đun sôi và hấp khô",
+   "Đánh giá · Chuẩn bị giải pháp"
+  ],
+  "textbook": [
+   "Môn học bắt buộc chọn lọc 1 Nguyên lý phản ứng hóa học · Chương 3 Phản ứng ion và cân bằng trong dung dịch nước · Phần 3 Thủy phân muối · Hoạt động thí nghiệm 3 Ứng dụng thủy phân muối"
+  ],
+  "file": "courses/hydrolysis-step.html",
+  "cover": "covers/hydrolysis-step.webp"
+ },
+ {
+  "slug": "heating-step",
+  "subject": "geo",
+  "subject_vi": "Địa lý",
+  "title": "Quá trình khí quyển nhận nhiệt",
+  "question": "Tại sao mặt đất nóng lên vào ban ngày và sau đó nguội đi nhanh chóng vào ban đêm khi mặt trời đã chiếu sáng cả ngày? Khí quyển giữ lại bao nhiêu nhiệt cho mặt đất?",
+  "type": "Nguyên lý và hiện tượng",
+  "steps": [
+   "suy yếu",
+   "hấp thụ mặt đất",
+   "sóng dài",
+   "chặn",
+   "bức xạ ngược",
+   "đám mây",
+   "khí nhà kính",
+   "Tương phản mặt trăng",
+   "Kiểm tra"
+  ],
+  "textbook": [
+   "Sách bắt buộc 1 · Chương 2 Khí quyển Trái đất · Phần 2 Quá trình sưởi ấm khí quyển và chuyển động khí quyển · Quá trình sưởi ấm khí quyển"
+  ],
+  "file": "courses/heating-step.html",
+  "cover": "covers/heating-step.webp"
+ },
+ {
+  "slug": "karst-step",
+  "subject": "geo",
+  "subject_vi": "Địa lý",
+  "title": "Sự hình thành và nhận dạng địa hình karst",
+  "question": "Xu Xiake viết: “Các đỉnh dốc đứng cách xa nhau, các cành cạnh tranh nhau”. - Làm thế nào mà những đỉnh núi trông giống như mọc lên từ mặt đất này lại đến từ một khối đá duy nhất?",
+  "type": "Nguyên lý và hiện tượng",
+  "steps": [
+   "hòa tan",
+   "mương → trầm cảm",
+   "Phượng Công→Phong Lâm",
+   "Đỉnh cô đơn → đồi dư",
+   "nhanh hay chậm",
+   "lỗ",
+   "Kiểm tra"
+  ],
+  "textbook": [
+   "Sách bắt buộc 1 · Chương 4 Địa mạo · Phần 1 Các kiểu địa hình phổ biến · Địa hình Karst"
+  ],
+  "file": "courses/karst-step.html",
+  "cover": "covers/karst-step.webp"
+ },
+ {
+  "slug": "cement-step",
+  "subject": "chem",
+  "subject_vi": "Hoá học",
+  "title": "Sản xuất xi măng công nghiệp",
+  "question": "Làm thế nào một khối đá và đất có thể được nghiền, đốt và nghiền lại để biến thành xi măng có thể chống đỡ một con đập?",
+  "type": "Quy trình công nghiệp",
+  "steps": [
+   "Xem toàn bộ nhà máy",
+   "Chuẩn bị nguyên liệu thô",
+   "Làm nóng sơ bộ phân hủy",
+   "Đi bộ trong lò",
+   "Vùng bắn",
+   "làm mát nhanh",
+   "thêm thạch cao",
+   "Đánh giá nhiệm vụ"
+  ],
+  "textbook": [
+   "Bắt buộc Tập 2 · Chương 5 Các nguyên tố phi kim loại quan trọng trong sản xuất hóa chất · Phần 3 Vật liệu phi kim loại vô cơ"
+  ],
+  "file": "courses/cement-step.html",
+  "cover": "covers/cement-step.webp"
+ },
+ {
+  "slug": "carbon-step",
+  "subject": "geo",
+  "subject_vi": "Địa lý",
+  "title": "Biến đổi khí hậu toàn cầu và an ninh quốc gia",
+  "question": "Vì sao Maldives tổ chức họp nội các ở độ sâu 6 mét dưới biển?",
+  "type": "Nguyên lý và hiện tượng",
+  "steps": [
+   "chu trình cacbon",
+   "hai đầu vào",
+   "Khí thải đi đâu",
+   "Tăng cường cách nhiệt",
+   "Vượt qua ranh giới",
+   "đất nước",
+   "đối phó",
+   "Kiểm tra"
+  ],
+  "textbook": [
+   "Khóa học bắt buộc tùy chọn 3 Tài nguyên, Môi trường và An ninh Quốc gia · Chương 3 An ninh Môi trường và An ninh Quốc gia · Phần 4 Biến đổi Khí hậu Toàn cầu và An ninh Quốc gia"
+  ],
+  "file": "courses/carbon-step.html",
+  "cover": "covers/carbon-step.webp"
+ },
+ {
+  "slug": "tectonic-step",
+  "subject": "geo",
+  "subject_vi": "Địa lý",
+  "title": "Sự hình thành địa hình kiến tạo",
+  "question": "Tại sao lá hóa thạch của cây lá rộng được tìm thấy trên cao nguyên Thanh Hải-Tây Tạng? Lực nào đã nâng bề mặt trái đất lên và cắt nó ra?",
+  "type": "Nguyên lý và hiện tượng",
+  "steps": [
+   "uốn cong",
+   "điểm",
+   "lộn ngược",
+   "loạng choạng",
+   "nâng",
+   "Kiểm tra"
+  ],
+  "textbook": [
+   "Môn học bắt buộc tùy chọn 1 Kiến thức cơ bản về địa lý tự nhiên · Chương 2 Hình thái hình thái bề mặt · Phần 2 Sự hình thành các cấu trúc địa mạo"
+  ],
+  "file": "courses/tectonic-step.html",
+  "cover": "covers/tectonic-step.webp"
+ },
+ {
+  "slug": "photoelectric-step",
+  "subject": "phys",
+  "subject_vi": "Vật lí",
+  "title": "Hiệu ứng quang điện",
+  "question": "Tại sao thậm chí một electron không thể thoát ra khỏi cùng một chùm ánh sáng nếu nó được chuyển sang kim loại khác? Điều gì xác định chính xác năng lượng của quang điện tử trong ánh sáng?",
+  "type": "Nguyên lý và thí nghiệm",
+  "steps": [
+   "Hiểu mạch",
+   "Thêm cho đến khi bão hòa",
+   "quét ngược",
+   "Thay đổi cường độ ánh sáng",
+   "Thay đổi tần số",
+   "Thay đổi kim loại",
+   "Thi vẽ h",
+   "thiết bị thực sự",
+   "Kiểm tra"
+  ],
+  "textbook": [
+   "Quyển 3 bắt buộc chọn lọc · Chương 4 Cấu trúc nguyên tử và Lưỡng tính sóng-hạt · Phần 2 Hiệu ứng quang điện"
+  ],
+  "file": "courses/photoelectric-step.html",
+  "cover": "covers/photoelectric-step.webp"
+ },
+ {
+  "slug": "capacitor-step",
+  "subject": "phys",
+  "subject_vi": "Vật lí",
+  "title": "Quan sát tụ điện nạp và phóng điện",
+  "question": "Chính xác những gì được lưu trữ trong một tụ điện? Bạn có thể đo được “khối lượng bụng” của nó chỉ bằng một con số không?",
+  "type": "Nguyên lý và thí nghiệm",
+  "steps": [
+   "Làm quen với các thiết bị",
+   "Hội tụ 1 điện tích",
+   "Hội tụ hướng phóng điện 2",
+   "phí khu vực",
+   "Hai cách kết nối",
+   "ghi lại q-u",
+   "Thay thế C bằng R",
+   "thiết bị thực sự",
+   "Kiểm tra"
+  ],
+  "textbook": [
+   "Sách bắt buộc 3 · Chương 10 Năng lượng trong trường tĩnh điện · Phần 4 Điện dung của tụ điện · Học sinh phải làm thí nghiệm: Quan sát sự tích điện và phóng điện của tụ điện"
+  ],
+  "file": "courses/capacitor-step.html",
+  "cover": "covers/capacitor-step.webp"
+ },
+ {
+  "slug": "earth-motion-step",
+  "subject": "geo",
+  "subject_vi": "Địa lý",
+  "title": "Ý nghĩa địa lý của chuyển động trái đất",
+  "question": "Cùng lúc đó, tại sao ở Bắc Kinh lại là buổi trưa, ở New York là nửa đêm, và ngày mùa hè lại dài hơn mùa đông?",
+  "type": "Nguyên lý và hiện tượng",
+  "steps": [
+   "sự xoay vòng",
+   "cuộc cách mạng",
+   "bán cầu ngày",
+   "dòng buổi sáng dòng buổi tối",
+   "giờ địa phương",
+   "dòng ngày múi giờ",
+   "độ dài của ngày và đêm",
+   "Chiều cao nắng trưa",
+   "Đánh giá · Chênh lệch thời gian"
+  ],
+  "textbook": [
+   "Khóa học bắt buộc tùy chọn 1 Cơ bản về Địa lý Vật lý · Chương 1 Chuyển động của Trái đất · Phần 2 Ý nghĩa Địa lý của Chuyển động Trái đất",
+   "Khóa học bắt buộc tùy chọn 1 Cơ bản về Địa lý Vật lý · Chương 1 Chuyển động của Trái đất · Phần 1 Sự quay và Chuyển động của Trái đất"
+  ],
+  "file": "courses/earth-motion-step.html",
+  "cover": "covers/earth-motion-step.webp"
+ },
+ {
+  "slug": "accel-force-step",
+  "subject": "phys",
+  "subject_vi": "Vật lí",
+  "title": "Thí nghiệm: Khám phá mối liên hệ giữa gia tốc, lực và khối lượng",
+  "question": "Cả lực và gia tốc đều không được đo trực tiếp - bằng cách thêm một vài mã khe vào một mảnh băng giấy, liệu mối quan hệ giữa a, F và m có thể đo được không?",
+  "type": "Nguyên lý và hiện tượng",
+  "steps": [
+   "Làm quen với các thiết bị",
+   "cân bằng sức đề kháng",
+   "Băng giấy",
+   "Tìm gia tốc",
+   "một và F",
+   "một và tôi",
+   "Sai số",
+   "Kiểm tra"
+  ],
+  "textbook": [
+   "Sách bắt buộc 1 · Chương 4 Mối quan hệ giữa chuyển động và lực · Phần 2 Thí nghiệm: Khám phá mối quan hệ giữa gia tốc, lực và khối lượng"
+  ],
+  "file": "courses/accel-force-step.html",
+  "cover": "covers/accel-force-step.webp"
+ },
+ {
+  "slug": "iron-step",
+  "subject": "chem",
+  "subject_vi": "Hoá học",
+  "title": "Sắt và các hợp chất của nó: sự biến đổi trạng thái hóa trị của sắt",
+  "question": "Tại sao cùng một nguyên tố sắt có hóa trị +2 và +3 trong ống nghiệm lúc này và +3 vào lúc khác? Làm sao chúng ta biết đó là cái nào?",
+  "type": "Nguyên lý và hiện tượng",
+  "steps": [
+   "Thí nghiệm nhận thức",
+   "kết tủa trắng",
+   "Cô lập không khí",
+   "Kiểm tra KSCN",
+   "Giá giảm",
+   "Giá tăng trở lại",
+   "nhìn vào",
+   "Điểm kiểm tra",
+   "Đánh giá·Bóp đến mức giá +2"
+  ],
+  "textbook": [
+   "Sách bắt buộc 1 · Chương 3 Vật liệu sắt kim loại · Phần 1 Sắt và các hợp chất của nó"
+  ],
+  "file": "courses/iron-step.html",
+  "cover": "covers/iron-step.webp"
+ },
+ {
+  "slug": "plasmolysis-step",
+  "subject": "bio",
+  "subject_vi": "Sinh học",
+  "title": "Hấp thụ nước và mất nước ở tế bào thực vật",
+  "question": "Lá rau khi ngâm vào nước sạch sẽ cứng lại, khi rắc muối thì nước sẽ chảy ra - tế bào thực vật hấp thụ và mất nước như thế nào?",
+  "type": "Nguyên lý và hiện tượng",
+  "steps": [
+   "sự thâm nhập",
+   "lớp nguyên sinh chất",
+   "mất nước",
+   "Nước đi đâu?",
+   "Khôi phục",
+   "glyxerin",
+   "Đo nồng độ",
+   "Kiểm tra"
+  ],
+  "textbook": [
+   "Khóa học bắt buộc 1 Phân tử và tế bào · Chương 4 Đầu vào và đầu ra vật liệu của tế bào · Phần 1 Vận chuyển thụ động · Khám phá·Thực hành: Khám phá sự hấp thụ và mất nước của tế bào thực vật"
+  ],
+  "file": "courses/plasmolysis-step.html",
+  "cover": "covers/plasmolysis-step.webp"
+ },
+ {
+  "slug": "electrolysis-step",
+  "subject": "chem",
+  "subject_vi": "Hoá học",
+  "title": "Nguyên lí điện phân: dung dịch CuCl₂ và nước muối bão hoà",
+  "question": "Với cùng một nguồn điện một chiều, tại sao điện phân dung dịch clorua đồng lại thu được đồng và khí clo, còn điện phân nước muối bão hòa lại thu được khí hydro, khí clo và natri hydroxit?",
+  "type": "Nguyên lý và hiện tượng",
+  "steps": [
+   "Thí nghiệm nhận thức",
+   "Bật nguồn",
+   "Vượt qua lâu hơn",
+   "nhìn vào",
+   "Chuyển sang nước muối",
+   "Vùng cathode chuyển sang màu đỏ",
+   "Trình tự xả",
+   "Đồng làm cực dương",
+   "Đánh giá · Tìm thấy 29,6 mg đồng"
+  ],
+  "textbook": [
+   "Khóa học bắt buộc chọn lọc 1 Nguyên lý phản ứng hóa học · Chương 4 Phản ứng hóa học và năng lượng điện · Phần 2 Tế bào điện phân · Điện phân dung dịch clorua đồng · Điện phân nước muối bão hòa"
+  ],
+  "file": "courses/electrolysis-step.html",
+  "cover": "covers/electrolysis-step.webp"
+ },
+ {
+  "slug": "ammonia-step",
+  "subject": "chem",
+  "subject_vi": "Hoá học",
+  "title": "Điều chế và tính chất của amoniac (thí nghiệm đài phun nước)",
+  "question": "Làm thế nào chai khí amoniac có thể “hút” nước trong cốc vào chai?",
+  "type": "Nguyên lý và hiện tượng",
+  "steps": [
+   "thiết bị hoàn chỉnh",
+   "Miệng ống hướng về phía nào?",
+   "Chọn chất hút ẩm nào?",
+   "Làm thế nào để thu thập",
+   "Thu thập trong bao lâu",
+   "Kiểm tra khói đầy và trắng",
+   "Làm một đài phun nước",
+   "nhìn vào",
+   "Đánh giá · Làm đài phun nước"
+  ],
+  "textbook": [
+   "Sách bắt buộc 2 · Chương 5 Các nguyên tố phi kim loại quan trọng trong sản xuất hóa chất · Phần 2 Nitơ và các hợp chất của nó · Amoniac và muối Amoni"
+  ],
+  "file": "courses/ammonia-step.html",
+  "cover": "covers/ammonia-step.webp"
+ },
+ {
+  "slug": "equilibrium-step",
+  "subject": "chem",
+  "subject_vi": "Hoá học",
+  "title": "Khám phá các yếu tố ảnh hưởng đến sự dịch chuyển cân bằng hóa học",
+  "question": "Nếu một điều kiện bị thay đổi, làm sao người ta có thể nói cán cân sẽ dịch chuyển theo hướng nào?",
+  "type": "Nguyên lý và thí nghiệm",
+  "steps": [
+   "Làm quen với bàn thí nghiệm",
+   "Cho ăn bằng ống sắt",
+   "Giảm bột sắt",
+   "Thêm kiềm vào ống crom",
+   "Thêm axit vào ống crom",
+   "Nồi nóng lạnh",
+   "nhìn vào",
+   "Lỗi · Đang đọc",
+   "Kiểm tra"
+  ],
+  "textbook": [
+   "Khóa học bắt buộc chọn lọc 1 Nguyên lý phản ứng hóa học · Chương 2 Tốc độ phản ứng hóa học và cân bằng hóa học · Hoạt động thí nghiệm 1 Khám phá các yếu tố ảnh hưởng đến sự chuyển động của cân bằng hóa học"
+  ],
+  "file": "courses/equilibrium-step.html",
+  "cover": "covers/equilibrium-step.webp"
+ },
+ {
+  "slug": "flame-step",
+  "subject": "chem",
+  "subject_vi": "Hoá học",
+  "title": "Phép thử màu ngọn lửa và quang phổ nguyên tử",
+  "question": "Tại sao kim loại khi cháy có màu khác nhau? Tại sao màu này có thể được coi là \"báo cáo thí nghiệm\"?",
+  "type": "Nguyên lý và hiện tượng",
+  "steps": [
+   "Thí nghiệm nhận thức",
+   "Dây bạch kim sạch",
+   "dòng đôi natri",
+   "Thủy tinh kali và coban",
+   "Năng lượng và bước sóng",
+   "Phát xạ và hấp thụ",
+   "sáu kim loại",
+   "Đánh giá·Phát hiện kali"
+  ],
+  "textbook": [
+   "Sách bắt buộc 1 · Chương 2 Các nguyên tố quan trọng trong nước biển - natri và clo · Phần 1 Natri và các hợp chất của nó · Kiểm tra màu ngọn lửa",
+   "Môn học bắt buộc chọn lọc 2 Cấu trúc và tính chất vật liệu · Chương 1 Cấu trúc và tính chất nguyên tử · Phần 1 Cấu trúc nguyên tử · Quang phổ nguyên tử"
+  ],
+  "file": "courses/flame-step.html",
+  "cover": "covers/flame-step.webp"
+ },
+ {
+  "slug": "galvanic-step",
+  "subject": "chem",
+  "subject_vi": "Hoá học",
+  "title": "Pin điện hoá: từ một dung dịch đến hai dung dịch",
+  "question": "Trong cùng một cốc axit sunfuric loãng đã có dòng điện rồi, tại sao phải thay hai cốc và thêm cầu muối?",
+  "type": "Nguyên lý và hiện tượng",
+  "steps": [
+   "hai thiết bị",
+   "Kết nối dây",
+   "ai đang phát trực tuyến",
+   "Chi phí của một chất lỏng",
+   "Thay đổi thành chất lỏng kép",
+   "Kéo cầu muối ra",
+   "nhìn vào",
+   "Nồng độ",
+   "Đánh giá·Lắp ráp"
+  ],
+  "textbook": [
+   "Sách bắt buộc 2 · Chương 6 Phản ứng hóa học và năng lượng · Phần 1 Phản ứng hóa học và sự thay đổi năng lượng · Hoạt động thí nghiệm 6 Chuyển đổi năng lượng hóa học thành năng lượng điện",
+   "Khóa học bắt buộc chọn lọc 1 Nguyên lý phản ứng hóa học · Chương 4 Phản ứng hóa học và năng lượng điện · Phần 1 Pin sơ cấp"
+  ],
+  "file": "courses/galvanic-step.html",
+  "cover": "covers/galvanic-step.webp"
+ },
+ {
+  "slug": "conductivity-step",
+  "subject": "chem",
+  "subject_vi": "Hoá học",
+  "title": "Sự điện li, độ dẫn điện của dung dịch và bản chất phản ứng ion",
+  "question": "Tay khô và tay ướt đều là một bàn tay, tại sao tay ướt lại dễ bị điện giật?",
+  "type": "Nguyên lý và hiện tượng",
+  "steps": [
+   "Làm quen với mặt bàn",
+   "sấy khô và tan chảy",
+   "hòa tan trong nước",
+   "nước và sucrose",
+   "mạnh và yếu",
+   "Thêm từng giọt axit sunfuric loãng",
+   "nhìn vào",
+   "Chất chuẩn độ sai",
+   "Đánh giá · Tìm điểm cuối"
+  ],
+  "textbook": [
+   "Sách bắt buộc 1 · Chương 1 Vật chất và những biến đổi của nó · Phần 2 Phản ứng ion",
+   "Môn học bắt buộc chọn lọc 1 Nguyên lý phản ứng hóa học · Chương 3 Phản ứng ion và cân bằng trong dung dịch nước · Phần 1 Cân bằng ion hóa · Chất điện ly mạnh và chất điện ly yếu"
+  ],
+  "file": "courses/conductivity-step.html",
+  "cover": "covers/conductivity-step.webp"
+ },
+ {
+  "slug": "energy-step",
+  "subject": "phys",
+  "subject_vi": "Vật lí",
+  "title": "Thí nghiệm: Chứng minh định luật bảo toàn cơ năng",
+  "question": "Khi một vật nặng rơi xuống, phải chăng thế năng hấp dẫn giảm đi chuyển thành động năng tăng lên? Một mảnh băng giấy có thể đo được điều này không?",
+  "type": "Nguyên lý và hiện tượng",
+  "steps": [
+   "Làm quen với các thiết bị",
+   "Bật nguồn trước rồi thả ra",
+   "Chọn một điểm",
+   "Đo h để tính v",
+   "ghi lại bản vẽ",
+   "Thay đổi vật nặng",
+   "Sai số",
+   "Kiểm tra"
+  ],
+  "textbook": [
+   "Sách bắt buộc 2 · Chương 8 Định luật bảo toàn cơ năng · Phần 5 Thí nghiệm: Chứng minh định luật bảo toàn cơ năng"
+  ],
+  "file": "courses/energy-step.html",
+  "cover": "covers/energy-step.webp"
+ },
+ {
+  "slug": "soil-step",
+  "subject": "geo",
+  "subject_vi": "Địa lý",
+  "title": "Các nhân tố hình thành đất và quan sát phẫu diện đất",
+  "question": "Đất ở vùng Đông Bắc sẫm màu và màu mỡ nhưng tại sao đất ở phía Nam lại tương đối cằn cỗi?",
+  "type": "Nguyên lý và hiện tượng",
+  "steps": [
+   "Mặt cắt",
+   "tài liệu gốc",
+   "sinh học",
+   "khí hậu",
+   "Hình thái đất",
+   "thời gian",
+   "mọi người",
+   "Kiểm tra"
+  ],
+  "textbook": [
+   "Sách bắt buộc 1 · Chương 5 Thảm thực vật và đất · Phần 2 Đất"
+  ],
+  "file": "courses/soil-step.html",
+  "cover": "covers/soil-step.webp"
+ },
+ {
+  "slug": "projectile-step",
+  "subject": "phys",
+  "subject_vi": "Vật lí",
+  "title": "Thí nghiệm: Khám phá đặc điểm của chuyển động ném phẳng",
+  "question": "Chỉ với một máng trượt và một vách ngăn, liệu cú ném phẳng có thể được chia thành hai chuyển động phụ và đo vận tốc ban đầu không?",
+  "type": "Nguyên lý và hiện tượng",
+  "steps": [
+   "Làm quen với các thiết bị",
+   "Làm theo chiều dọc trước",
+   "Các đầu phải bằng phẳng",
+   "Theo dõi bốn điểm",
+   "khoảng thời gian cố định",
+   "Mức độ đồng đều",
+   "Thay đổi dòng khắc",
+   "Hai cái lớn hơn",
+   "Kiểm tra"
+  ],
+  "textbook": [
+   "Bắt buộc Tập 2 · Chương 5 Chuyển động của vật phóng · Phần 3 Thí nghiệm: Khám phá đặc điểm của chuyển động của vật phóng phẳng"
+  ],
+  "file": "courses/projectile-step.html",
+  "cover": "covers/projectile-step.webp"
+ },
+ {
+  "slug": "transport-step",
+  "subject": "bio",
+  "subject_vi": "Sinh học",
+  "title": "Vận chuyển các chất qua màng",
+  "question": "Tại sao oxy có thể tự mình đi qua cùng một màng tế bào, glucose cần sự trợ giúp của một số protein và K⁺ cũng có thể di chuyển ngược lại nồng độ?",
+  "type": "Nguyên lý và hiện tượng",
+  "steps": [
+   "khuếch tán tự do",
+   "chọn qua",
+   "Khuếch tán có hỗ trợ",
+   "Nhà cung cấp dịch vụ và kênh",
+   "vận chuyển chủ động",
+   "nhập bào",
+   "Tóm tắt",
+   "Kiểm tra"
+  ],
+  "textbook": [
+   "Khóa học bắt buộc 1 Phân tử và tế bào · Chương 4 Vật chất đầu vào và đầu ra của tế bào"
+  ],
+  "file": "courses/transport-step.html",
+  "cover": "covers/transport-step.webp"
+ },
+ {
+  "slug": "nitric-lab-step",
+  "subject": "chem",
+  "subject_vi": "Hoá học",
+  "title": "Tính chất của axit nitric đậm đặc, loãng và chuyển hóa oxit nitơ",
+  "question": "Đó là cùng một loại đồng và axit nitric. Tại sao một chai lại thải ra khí màu nâu đỏ còn chai kia lại không có màu gì?",
+  "type": "Nguyên lý và hiện tượng",
+  "steps": [
+   "thiết bị hoàn chỉnh",
+   "Chèn dây đồng",
+   "Thay thế bằng axit nitric loãng",
+   "Thay thế bằng tấm sắt",
+   "Khí thải đi đâu?",
+   "Nguyên tắc chai màu nâu",
+   "Giới thiệu không khí",
+   "Dao động và nhìn vào",
+   "Đánh giá · Chuyển đổi nó"
+  ],
+  "textbook": [
+   "Bắt buộc Tập 2 · Chương 5 Các nguyên tố phi kim loại quan trọng trong sản xuất hóa chất · Phần 2 Nitơ và các hợp chất của nó · Oxit Nitric, Nitrogen Dioxide, Axit Nitric"
+  ],
+  "file": "courses/nitric-lab-step.html",
+  "cover": "covers/nitric-lab-step.webp"
+ },
+ {
+  "slug": "centripetal-step",
+  "subject": "phys",
+  "subject_vi": "Vật lí",
+  "title": "Khám phá mối quan hệ giữa lực hướng tâm, bán kính, vận tốc góc và khối lượng",
+  "question": "Máy biểu diễn quay tay này chỉ cung cấp cho bạn hai cách chia trên thang đo - bạn có thể sử dụng nó để đo mối quan hệ định lượng giữa F và m, r và ω không?",
+  "type": "Nguyên lý và hiện tượng",
+  "steps": [
+   "Làm quen với người dẫn chương trình",
+   "Tự kiểm tra dụng cụ",
+   "mối quan hệ chất lượng",
+   "mối quan hệ bán kính",
+   "Mối quan hệ vận tốc góc",
+   "Ba dòng kết hợp thành một công thức",
+   "Lỗi và thao tác sai",
+   "Đánh giá · ω là bình phương"
+  ],
+  "textbook": [
+   "Sách bắt buộc 2 · Chương 6 Chuyển động tròn · Phần 2 Lực hướng tâm · Thí nghiệm: Tìm mối quan hệ giữa lực hướng tâm và bán kính, vận tốc góc và khối lượng"
+  ],
+  "file": "courses/centripetal-step.html",
+  "cover": "covers/centripetal-step.webp"
+ },
+ {
+  "slug": "self-induction-step",
+  "subject": "phys",
+  "subject_vi": "Vật lí",
+  "title": "Hiện tượng tự cảm và dòng điện xoáy",
+  "question": "Cuộn dây chỉ có thêm vài vòng dây đồng. Tại sao hai bóng đèn sáng khác nhau? Công tắc đã tắt, tại sao bóng đèn lại sáng được?",
+  "type": "Nguyên lý và thí nghiệm",
+  "steps": [
+   "Làm quen với các thiết bị",
+   "Bật nguồn tự cảm",
+   "Tắt nguồn tự cảm",
+   "đường cong I-t",
+   "Thay đổi cuộn dây",
+   "thiết bị thực sự",
+   "xoáy nước",
+   "Giảm xóc điện từ",
+   "Kiểm tra"
+  ],
+  "textbook": [
+   "Bắt buộc chọn lọc Tập 2 · Chương 2 Cảm ứng điện từ · Phần 4 Tự cảm lẫn nhau và tự cảm",
+   "Bắt buộc chọn lọc Tập 2 · Chương 2 Cảm ứng điện từ · Phần 3 Dòng điện xoáy, Giảm chấn điện từ và Truyền động điện từ"
+  ],
+  "file": "courses/self-induction-step.html",
+  "cover": "covers/self-induction-step.webp"
+ },
+ {
+  "slug": "emf-step",
+  "subject": "phys",
+  "subject_vi": "Vật lí",
+  "title": "Đo suất điện động và điện trở trong của nguồn điện",
+  "question": "Làm thế nào để \"đo\" suất điện động và điện trở trong của pin khô cũ bằng vôn kế, ampe kế và biến trở trượt? Nếu thay đổi phương thức kết nối thì kết quả đo có còn như cũ không?",
+  "type": "Nguyên lý và thí nghiệm",
+  "steps": [
+   "Biết cách kết nối",
+   "Đầu tiên đến lớn nhất",
+   "Kiểm tra thêm một vài nhóm",
+   "Lập sơ đồ U-I",
+   "điểm bắt đầu trục tung",
+   "Chỉ kiểm tra hai nhóm",
+   "Phương pháp chuyển đổi",
+   "Phân tích lỗi",
+   "Kiểm tra"
+  ],
+  "textbook": [
+   "Bắt buộc quyển 3 · Chương 12 Định luật bảo toàn năng lượng điện năng · Mục 3 Thí nghiệm: Đo suất điện động và điện trở trong của ắc quy"
+  ],
+  "file": "courses/emf-step.html",
+  "cover": "covers/emf-step.webp"
+ },
+ {
+  "slug": "impulse-step",
+  "subject": "bio",
+  "subject_vi": "Sinh học",
+  "title": "Tạo và dẫn truyền xung thần kinh",
+  "question": "Xuất phát trong vòng 0,1 giây sau khi có tiếng súng nổ được coi là xuất phát sai (sách giáo khoa trang 27) - Sự hưng phấn “chạy” khắp cơ thể như thế nào?",
+  "type": "Nguyên lý và hiện tượng",
+  "steps": [
+   "xung thần kinh",
+   "tiềm năng nghỉ ngơi",
+   "tiềm năng hành động",
+   "dòng điện cục bộ",
+   "khớp thần kinh",
+   "Một chiều và độ trễ",
+   "cocain",
+   "Na⁺ ngoài màng",
+   "Kiểm tra"
+  ],
+  "textbook": [
+   "Khóa học bắt buộc tùy chọn 1 Cân bằng nội môi và điều hòa · Chương 2 Điều hòa thần kinh · Phần 3 Tạo và dẫn truyền các xung thần kinh"
+  ],
+  "file": "courses/impulse-step.html",
+  "cover": "covers/impulse-step.webp"
+ },
+ {
+  "slug": "bromine-step",
+  "subject": "chem",
+  "subject_vi": "Hoá học",
+  "title": "Tách brom từ nước biển: phương pháp thổi khí",
+  "question": "Brom trong nước biển chỉ có 65 mg/L. Làm thế nào để biến nó thành một chai nước brom lỏng?",
+  "type": "Quy trình công nghiệp",
+  "steps": [
+   "toàn bộ khán giả",
+   "axit hóa",
+   "quá trình oxy hóa",
+   "thổi tắt",
+   "hấp thụ",
+   "thanh lọc",
+   "Kiểm tra"
+  ],
+  "textbook": [
+   "Sách bắt buộc 2 · Chương 8 Hóa học và phát triển bền vững · Phần 1 Phát triển và sử dụng tài nguyên thiên nhiên · Phát triển và sử dụng tài nguyên nước biển"
+  ],
+  "file": "courses/bromine-step.html",
+  "cover": "covers/bromine-step.webp"
+ },
+ {
+  "slug": "thermal-step",
+  "subject": "geo",
+  "subject_vi": "Địa lý",
+  "title": "Hoàn lưu nhiệt của khí quyển",
+  "question": "Tại sao hướng gió qua eo biển Đài Loan đảo ngược trong một ngày?",
+  "type": "Nguyên lý và hiện tượng",
+  "steps": [
+   "chênh lệch nhiệt độ",
+   "độ cao",
+   "Gần mặt đất",
+   "chiếc nhẫn",
+   "mạnh hay yếu",
+   "gió biển",
+   "Lục Phong",
+   "đảo nhiệt",
+   "Kiểm tra"
+  ],
+  "textbook": [
+   "Sách bắt buộc 1 · Chương 2 Khí quyển Trái đất · Phần 2 Quá trình sưởi ấm khí quyển và chuyển động khí quyển · Tuần hoàn nhiệt động"
+  ],
+  "file": "courses/thermal-step.html",
+  "cover": "covers/thermal-step.webp"
+ },
+ {
+  "slug": "mitosis-step",
+  "subject": "bio",
+  "subject_vi": "Sinh học",
+  "title": "Quan sát nguyên phân ở tế bào mô phân sinh đầu rễ",
+  "question": "Tế bào nào đang phân chia ở đầu rễ củ hành? Mất bao lâu để họ phân chia?",
+  "type": "Nguyên lý và hiện tượng",
+  "steps": [
+   "Nhà sản xuất",
+   "Tìm diện tích mô phân sinh",
+   "Giai đoạn đầu",
+   "trung hạn",
+   "giai đoạn sau",
+   "Cuối kỳ",
+   "đếm",
+   "Tính thời lượng",
+   "Kiểm tra"
+  ],
+  "textbook": [
+   "Khóa học bắt buộc 1 Phân tử và tế bào · Chương 6 Vòng đời của tế bào · Phần 1 Sự tăng sinh tế bào · Khám phá·Thực hành: Quan sát quá trình nguyên phân của tế bào mô ở vùng mô phân sinh đỉnh rễ"
+  ],
+  "file": "courses/mitosis-step.html",
+  "cover": "covers/mitosis-step.webp"
+ },
+ {
+  "slug": "sodium-step",
+  "subject": "chem",
+  "subject_vi": "Hoá học",
+  "title": "Tính chất của natri (và cách dập cháy natri)",
+  "question": "Tại sao một miếng kim loại nhỏ màu trắng bạc lại phải ngâm trong dầu hỏa, khi nó bốc cháy thì ngay cả nước cũng không thể đổ vào?",
+  "type": "Nguyên lý và hiện tượng",
+  "steps": [
+   "Thí nghiệm nhận thức",
+   "màu trắng bạc sẫm lại",
+   "ngâm trong dầu hỏa",
+   "Sưởi ấm và đốt cháy",
+   "màu đỏ nổi",
+   "Kích thước khối natri",
+   "nhìn vào",
+   "chữa cháy",
+   "Kiểm tra"
+  ],
+  "textbook": [
+   "Sách bắt buộc 1 · Chương 2 Các nguyên tố quan trọng trong nước biển - Natri và Clo · Phần 1 Natri và các hợp chất của nó · Các nguyên tố kim loại hoạt động - Natri"
+  ],
+  "file": "courses/sodium-step.html",
+  "cover": "covers/sodium-step.webp"
+ },
+ {
+  "slug": "sulfur-step",
+  "subject": "chem",
+  "subject_vi": "Hoá học",
+  "title": "Tính chất của lưu huỳnh, điôxit lưu huỳnh, axit sunfuric đậm đặc và sự biến đổi của các chất chứa lưu huỳnh ở các trạng thái hóa trị khác nhau",
+  "question": "Nó cũng là lưu huỳnh, tại sao có khi lại là chất rắn màu vàng, có khi lại làm màu đỏ tươi nhạt dần thành không màu, có khi lại hòa vào bột sắt?",
+  "type": "Nguyên lý và hiện tượng",
+  "steps": [
+   "thiết bị hoàn chỉnh",
+   "Bột lưu huỳnh + bột sắt",
+   "Axit sulfuric đậm đặc và đồng",
+   "Dày hay mỏng",
+   "Thu hồi nhiệt",
+   "Ba ống kiểm tra và quả bóng bông",
+   "Trung tâm đến giá bằng 0",
+   "Hãy xem · Thang máy Valence",
+   "Đánh giá·Tẩy trắng đến cùng"
+  ],
+  "textbook": [
+   "Bắt buộc Tập 2 · Chương 5 Các nguyên tố phi kim quan trọng trong sản xuất hóa chất · Phần 1 Lưu huỳnh và các hợp chất của nó",
+   "Bắt buộc Tập 2 · Chương 5 Các nguyên tố phi kim quan trọng trong sản xuất hóa chất · Hoạt động thí nghiệm 5 Sự biến đổi các chất chứa lưu huỳnh có hóa trị khác nhau"
+  ],
+  "file": "courses/sulfur-step.html",
+  "cover": "covers/sulfur-step.webp"
+ },
+ {
+  "slug": "wind-step",
+  "subject": "geo",
+  "subject_vi": "Địa lý",
+  "title": "Chuyển động ngang của khí quyển - gió",
+  "question": "Tại sao gió trên bản đồ thời tiết không thổi thẳng từ nơi áp cao về nơi áp thấp?",
+  "type": "Nguyên lý và hiện tượng",
+  "steps": [
+   "Isobar",
+   "lực gradient",
+   "hướng địa tĩnh",
+   "gió trên cao",
+   "Gần mặt đất",
+   "bán cầu nam",
+   "Mật độ",
+   "Kiểm tra"
+  ],
+  "textbook": [
+   "Sách bắt buộc 1 · Chương 2 Khí quyển Trái đất · Phần 2 Quá trình sưởi ấm khí quyển và chuyển động khí quyển · Chuyển động ngang của khí quyển—Gió"
+  ],
+  "file": "courses/wind-step.html",
+  "cover": "covers/wind-step.webp"
+ },
+ {
+  "slug": "corrosion-step",
+  "subject": "chem",
+  "subject_vi": "Hoá học",
+  "title": "Ăn mòn do hấp thụ oxy và thiết kế miếng sưởi ấm",
+  "question": "Nếu sắt rỉ sét chậm như vậy thì làm sao có thể tạo ra một miếng vá sưởi ấm ở nhiệt độ trên 45°C? Tại sao nên sử dụng nó để bảo vệ sắt khỏi rỉ sét?",
+  "type": "Nguyên lý và hiện tượng",
+  "steps": [
+   "Mesa bốn trạm",
+   "Tại sao cột chất lỏng dâng lên?",
+   "Vai trò của mực",
+   "Chuyển sang tính axit",
+   "nhìn vào",
+   "Miếng dán làm ấm khi bị sốt",
+   "Cái giá của việc che đậy",
+   "Hãy để kẽm rỉ sét cho nó",
+   "Đánh giá·Thiết kế các bản vá ấm áp"
+  ],
+  "textbook": [
+   "Khóa học bắt buộc chọn lọc 1 Nguyên lý phản ứng hóa học · Chương 4 Phản ứng hóa học và năng lượng điện · Phần 3 Ăn mòn và bảo vệ kim loại · Nghiên cứu và thực hành: Thiết kế và sản xuất miếng dán cách nhiệt"
+  ],
+  "file": "courses/corrosion-step.html",
+  "cover": "covers/corrosion-step.webp"
+ },
+ {
+  "slug": "enzyme-step",
+  "subject": "bio",
+  "subject_vi": "Sinh học",
+  "title": "Các điều kiện ảnh hưởng đến hoạt động của enzyme",
+  "question": "Tại sao enzyme đó khi cho vào nước sôi không thể sống lại nhưng khi cho vào nước đá vẫn có thể hoạt động?",
+  "type": "Nguyên lý và hiện tượng",
+  "steps": [
+   "Làm quen với bàn thí nghiệm",
+   "nhiệt độ",
+   "pH",
+   "Nhiệt độ cao không thể đảo ngược",
+   "Phục hồi nhiệt độ thấp",
+   "nhìn vào",
+   "Quá axit và quá kiềm",
+   "Đánh giá·Là kỹ thuật viên phòng thí nghiệm"
+  ],
+  "textbook": [
+   "Khóa học bắt buộc 1 Phân tử và tế bào · Chương 5 Cung cấp và sử dụng năng lượng của tế bào · Phần 1 Enzyme làm giảm năng lượng hoạt hóa của phản ứng hóa học · Khám phá·Thực hành: Các điều kiện ảnh hưởng đến hoạt động của enzyme"
+  ],
+  "file": "courses/enzyme-step.html",
+  "cover": "covers/enzyme-step.webp"
+ },
+ {
+  "slug": "chlor-alkali-step",
+  "subject": "chem",
+  "subject_vi": "Hoá học",
+  "title": "Công nghiệp clo-kiềm",
+  "question": "Làm thế nào chúng ta có thể đổi cùng một lượng điện lấy nhiều xút hơn, tiêu thụ ít điện năng hơn và không xảy ra tai nạn?",
+  "type": "Quy trình công nghiệp",
+  "steps": [
+   "Ba sản phẩm",
+   "Rửa sạch bằng muối trước",
+   "Rãnh cắt",
+   "Nhìn vào bên trong bộ phim",
+   "Thêm sức mạnh",
+   "Điều chỉnh nhiệt độ tắm",
+   "Loại bỏ màng",
+   "Đánh giá nhiệm vụ"
+  ],
+  "textbook": [
+   "Khóa học bắt buộc chọn lọc 1 Nguyên lý phản ứng hóa học · Chương 4 Phản ứng hóa học và năng lượng điện · Phần 2 Tế bào điện phân · Điện phân nước muối bão hòa"
+  ],
+  "file": "courses/chlor-alkali-step.html",
+  "cover": "covers/chlor-alkali-step.webp"
+ },
+ {
+  "slug": "hou-soda-step",
+  "subject": "chem",
+  "subject_vi": "Hoá học",
+  "title": "Quy trình sản xuất sô-đa của Hầu Đức Bàng",
+  "question": "Làm thế nào để tạo ra tro soda từ muối và amoniac và dễ dàng lấy phân đạm?",
+  "type": "Quy trình công nghiệp",
+  "steps": [
+   "Từ muối đến kiềm",
+   "Amoniac trước rồi đến cacbon",
+   "Tại sao nó lại tự kết tủa?",
+   "Nhiệt độ cacbon hóa",
+   "Lọc theo hai cách",
+   "Nung thành kiềm",
+   "Rượu mẹ và sự tuần hoàn",
+   "Bạn sẽ là người giám sát"
+  ],
+  "textbook": [
+   "Sách bắt buộc 1 · Chương 2 Các nguyên tố quan trọng trong nước biển - natri và clo · Phần 1 Natri và các hợp chất của nó · Tài liệu kịch bản: Phương pháp sản xuất kiềm của Hou"
+  ],
+  "file": "courses/hou-soda-step.html",
+  "cover": "covers/hou-soda-step.webp"
+ },
+ {
+  "slug": "current-field-step",
+  "subject": "phys",
+  "subject_vi": "Vật lí",
+  "title": "Từ trường của dòng điện",
+  "question": "Từ trường là vô hình và vô hình. Làm thế nào để vẽ nó và làm thế nào để xác định hướng của nó?",
+  "type": "Nguyên lý và hiện tượng",
+  "steps": [
+   "Mạt sắt được phát hiện",
+   "Những vòng tròn đồng tâm",
+   "Giữ dây để xác định hướng",
+   "Mật độ có nghĩa là sức mạnh và điểm yếu",
+   "Mặc xung quanh lưng",
+   "Chồng chất nhiều vòng",
+   "Suy giảm trục",
+   "Tính đồng nhất nội bộ",
+   "Đánh giá · Tìm vòi phun"
+  ],
+  "textbook": [
+   "Cuốn sách bắt buộc thứ ba · Chương 13 Giới thiệu sơ bộ về cảm ứng điện từ và sóng điện từ · Phần 1 Đường sức từ của trường từ"
+  ],
+  "file": "courses/current-field-step.html",
+  "cover": "covers/current-field-step.webp"
+ },
+ {
+  "slug": "brownian-step",
+  "subject": "phys",
+  "subject_vi": "Vật lí",
+  "title": "Chuyển động Brown và sự khuếch tán",
+  "question": "Các phân tử vô hình, làm sao chúng ta có thể nói chúng đang chuyển động?",
+  "type": "Nguyên lý và hiện tượng",
+  "steps": [
+   "nhìn thấy nó di chuyển",
+   "30 giây một dấu chấm",
+   "Càng xa và càng xa",
+   "Các hạt càng nhỏ thì chúng càng rõ ràng",
+   "Nhiệt độ càng cao thì cường độ càng mạnh",
+   "bị loại",
+   "Thời gian duy nhất không bằng số liệu thống kê",
+   "Khuếch tán: mở rộng nồng độ",
+   "Đánh giá · Di chuyển rõ ràng hơn"
+  ],
+  "textbook": [
+   "Bắt buộc chọn lọc Quyển 3 · Chương 1 Lý thuyết động học phân tử · Phần 1 Nội dung cơ bản của lý thuyết động học phân tử"
+  ],
+  "file": "courses/brownian-step.html",
+  "cover": "covers/brownian-step.webp"
+ },
+ {
+  "slug": "water-cycle-step",
+  "subject": "geo",
+  "subject_vi": "Địa lý",
+  "title": "Quá trình và ý nghĩa địa lý của vòng tuần hoàn nước",
+  "question": "Sông tiếp tục đổ ra biển, tại sao nước biển không tăng?",
+  "type": "Nguyên lý và hiện tượng",
+  "steps": [
+   "Toàn cảnh",
+   "bay hơi",
+   "sự thoát hơi nước",
+   "truyền đạt",
+   "Xâm nhập",
+   "Loại ba",
+   "ruộng cát",
+   "ý nghĩa",
+   "Kiểm tra"
+  ],
+  "textbook": [
+   "Sách bắt buộc 1 · Chương 3 Nước trên Trái đất · Phần 1 Vòng tuần hoàn nước"
+  ],
+  "file": "courses/water-cycle-step.html",
+  "cover": "covers/water-cycle-step.webp"
+ },
+ {
+  "slug": "circulation-step",
+  "subject": "geo",
+  "subject_vi": "Địa lý",
+  "title": "Đai áp, đai gió và tuần hoàn ba vòng",
+  "question": "Tại sao hạm đội Magellan đi ngược gió ở một số đoạn và thuận gió ở những đoạn khác, nhưng không thể tiến về phía trước khi đạt đến khoảng 30°N?",
+  "type": "Nguyên lý và hiện tượng",
+  "steps": [
+   "áp thấp xích đạo",
+   "chìm 30°",
+   "leo 60°",
+   "Bảy vành đai và sáu cơn gió",
+   "Phong trào theo mùa",
+   "Phân bố trên đất liền và trên biển",
+   "Đánh giá · Magellan"
+  ],
+  "textbook": [
+   "Khóa học bắt buộc tùy chọn 1 Cơ bản về Địa lý Vật lý · Chương 3 Chuyển động của Khí quyển · Phần 2 Vùng áp suất và Vùng gió"
+  ],
+  "file": "courses/circulation-step.html",
+  "cover": "covers/circulation-step.webp"
+ }
+]

@@ -1,0 +1,569 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Thí nghiệm 3D — Bé Học Vui</title>
+<meta name="description" content="54 bài thí nghiệm 3D tương tác: Vật lí, Hoá học, Sinh học, Địa lý — đã dịch sang tiếng Việt.">
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:"Be Vietnam Pro","Segoe UI",Roboto,Arial,sans-serif;background:#fdf9ec;color:#232038}
+a{text-decoration:none;color:inherit}
+.home-pill{position:fixed;top:10px;left:10px;z-index:50;background:#fff;border:2.2px solid #d9d2f5;border-radius:999px;padding:9px 16px;font-weight:800;font-size:14px;color:#4a3d8f;box-shadow:0 4px 14px rgba(60,40,120,.18)}
+.hero{background:linear-gradient(120deg,#3730a3,#2563eb 55%,#06b6d4);color:#fff;padding:52px 18px 26px;text-align:center}
+.hero h1{margin:0 0 8px;font-size:31px;font-weight:900;letter-spacing:.2px}
+.hero p{margin:0 auto;max-width:640px;font-size:15.5px;line-height:1.55;opacity:.94}
+.wrap{max-width:1120px;margin:0 auto;padding:16px 14px 30px}
+.filters{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin:4px 0 12px}
+.fbtn{border:2.2px solid #ddd6f5;background:#fff;border-radius:999px;padding:10px 16px;font-weight:800;font-size:14.5px;color:#4a3d8f;cursor:pointer;min-height:48px}
+.fbtn.active{background:linear-gradient(135deg,#ffb03a,#ff7847);border-color:#f07f13;color:#fff;box-shadow:0 3px 0 #c25e08}
+.search{width:100%;max-width:520px;display:block;margin:0 auto 16px;padding:13px 16px;border:2.2px solid #ddd6f5;border-radius:14px;font-size:16px;background:#fff}
+.grid{display:grid;grid-template-columns:1fr;gap:14px}
+@media(min-width:640px){.grid{grid-template-columns:1fr 1fr}}
+@media(min-width:980px){.grid{grid-template-columns:1fr 1fr 1fr}}
+.card{display:block;background:#fff;border:2.5px solid #e7e5f4;border-radius:20px;overflow:hidden;box-shadow:0 5px 0 #e7e5f4,0 12px 22px rgba(30,27,75,.08)}
+.card:active{transform:scale(.99)}
+.card .cover{width:100%;aspect-ratio:16/9;object-fit:cover;display:block;background:#e8ecf7}
+.card-body{padding:12px 14px 14px}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}
+.chip{font-size:11.5px;font-weight:800;background:#f4f1ff;border:1.5px solid #e3ddfa;color:#6a5bb5;border-radius:999px;padding:2.5px 9px}
+.card.phys .chip-sub{background:#dbeafe;border-color:#bfdbfe;color:#1d4ed8}
+.card.chem .chip-sub{background:#fae8ff;border-color:#f0abfc;color:#a21caf}
+.card.bio .chip-sub{background:#dcfce7;border-color:#bbf7d0;color:#15803d}
+.card.geo .chip-sub{background:#ffedd5;border-color:#fed7aa;color:#c2410c}
+.card h3{margin:0 0 6px;font-size:17.5px;font-weight:900;line-height:1.35;color:#26224a}
+.card .q{margin:0 0 12px;font-size:14px;line-height:1.5;color:#5a5470}
+.go{display:inline-block;font-weight:800;font-size:14.5px;color:#fff;background:linear-gradient(135deg,#f97316,#f59e0b);border-radius:999px;padding:9px 18px;box-shadow:0 3px 0 rgba(0,0,0,.18)}
+.empty{text-align:center;color:#8a8799;font-weight:700;padding:26px 0}
+footer{max-width:820px;margin:6px auto 0;padding:16px;text-align:center;font-size:12.5px;line-height:1.65;color:#8a8799}
+</style>
+</head>
+<body>
+<a class="home-pill" href="/">🏠 Bé Học Vui</a>
+<header class="hero">
+  <h1>🔬 Thí nghiệm 3D</h1>
+  <p>54 bài thí nghiệm tương tác 3D cho cấp 3: xoay, kéo, chỉnh thông số và xem hiện tượng xảy ra ngay trước mắt. Mỗi bài đi từng bước, có câu hỏi chính, kết luận và bài kiểm tra cuối bài. Đã dịch toàn bộ sang tiếng Việt.</p>
+</header>
+<main class="wrap">
+  <div class="filters" id="filters">
+    <button class="fbtn active" data-f="all">Tất cả · 54</button>
+    <button class="fbtn" data-f="phys">⚛️ Vật lí · 10</button>
+    <button class="fbtn" data-f="chem">⚗️ Hoá học · 25</button>
+    <button class="fbtn" data-f="bio">🧬 Sinh học · 5</button>
+    <button class="fbtn" data-f="geo">🌍 Địa lý · 14</button>
+  </div>
+  <input class="search" id="search" type="search" placeholder="🔎 Tìm bài: quang điện, lò cao, nguyên phân, gió…" autocomplete="off">
+  <div class="grid" id="grid">
+<a class="card phys" href="courses/brownian-step.html" data-subject="phys" data-search="chuyển động brown và sự khuếch tán các phân tử vô hình, làm sao chúng ta có thể nói chúng đang chuyển động?">
+  <img class="cover" src="covers/brownian-step.webp" alt="Chuyển động Brown và sự khuếch tán" loading="lazy">
+  <div class="card-body">
+    <div class="chips"><span class="chip chip-sub">⚛️ Vật lí</span><span class="chip">Nguyên lý và hiện tượng</span><span class="chip">9 bước</span></div>
+    <h3>Chuyển động Brown và sự khuếch tán</h3>
+    <p class="q">Các phân tử vô hình, làm sao chúng ta có thể nói chúng đang chuyển động?</p>
+    <span class="go">▶ Vào thí nghiệm</span>
+  </div>
+</a>
+<a class="card phys" href="courses/self-induction-step.html" data-subject="phys" data-search="hiện tượng tự cảm và dòng điện xoáy cuộn dây chỉ có thêm vài vòng dây đồng. tại sao hai bóng đèn sáng khác nhau? công tắc đã tắt, tại sao bóng đèn lại sáng được?">
+  <img class="cover" src="covers/self-induction-step.webp" alt="Hiện tượng tự cảm và dòng điện xoáy" loading="lazy">
+  <div class="card-body">
+    <div class="chips"><span class="chip chip-sub">⚛️ Vật lí</span><span class="chip">Nguyên lý và thí nghiệm</span><span class="chip">9 bước</span></div>
+    <h3>Hiện tượng tự cảm và dòng điện xoáy</h3>
+    <p class="q">Cuộn dây chỉ có thêm vài vòng dây đồng. Tại sao hai bóng đèn sáng khác nhau? Công tắc đã tắt, tại sao bóng đèn lại sáng được?</p>
+    <span class="go">▶ Vào thí nghiệm</span>
+  </div>
+</a>
+<a class="card phys" href="courses/photoelectric-step.html" data-subject="phys" data-search="hiệu ứng quang điện tại sao thậm chí một electron không thể thoát ra khỏi cùng một chùm ánh sáng nếu nó được chuyển sang kim loại khác? điều gì xác định chính xác năng lượng của quang điện tử trong ánh sáng?">
+  <img class="cover" src="covers/photoelectric-step.webp" alt="Hiệu ứng quang điện" loading="lazy">
+  <div class="card-body">
+    <div class="chips"><span class="chip chip-sub">⚛️ Vật lí</span><span class="chip">Nguyên lý và thí nghiệm</span><span class="chip">9 bước</span></div>
+    <h3>Hiệu ứng quang điện</h3>
+    <p class="q">Tại sao thậm chí một electron không thể thoát ra khỏi cùng một chùm ánh sáng nếu nó được chuyển sang kim loại khác? Điều gì xác định chính xác năng lượng của quang điện tử trong ánh sáng?</p>
+    <span class="go">▶ Vào thí nghiệm</span>
+  </div>
+</a>
+<a class="card phys" href="courses/centripetal-step.html" data-subject="phys" data-search="khám phá mối quan hệ giữa lực hướng tâm, bán kính, vận tốc góc và khối lượng máy biểu diễn quay tay này chỉ cung cấp cho bạn hai cách chia trên thang đo - bạn có thể sử dụng nó để đo mối quan hệ định lượng giữa f và m, r và ω không?">
+  <img class="cover" src="covers/centripetal-step.webp" alt="Khám phá mối quan hệ giữa lực hướng tâm, bán kính, vận tốc góc và khối lượng" loading="lazy">
+  <div class="card-body">
+    <div class="chips"><span class="chip chip-sub">⚛️ Vật lí</span><span class="chip">Nguyên lý và hiện tượng</span><span class="chip">8 bước</span></div>
+    <h3>Khám phá mối quan hệ giữa lực hướng tâm, bán kính, vận tốc góc và khối lượng</h3>
+    <p class="q">Máy biểu diễn quay tay này chỉ cung cấp cho bạn hai cách chia trên thang đo - bạn có thể sử dụng nó để đo mối quan hệ định lượng giữa F và m, r và ω không?</p>
+    <span class="go">▶ Vào thí nghiệm</span>
+  </div>
+</a>
+<a class="card phys" href="courses/capacitor-step.html" data-subject="phys" data-search="quan sát tụ điện nạp và phóng điện chính xác những gì được lưu trữ trong một tụ điện? bạn có thể đo được “khối lượng bụng” của nó chỉ bằng một con số không?">
+  <img class="cover" src="covers/capacitor-step.webp" alt="Quan sát tụ điện nạp và phóng điện" loading="lazy">
+  <div class="card-body">
+    <div class="chips"><span class="chip chip-sub">⚛️ Vật lí</span><span class="chip">Nguyên lý và thí nghiệm</span><span class="chip">9 bước</span></div>
+    <h3>Quan sát tụ điện nạp và phóng điện</h3>
+    <p class="q">Chính xác những gì được lưu trữ trong một tụ điện? Bạn có thể đo được “khối lượng bụng” của nó chỉ bằng một con số không?</p>
+    <span class="go">▶ Vào thí nghiệm</span>
+  </div>
+</a>
+<a class="card phys" href="courses/energy-step.html" data-subject="phys" data-search="thí nghiệm: chứng minh định luật bảo toàn cơ năng khi một vật nặng rơi xuống, phải chăng thế năng hấp dẫn giảm đi chuyển thành động năng tăng lên? một mảnh băng giấy có thể đo được điều này không?">
+  <img class="cover" src="covers/energy-step.webp" alt="Thí nghiệm: Chứng minh định luật bảo toàn cơ năng" loading="lazy">
+  <div class="card-body">
+    <div class="chips"><span class="chip chip-sub">⚛️ Vật lí</span><span class="chip">Nguyên lý và hiện tượng</span><span class="chip">8 bước</span></div>
+    <h3>Thí nghiệm: Chứng minh định luật bảo toàn cơ năng</h3>
+    <p class="q">Khi một vật nặng rơi xuống, phải chăng thế năng hấp dẫn giảm đi chuyển thành động năng tăng lên? Một mảnh băng giấy có thể đo được điều này không?</p>
+    <span class="go">▶ Vào thí nghiệm</span>
+  </div>
+</a>
+<a class="card phys" href="courses/accel-force-step.html" data-subject="phys" data-search="thí nghiệm: khám phá mối liên hệ giữa gia tốc, lực và khối lượng cả lực và gia tốc đều không được đo trực tiếp - bằng cách thêm một vài mã khe vào một mảnh băng giấy, liệu mối quan hệ giữa a, f và m có thể đo được không?">
+  <img class="cover" src="covers/accel-force-step.webp" alt="Thí nghiệm: Khám phá mối liên hệ giữa gia tốc, lực và khối lượng" loading="lazy">
+  <div class="card-body">
+    <div class="chips"><span class="chip chip-sub">⚛️ Vật lí</span><span class="chip">Nguyên lý và hiện tượng</span><span class="chip">8 bước</span></div>
+    <h3>Thí nghiệm: Khám phá mối liên hệ giữa gia tốc, lực và khối lượng</h3>
+    <p class="q">Cả lực và gia tốc đều không được đo trực tiếp - bằng cách thêm một vài mã khe vào một mảnh băng giấy, liệu mối quan hệ giữa a, F và m có thể đo được không?</p>
+    <span class="go">▶ Vào thí nghiệm</span>
+  </div>
+</a>
+<a class="card phys" href="courses/projectile-step.html" data-subject="phys" data-search="thí nghiệm: khám phá đặc điểm của chuyển động ném phẳng chỉ với một máng trượt và một vách ngăn, liệu cú ném phẳng có thể được chia thành hai chuyển động phụ và đo vận tốc ban đầu không?">
+  <img class="cover" src="covers/projectile-step.webp" alt="Thí nghiệm: Khám phá đặc điểm của chuyển động ném phẳng" loading="lazy">
+  <div class="card-body">
+    <div class="chips"><span class="chip chip-sub">⚛️ Vật lí</span><span class="chip">Nguyên lý và hiện tượng</span><span class="chip">9 bước</span></div>
+    <h3>Thí nghiệm: Khám phá đặc điểm của chuyển động ném phẳng</h3>
+    <p class="q">Chỉ với một máng trượt và một vách ngăn, liệu cú ném phẳng có thể được chia thành hai chuyển động phụ và đo vận tốc ban đầu không?</p>
+    <span class="go">▶ Vào thí nghiệm</span>
+  </div>
+</a>
+<a class="card phys" href="courses/current-field-step.html" data-subject="phys" data-search="từ trường của dòng điện từ trường là vô hình và vô hình. làm thế nào để vẽ nó và làm thế nào để xác định hướng của nó?">
+  <img class="cover" src="covers/current-field-step.webp" alt="Từ trường của dòng điện" loading="lazy">
+  <div class="card-body">
+    <div class="chips"><span class="chip chip-sub">⚛️ Vật lí</span><span class="chip">Nguyên lý và hiện tượng</span><span class="chip">9 bước</span></div>
+    <h3>Từ trường của dòng điện</h3>
+    <p class="q">Từ trường là vô hình và vô hình. Làm thế nào để vẽ nó và làm thế nào để xác định hướng của nó?</p>
+    <span class="go">▶ Vào thí nghiệm</span>
+  </div>
+</a>
+<a class="card phys" href="courses/emf-step.html" data-subject="phys" data-search="đo suất điện động và điện trở trong của nguồn điện làm thế nào để &quot;đo&quot; suất điện động và điện trở trong của pin khô cũ bằng vôn kế, ampe kế và biến trở trượt? nếu thay đổi phương thức kết nối thì kết quả đo có còn như cũ không?">
+  <img class="cover" src="covers/emf-step.webp" alt="Đo suất điện động và điện trở trong của nguồn điện" loading="lazy">
+  <div class="card-body">
+    <div class="chips"><span class="chip chip-sub">⚛️ Vật lí</span><span class="chip">Nguyên lý và thí nghiệm</span><span class="chip">9 bước</span></div>
+    <h3>Đo suất điện động và điện trở trong của nguồn điện</h3>
+    <p class="q">Làm thế nào để &quot;đo&quot; suất điện động và điện trở trong của pin khô cũ bằng vôn kế, ampe kế và biến trở trượt? Nếu thay đổi phương thức kết nối thì kết quả đo có còn như cũ không?</p>
+    <span class="go">▶ Vào thí nghiệm</span>
+  </div>
+</a>
+<a class="card chem" href="courses/titration-step.html" data-subject="chem" data-search="chuẩn độ trung hòa axit mạnh và bazơ mạnh tôi đã thêm hơn 20 ml trước đó và hầu như không thấy thay đổi gì. tại sao màu sắc lại thay đổi trong nửa giọt cuối cùng?">
+  <img class="cover" src="covers/titration-step.webp" alt="Chuẩn độ trung hòa axit mạnh và bazơ mạnh" loading="lazy">
+  <div class="card-body">
+    <div class="chips"><span class="chip chip-sub">⚗️ Hoá học</span><span class="chip">Nguyên lý và hiện tượng</span><span class="chip">9 bước</span></div>
+    <h3>Chuẩn độ trung hòa axit mạnh và bazơ mạnh</h3>
+    <p class="q">Tôi đã thêm hơn 20 ml trước đó và hầu như không thấy thay đổi gì. Tại sao màu sắc lại thay đổi trong nửa giọt cuối cùng?</p>
+    <span class="go">▶ Vào thí nghiệm</span>
+  </div>
+</a>
+<a class="card chem" href="courses/rate-step.html" data-subject="chem" data-search="các yếu tố ảnh hưởng đến tốc độ phản ứng hóa học tại sao một số trong hai phản ứng giống nhau chỉ mất vài giây, trong khi những phản ứng khác lại phải đợi rất lâu? điều gì quyết định tốc độ?">
+  <img class="cover" src="covers/rate-step.webp" alt="Các yếu tố ảnh hưởng đến tốc độ phản ứng hóa học" loading="lazy">
+  <div class="card-body">
+    <div class="chips"><span class="chip chip-sub">⚗️ Hoá học</span><span class="chip">Nguyên lý và hiện tượng</span><span class="chip">8 bước</span></div>
+    <h3>Các yếu tố ảnh hưởng đến tốc độ phản ứng hóa học</h3>
+    <p class="q">Tại sao một số trong hai phản ứng giống nhau chỉ mất vài giây, trong khi những phản ứng khác lại phải đợi rất lâu? Điều gì quyết định tốc độ?</p>
+    <span class="go">▶ Vào thí nghiệm</span>
+  </div>
+</a>
+<a class="card chem" href="courses/chlor-alkali-step.html" data-subject="chem" data-search="công nghiệp clo-kiềm làm thế nào chúng ta có thể đổi cùng một lượng điện lấy nhiều xút hơn, tiêu thụ ít điện năng hơn và không xảy ra tai nạn?">
+  <img class="cover" src="covers/chlor-alkali-step.webp" alt="Công nghiệp clo-kiềm" loading="lazy">
+  <div class="card-body">
+    <div class="chips"><span class="chip chip-sub">⚗️ Hoá học</span><span class="chip">Quy trình công nghiệp</span><span class="chip">8 bước</span></div>
+    <h3>Công nghiệp clo-kiềm</h3>
+    <p class="q">Làm thế nào chúng ta có thể đổi cùng một lượng điện lấy nhiều xút hơn, tiêu thụ ít điện năng hơn và không xảy ra tai nạn?</p>
+    <span class="go">▶ Vào thí nghiệm</span>
+  </div>
+</a>
+<a class="card chem" href="courses/ball-stick-step.html" data-subject="chem" data-search="dựng mô hình bóng – que của phân tử hữu cơ các phân tử phẳng khi vẽ trên giấy. hình dạng ba chiều thực sự trông như thế nào? bạn có thể biết được điều gì khi xây dựng mô hình quả bóng và cây gậy?">
+  <img class="cover" src="covers/ball-stick-step.webp" alt="Dựng mô hình bóng – que của phân tử hữu cơ" loading="lazy">
+  <div class="card-body">
+    <div class="chips"><span class="chip chip-sub">⚗️ Hoá học</span><span class="chip">Nguyên tắc và mô phỏng hiện tượng</span><span class="chip">9 bước</span></div>
+    <h3>Dựng mô hình bóng – que của phân tử hữu cơ</h3>
+    <p class="q">Các phân tử phẳng khi vẽ trên giấy. Hình dạng ba chiều thực sự trông như thế nào? Bạn có thể biết được điều gì khi xây dựng mô hình quả bóng và cây gậy?</p>
+    <span class="go">▶ Vào thí nghiệm</span>
+  </div>
+</a>
+<a class="card chem" href="courses/equilibrium-step.html" data-subject="chem" data-search="khám phá các yếu tố ảnh hưởng đến sự dịch chuyển cân bằng hóa học nếu một điều kiện bị thay đổi, làm sao người ta có thể nói cán cân sẽ dịch chuyển theo hướng nào?">
+  <img class="cover" src="covers/equilibrium-step.webp" alt="Khám phá các yếu tố ảnh hưởng đến sự dịch chuyển cân bằng hóa học" loading="lazy">
+  <div class="card-body">
+    <div class="chips"><span class="chip chip-sub">⚗️ Hoá học</span><span class="chip">Nguyên lý và thí nghiệm</span><span class="chip">9 bước</span></div>
+    <h3>Khám phá các yếu tố ảnh hưởng đến sự dịch chuyển cân bằng hóa học</h3>
+    <p class="q">Nếu một điều kiện bị thay đổi, làm sao người ta có thể nói cán cân sẽ dịch chuyển theo hướng nào?</p>
+    <span class="go">▶ Vào thí nghiệm</span>
+  </div>
+</a>
+<a class="card chem" href="courses/blast-furnace-step.html" data-subject="chem" data-search="luyện gang lò cao tại sao đống quặng đổ từ đỉnh lò lại biến thành dòng sắt nóng chảy chỉ sau vài giờ? làm thế nào chúng ta có thể tiết kiệm được nhiều nhất có thể?">
+  <img class="cover" src="covers/blast-furnace-step.webp" alt="Luyện gang lò cao" loading="lazy">
+  <div class="card-body">
+    <div class="chips"><span class="chip chip-sub">⚗️ Hoá học</span><span class="chip">Quy trình công nghiệp</span><span class="chip">8 bước</span></div>
+    <h3>Luyện gang lò cao</h3>
+    <p class="q">Tại sao đống quặng đổ từ đỉnh lò lại biến thành dòng sắt nóng chảy chỉ sau vài giờ? Làm thế nào chúng ta có thể tiết kiệm được nhiều nhất có thể?</p>
+    <span class="go">▶ Vào thí nghiệm</span>
+  </div>
+</a>
+<a class="card chem" href="courses/smelting-step.html" data-subject="chem" data-search="luyện kim: điện phân muối nóng chảy và phản ứng nhiệt nhôm tại sao nhôm chỉ có thể “loại bỏ” bằng điện, còn sắt có thể “thay thế” bằng nhôm?">
+  <img class="cover" src="covers/smelting-step.webp" alt="Luyện kim: điện phân muối nóng chảy và phản ứng nhiệt nhôm" loading="lazy">
+  <div class="card-body">
+    <div class="chips"><span class="chip chip-sub">⚗️ Hoá học</span><span class="chip">Quy trình công nghiệp</span><span class="chip">8 bước</span></div>
+    <h3>Luyện kim: điện phân muối nóng chảy và phản ứng nhiệt nhôm</h3>
+    <p class="q">Tại sao nhôm chỉ có thể “loại bỏ” bằng điện, còn sắt có thể “thay thế” bằng nhôm?</p>
+    <span class="go">▶ Vào thí nghiệm</span>
+  </div>
+</a>
+<a class="card chem" href="courses/electrolysis-step.html" data-subject="chem" data-search="nguyên lí điện phân: dung dịch cucl₂ và nước muối bão hoà với cùng một nguồn điện một chiều, tại sao điện phân dung dịch clorua đồng lại thu được đồng và khí clo, còn điện phân nước muối bão hòa lại thu được khí hydro, khí clo và natri hydroxit?">
+  <img class="cover" src="covers/electrolysis-step.webp" alt="Nguyên lí điện phân: dung dịch CuCl₂ và nước muối bão hoà" loading="lazy">
+  <div class="card-body">
+    <div class="chips"><span class="chip chip-sub">⚗️ Hoá học</span><span class="chip">Nguyên lý và hiện tượng</span><span class="chip">9 bước</span></div>
+    <h3>Nguyên lí điện phân: dung dịch CuCl₂ và nước muối bão hoà</h3>
+    <p class="q">Với cùng một nguồn điện một chiều, tại sao điện phân dung dịch clorua đồng lại thu được đồng và khí clo, còn điện phân nước muối bão hòa lại thu được khí hydro, khí clo và natri hydroxit?</p>
+    <span class="go">▶ Vào thí nghiệm</span>
+  </div>
+</a>
+<a class="card chem" href="courses/flame-step.html" data-subject="chem" data-search="phép thử màu ngọn lửa và quang phổ nguyên tử tại sao kim loại khi cháy có màu khác nhau? tại sao màu này có thể được coi là &quot;báo cáo thí nghiệm&quot;?">
+  <img class="cover" src="covers/flame-step.webp" alt="Phép thử màu ngọn lửa và quang phổ nguyên tử" loading="lazy">
+  <div class="card-body">
+    <div class="chips"><span class="chip chip-sub">⚗️ Hoá học</span><span class="chip">Nguyên lý và hiện tượng</span><span class="chip">8 bước</span></div>
+    <h3>Phép thử màu ngọn lửa và quang phổ nguyên tử</h3>
+    <p class="q">Tại sao kim loại khi cháy có màu khác nhau? Tại sao màu này có thể được coi là &quot;báo cáo thí nghiệm&quot;?</p>
+    <span class="go">▶ Vào thí nghiệm</span>
+  </div>
+</a>
+<a class="card chem" href="courses/galvanic-step.html" data-subject="chem" data-search="pin điện hoá: từ một dung dịch đến hai dung dịch trong cùng một cốc axit sunfuric loãng đã có dòng điện rồi, tại sao phải thay hai cốc và thêm cầu muối?">
+  <img class="cover" src="covers/galvanic-step.webp" alt="Pin điện hoá: từ một dung dịch đến hai dung dịch" loading="lazy">
+  <div class="card-body">
+    <div class="chips"><span class="chip chip-sub">⚗️ Hoá học</span><span class="chip">Nguyên lý và hiện tượng</span><span class="chip">9 bước</span></div>
+    <h3>Pin điện hoá: từ một dung dịch đến hai dung dịch</h3>
+    <p class="q">Trong cùng một cốc axit sunfuric loãng đã có dòng điện rồi, tại sao phải thay hai cốc và thêm cầu muối?</p>
+    <span class="go">▶ Vào thí nghiệm</span>
+  </div>
+</a>
+<a class="card chem" href="courses/hou-soda-step.html" data-subject="chem" data-search="quy trình sản xuất sô-đa của hầu đức bàng làm thế nào để tạo ra tro soda từ muối và amoniac và dễ dàng lấy phân đạm?">
+  <img class="cover" src="covers/hou-soda-step.webp" alt="Quy trình sản xuất sô-đa của Hầu Đức Bàng" loading="lazy">
+  <div class="card-body">
+    <div class="chips"><span class="chip chip-sub">⚗️ Hoá học</span><span class="chip">Quy trình công nghiệp</span><span class="chip">8 bước</span></div>
+    <h3>Quy trình sản xuất sô-đa của Hầu Đức Bàng</h3>
+    <p class="q">Làm thế nào để tạo ra tro soda từ muối và amoniac và dễ dàng lấy phân đạm?</p>
+    <span class="go">▶ Vào thí nghiệm</span>
+  </div>
+</a>
+<a class="card chem" href="courses/haber-step.html" data-subject="chem" data-search="sản xuất amoniac công nghiệp (quy trình haber) làm thế nào để biến nitơ trong không khí thành amoniac một cách nhanh chóng, dồi dào và tiết kiệm chi phí?">
+  <img class="cover" src="covers/haber-step.webp" alt="Sản xuất amoniac công nghiệp (quy trình Haber)" loading="lazy">
+  <div class="card-body">
+    <div class="chips"><span class="chip chip-sub">⚗️ Hoá học</span><span class="chip">Quy trình công nghiệp</span><span class="chip">7 bước</span></div>
+    <h3>Sản xuất amoniac công nghiệp (quy trình Haber)</h3>
+    <p class="q">Làm thế nào để biến nitơ trong không khí thành amoniac một cách nhanh chóng, dồi dào và tiết kiệm chi phí?</p>
+    <span class="go">▶ Vào thí nghiệm</span>
+  </div>
+</a>
+<a class="card chem" href="courses/sulfuric-step.html" data-subject="chem" data-search="sản xuất axit sulfuric bằng phương pháp tiếp xúc làm thế nào để biến lưu huỳnh trong quặng thành axit sunfuric một cách nhanh chóng, dồi dào, tiết kiệm và sạch?">
+  <img class="cover" src="covers/sulfuric-step.webp" alt="Sản xuất axit sulfuric bằng phương pháp tiếp xúc" loading="lazy">
+  <div class="card-body">
+    <div class="chips"><span class="chip chip-sub">⚗️ Hoá học</span><span class="chip">Quy trình công nghiệp</span><span class="chip">7 bước</span></div>
+    <h3>Sản xuất axit sulfuric bằng phương pháp tiếp xúc</h3>
+    <p class="q">Làm thế nào để biến lưu huỳnh trong quặng thành axit sunfuric một cách nhanh chóng, dồi dào, tiết kiệm và sạch?</p>
+    <span class="go">▶ Vào thí nghiệm</span>
+  </div>
+</a>
+<a class="card chem" href="courses/cement-step.html" data-subject="chem" data-search="sản xuất xi măng công nghiệp làm thế nào một khối đá và đất có thể được nghiền, đốt và nghiền lại để biến thành xi măng có thể chống đỡ một con đập?">
+  <img class="cover" src="covers/cement-step.webp" alt="Sản xuất xi măng công nghiệp" loading="lazy">
+  <div class="card-body">
+    <div class="chips"><span class="chip chip-sub">⚗️ Hoá học</span><span class="chip">Quy trình công nghiệp</span><span class="chip">8 bước</span></div>
+    <h3>Sản xuất xi măng công nghiệp</h3>
+    <p class="q">Làm thế nào một khối đá và đất có thể được nghiền, đốt và nghiền lại để biến thành xi măng có thể chống đỡ một con đập?</p>
+    <span class="go">▶ Vào thí nghiệm</span>
+  </div>
+</a>
+<a class="card chem" href="courses/iron-step.html" data-subject="chem" data-search="sắt và các hợp chất của nó: sự biến đổi trạng thái hóa trị của sắt tại sao cùng một nguyên tố sắt có hóa trị +2 và +3 trong ống nghiệm lúc này và +3 vào lúc khác? làm sao chúng ta biết đó là cái nào?">
+  <img class="cover" src="covers/iron-step.webp" alt="Sắt và các hợp chất của nó: sự biến đổi trạng thái hóa trị của sắt" loading="lazy">
+  <div class="card-body">
+    <div class="chips"><span class="chip chip-sub">⚗️ Hoá học</span><span class="chip">Nguyên lý và hiện tượng</span><span class="chip">9 bước</span></div>
+    <h3>Sắt và các hợp chất của nó: sự biến đổi trạng thái hóa trị của sắt</h3>
+    <p class="q">Tại sao cùng một nguyên tố sắt có hóa trị +2 và +3 trong ống nghiệm lúc này và +3 vào lúc khác? Làm sao chúng ta biết đó là cái nào?</p>
+    <span class="go">▶ Vào thí nghiệm</span>
+  </div>
+</a>
+<a class="card chem" href="courses/coal-gas-step.html" data-subject="chem" data-search="sử dụng tổng hợp than đá: khí hoá than than có thể chỉ được đốt cháy? làm thế nào để biến than thành khí đốt để sản xuất phân bón và metanol?">
+  <img class="cover" src="covers/coal-gas-step.webp" alt="Sử dụng tổng hợp than đá: khí hoá than" loading="lazy">
+  <div class="card-body">
+    <div class="chips"><span class="chip chip-sub">⚗️ Hoá học</span><span class="chip">Quy trình công nghiệp</span><span class="chip">8 bước</span></div>
+    <h3>Sử dụng tổng hợp than đá: khí hoá than</h3>
+    <p class="q">Than có thể chỉ được đốt cháy? Làm thế nào để biến than thành khí đốt để sản xuất phân bón và metanol?</p>
+    <span class="go">▶ Vào thí nghiệm</span>
+  </div>
+</a>
+<a class="card chem" href="courses/conductivity-step.html" data-subject="chem" data-search="sự điện li, độ dẫn điện của dung dịch và bản chất phản ứng ion tay khô và tay ướt đều là một bàn tay, tại sao tay ướt lại dễ bị điện giật?">
+  <img class="cover" src="covers/conductivity-step.webp" alt="Sự điện li, độ dẫn điện của dung dịch và bản chất phản ứng ion" loading="lazy">
+  <div class="card-body">
+    <div class="chips"><span class="chip chip-sub">⚗️ Hoá học</span><span class="chip">Nguyên lý và hiện tượng</span><span class="chip">9 bước</span></div>
+    <h3>Sự điện li, độ dẫn điện của dung dịch và bản chất phản ứng ion</h3>
+    <p class="q">Tay khô và tay ướt đều là một bàn tay, tại sao tay ướt lại dễ bị điện giật?</p>
+    <span class="go">▶ Vào thí nghiệm</span>
+  </div>
+</a>
+<a class="card chem" href="courses/hydrolysis-step.html" data-subject="chem" data-search="thủy phân muối và ứng dụng các ion được tạo ra bởi quá trình ion hóa muối trông &quot;không có tính axit cũng không có tính kiềm&quot;. làm thế nào có thể tạo ra dung dịch có tính axit và kiềm?">
+  <img class="cover" src="covers/hydrolysis-step.webp" alt="Thủy phân muối và ứng dụng" loading="lazy">
+  <div class="card-body">
+    <div class="chips"><span class="chip chip-sub">⚗️ Hoá học</span><span class="chip">Nguyên lý và hiện tượng</span><span class="chip">9 bước</span></div>
+    <h3>Thủy phân muối và ứng dụng</h3>
+    <p class="q">Các ion được tạo ra bởi quá trình ion hóa muối trông &quot;không có tính axit cũng không có tính kiềm&quot;. Làm thế nào có thể tạo ra dung dịch có tính axit và kiềm?</p>
+    <span class="go">▶ Vào thí nghiệm</span>
+  </div>
+</a>
+<a class="card chem" href="courses/bromine-step.html" data-subject="chem" data-search="tách brom từ nước biển: phương pháp thổi khí brom trong nước biển chỉ có 65 mg/l. làm thế nào để biến nó thành một chai nước brom lỏng?">
+  <img class="cover" src="covers/bromine-step.webp" alt="Tách brom từ nước biển: phương pháp thổi khí" loading="lazy">
+  <div class="card-body">
+    <div class="chips"><span class="chip chip-sub">⚗️ Hoá học</span><span class="chip">Quy trình công nghiệp</span><span class="chip">7 bước</span></div>
+    <h3>Tách brom từ nước biển: phương pháp thổi khí</h3>
+    <p class="q">Brom trong nước biển chỉ có 65 mg/L. Làm thế nào để biến nó thành một chai nước brom lỏng?</p>
+    <span class="go">▶ Vào thí nghiệm</span>
+  </div>
+</a>
+<a class="card chem" href="courses/nitric-lab-step.html" data-subject="chem" data-search="tính chất của axit nitric đậm đặc, loãng và chuyển hóa oxit nitơ đó là cùng một loại đồng và axit nitric. tại sao một chai lại thải ra khí màu nâu đỏ còn chai kia lại không có màu gì?">
+  <img class="cover" src="covers/nitric-lab-step.webp" alt="Tính chất của axit nitric đậm đặc, loãng và chuyển hóa oxit nitơ" loading="lazy">
+  <div class="card-body">
+    <div class="chips"><span class="chip chip-sub">⚗️ Hoá học</span><span class="chip">Nguyên lý và hiện tượng</span><span class="chip">9 bước</span></div>
+    <h3>Tính chất của axit nitric đậm đặc, loãng và chuyển hóa oxit nitơ</h3>
+    <p class="q">Đó là cùng một loại đồng và axit nitric. Tại sao một chai lại thải ra khí màu nâu đỏ còn chai kia lại không có màu gì?</p>
+    <span class="go">▶ Vào thí nghiệm</span>
+  </div>
+</a>
+<a class="card chem" href="courses/sulfur-step.html" data-subject="chem" data-search="tính chất của lưu huỳnh, điôxit lưu huỳnh, axit sunfuric đậm đặc và sự biến đổi của các chất chứa lưu huỳnh ở các trạng thái hóa trị khác nhau nó cũng là lưu huỳnh, tại sao có khi lại là chất rắn màu vàng, có khi lại làm màu đỏ tươi nhạt dần thành không màu, có khi lại hòa vào bột sắt?">
+  <img class="cover" src="covers/sulfur-step.webp" alt="Tính chất của lưu huỳnh, điôxit lưu huỳnh, axit sunfuric đậm đặc và sự biến đổi của các chất chứa lưu huỳnh ở các trạng thái hóa trị khác nhau" loading="lazy">
+  <div class="card-body">
+    <div class="chips"><span class="chip chip-sub">⚗️ Hoá học</span><span class="chip">Nguyên lý và hiện tượng</span><span class="chip">9 bước</span></div>
+    <h3>Tính chất của lưu huỳnh, điôxit lưu huỳnh, axit sunfuric đậm đặc và sự biến đổi của các chất chứa lưu huỳnh ở các trạng thái hóa trị khác nhau</h3>
+    <p class="q">Nó cũng là lưu huỳnh, tại sao có khi lại là chất rắn màu vàng, có khi lại làm màu đỏ tươi nhạt dần thành không màu, có khi lại hòa vào bột sắt?</p>
+    <span class="go">▶ Vào thí nghiệm</span>
+  </div>
+</a>
+<a class="card chem" href="courses/sodium-step.html" data-subject="chem" data-search="tính chất của natri (và cách dập cháy natri) tại sao một miếng kim loại nhỏ màu trắng bạc lại phải ngâm trong dầu hỏa, khi nó bốc cháy thì ngay cả nước cũng không thể đổ vào?">
+  <img class="cover" src="covers/sodium-step.webp" alt="Tính chất của natri (và cách dập cháy natri)" loading="lazy">
+  <div class="card-body">
+    <div class="chips"><span class="chip chip-sub">⚗️ Hoá học</span><span class="chip">Nguyên lý và hiện tượng</span><span class="chip">9 bước</span></div>
+    <h3>Tính chất của natri (và cách dập cháy natri)</h3>
+    <p class="q">Tại sao một miếng kim loại nhỏ màu trắng bạc lại phải ngâm trong dầu hỏa, khi nó bốc cháy thì ngay cả nước cũng không thể đổ vào?</p>
+    <span class="go">▶ Vào thí nghiệm</span>
+  </div>
+</a>
+<a class="card chem" href="courses/corrosion-step.html" data-subject="chem" data-search="ăn mòn do hấp thụ oxy và thiết kế miếng sưởi ấm nếu sắt rỉ sét chậm như vậy thì làm sao có thể tạo ra một miếng vá sưởi ấm ở nhiệt độ trên 45°c? tại sao nên sử dụng nó để bảo vệ sắt khỏi rỉ sét?">
+  <img class="cover" src="covers/corrosion-step.webp" alt="Ăn mòn do hấp thụ oxy và thiết kế miếng sưởi ấm" loading="lazy">
+  <div class="card-body">
+    <div class="chips"><span class="chip chip-sub">⚗️ Hoá học</span><span class="chip">Nguyên lý và hiện tượng</span><span class="chip">9 bước</span></div>
+    <h3>Ăn mòn do hấp thụ oxy và thiết kế miếng sưởi ấm</h3>
+    <p class="q">Nếu sắt rỉ sét chậm như vậy thì làm sao có thể tạo ra một miếng vá sưởi ấm ở nhiệt độ trên 45°C? Tại sao nên sử dụng nó để bảo vệ sắt khỏi rỉ sét?</p>
+    <span class="go">▶ Vào thí nghiệm</span>
+  </div>
+</a>
+<a class="card chem" href="courses/ammonia-step.html" data-subject="chem" data-search="điều chế và tính chất của amoniac (thí nghiệm đài phun nước) làm thế nào chai khí amoniac có thể “hút” nước trong cốc vào chai?">
+  <img class="cover" src="covers/ammonia-step.webp" alt="Điều chế và tính chất của amoniac (thí nghiệm đài phun nước)" loading="lazy">
+  <div class="card-body">
+    <div class="chips"><span class="chip chip-sub">⚗️ Hoá học</span><span class="chip">Nguyên lý và hiện tượng</span><span class="chip">9 bước</span></div>
+    <h3>Điều chế và tính chất của amoniac (thí nghiệm đài phun nước)</h3>
+    <p class="q">Làm thế nào chai khí amoniac có thể “hút” nước trong cốc vào chai?</p>
+    <span class="go">▶ Vào thí nghiệm</span>
+  </div>
+</a>
+<a class="card chem" href="courses/chlorine-step.html" data-subject="chem" data-search="điều chế và tính chất của khí clo tôi cần một chai clo khô, tinh khiết. mỗi phần của thiết bị xử lý những gì? điều gì sẽ xảy ra nếu thiếu một phần?">
+  <img class="cover" src="covers/chlorine-step.webp" alt="Điều chế và tính chất của khí clo" loading="lazy">
+  <div class="card-body">
+    <div class="chips"><span class="chip chip-sub">⚗️ Hoá học</span><span class="chip">Nguyên lý và hiện tượng</span><span class="chip">9 bước</span></div>
+    <h3>Điều chế và tính chất của khí clo</h3>
+    <p class="q">Tôi cần một chai clo khô, tinh khiết. Mỗi phần của thiết bị xử lý những gì? Điều gì sẽ xảy ra nếu thiếu một phần?</p>
+    <span class="go">▶ Vào thí nghiệm</span>
+  </div>
+</a>
+<a class="card bio" href="courses/enzyme-step.html" data-subject="bio" data-search="các điều kiện ảnh hưởng đến hoạt động của enzyme tại sao enzyme đó khi cho vào nước sôi không thể sống lại nhưng khi cho vào nước đá vẫn có thể hoạt động?">
+  <img class="cover" src="covers/enzyme-step.webp" alt="Các điều kiện ảnh hưởng đến hoạt động của enzyme" loading="lazy">
+  <div class="card-body">
+    <div class="chips"><span class="chip chip-sub">🧬 Sinh học</span><span class="chip">Nguyên lý và hiện tượng</span><span class="chip">8 bước</span></div>
+    <h3>Các điều kiện ảnh hưởng đến hoạt động của enzyme</h3>
+    <p class="q">Tại sao enzyme đó khi cho vào nước sôi không thể sống lại nhưng khi cho vào nước đá vẫn có thể hoạt động?</p>
+    <span class="go">▶ Vào thí nghiệm</span>
+  </div>
+</a>
+<a class="card bio" href="courses/plasmolysis-step.html" data-subject="bio" data-search="hấp thụ nước và mất nước ở tế bào thực vật lá rau khi ngâm vào nước sạch sẽ cứng lại, khi rắc muối thì nước sẽ chảy ra - tế bào thực vật hấp thụ và mất nước như thế nào?">
+  <img class="cover" src="covers/plasmolysis-step.webp" alt="Hấp thụ nước và mất nước ở tế bào thực vật" loading="lazy">
+  <div class="card-body">
+    <div class="chips"><span class="chip chip-sub">🧬 Sinh học</span><span class="chip">Nguyên lý và hiện tượng</span><span class="chip">8 bước</span></div>
+    <h3>Hấp thụ nước và mất nước ở tế bào thực vật</h3>
+    <p class="q">Lá rau khi ngâm vào nước sạch sẽ cứng lại, khi rắc muối thì nước sẽ chảy ra - tế bào thực vật hấp thụ và mất nước như thế nào?</p>
+    <span class="go">▶ Vào thí nghiệm</span>
+  </div>
+</a>
+<a class="card bio" href="courses/mitosis-step.html" data-subject="bio" data-search="quan sát nguyên phân ở tế bào mô phân sinh đầu rễ tế bào nào đang phân chia ở đầu rễ củ hành? mất bao lâu để họ phân chia?">
+  <img class="cover" src="covers/mitosis-step.webp" alt="Quan sát nguyên phân ở tế bào mô phân sinh đầu rễ" loading="lazy">
+  <div class="card-body">
+    <div class="chips"><span class="chip chip-sub">🧬 Sinh học</span><span class="chip">Nguyên lý và hiện tượng</span><span class="chip">9 bước</span></div>
+    <h3>Quan sát nguyên phân ở tế bào mô phân sinh đầu rễ</h3>
+    <p class="q">Tế bào nào đang phân chia ở đầu rễ củ hành? Mất bao lâu để họ phân chia?</p>
+    <span class="go">▶ Vào thí nghiệm</span>
+  </div>
+</a>
+<a class="card bio" href="courses/impulse-step.html" data-subject="bio" data-search="tạo và dẫn truyền xung thần kinh xuất phát trong vòng 0,1 giây sau khi có tiếng súng nổ được coi là xuất phát sai (sách giáo khoa trang 27) - sự hưng phấn “chạy” khắp cơ thể như thế nào?">
+  <img class="cover" src="covers/impulse-step.webp" alt="Tạo và dẫn truyền xung thần kinh" loading="lazy">
+  <div class="card-body">
+    <div class="chips"><span class="chip chip-sub">🧬 Sinh học</span><span class="chip">Nguyên lý và hiện tượng</span><span class="chip">9 bước</span></div>
+    <h3>Tạo và dẫn truyền xung thần kinh</h3>
+    <p class="q">Xuất phát trong vòng 0,1 giây sau khi có tiếng súng nổ được coi là xuất phát sai (sách giáo khoa trang 27) - Sự hưng phấn “chạy” khắp cơ thể như thế nào?</p>
+    <span class="go">▶ Vào thí nghiệm</span>
+  </div>
+</a>
+<a class="card bio" href="courses/transport-step.html" data-subject="bio" data-search="vận chuyển các chất qua màng tại sao oxy có thể tự mình đi qua cùng một màng tế bào, glucose cần sự trợ giúp của một số protein và k⁺ cũng có thể di chuyển ngược lại nồng độ?">
+  <img class="cover" src="covers/transport-step.webp" alt="Vận chuyển các chất qua màng" loading="lazy">
+  <div class="card-body">
+    <div class="chips"><span class="chip chip-sub">🧬 Sinh học</span><span class="chip">Nguyên lý và hiện tượng</span><span class="chip">8 bước</span></div>
+    <h3>Vận chuyển các chất qua màng</h3>
+    <p class="q">Tại sao oxy có thể tự mình đi qua cùng một màng tế bào, glucose cần sự trợ giúp của một số protein và K⁺ cũng có thể di chuyển ngược lại nồng độ?</p>
+    <span class="go">▶ Vào thí nghiệm</span>
+  </div>
+</a>
+<a class="card geo" href="courses/carbon-step.html" data-subject="geo" data-search="biến đổi khí hậu toàn cầu và an ninh quốc gia vì sao maldives tổ chức họp nội các ở độ sâu 6 mét dưới biển?">
+  <img class="cover" src="covers/carbon-step.webp" alt="Biến đổi khí hậu toàn cầu và an ninh quốc gia" loading="lazy">
+  <div class="card-body">
+    <div class="chips"><span class="chip chip-sub">🌍 Địa lý</span><span class="chip">Nguyên lý và hiện tượng</span><span class="chip">8 bước</span></div>
+    <h3>Biến đổi khí hậu toàn cầu và an ninh quốc gia</h3>
+    <p class="q">Vì sao Maldives tổ chức họp nội các ở độ sâu 6 mét dưới biển?</p>
+    <span class="go">▶ Vào thí nghiệm</span>
+  </div>
+</a>
+<a class="card geo" href="courses/wind-step.html" data-subject="geo" data-search="chuyển động ngang của khí quyển - gió tại sao gió trên bản đồ thời tiết không thổi thẳng từ nơi áp cao về nơi áp thấp?">
+  <img class="cover" src="covers/wind-step.webp" alt="Chuyển động ngang của khí quyển - gió" loading="lazy">
+  <div class="card-body">
+    <div class="chips"><span class="chip chip-sub">🌍 Địa lý</span><span class="chip">Nguyên lý và hiện tượng</span><span class="chip">8 bước</span></div>
+    <h3>Chuyển động ngang của khí quyển - gió</h3>
+    <p class="q">Tại sao gió trên bản đồ thời tiết không thổi thẳng từ nơi áp cao về nơi áp thấp?</p>
+    <span class="go">▶ Vào thí nghiệm</span>
+  </div>
+</a>
+<a class="card geo" href="courses/soil-step.html" data-subject="geo" data-search="các nhân tố hình thành đất và quan sát phẫu diện đất đất ở vùng đông bắc sẫm màu và màu mỡ nhưng tại sao đất ở phía nam lại tương đối cằn cỗi?">
+  <img class="cover" src="covers/soil-step.webp" alt="Các nhân tố hình thành đất và quan sát phẫu diện đất" loading="lazy">
+  <div class="card-body">
+    <div class="chips"><span class="chip chip-sub">🌍 Địa lý</span><span class="chip">Nguyên lý và hiện tượng</span><span class="chip">8 bước</span></div>
+    <h3>Các nhân tố hình thành đất và quan sát phẫu diện đất</h3>
+    <p class="q">Đất ở vùng Đông Bắc sẫm màu và màu mỡ nhưng tại sao đất ở phía Nam lại tương đối cằn cỗi?</p>
+    <span class="go">▶ Vào thí nghiệm</span>
+  </div>
+</a>
+<a class="card geo" href="courses/thermal-step.html" data-subject="geo" data-search="hoàn lưu nhiệt của khí quyển tại sao hướng gió qua eo biển đài loan đảo ngược trong một ngày?">
+  <img class="cover" src="covers/thermal-step.webp" alt="Hoàn lưu nhiệt của khí quyển" loading="lazy">
+  <div class="card-body">
+    <div class="chips"><span class="chip chip-sub">🌍 Địa lý</span><span class="chip">Nguyên lý và hiện tượng</span><span class="chip">9 bước</span></div>
+    <h3>Hoàn lưu nhiệt của khí quyển</h3>
+    <p class="q">Tại sao hướng gió qua eo biển Đài Loan đảo ngược trong một ngày?</p>
+    <span class="go">▶ Vào thí nghiệm</span>
+  </div>
+</a>
+<a class="card geo" href="courses/currents-step.html" data-subject="geo" data-search="mô hình phân bố và ảnh hưởng của các dòng hải lưu trên thế giới tại sao hàng chục ngàn con vịt đồ chơi rải rác trên biển và trôi dạt đến các bờ biển trên khắp thế giới?">
+  <img class="cover" src="covers/currents-step.webp" alt="Mô hình phân bố và ảnh hưởng của các dòng hải lưu trên thế giới" loading="lazy">
+  <div class="card-body">
+    <div class="chips"><span class="chip chip-sub">🌍 Địa lý</span><span class="chip">Nguyên lý và hiện tượng</span><span class="chip">9 bước</span></div>
+    <h3>Mô hình phân bố và ảnh hưởng của các dòng hải lưu trên thế giới</h3>
+    <p class="q">Tại sao hàng chục ngàn con vịt đồ chơi rải rác trên biển và trôi dạt đến các bờ biển trên khắp thế giới?</p>
+    <span class="go">▶ Vào thí nghiệm</span>
+  </div>
+</a>
+<a class="card geo" href="courses/heating-step.html" data-subject="geo" data-search="quá trình khí quyển nhận nhiệt tại sao mặt đất nóng lên vào ban ngày và sau đó nguội đi nhanh chóng vào ban đêm khi mặt trời đã chiếu sáng cả ngày? khí quyển giữ lại bao nhiêu nhiệt cho mặt đất?">
+  <img class="cover" src="covers/heating-step.webp" alt="Quá trình khí quyển nhận nhiệt" loading="lazy">
+  <div class="card-body">
+    <div class="chips"><span class="chip chip-sub">🌍 Địa lý</span><span class="chip">Nguyên lý và hiện tượng</span><span class="chip">9 bước</span></div>
+    <h3>Quá trình khí quyển nhận nhiệt</h3>
+    <p class="q">Tại sao mặt đất nóng lên vào ban ngày và sau đó nguội đi nhanh chóng vào ban đêm khi mặt trời đã chiếu sáng cả ngày? Khí quyển giữ lại bao nhiêu nhiệt cho mặt đất?</p>
+    <span class="go">▶ Vào thí nghiệm</span>
+  </div>
+</a>
+<a class="card geo" href="courses/water-cycle-step.html" data-subject="geo" data-search="quá trình và ý nghĩa địa lý của vòng tuần hoàn nước sông tiếp tục đổ ra biển, tại sao nước biển không tăng?">
+  <img class="cover" src="covers/water-cycle-step.webp" alt="Quá trình và ý nghĩa địa lý của vòng tuần hoàn nước" loading="lazy">
+  <div class="card-body">
+    <div class="chips"><span class="chip chip-sub">🌍 Địa lý</span><span class="chip">Nguyên lý và hiện tượng</span><span class="chip">9 bước</span></div>
+    <h3>Quá trình và ý nghĩa địa lý của vòng tuần hoàn nước</h3>
+    <p class="q">Sông tiếp tục đổ ra biển, tại sao nước biển không tăng?</p>
+    <span class="go">▶ Vào thí nghiệm</span>
+  </div>
+</a>
+<a class="card geo" href="courses/karst-step.html" data-subject="geo" data-search="sự hình thành và nhận dạng địa hình karst xu xiake viết: “các đỉnh dốc đứng cách xa nhau, các cành cạnh tranh nhau”. - làm thế nào mà những đỉnh núi trông giống như mọc lên từ mặt đất này lại đến từ một khối đá duy nhất?">
+  <img class="cover" src="covers/karst-step.webp" alt="Sự hình thành và nhận dạng địa hình karst" loading="lazy">
+  <div class="card-body">
+    <div class="chips"><span class="chip chip-sub">🌍 Địa lý</span><span class="chip">Nguyên lý và hiện tượng</span><span class="chip">7 bước</span></div>
+    <h3>Sự hình thành và nhận dạng địa hình karst</h3>
+    <p class="q">Xu Xiake viết: “Các đỉnh dốc đứng cách xa nhau, các cành cạnh tranh nhau”. - Làm thế nào mà những đỉnh núi trông giống như mọc lên từ mặt đất này lại đến từ một khối đá duy nhất?</p>
+    <span class="go">▶ Vào thí nghiệm</span>
+  </div>
+</a>
+<a class="card geo" href="courses/tectonic-step.html" data-subject="geo" data-search="sự hình thành địa hình kiến tạo tại sao lá hóa thạch của cây lá rộng được tìm thấy trên cao nguyên thanh hải-tây tạng? lực nào đã nâng bề mặt trái đất lên và cắt nó ra?">
+  <img class="cover" src="covers/tectonic-step.webp" alt="Sự hình thành địa hình kiến tạo" loading="lazy">
+  <div class="card-body">
+    <div class="chips"><span class="chip chip-sub">🌍 Địa lý</span><span class="chip">Nguyên lý và hiện tượng</span><span class="chip">6 bước</span></div>
+    <h3>Sự hình thành địa hình kiến tạo</h3>
+    <p class="q">Tại sao lá hóa thạch của cây lá rộng được tìm thấy trên cao nguyên Thanh Hải-Tây Tạng? Lực nào đã nâng bề mặt trái đất lên và cắt nó ra?</p>
+    <span class="go">▶ Vào thí nghiệm</span>
+  </div>
+</a>
+<a class="card geo" href="courses/river-step.html" data-subject="geo" data-search="sự phát triển địa hình sông tại sao đường bờ biển đoạn trấn giang của sông dương tử tiếp tục dịch chuyển về phía bắc?">
+  <img class="cover" src="covers/river-step.webp" alt="Sự phát triển địa hình sông" loading="lazy">
+  <div class="card-body">
+    <div class="chips"><span class="chip chip-sub">🌍 Địa lý</span><span class="chip">Nguyên lý và hiện tượng</span><span class="chip">8 bước</span></div>
+    <h3>Sự phát triển địa hình sông</h3>
+    <p class="q">Tại sao đường bờ biển đoạn Trấn Giang của sông Dương Tử tiếp tục dịch chuyển về phía bắc?</p>
+    <span class="go">▶ Vào thí nghiệm</span>
+  </div>
+</a>
+<a class="card geo" href="courses/enso-step.html" data-subject="geo" data-search="tương tác biển-không khí và el niño và la niña bờ biển peru bị hạn hán quanh năm. tại sao cuối năm 2016 lại mưa lớn khi nước biển ấm lên khiến gần trăm người thiệt mạng?">
+  <img class="cover" src="covers/enso-step.webp" alt="Tương tác biển-không khí và El Niño và La Niña" loading="lazy">
+  <div class="card-body">
+    <div class="chips"><span class="chip chip-sub">🌍 Địa lý</span><span class="chip">Nguyên lý và hiện tượng</span><span class="chip">7 bước</span></div>
+    <h3>Tương tác biển-không khí và El Niño và La Niña</h3>
+    <p class="q">Bờ biển Peru bị hạn hán quanh năm. Tại sao cuối năm 2016 lại mưa lớn khi nước biển ấm lên khiến gần trăm người thiệt mạng?</p>
+    <span class="go">▶ Vào thí nghiệm</span>
+  </div>
+</a>
+<a class="card geo" href="courses/earth-motion-step.html" data-subject="geo" data-search="ý nghĩa địa lý của chuyển động trái đất cùng lúc đó, tại sao ở bắc kinh lại là buổi trưa, ở new york là nửa đêm, và ngày mùa hè lại dài hơn mùa đông?">
+  <img class="cover" src="covers/earth-motion-step.webp" alt="Ý nghĩa địa lý của chuyển động trái đất" loading="lazy">
+  <div class="card-body">
+    <div class="chips"><span class="chip chip-sub">🌍 Địa lý</span><span class="chip">Nguyên lý và hiện tượng</span><span class="chip">9 bước</span></div>
+    <h3>Ý nghĩa địa lý của chuyển động trái đất</h3>
+    <p class="q">Cùng lúc đó, tại sao ở Bắc Kinh lại là buổi trưa, ở New York là nửa đêm, và ngày mùa hè lại dài hơn mùa đông?</p>
+    <span class="go">▶ Vào thí nghiệm</span>
+  </div>
+</a>
+<a class="card geo" href="courses/circulation-step.html" data-subject="geo" data-search="đai áp, đai gió và tuần hoàn ba vòng tại sao hạm đội magellan đi ngược gió ở một số đoạn và thuận gió ở những đoạn khác, nhưng không thể tiến về phía trước khi đạt đến khoảng 30°n?">
+  <img class="cover" src="covers/circulation-step.webp" alt="Đai áp, đai gió và tuần hoàn ba vòng" loading="lazy">
+  <div class="card-body">
+    <div class="chips"><span class="chip chip-sub">🌍 Địa lý</span><span class="chip">Nguyên lý và hiện tượng</span><span class="chip">7 bước</span></div>
+    <h3>Đai áp, đai gió và tuần hoàn ba vòng</h3>
+    <p class="q">Tại sao hạm đội Magellan đi ngược gió ở một số đoạn và thuận gió ở những đoạn khác, nhưng không thể tiến về phía trước khi đạt đến khoảng 30°N?</p>
+    <span class="go">▶ Vào thí nghiệm</span>
+  </div>
+</a>
+<a class="card geo" href="courses/insolation-step.html" data-subject="geo" data-search="điểm chiếu thẳng của mặt trời: bốn mùa và năm đới vì sao độ cao và hướng nắng buổi trưa tại địa điểm trường thay đổi thường xuyên trong năm?">
+  <img class="cover" src="covers/insolation-step.webp" alt="Điểm chiếu thẳng của Mặt Trời: bốn mùa và năm đới" loading="lazy">
+  <div class="card-body">
+    <div class="chips"><span class="chip chip-sub">🌍 Địa lý</span><span class="chip">Nguyên lý và hiện tượng</span><span class="chip">9 bước</span></div>
+    <h3>Điểm chiếu thẳng của Mặt Trời: bốn mùa và năm đới</h3>
+    <p class="q">Vì sao độ cao và hướng nắng buổi trưa tại địa điểm trường thay đổi thường xuyên trong năm?</p>
+    <span class="go">▶ Vào thí nghiệm</span>
+  </div>
+</a>
+  </div>
+  <p class="empty" id="empty" hidden>Không tìm thấy bài nào khớp. Thử từ khoá khác nhé.</p>
+</main>
+<footer>
+  Nội dung gốc: Tongjiang Lab (lab.tongjiang.app, github.com/smithjohn78390/tongjiang-lab), giấy phép CC BY-NC 4.0 — dùng cho mục đích học tập phi thương mại. Các bài bám theo sách giáo khoa Trung Quốc (Nhân dân Giáo dục, bản 2019) nên vị trí chương/bài chỉ để tham khảo. Bản tiếng Việt đăng tại Bé Học Vui.
+</footer>
+<script>
+var grid=document.getElementById('grid'),empty=document.getElementById('empty'),searchEl=document.getElementById('search'),curF='all';
+function norm(s){return (s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/đ/g,'d').replace(/Đ/g,'D')}
+function apply(){
+  var q=norm(searchEl.value.trim()),vis=0;
+  Array.prototype.forEach.call(grid.children,function(c){
+    var okF=curF==='all'||c.getAttribute('data-subject')===curF;
+    var okQ=!q||norm(c.getAttribute('data-search')).indexOf(q)>=0;
+    var ok=okF&&okQ;c.style.display=ok?'':'none';if(ok)vis++;
+  });
+  empty.hidden=vis>0;
+}
+document.getElementById('filters').addEventListener('click',function(e){
+  var b=e.target.closest?e.target.closest('.fbtn'):null;if(!b)return;
+  Array.prototype.forEach.call(document.querySelectorAll('.fbtn'),function(x){x.classList.toggle('active',x===b)});
+  curF=b.getAttribute('data-f');apply();
+});
+searchEl.addEventListener('input',apply);
+</script>
+</body>
+</html>
