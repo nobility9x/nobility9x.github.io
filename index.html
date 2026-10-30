@@ -268,6 +268,13 @@
 #view-quiz .qz-opts .qz-opt:nth-child(4n+3) .qz-letter{background:linear-gradient(135deg,#69db7c,#b2f2bb)}
 #view-quiz .qz-opts .qz-opt:nth-child(4n+4) .qz-letter{background:linear-gradient(135deg,#63e6be,#c3fae8)}
 #view-quiz .qz-mini{border:1.5px solid #e0e7fa;border-radius:999px;background:#f6f8ff;box-shadow:0 5px 12px rgba(90,120,200,.10);color:#44557a}
+#view-quiz .qz-head{flex-wrap:wrap;row-gap:6px}
+#view-quiz .qz-head .qz-actions{margin:0 0 0 auto;display:flex;gap:6px;flex-wrap:nowrap;align-items:center}
+#view-quiz .qz-head .qz-mini{padding:6px 11px;font-size:13.5px;white-space:nowrap;box-shadow:0 2px 0 #d9d2f2}
+#view-quiz .qz-card.bhv-qz-compact .qz-head .qz-actions{margin:0 0 0 auto}
+#view-quiz .qz-card.bhv-qz-compact2 .qz-head .qz-actions{margin:0 0 0 auto}
+#view-quiz .qz-hint{position:fixed;top:84px;left:16px;right:16px;z-index:1300;margin:0;background:#fffbeb;border:2px solid #f0bd45;border-radius:18px;padding:14px 16px;font-size:16.5px;line-height:1.5;color:#713f12;box-shadow:0 16px 40px rgba(80,60,0,.28);cursor:pointer}
+#view-quiz .qz-hint::after{content:"Chạm để đóng ✕";display:block;margin-top:6px;font-size:12px;font-weight:800;color:#a16207}
 #view-quiz .qz-expl{border:1.5px solid #bfe9cf;border-radius:18px;background:#f0fdf5}
 #view-quiz .qz-next{background:linear-gradient(120deg,#ff8a1e,#ffae00);border-radius:999px;box-shadow:0 10px 22px rgba(255,138,30,.40);text-shadow:0 1px 5px rgba(146,64,0,.30)}
 #view-quiz .qz-score{background:#fff3bf;color:#8a5a00}
@@ -8358,6 +8365,36 @@ function __bhvPopCleanup(){
   try{ __bhvUnlockScroll(); }catch(e){}
 }
 window.addEventListener('popstate', function(){ setTimeout(__bhvPopCleanup, 60); });
+
+/* Nghe cau hoi + Goi y: dua len hang tren cua the cho gon;
+   Goi y hien thanh thong bao noi (co dinh tren man hinh) de khong bi lap. */
+function __bhvQzHeadActions(){
+  Array.prototype.forEach.call(document.querySelectorAll('#quiz-stage .qz-card'), function(card){
+    if(!card.dataset.bhvAct){
+      var head = card.querySelector('.qz-head'), act = card.querySelector('.qz-actions');
+      if(head && act && act.parentNode !== head) head.appendChild(act);
+      card.dataset.bhvAct = '1';
+    }
+  });
+  Array.prototype.forEach.call(document.querySelectorAll('#quiz-stage .qz-hint'), function(h){
+    if(h.style.display === 'block'){
+      if(!h.dataset.bhvToast){
+        h.dataset.bhvToast = '1';
+        setTimeout(function(){ if(h.style.display === 'block') h.style.display = 'none'; }, 9000);
+      }
+    } else if(h.dataset.bhvToast){ delete h.dataset.bhvToast; }
+  });
+}
+(function(){
+  var stage = document.getElementById('quiz-stage');
+  if(stage){
+    new MutationObserver(function(){ __bhvQzHeadActions(); }).observe(stage, { childList: true, subtree: true, attributes: true, attributeFilter: ['style', 'class'] });
+  }
+  document.addEventListener('click', function(e){
+    var h = e.target.closest && e.target.closest('#quiz-stage .qz-hint');
+    if(h) h.style.display = 'none';
+  });
+})();
 window.addEventListener('pageshow', function(e){ if(e && e.persisted) __bhvPopCleanup(); });
 
 function makePager(container, itemSel, opts){
