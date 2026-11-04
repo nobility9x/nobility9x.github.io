@@ -2,6 +2,7 @@
 <html lang="vi">
 <head>
 <meta charset="utf-8">
+<meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Thử nghiệm: Tự động đọc phụ đề tiếng Việt</title>
 <style>
@@ -200,6 +201,9 @@ function splitText(text){
 function loadOneAudio(part, attempt){
   return new Promise((resolve) => {
     const a = new Audio();
+    // Không gửi Referer cho Google: có referer lạ Google có thể trả trang HTML thay vì MP3 -> Chrome chặn ORB (ERR_BLOCKED_BY_ORB)
+    a.setAttribute('referrerpolicy', 'no-referrer');
+    try { a.referrerPolicy = 'no-referrer'; } catch(e) {}
     a.preload = 'auto';
     let done = false;
     const finish = (ok) => { if (!done) { done = true; resolve(ok ? a : null); } };
