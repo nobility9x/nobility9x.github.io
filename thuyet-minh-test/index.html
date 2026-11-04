@@ -35,7 +35,7 @@
 <body>
 <div class="wrap">
   <h1>🎬 Thử nghiệm: Tự động đọc phụ đề</h1>
-  <p class="sub">Phim mẫu: <b>Elephants Dream</b> (Blender, phim mở) — đoạn 0:10–1:42 của phim gốc. Trang tự tải phụ đề tiếng Anh, <b>tự dịch máy sang tiếng Việt</b>, tự hiện chữ và <b>tự đọc thành tiếng</b> đúng lúc nhân vật nói. Không có bản thu sẵn nào trong trang này.</p>
+  <p class="sub">Phim mẫu: <b>Elephants Dream</b> (Blender, phim mở) — đoạn 0:10–1:42 của phim gốc. Trang tự tải phụ đề tiếng Anh, <b>tự dịch máy sang tiếng Việt</b>, tự hiện chữ và <b>tự đọc thành tiếng bằng giọng Google Tiếng Việt tải từ máy chủ</b> đúng lúc nhân vật nói. Không có bản thu sẵn nào trong trang này.</p>
 
   <div class="player">
     <video id="vid" controls playsinline preload="metadata" src="video.mp4"></video>
@@ -49,19 +49,19 @@
 
   <div class="panel">
     <div id="statusLine">Đang tải phụ đề…</div>
-    <div id="voiceInfo">Giọng đọc: đang tìm giọng tiếng Việt trên máy này…</div>
+    <div id="voiceInfo">Giọng: Google Tiếng Việt (tải từ máy chủ, không dùng giọng của điện thoại) — đang chuẩn bị…</div>
   </div>
 
   <div class="panel">
-    <h2>Đổi phim khác: nạp phụ đề khác (tự dịch + tự đọc lại từ đầu)</h2>
-    <p>Chọn file phụ đề .srt / .vtt trên máy, hoặc dán link file phụ đề (tiếng Anh hay bất kỳ tiếng nào) rồi ấn Nạp. Hệ thống sẽ tự dịch sang tiếng Việt và đọc theo file mới — không cần sửa trang.</p>
+    <h2>Đổi phim khác: nạp phụ đề khác (tự dịch + tự tải giọng đọc + tự đọc lại từ đầu)</h2>
+    <p>Chọn file phụ đề .srt / .vtt trên máy, hoặc dán link file phụ đề (tiếng Anh hay bất kỳ tiếng nào) rồi ấn Nạp. Hệ thống sẽ tự dịch sang tiếng Việt, tự tải giọng đọc Google cho từng câu và đọc theo file mới — không cần sửa trang.</p>
     <label>📁 File phụ đề: <input type="file" id="subFile" accept=".srt,.vtt,text/plain"></label>
     <input type="text" id="subUrl" placeholder="Hoặc dán link file .srt / .vtt vào đây">
     <button class="miniBtn" id="loadUrlBtn">Nạp phụ đề từ link</button>
   </div>
 
   <div id="debug" aria-label="Nhật ký kiểm tra"></div>
-  <p class="credit">Cơ chế thử nghiệm trên web: dịch máy qua Google Translate (gtx), đọc bằng giọng speechSynthesis của chính thiết bị đang xem. Elephants Dream © Blender Foundation / Netherlands Media Art Institute, CC-BY 2.5 — phụ đề tiếng Anh: Wikimedia Commons (TimedText chính thức của phim).</p>
+  <p class="credit">Cơ chế thử nghiệm trên web: dịch máy qua Google Translate (gtx); giọng đọc là MP3 Google Tiếng Việt tải trực tiếp từ máy chủ Google cho từng câu phụ đề (translate_tts) — KHÔNG dùng giọng speechSynthesis của thiết bị. Chỉ khi một câu tải MP3 thất bại sau 2 lần thử, trang mới tạm dùng giọng của máy cho riêng câu đó và ghi rõ số câu lỗi. Elephants Dream © Blender Foundation / Netherlands Media Art Institute, CC-BY 2.5 — phụ đề tiếng Anh: Wikimedia Commons (TimedText chính thức của phim).</p>
 </div>
 
 <script>
@@ -74,12 +74,23 @@ const statusLine = document.getElementById('statusLine');
 const voiceInfo = document.getElementById('voiceInfo');
 const debugEl = document.getElementById('debug');
 
-let cues = [];           // {start, end, en, vi}
+let cues = [];           // {start, end, en, vi, parts:[{text,audio,ready,failed}], ttsOk}
 let readOn = true;       // mặc định BẬT
 let ccOn = true;
 let activeCue = -1;
-let viVoice = null;
 let translatedCount = 0;
+
+/* ----- Thống kê tải giọng đọc ----- */
+let ttsReadyCues = 0;    // số cue đã tải MP3 xong hẳn
+let ttsErrorCues = 0;    // số cue tải MP3 thất bại (sau 2 lần thử) -> fallback
+let ttsTotalCues = 0;
+let fallbackUsed = 0;    // số cue thực tế phải đọc bằng giọng máy dự phòng
+
+/* ----- Audio đang phát ----- */
+let currentAudio = null;
+let currentCueIdx = -1;
+let currentPartIdx = -1;
+let currentRate = 1;
 
 function log(msg){
   const t = new Date().toLocaleTimeString('vi-VN');
@@ -88,24 +99,26 @@ function log(msg){
 }
 function setStatus(msg){ statusLine.textContent = msg; }
 
-/* ---------- Giọng đọc ---------- */
-function pickVoice(){
-  const vs = speechSynthesis.getVoices();
-  viVoice = vs.find(v => /vi[-_]VN/i.test(v.lang)) || vs.find(v => /^vi/i.test(v.lang)) || null;
-  if (viVoice) {
-    voiceInfo.textContent = 'Giọng đọc đang dùng: ' + viVoice.name + ' (' + viVoice.lang + ')';
-  } else if (vs.length) {
-    voiceInfo.textContent = '⚠️ Máy này KHÔNG có giọng tiếng Việt — trình duyệt sẽ đọc bằng giọng mặc định (' + (vs[0].name || 'không tên') + '), nghe sẽ không chuẩn tiếng Việt.';
-  } else {
-    voiceInfo.textContent = '⚠️ Chưa lấy được danh sách giọng đọc trên máy này.';
+function updateVoiceInfo(){
+  let s = 'Giọng: Google Tiếng Việt (tải từ máy chủ, không dùng giọng của điện thoại)';
+  if (ttsTotalCues > 0) {
+    s += ' — đã sẵn sàng ' + ttsReadyCues + '/' + ttsTotalCues + ' câu';
+    if (ttsErrorCues > 0) s += ' — ⚠️ lỗi tải MP3: ' + ttsErrorCues + ' câu (câu lỗi sẽ tạm đọc bằng giọng máy của thiết bị)';
+    if (fallbackUsed > 0) s += ' — đã phải dùng giọng máy dự phòng cho ' + fallbackUsed + ' câu';
   }
-  log('Voices: ' + vs.length + ' giọng, giọng Việt: ' + (viVoice ? viVoice.name : 'KHÔNG CÓ'));
-}
-if ('speechSynthesis' in window) {
-  pickVoice();
-  speechSynthesis.onvoiceschanged = pickVoice;
-} else {
-  voiceInfo.textContent = '⚠️ Trình duyệt này không có speechSynthesis — không đọc được.';
+  voiceInfo.textContent = s;
+  window.__tmTTS = {
+    ready: ttsReadyCues, total: ttsTotalCues, errorCues: ttsErrorCues, fallbackUsed: fallbackUsed,
+    cues: cues.map((c, i) => ({
+      cue: i + 1,
+      ok: !!c.ttsOk,
+      parts: (c.parts || []).map(p => ({
+        readyState: p.audio ? p.audio.readyState : -1,
+        duration: p.audio && isFinite(p.audio.duration) ? p.audio.duration : 0,
+        failed: !!p.failed
+      }))
+    }))
+  };
 }
 
 /* ---------- Parse phụ đề SRT/VTT ---------- */
@@ -127,7 +140,7 @@ function parseSubs(text){
     const [a, c] = lines[ti].split('-->');
     const body = lines.slice(ti+1).join(' ').replace(/<[^>]+>/g, '').trim();
     if (!body) continue;
-    out.push({ start: parseTime(a), end: parseTime(c.trim().split(/\s+/)[0]), en: body, vi: null });
+    out.push({ start: parseTime(a), end: parseTime(c.trim().split(/\s+/)[0]), en: body, vi: null, parts: [], ttsOk: false });
   }
   out.sort((x,y) => x.start - y.start);
   return out;
@@ -137,7 +150,6 @@ function parseSubs(text){
 const gtCache = new Map();
 async function translateOne(text){
   if (gtCache.has(text)) return gtCache.get(text);
-  // Đã là tiếng Việt (có dấu) thì giữ nguyên
   if (/[àáạảãâầấậẩẫăằắặẳẵèéẹẻẽêềếệểễìíịỉĩòóọỏõôồốộổỗơờớợởỡùúụủũưừứựửữỳýỵỷỹđ]/i.test(text)) {
     gtCache.set(text, text); return text;
   }
@@ -157,18 +169,174 @@ async function translateAll(list){
     translatedCount++;
     setStatus('Đã dịch máy ' + translatedCount + '/' + list.length + ' câu phụ đề…');
   }
-  setStatus('✅ Sẵn sàng: ' + list.length + ' câu phụ đề đã tự dịch sang tiếng Việt. Ấn phát video để nghe đọc.');
   log('Dịch máy xong: ' + list.length + ' cue');
 }
 
-/* ---------- Nạp phụ đề ---------- */
+/* ---------- Giọng đọc: Google TTS MP3 tải trước cho từng cue ---------- */
+function ttsUrl(text, attempt){
+  // Cùng một dịch vụ Google Translate TTS (translate_tts, client tw-ob).
+  // Lần 1 qua host translate.googleapis.com, lần thử lại qua translate.google.com — host nào chạy được thì dùng.
+  const host = (attempt && attempt > 1) ? 'translate.google.com' : 'translate.googleapis.com';
+  return 'https://' + host + '/translate_tts?ie=UTF-8&tl=vi&client=tw-ob&q=' + encodeURIComponent(text);
+}
+// Endpoint giới hạn ~200 ký tự/lượt: câu dài thì cắt theo ranh giới câu, mỗi phần <=180 ký tự
+function splitText(text){
+  text = (text || '').replace(/\s+/g, ' ').trim();
+  if (text.length <= 180) return text ? [text] : [];
+  const sents = text.match(/[^.!?…]+[.!?…]*\s*/g) || [text];
+  const parts = [];
+  let cur = '';
+  for (let s of sents) {
+    while (s.length > 180) {
+      if (cur) { parts.push(cur); cur = ''; }
+      parts.push(s.slice(0, 180)); s = s.slice(180);
+    }
+    if ((cur + s).length > 180) { if (cur) parts.push(cur); cur = s; }
+    else cur += s;
+  }
+  if (cur.trim()) parts.push(cur.trim());
+  return parts.map(p => p.trim()).filter(Boolean);
+}
+function loadOneAudio(part, attempt){
+  return new Promise((resolve) => {
+    const a = new Audio();
+    a.preload = 'auto';
+    let done = false;
+    const finish = (ok) => { if (!done) { done = true; resolve(ok ? a : null); } };
+    const timer = setTimeout(() => { log('Tải MP3 quá 20s (lần ' + attempt + '): "' + part.text.slice(0, 40) + '…"'); finish(null); }, 20000);
+    a.addEventListener('canplay', () => { clearTimeout(timer); finish(a); }, { once: true });
+    a.addEventListener('error', () => { clearTimeout(timer); finish(null); }, { once: true });
+    a.src = ttsUrl(part.text, attempt);
+    a.load();
+  });
+}
+async function loadPartAudio(part){
+  let a = await loadOneAudio(part, 1);
+  if (!a) {
+    log('MP3 lỗi lần 1, thử lại: "' + part.text.slice(0, 40) + '…"');
+    a = await loadOneAudio(part, 2);
+  }
+  if (a) { part.audio = a; part.failed = false; }
+  else { part.audio = null; part.failed = true; }
+  return !!a;
+}
+async function preloadAllTTS(list){
+  ttsTotalCues = list.length; ttsReadyCues = 0; ttsErrorCues = 0; fallbackUsed = 0;
+  updateVoiceInfo();
+  setStatus('Đã dịch xong ' + list.length + ' câu. Đang tải trước giọng đọc Google Tiếng Việt cho từng câu…');
+  const t0 = performance.now();
+  let next = 0;
+  async function worker(){
+    while (next < list.length) {
+      const i = next++;
+      const cue = list[i];
+      cue.parts = splitText(cue.vi || '').map(tx => ({ text: tx, audio: null, failed: false }));
+      let ok = cue.parts.length > 0;
+      for (const p of cue.parts) { if (!await loadPartAudio(p)) ok = false; }
+      cue.ttsOk = ok;
+      if (ok) ttsReadyCues++; else ttsErrorCues++;
+      updateVoiceInfo();
+      setStatus('Đang tải giọng đọc Google: ' + (ttsReadyCues + ttsErrorCues) + '/' + list.length + ' câu (xong hẳn ' + ttsReadyCues + ', lỗi ' + ttsErrorCues + ')…');
+    }
+  }
+  await Promise.all([worker(), worker(), worker()]);
+  const secs = ((performance.now() - t0) / 1000).toFixed(1);
+  // Tổng dung lượng ước qua performance timing (nếu trình duyệt cho số)
+  let bytes = 0;
+  try {
+    for (const e of performance.getEntriesByType('resource')) {
+      if (e.name.includes('translate_tts')) bytes += (e.transferSize || e.encodedBodySize || 0);
+    }
+  } catch(e) {}
+  window.__tmTTSLoad = { seconds: Number(secs), bytes: bytes };
+  if (ttsErrorCues === 0) {
+    setStatus('✅ Sẵn sàng: ' + list.length + ' câu đã tự dịch + tải xong giọng Google Tiếng Việt trong ' + secs + 's. Ấn phát video để nghe đọc.');
+  } else {
+    setStatus('⚠️ Sẵn sàng một phần: giọng Google xong ' + ttsReadyCues + '/' + list.length + ' câu, lỗi tải ' + ttsErrorCues + ' câu (câu lỗi sẽ đọc bằng giọng máy dự phòng). Tải giọng mất ' + secs + 's.');
+  }
+  log('Tải giọng Google xong: ' + ttsReadyCues + '/' + list.length + ' cue OK, lỗi ' + ttsErrorCues + ', mất ' + secs + 's, ~' + bytes + ' byte (theo performance timing)');
+  updateVoiceInfo();
+}
+
+/* ---------- Fallback: chỉ cho cue tải MP3 thất bại ---------- */
+function pickViVoice(){
+  const vs = speechSynthesis.getVoices();
+  return vs.find(v => /vi[-_]VN/i.test(v.lang)) || vs.find(v => /^vi/i.test(v.lang)) || null;
+}
+function fallbackSpeak(i){
+  const cue = cues[i];
+  fallbackUsed++;
+  updateVoiceInfo();
+  log('⚠️ Cue ' + (i+1) + ' không có MP3 Google — fallback giọng máy của thiết bị cho riêng câu này');
+  try {
+    speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(cue.vi);
+    u.lang = 'vi-VN';
+    const v = pickViVoice(); if (v) u.voice = v;
+    u.rate = 1.05;
+    speechSynthesis.speak(u);
+    window.__tmState = { engine: 'speechSynthesis-fallback', playing: true, cue: i + 1, text: cue.vi, readOn: readOn };
+  } catch(e) { log('Fallback cũng lỗi: ' + e.message); }
+}
+
+/* ---------- Phát MP3 của cue ---------- */
+function stopCurrentAudio(){
+  if (currentAudio) {
+    try { currentAudio.pause(); currentAudio.currentTime = 0; } catch(e) {}
+    currentAudio = null;
+  }
+  currentCueIdx = -1; currentPartIdx = -1;
+  try { speechSynthesis.cancel(); } catch(e) {}
+}
+function cueWindow(i){
+  const cue = cues[i];
+  const nextStart = (i + 1 < cues.length) ? cues[i + 1].start : Math.max(cue.end, (isFinite(vid.duration) ? vid.duration : cue.end));
+  return Math.max(cue.end - cue.start, nextStart - cue.start, 0.8);
+}
+function playPart(i, partIdx){
+  const cue = cues[i];
+  if (!cue || partIdx >= cue.parts.length) return;
+  if (!readOn || vid.paused || activeCue !== i) return;
+  const part = cue.parts[partIdx];
+  const a = part.audio;
+  if (!a) { if (partIdx === 0) fallbackSpeak(i); return; }
+  currentAudio = a; currentCueIdx = i; currentPartIdx = partIdx;
+  try { a.currentTime = 0; } catch(e) {}
+  a.playbackRate = currentRate;
+  a.onended = () => {
+    if (currentAudio === a) currentAudio = null;
+    playPart(i, partIdx + 1);
+  };
+  const p = a.play();
+  if (p) p.catch(e => log('Phát MP3 cue ' + (i+1) + ' bị chặn/lỗi: ' + e.name + ' ' + e.message));
+  log('🔊 Đang đọc (Google TTS) cue ' + (i+1) + (cue.parts.length > 1 ? ' phần ' + (partIdx+1) + '/' + cue.parts.length : '') + ': "' + part.text + '" (rate ' + currentRate.toFixed(2) + ')');
+  window.__tmState = { engine: 'google-tts', playing: true, cue: i + 1, part: partIdx + 1, text: part.text, readOn: readOn };
+}
+function speakCue(i){
+  const cue = cues[i];
+  if (!cue || !cue.vi) return;
+  stopCurrentAudio();
+  if (!cue.ttsOk || !cue.parts || !cue.parts.length || !cue.parts[0].audio) { fallbackSpeak(i); return; }
+  // Chỉnh tốc độ nếu MP3 dài hơn khoảng trống tới cue kế
+  const totalDur = cue.parts.reduce((s, p) => s + (p.audio && isFinite(p.audio.duration) ? p.audio.duration : 0), 0);
+  const win = cueWindow(i);
+  currentRate = totalDur > win ? Math.min(1.4, totalDur / win) : 1.0;
+  log('Cue ' + (i+1) + ': MP3 dài ' + totalDur.toFixed(2) + 's, khoảng trống ' + win.toFixed(2) + 's -> rate ' + currentRate.toFixed(2));
+  currentCueIdx = i;
+  playPart(i, 0);
+}
+
+/* ---------- Nạp phụ đề: dịch -> tải MP3 -> sẵn sàng đọc ---------- */
 async function loadSubsFromText(text, sourceName){
-  speechSynthesis.cancel();
+  stopCurrentAudio();
   activeCue = -1;
   cues = parseSubs(text);
+  ttsTotalCues = cues.length; ttsReadyCues = 0; ttsErrorCues = 0; fallbackUsed = 0;
+  updateVoiceInfo();
   log('Đã parse phụ đề từ ' + sourceName + ': ' + cues.length + ' cue');
   setStatus('Đã tải ' + cues.length + ' câu phụ đề (' + sourceName + '), đang dịch máy sang tiếng Việt…');
   await translateAll(cues);
+  await preloadAllTTS(cues);
 }
 async function loadDefaultSubs(){
   try {
@@ -198,24 +366,6 @@ document.getElementById('loadUrlBtn').addEventListener('click', async () => {
   }
 });
 
-/* ---------- Đọc cue ---------- */
-function speakCue(i){
-  const cue = cues[i];
-  if (!cue || !cue.vi) return;
-  speechSynthesis.cancel(); // cắt câu cũ, tránh chồng tiếng
-  const u = new SpeechSynthesisUtterance(cue.vi);
-  u.lang = 'vi-VN';
-  if (viVoice) u.voice = viVoice;
-  const dur = Math.max(0.8, cue.end - cue.start);
-  const need = cue.vi.length / (dur * 13); // ~13 ký tự/giây ở rate 1
-  u.rate = Math.min(1.35, Math.max(1.0, need));
-  u.onstart = () => log('🔊 Đang đọc cue ' + (i+1) + ': "' + cue.vi + '" (rate ' + u.rate.toFixed(2) + ')');
-  u.onend = () => log('⏹ Đọc xong cue ' + (i+1));
-  u.onerror = (e) => log('Lỗi đọc cue ' + (i+1) + ': ' + e.error);
-  speechSynthesis.speak(u);
-  window.__tmState = { speaking: true, cue: i+1, text: cue.vi, readOn: readOn };
-}
-
 /* ---------- Đồng bộ theo video ---------- */
 function tick(){
   const t = vid.currentTime;
@@ -225,8 +375,15 @@ function tick(){
   }
   ccText.textContent = (ccOn && idx >= 0 && cues[idx].vi) ? cues[idx].vi : '';
   if (idx !== activeCue) {
+    if (idx < 0 && currentAudio) stopCurrentAudio(); // ra khỏi cue mà MP3 còn đọc dở thì dừng
     activeCue = idx;
     if (idx >= 0 && readOn && !vid.paused) speakCue(idx);
+  }
+  if (currentAudio) {
+    window.__tmAudio = { cue: currentCueIdx + 1, part: currentPartIdx + 1, paused: currentAudio.paused,
+      currentTime: currentAudio.currentTime, duration: isFinite(currentAudio.duration) ? currentAudio.duration : 0,
+      rate: currentAudio.playbackRate };
+    if (!currentAudio.paused) window.__tmState = { engine: 'google-tts', playing: true, cue: currentCueIdx + 1, readOn: readOn };
   }
   window.__tmTick = { t: t, activeCue: idx + 1 };
 }
@@ -235,8 +392,8 @@ vid.addEventListener('play', () => {
   log('Video: phát (tiếng gốc volume=' + vid.volume + ')');
   activeCue = -2; // ép tick sau nhận lại cue hiện tại để đọc tiếp
 });
-vid.addEventListener('pause', () => { log('Video: dừng — huỷ đọc'); speechSynthesis.cancel(); });
-vid.addEventListener('seeked', () => { activeCue = -2; log('Video: tua tới ' + vid.currentTime.toFixed(1) + 's'); });
+vid.addEventListener('pause', () => { log('Video: dừng — dừng giọng đọc'); stopCurrentAudio(); });
+vid.addEventListener('seeked', () => { stopCurrentAudio(); activeCue = -2; log('Video: tua tới ' + vid.currentTime.toFixed(1) + 's'); });
 
 /* ---------- Nút bật/tắt ĐỌC PHỤ ĐỀ ---------- */
 function applyReadState(){
@@ -249,8 +406,8 @@ function applyReadState(){
 readBtn.addEventListener('click', () => {
   readOn = !readOn;
   if (!readOn) {
-    speechSynthesis.cancel();
-    log('🔇 ĐÃ TẮT đọc phụ đề — huỷ giọng đọc ngay, tiếng gốc về 1.0');
+    stopCurrentAudio();
+    log('🔇 ĐÃ TẮT đọc phụ đề — dừng MP3 đang đọc ngay, tiếng gốc về 1.0');
   } else {
     log('🔊 ĐÃ BẬT đọc phụ đề — tiếng gốc hạ 0.2, đọc từ cue hiện tại');
     activeCue = -2;
@@ -267,8 +424,9 @@ ccBtn.addEventListener('click', () => {
 });
 
 applyReadState();
+updateVoiceInfo();
 loadDefaultSubs();
-log('Trang đã mở — cơ chế tự động: tải phụ đề → dịch máy → đọc theo cue');
+log('Trang đã mở — cơ chế tự động: tải phụ đề → dịch máy → tải MP3 giọng Google từng câu → đọc theo cue');
 </script>
 </body>
 </html>
