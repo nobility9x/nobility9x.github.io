@@ -127,7 +127,7 @@ function parseSubs(text){
     const [a, c] = lines[ti].split('-->');
     const body = lines.slice(ti+1).join(' ').replace(/<[^>]+>/g, '').trim();
     if (!body) continue;
-    out.push({ start: parseTime(a), end: parseTime(c.split(' ')[0]), en: body, vi: null });
+    out.push({ start: parseTime(a), end: parseTime(c.trim().split(/\s+/)[0]), en: body, vi: null });
   }
   out.sort((x,y) => x.start - y.start);
   return out;
