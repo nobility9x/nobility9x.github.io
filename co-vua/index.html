@@ -225,6 +225,36 @@ input[type=text]{font-size:14px; padding:8px 10px; border-radius:8px; border:1px
 #bhvBar{background:#262421;padding:7px 10px;}
 #bhvBar a{display:inline-block;color:#F5F2EA;text-decoration:none;font-weight:700;font-size:14.5px;background:#3A3733;border:1px solid #55524C;border-radius:999px;padding:6px 14px;}
 </style>
+<style>
+/* ===== GIAO DIEN MAY TINH (ban web Be Hoc Vui) — chi ap dung man rong >=900px va cao >=560px, dien thoai giu nguyen ===== */
+@media (min-width:900px) and (min-height:560px){
+  /* Trang chu: khoi giua man, o lon thoang */
+  #viewHome{max-width:1060px; margin:0 auto; padding:20px 22px 28px;}
+  #homeChips{max-width:780px; margin:0 auto;}
+  #homeChips .chip{padding:13px 0; font-size:14.5px;}
+  #btnStartGame{max-width:580px; margin-left:auto; margin-right:auto; display:block;}
+  #homeTiles{gap:14px;}
+  #homeTiles .tile{min-height:128px;}
+  /* Cac man danh sach: cot giua doc thoai mai */
+  #viewPuzzleList,#viewLearn,#viewMateList,#viewWatch,#viewTrain,#viewHistory,#viewSettings{max-width:900px; margin:0 auto; padding-left:20px; padding-right:20px;}
+  /* Man co ban co: ban co ben trai, bang dieu khien/nuoc di ben phai */
+  .bscreen{display:grid; grid-template-columns:minmax(0,min(700px,calc(100dvh - 215px))) minmax(300px,400px); column-gap:16px; row-gap:8px; justify-content:center; align-content:start; height:auto; min-height:calc(100dvh - 46px); overflow:visible; padding:12px 14px 20px;}
+  .bscreen > *:not(.boardFull){grid-column:2; min-width:0;}
+  .bscreen > .boardFull{grid-column:1; grid-row:1 / span 40; width:100%; height:auto; aspect-ratio:1/1; align-self:start;}
+  /* Rieng man Choi: thanh nguoi choi tren/duoi nam cung cot voi ban co */
+  #viewGame .bscreen{grid-template-rows:auto auto 1fr;}
+  #viewGame .pbar{grid-column:1;}
+  #viewGame .pbar:first-child{grid-row:1;}
+  #viewGame #boardGame{grid-row:2;}
+  #viewGame .pbar:nth-child(3){grid-row:3;}
+  #viewGame #movesPanel{max-height:calc(100dvh - 330px); min-height:180px;}
+  #movesPanel{max-height:52dvh;}
+  .ctrlrow{flex-wrap:wrap;}
+  /* Co quan co + vong goi y tinh theo CO BAN CO (khong theo man hinh) */
+  .boardFull .pc{font-size:calc(min(700px, 100dvh - 215px) / 9.2);}
+  .boardFull .ring{border-width:calc(min(700px, 100dvh - 215px) / 65);}
+}
+</style>
 </head>
 <body>
 <div id="bhvBar"><a href="../">🏠 Bé Học Vui</a></div>
