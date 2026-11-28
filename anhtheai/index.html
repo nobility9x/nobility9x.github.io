@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Ảnh Thẻ AI — Tạo ảnh thẻ chuẩn bằng AI</title>
+<style>
+  :root{
+    --blue:#2563eb; --blue-dark:#1d4ed8; --blue-soft:#eff6ff;
+    --ink:#0f172a; --muted:#64748b; --line:#e2e8f0; --bg:#f8fafc;
+    --card:#ffffff; --danger:#dc2626; --danger-bg:#fef2f2;
+    --ok:#15803d; --ok-bg:#f0fdf4; --radius:14px;
+    --shadow:0 1px 2px rgba(15,23,42,.05),0 4px 16px rgba(15,23,42,.05);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{-webkit-text-size-adjust:100%}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+    background:var(--bg);color:var(--ink);font-size:15.5px;line-height:1.5;
+    padding:0 14px calc(28px + env(safe-area-inset-bottom));}
+  .wrap{max-width:560px;margin:0 auto}
+  header{padding:22px 2px 14px;text-align:center}
+  header h1{font-size:24px;font-weight:700;letter-spacing:-.02em}
+  header h1 .ai{color:var(--blue)}
+  header p{color:var(--muted);font-size:13.5px;margin-top:3px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+    box-shadow:var(--shadow);padding:16px;margin-bottom:14px}
+  .card h2{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;
+    color:var(--muted);margin-bottom:12px;display:flex;align-items:center;gap:7px}
+  .card h2 .n{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;
+    border-radius:50%;background:var(--blue);color:#fff;font-size:12px;letter-spacing:0}
+  label.flabel{display:block;font-size:13.5px;font-weight:600;margin:12px 0 6px}
+  label.flabel:first-of-type{margin-top:0}
+  input[type=password],input[type=text],input[type=number],select,textarea{
+    width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:10px;
+    font-size:15.5px;font-family:inherit;color:var(--ink);background:#fff;min-height:46px}
+  textarea{min-height:64px;resize:vertical}
+  input:focus,select:focus,textarea:focus{outline:2px solid var(--blue);outline-offset:0;border-color:var(--blue)}
+  .note{font-size:12.5px;color:var(--muted);margin-top:7px}
+  .note a{color:var(--blue);text-decoration:none;font-weight:600}
+  /* Khu tải ảnh */
+  .drop{border:1.5px dashed #cbd5e1;border-radius:12px;padding:18px 12px;text-align:center;
+    cursor:pointer;background:#fbfdff;transition:border-color .15s,background .15s}
+  .drop:hover,.drop:focus{border-color:var(--blue);background:var(--blue-soft)}
+  .drop .ic{font-size:30px;line-height:1}
+  .drop .t1{font-weight:600;margin-top:6px}
+  .drop .t2{font-size:12.5px;color:var(--muted)}
+  .drop input{display:none}
+  .previewRow{display:none;margin-top:12px;align-items:center;gap:12px}
+  .previewRow.show{display:flex}
+  .previewRow img{width:74px;height:92px;object-fit:cover;border-radius:8px;border:1px solid var(--line)}
+  .previewRow .fn{font-size:13px;color:var(--muted);word-break:break-all}
+  .previewRow .chg{color:var(--blue);font-weight:600;font-size:13.5px;cursor:pointer;white-space:nowrap}
+  /* Chips chọn 1 */
+  .chips{display:flex;flex-wrap:wrap;gap:8px}
+  .chip{padding:9px 14px;border:1px solid var(--line);border-radius:999px;background:#fff;
+    font-size:14px;font-weight:500;cursor:pointer;min-height:42px;display:inline-flex;align-items:center;
+    user-select:none;-webkit-user-select:none}
+  .chip.on{background:var(--blue);border-color:var(--blue);color:#fff;font-weight:600}
+  .customSize{display:none;gap:10px;margin-top:10px}
+  .customSize.show{display:flex}
+  .customSize .col{flex:1}
+  .colorRow{display:none;align-items:center;gap:10px;margin-top:10px}
+  .colorRow.show{display:flex}
+  input[type=color]{width:52px;height:42px;border:1px solid var(--line);border-radius:10px;background:#fff;padding:3px;cursor:pointer}
+  /* Công tắc gạt */
+  .switchRow{display:flex;align-items:center;justify-content:space-between;gap:12px;
+    padding:10px 0;border-bottom:1px solid #f1f5f9}
+  .switchRow:last-child{border-bottom:none}
+  .switchRow span{font-size:14.5px}
+  .sw{position:relative;width:48px;height:28px;flex:none}
+  .sw input{opacity:0;width:100%;height:100%;position:absolute;inset:0;margin:0;cursor:pointer;z-index:2}
+  .sw .tr{position:absolute;inset:0;background:#cbd5e1;border-radius:999px;transition:background .15s}
+  .sw .tr::after{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;
+    background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.25);transition:left .15s}
+  .sw input:checked + .tr{background:var(--blue)}
+  .sw input:checked + .tr::after{left:23px}
+  .sw input:focus-visible + .tr{outline:2px solid var(--blue);outline-offset:2px}
+  /* Nút chính */
+  .btnMain{width:100%;padding:15px;border:none;border-radius:12px;background:var(--blue);color:#fff;
+    font-size:16.5px;font-weight:700;letter-spacing:.02em;cursor:pointer;min-height:54px;
+    box-shadow:0 4px 14px rgba(37,99,235,.28)}
+  .btnMain:hover:not(:disabled){background:var(--blue-dark)}
+  .btnMain:disabled{background:#94a3b8;box-shadow:none;cursor:not-allowed}
+  .status{display:none;margin-top:12px;padding:11px 13px;border-radius:10px;font-size:14px}
+  .status.show{display:block}
+  .status.err{background:var(--danger-bg);color:var(--danger);border:1px solid #fecaca}
+  .status.busy{background:var(--blue-soft);color:var(--blue-dark);border:1px solid #bfdbfe}
+  .status.ok{background:var(--ok-bg);color:var(--ok);border:1px solid #bbf7d0}
+  /* Kết quả */
+  #resultCard{display:none}
+  #resultCard.show{display:block}
+  .resultImg{display:block;margin:0 auto;max-width:230px;width:100%;border:1px solid var(--line);
+    border-radius:8px;box-shadow:var(--shadow)}
+  .resultMeta{text-align:center;color:var(--muted);font-size:13px;margin:10px 0 14px}
+  .btnRow{display:flex;gap:10px}
+  .btnSec{flex:1;padding:12px 8px;border-radius:11px;border:1px solid var(--blue);background:#fff;
+    color:var(--blue);font-size:14.5px;font-weight:600;cursor:pointer;min-height:48px}
+  .btnSec:hover{background:var(--blue-soft)}
+  footer{text-align:center;color:var(--muted);font-size:12px;padding:6px 10px 0}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Ảnh Thẻ <span class="ai">AI</span></h1>
+    <p>Tạo ảnh thẻ chuẩn kích thước bằng AI — giữ nguyên khuôn mặt gốc</p>
+  </header>
+
+  <!-- 1. Khoá API -->
+  <section class="card">
+    <h2><span class="n">1</span> Khoá API Gemini</h2>
+    <label class="flabel" for="apiKey">Khoá API của bạn</label>
+    <input type="password" id="apiKey" placeholder="Dán khoá API Gemini vào đây" autocomplete="off">
+    <p class="note">Khoá chỉ lưu trên máy của bạn (trong app/trình duyệt này), không gửi đi đâu
+      ngoài Google AI khi xuất ảnh. Chưa có khoá? Lấy miễn phí tại
+      <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">aistudio.google.com/apikey</a></p>
+    <label class="flabel" for="modelSel">Model AI</label>
+    <select id="modelSel">
+      <option value="gemini-2.5-flash-image" selected>gemini-2.5-flash-image (mặc định)</option>
+      <option value="gemini-3.1-flash-image">gemini-3.1-flash-image</option>
+      <option value="gemini-3-pro-image-preview">gemini-3-pro-image-preview</option>
+    </select>
+  </section>
+
+  <!-- 2. Tải ảnh -->
+  <section class="card">
+    <h2><span class="n">2</span> Ảnh chân dung gốc</h2>
+    <label class="drop" id="dropZone" tabindex="0">
+      <input type="file" id="fileInput" accept="image/*">
+      <div class="ic">🖼️</div>
+      <div class="t1">Tải lên một ảnh chân dung</div>
+      <div class="t2">Chạm để chọn ảnh từ máy — mặt rõ, nhìn thẳng là tốt nhất</div>
+    </label>
+    <div class="previewRow" id="previewRow">
+      <img id="previewImg" alt="Ảnh gốc đã chọn">
+      <div style="flex:1;min-width:0">
+        <div class="fn" id="fileName"></div>
+        <span class="chg" id="changePhoto">Đổi ảnh khác</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3. Tuỳ chọn -->
+  <section class="card">
+    <h2><span class="n">3</span> Tuỳ chọn ảnh thẻ</h2>
+
+    <label class="flabel">Kích thước</label>
+    <div class="chips" id="sizeChips">
+      <span class="chip" data-size="2x3">2 × 3 cm</span>
+      <span class="chip on" data-size="3x4">3 × 4 cm</span>
+      <span class="chip" data-size="4x6">4 × 6 cm</span>
+      <span class="chip" data-size="passport">Passport 3.5 × 4.5</span>
+      <span class="chip" data-size="custom">Tuỳ chỉnh</span>
+    </div>
+    <div class="customSize" id="customSize">
+      <div class="col"><label class="flabel" for="customW">Rộng (cm)</label>
+        <input type="number" id="customW" value="3" min="1" max="15" step="0.5"></div>
+      <div class="col"><label class="flabel" for="customH">Cao (cm)</label>
+        <input type="number" id="customH" value="4" min="1" max="20" step="0.5"></div>
+    </div>
+
+    <label class="flabel">Khung hình</label>
+    <div class="chips" id="frameChips">
+      <span class="chip" data-frame="wide">Góc rộng</span>
+      <span class="chip on" data-frame="standard">Tiêu chuẩn</span>
+      <span class="chip" data-frame="close">Cận cảnh</span>
+    </div>
+
+    <label class="flabel">Phông nền</label>
+    <div class="chips" id="bgChips">
+      <span class="chip" data-bg="white">Trắng</span>
+      <span class="chip on" data-bg="blue">Xanh</span>
+      <span class="chip" data-bg="custom">Màu tuỳ chọn</span>
+    </div>
+    <div class="colorRow" id="colorRow">
+      <input type="color" id="bgColor" value="#72b4e6">
+      <span class="note" style="margin:0">Chọn màu nền bất kỳ</span>
+    </div>
+
+    <label class="flabel">Giới tính</label>
+    <div class="chips" id="genderChips">
+      <span class="chip on" data-gender="nam">Nam</span>
+      <span class="chip" data-gender="nu">Nữ</span>
+    </div>
+
+    <label class="flabel" for="outfitSel">Trang phục</label>
+    <select id="outfitSel"></select>
+
+    <label class="flabel" for="hairSel">Kiểu tóc</label>
+    <select id="hairSel"></select>
+
+    <label class="flabel">Yêu cầu nâng cao</label>
+    <div id="chipSwitches">
+      <div class="switchRow"><span>Làm mịn da &amp; xoá quầng thâm</span>
+        <label class="sw"><input type="checkbox" id="swSkin"><span class="tr"></span></label></div>
+      <div class="switchRow"><span>Chỉnh vai cân đối</span>
+        <label class="sw"><input type="checkbox" id="swShoulders"><span class="tr"></span></label></div>
+      <div class="switchRow"><span>Xoá tóc con loà xoà</span>
+        <label class="sw"><input type="checkbox" id="swFlyaway"><span class="tr"></span></label></div>
+      <div class="switchRow"><span>Làm sáng khuôn mặt</span>
+        <label class="sw"><input type="checkbox" id="swBrighten"><span class="tr"></span></label></div>
+      <div class="switchRow"><span>Chỉnh đầu thẳng chính diện</span>
+        <label class="sw"><input type="checkbox" id="swHead"><span class="tr"></span></label></div>
+      <div class="switchRow"><span>Làm phẳng nếp nhăn áo</span>
+        <label class="sw"><input type="checkbox" id="swWrinkles"><span class="tr"></span></label></div>
+    </div>
+
+    <label class="flabel" for="freeText">Yêu cầu thêm (không bắt buộc)</label>
+    <textarea id="freeText" placeholder="Ví dụ: giữ nguyên nốt ruồi trên má trái..."></textarea>
+  </section>
+
+  <!-- 4. Xuất ảnh -->
+  <section class="card">
+    <h2><span class="n">4</span> Xuất ảnh</h2>
+    <button class="btnMain" id="exportBtn" disabled>XUẤT ẢNH THẺ AI</button>
+    <div class="status" id="statusBox"></div>
+  </section>
+
+  <!-- Kết quả -->
+  <section class="card" id="resultCard">
+    <h2>Ảnh thẻ của bạn</h2>
+    <img class="resultImg" id="resultImg" alt="Ảnh thẻ đã tạo">
+    <div class="resultMeta" id="resultMeta"></div>
+    <div class="btnRow">
+      <button class="btnSec" id="dlPhotoBtn">⬇ Tải ảnh thẻ</button>
+      <button class="btnSec" id="dlSheetBtn">🖨 Tờ in 10 × 15</button>
+    </div>
+    <p class="note">Tờ in 10 × 15 cm (300 DPI) xếp nhiều bản sao của ảnh thẻ để mang ra tiệm in.</p>
+  </section>
+
+  <footer>Ảnh được xử lý bởi Google Gemini. Hãy kiểm tra lại khuôn mặt sau khi AI xử lý trước khi dùng cho giấy tờ.</footer>
+</div>
+
+<script>
+"use strict";
+/* ================= Dữ liệu tuỳ chọn ================= */
+var SIZES = { "2x3":{w:2,h:3}, "3x4":{w:3,h:4}, "4x6":{w:4,h:6}, "passport":{w:3.5,h:4.5} };
+var FRAME_ZOOM = { wide:1.0, standard:0.82, close:0.62 };
+var OUTFITS = {
+  nam: [
+    {v:"keep", t:"Giữ nguyên", p:null},
+    {v:"vestden", t:"Vest đen", p:"Change the outfit to a black suit with a white shirt and a dark tie."},
+    {v:"vestnavy", t:"Vest xanh navy", p:"Change the outfit to a navy blue suit with a white shirt and a dark tie."},
+    {v:"somi", t:"Sơ mi trắng", p:"Change the outfit to a white dress shirt."},
+    {v:"polo", t:"Áo Polo", p:"Change the outfit to a neat polo shirt."},
+    {v:"quanphuc", t:"Quân phục", p:"Change the outfit to a formal military-style uniform."}
+  ],
+  nu: [
+    {v:"keep", t:"Giữ nguyên", p:null},
+    {v:"vestden", t:"Vest đen", p:"Change the outfit to a black women's blazer with a white blouse."},
+    {v:"somi", t:"Sơ mi trắng", p:"Change the outfit to a white blouse."},
+    {v:"aodai", t:"Áo dài truyền thống", p:"Change the outfit to a traditional Vietnamese ao dai."},
+    {v:"congso", t:"Áo kiểu công sở", p:"Change the outfit to a neat office blouse."},
+    {v:"quanphuc", t:"Quân phục", p:"Change the outfit to a formal military-style uniform."}
+  ]
+};
+var HAIRS = {
+  nam: [
+    {v:"keep", t:"Giữ nguyên", p:null},
+    {v:"ngan", t:"Cắt ngắn gọn gàng", p:"Restyle the hair to a neat short haircut."},
+    {v:"73", t:"Rẽ ngôi 7/3", p:"Restyle the hair to a 7/3 side-part hairstyle."},
+    {v:"undercut", t:"Undercut lịch lãm", p:"Restyle the hair to a smart undercut hairstyle."},
+    {v:"dung", t:"Tóc vuốt dựng", p:"Restyle the hair to a swept-up quiff hairstyle."}
+  ],
+  nu: [
+    {v:"keep", t:"Giữ nguyên", p:null},
+    {v:"daithang", t:"Tóc dài thẳng", p:"Restyle the hair to long straight hair."},
+    {v:"song", t:"Tóc uốn sóng nhẹ", p:"Restyle the hair to long hair with soft waves."},
+    {v:"buicao", t:"Tóc búi cao", p:"Restyle the hair to a high bun."},
+    {v:"duoinga", t:"Tóc buộc đuôi ngựa", p:"Restyle the hair to a neat ponytail."},
+    {v:"bob", t:"Tóc ngắn Bob", p:"Restyle the hair to a short bob haircut."},
+    {v:"maithua", t:"Tóc có mái thưa", p:"Restyle the hair with light wispy bangs."}
+  ]
+};
+var CHIP_CLAUSES = [
+  {id:"swSkin", p:"Gently smooth skin and remove dark circles under the eyes, keep natural skin texture, do not change facial features."},
+  {id:"swShoulders", p:"Make the shoulders level and symmetrical."},
+  {id:"swFlyaway", p:"Remove stray flyaway hairs."},
+  {id:"swBrighten", p:"Brighten the face evenly."},
+  {id:"swHead", p:"Straighten the head to a perfectly frontal, upright pose."},
+  {id:"swWrinkles", p:"Flatten clothing wrinkles."}
+];
+var FRAME_CLAUSES = {
+  wide:"Wide framing: show the head, shoulders and upper body with generous space around the head.",
+  standard:"Standard ID framing: head and shoulders, face clearly visible.",
+  close:"Close-up framing: the face fills most of the frame, head and top of shoulders only."
+};
+var BASE_PROMPT = "Create a professional ID photo from the uploaded portrait. Preserve the person's face, facial identity, features and skin tone EXACTLY as in the original photo — do not beautify, slim, reshape or alter the face. Photorealistic, front-facing, head and shoulders, even studio lighting, sharp focus.";
+var SUPPORTED_RATIOS = ["2:3","3:4","4:5","1:1","5:7"];
+
+/* ================= Trạng thái ================= */
+var state = {
+  size:"3x4", frame:"standard", bg:"blue", gender:"nam",
+  photoImg:null, photoName:"", resultBlob:null, resultW:0, resultH:0, sheetBlob:null
+};
+
+function $(id){ return document.getElementById(id); }
+
+/* ================= Khoá API ================= */
+var keyInput = $("apiKey");
+try { keyInput.value = localStorage.getItem("anhtheai_key") || ""; } catch(e){}
+keyInput.addEventListener("input", function(){
+  try { localStorage.setItem("anhtheai_key", keyInput.value.trim()); } catch(e){}
+  refreshExportBtn();
+});
+function getKey(){ return keyInput.value.trim(); }
+
+/* ================= Chips chọn 1 ================= */
+function chipGroup(id, attr, cb){
+  var box = $(id);
+  box.addEventListener("click", function(e){
+    var chip = e.target.closest ? e.target.closest(".chip") : null;
+    if(!chip || !box.contains(chip)) return;
+    var all = box.querySelectorAll(".chip");
+    for(var i=0;i<all.length;i++) all[i].classList.remove("on");
+    chip.classList.add("on");
+    cb(chip.getAttribute(attr));
+  });
+}
+chipGroup("sizeChips","data-size",function(v){
+  state.size = v;
+  $("customSize").classList.toggle("show", v==="custom");
+});
+chipGroup("frameChips","data-frame",function(v){ state.frame = v; });
+chipGroup("bgChips","data-bg",function(v){
+  state.bg = v;
+  $("colorRow").classList.toggle("show", v==="custom");
+});
+chipGroup("genderChips","data-gender",function(v){
+  state.gender = v;
+  fillSelects();
+});
+
+/* ================= Select trang phục / kiểu tóc ================= */
+function fillSelect(outfits, sel){
+  sel.innerHTML = "";
+  outfits.forEach(function(o){
+    var op = document.createElement("option");
+    op.value = o.v; op.textContent = o.t;
+    sel.appendChild(op);
+  });
+}
+function fillSelects(){
+  fillSelect(OUTFITS[state.gender], $("outfitSel"));
+  fillSelect(HAIRS[state.gender], $("hairSel"));
+}
+fillSelects();
+
+/* ================= Tải ảnh ================= */
+var fileInput = $("fileInput");
+fileInput.addEventListener("change", function(){
+  if(fileInput.files && fileInput.files[0]) loadPhoto(fileInput.files[0]);
+});
+$("changePhoto").addEventListener("click", function(){ fileInput.click(); });
+$("dropZone").addEventListener("keydown", function(e){
+  if(e.key==="Enter" || e.key===" "){ e.preventDefault(); fileInput.click(); }
+});
+function loadPhoto(file){
+  var reader = new FileReader();
+  reader.onload = function(){
+    var img = new Image();
+    img.onload = function(){
+      state.photoImg = img;
+      state.photoName = file.name || "anh-goc.jpg";
+      $("previewImg").src = reader.result;
+      $("fileName").textContent = state.photoName;
+      $("previewRow").classList.add("show");
+      refreshExportBtn();
+      setStatus("", "");
+    };
+    img.onerror = function(){ setStatus("err", "Không đọc được file ảnh này. Hãy chọn ảnh JPG/PNG khác."); };
+    img.src = reader.result;
+  };
+  reader.onerror = function(){ setStatus("err", "Không đọc được file ảnh này."); };
+  reader.readAsDataURL(file);
+}
+function refreshExportBtn(){
+  $("exportBtn").disabled = !(state.photoImg && getKey());
+}
+
+/* ================= Kích thước đích ================= */
+function targetCm(){
+  if(state.size === "custom"){
+    var w = parseFloat($("customW").value), h = parseFloat($("customH").value);
+    if(!(w>0)) w = 3; if(!(h>0)) h = 4;
+    return { w:w, h:h, label: String(w).replace(".", "_") + "x" + String(h).replace(".", "_") };
+  }
+  var s = SIZES[state.size];
+  return { w:s.w, h:s.h, label: state.size === "passport" ? "3.5x4.5" : state.size };
+}
+function cmToPx(cm, dpi){ return Math.round(cm / 2.54 * dpi); }
+function targetPixels(){
+  var t = targetCm();
+  return { w: cmToPx(t.w, 600), h: cmToPx(t.h, 600) };
+}
+function nearestAspectRatio(w, h){
+  var target = w / h, best = SUPPORTED_RATIOS[0], bestDiff = Infinity;
+  SUPPORTED_RATIOS.forEach(function(r){
+    var p = r.split(":"), v = parseFloat(p[0]) / parseFloat(p[1]);
+    var d = Math.abs(Math.log(v / target));
+    if(d < bestDiff){ bestDiff = d; best = r; }
+  });
+  return best;
+}
+
+/* ================= Ghép prompt ================= */
+function selectedPrompt(list, sel){
+  for(var i=0;i<list.length;i++) if(list[i].v === sel.value) return list[i].p;
+  return null;
+}
+function buildPrompt(){
+  var parts = [BASE_PROMPT];
+  if(state.bg === "white") parts.push("Replace the background with a solid pure white background, clean hair edges.");
+  else if(state.bg === "blue") parts.push("Replace the background with a solid blue background, exact color #72B4E6, clean hair edges.");
+  else parts.push("Replace the background with a solid background, exact color " + $("bgColor").value.toUpperCase() + ", clean hair edges.");
+  var outfit = selectedPrompt(OUTFITS[state.gender], $("outfitSel"));
+  if(outfit) parts.push(outfit + " Keep the head, hair and face unchanged.");
+  var hair = selectedPrompt(HAIRS[state.gender], $("hairSel"));
+  if(hair) parts.push(hair);
+  CHIP_CLAUSES.forEach(function(c){ if($(c.id).checked) parts.push(c.p); });
+  parts.push(FRAME_CLAUSES[state.frame]);
+  var free = $("freeText").value.trim();
+  if(free) parts.push(free);
+  return parts.join(" ");
+}
+
+/* ================= Cắt sơ bộ trước khi gửi ================= */
+function preCropBase64(){
+  var img = state.photoImg;
+  var t = targetCm();
+  var aspect = t.w / t.h;
+  var zoom = FRAME_ZOOM[state.frame];
+  var cropH = img.naturalHeight * zoom;
+  var cropW = cropH * aspect;
+  if(cropW > img.naturalWidth){ cropW = img.naturalWidth; cropH = cropW / aspect; }
+  var sx = (img.naturalWidth - cropW) / 2;
+  var sy = (img.naturalHeight - cropH) / 2;
+  var scale = Math.min(1, 1024 / Math.max(cropW, cropH));
+  var cw = Math.max(2, Math.round(cropW * scale));
+  var ch = Math.max(2, Math.round(cropH * scale));
+  var cv = document.createElement("canvas");
+  cv.width = cw; cv.height = ch;
+  var ctx = cv.getContext("2d");
+  ctx.fillStyle = "#ffffff"; ctx.fillRect(0, 0, cw, ch);
+  ctx.drawImage(img, sx, sy, cropW, cropH, 0, 0, cw, ch);
+  var du = cv.toDataURL("image/jpeg", 0.92);
+  return du.substring(du.indexOf(",") + 1);
+}
+
+/* ================= Canvas helpers ================= */
+function dataURLtoBlob(du){
+  var p = du.split(","), mime = (p[0].match(/:(.*?);/) || [])[1] || "image/jpeg";
+  var bin = atob(p[1]), arr = new Uint8Array(bin.length);
+  for(var i=0;i<bin.length;i++) arr[i] = bin.charCodeAt(i);
+  return new Blob([arr], { type: mime });
+}
+function canvasToBlob(cv, type, q){
+  return new Promise(function(resolve){
+    var done = false;
+    function fallback(){
+      if(done) return; done = true;
+      try { resolve(dataURLtoBlob(cv.toDataURL(type, q))); }
+      catch(e){ resolve(null); }
+    }
+    if(cv.toBlob){
+      try {
+        cv.toBlob(function(b){ if(b){ done = true; resolve(b); } else fallback(); }, type, q);
+      } catch(e){ fallback(); }
+    } else fallback();
+  });
+}
+function loadImageFromBase64(b64, mime){
+  return new Promise(function(resolve, reject){
+    var img = new Image();
+    img.onload = function(){ resolve(img); };
+    img.onerror = reject;
+    img.src = "data:" + (mime || "image/png") + ";base64," + b64;
+  });
+}
+
+/* ================= Xử lý ảnh kết quả ================= */
+function processResult(img){
+  var px = targetPixels();
+  var aspect = px.w / px.h;
+  var sw = img.naturalWidth, sh = img.naturalHeight;
+  var cropW = sw, cropH = sw / aspect;
+  if(cropH > sh){ cropH = sh; cropW = sh * aspect; }
+  var sx = (sw - cropW) / 2, sy = (sh - cropH) / 2;
+  var cv = document.createElement("canvas");
+  cv.width = px.w; cv.height = px.h;
+  var ctx = cv.getContext("2d");
+  ctx.fillStyle = "#ffffff"; ctx.fillRect(0, 0, px.w, px.h);
+  ctx.drawImage(img, sx, sy, cropW, cropH, 0, 0, px.w, px.h);
+  return canvasToBlob(cv, "image/jpeg", 0.95).then(function(blob){
+    state.resultBlob = blob; state.resultW = px.w; state.resultH = px.h;
+    state.sheetBlob = null;
+    return blob;
+  });
+}
+function makePrintSheet(){
+  if(!state.resultBlob) return Promise.resolve(null);
+  return new Promise(function(resolve){
+    var reader = new FileReader();
+    reader.onload = function(){
+      var img = new Image();
+      img.onload = function(){
+        var t = targetCm();
+        var pw = cmToPx(t.w, 300), ph = cmToPx(t.h, 300);
+        var SW = 1181, SH = 1772, GAP = 8;
+        var cv = document.createElement("canvas");
+        cv.width = SW; cv.height = SH;
+        var ctx = cv.getContext("2d");
+        ctx.fillStyle = "#ffffff"; ctx.fillRect(0, 0, SW, SH);
+        var cols = Math.floor((SW + GAP) / (pw + GAP));
+        var rows = Math.floor((SH + GAP) / (ph + GAP));
+        var totalW = cols * pw + (cols - 1) * GAP;
+        var totalH = rows * ph + (rows - 1) * GAP;
+        var ox = Math.round((SW - totalW) / 2), oy = Math.round((SH - totalH) / 2);
+        for(var r=0;r<rows;r++) for(var c=0;c<cols;c++){
+          ctx.drawImage(img, ox + c * (pw + GAP), oy + r * (ph + GAP), pw, ph);
+        }
+        canvasToBlob(cv, "image/jpeg", 0.95).then(function(blob){
+          state.sheetBlob = blob;
+          resolve({ blob: blob, w: SW, h: SH, copies: cols * rows });
+        });
+      };
+      img.onerror = function(){ resolve(null); };
+      img.src = reader.result;
+    };
+    reader.onerror = function(){ resolve(null); };
+    reader.readAsDataURL(state.resultBlob);
+  });
+}
+
+/* ================= Tải xuống (cầu AndroidSaver nếu có) ================= */
+function downloadBlob(blob, filename){
+  if(!blob) return;
+  if(window.AndroidSaver && typeof window.AndroidSaver.start === "function"){
+    var reader = new FileReader();
+    reader.onload = function(){
+      var du = String(reader.result);
+      var b64 = du.substring(du.indexOf(",") + 1);
+      var id = "f" + Date.now() + Math.floor(Math.random() * 1e6);
+      var CH = 180000, total = Math.max(1, Math.ceil(b64.length / CH));
+      try {
+        window.AndroidSaver.start(id, filename, blob.type || "image/jpeg", total);
+        for(var i=0;i<total;i++) window.AndroidSaver.chunk(id, i, b64.substring(i * CH, (i + 1) * CH));
+        window.AndroidSaver.finish(id);
+      } catch(e){ blobDownloadFallback(blob, filename); }
+    };
+    reader.onerror = function(){ blobDownloadFallback(blob, filename); };
+    reader.readAsDataURL(blob);
+  } else {
+    blobDownloadFallback(blob, filename);
+  }
+}
+function blobDownloadFallback(blob, filename){
+  try {
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a");
+    a.href = url; a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(function(){
+      document.body.removeChild(a);
+      try { URL.revokeObjectURL(url); } catch(e){}
+    }, 800);
+  } catch(e){ /* Môi trường không hỗ trợ tải blob: bỏ qua, ảnh vẫn xem được trên trang. */ }
+}
+
+/* ================= Trạng thái / lỗi ================= */
+function setStatus(kind, msg){
+  var box = $("statusBox");
+  if(!msg){ box.className = "status"; box.textContent = ""; return; }
+  box.className = "status show " + kind;
+  box.textContent = msg;
+}
+
+/* ================= Gọi AI ================= */
+$("exportBtn").addEventListener("click", function(){
+  var key = getKey();
+  if(!key || !state.photoImg) return;
+  var model = $("modelSel").value;
+  var btn = $("exportBtn");
+  btn.disabled = true;
+  setStatus("busy", "Đang xử lý ảnh bằng Google AI, vui lòng chờ...");
+  $("resultCard").classList.remove("show");
+  var t = targetCm();
+  var body = {
+    contents: [{ parts: [
+      { text: buildPrompt() },
+      { inlineData: { mimeType: "image/jpeg", data: preCropBase64() } }
+    ]}],
+    generationConfig: {
+      responseModalities: ["TEXT", "IMAGE"],
+      imageConfig: { aspectRatio: nearestAspectRatio(t.w, t.h) }
+    }
+  };
+  fetch("https://generativelanguage.googleapis.com/v1beta/models/" + model + ":generateContent?key=" + encodeURIComponent(key), {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body)
+  }).then(function(res){
+    return res.text().then(function(txt){
+      var json = null;
+      try { json = JSON.parse(txt); } catch(e){}
+      if(!res.ok){
+        var msg = (json && json.error && json.error.message) ? json.error.message : txt.substring(0, 300);
+        throw new Error("Lỗi từ Google AI (HTTP " + res.status + "): " + msg);
+      }
+      return json;
+    });
+  }).then(function(json){
+    var parts = json && json.candidates && json.candidates[0] && json.candidates[0].content
+      ? json.candidates[0].content.parts : null;
+    var found = null;
+    if(parts) for(var i=0;i<parts.length;i++){
+      if(parts[i].inlineData && parts[i].inlineData.data){ found = parts[i].inlineData; break; }
+    }
+    if(!found) throw new Error("Google AI không trả về ảnh. Hãy thử lại hoặc đổi ảnh gốc rõ mặt hơn.");
+    return loadImageFromBase64(found.data, found.mimeType);
+  }).then(function(img){
+    return processResult(img);
+  }).then(function(blob){
+    if(!blob) throw new Error("Không tạo được file ảnh kết quả.");
+    var reader = new FileReader();
+    reader.onload = function(){
+      $("resultImg").src = reader.result;
+      var t2 = targetCm();
+      $("resultMeta").textContent = "Cỡ " + t2.w + " × " + t2.h + " cm · " +
+        state.resultW + " × " + state.resultH + " px · 600 DPI · " +
+        Math.max(1, Math.round(blob.size / 1024)) + " KB";
+      $("resultCard").classList.add("show");
+      setStatus("ok", "Đã tạo xong ảnh thẻ. Kiểm tra lại khuôn mặt trước khi tải về dùng.");
+      $("resultCard").scrollIntoView({ behavior: "smooth", block: "start" });
+    };
+    reader.readAsDataURL(blob);
+  }).catch(function(err){
+    var m = err && err.message ? err.message : String(err);
+    if(/Failed to fetch|NetworkError|Load failed/i.test(m))
+      m = "Không kết nối được tới Google AI. Kiểm tra mạng rồi thử lại.";
+    setStatus("err", m);
+  }).then(function(){
+    btn.disabled = false;
+    refreshExportBtn();
+  });
+});
+
+$("dlPhotoBtn").addEventListener("click", function(){
+  if(state.resultBlob) downloadBlob(state.resultBlob, "anh-the-" + targetCm().label + ".jpg");
+});
+$("dlSheetBtn").addEventListener("click", function(){
+  makePrintSheet().then(function(sheet){
+    if(sheet && sheet.blob) downloadBlob(sheet.blob, "to-in-10x15.jpg");
+  });
+});
+
+/* Lộ hàm cho kiểm thử tự động */
+window.AnTheAI = {
+  state: state,
+  buildPrompt: buildPrompt,
+  targetPixels: targetPixels,
+  targetCm: targetCm,
+  nearestAspectRatio: nearestAspectRatio,
+  preCropBase64: preCropBase64,
+  processResult: processResult,
+  makePrintSheet: makePrintSheet,
+  loadPhoto: loadPhoto,
+  refreshExportBtn: refreshExportBtn
+};
+refreshExportBtn();
+</script>
+</body>
+</html>
